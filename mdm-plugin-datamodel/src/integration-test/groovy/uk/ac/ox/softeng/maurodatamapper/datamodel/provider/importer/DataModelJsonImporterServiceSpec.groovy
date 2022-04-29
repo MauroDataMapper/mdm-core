@@ -47,6 +47,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 import java.time.OffsetDateTime
 
@@ -56,6 +57,7 @@ import java.time.OffsetDateTime
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelJsonImporterService> {
 
     private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
@@ -690,7 +692,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+        ObjectDiff simpleDiff = dataModels.pop().diff(imported.pop(), 'none')
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -717,7 +719,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+        ObjectDiff simpleDiff = dataModels.pop().diff(imported.pop(), 'none')
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -744,8 +746,8 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        ObjectDiff simpleDiff = dataModels[0].diff(imported[0], 'none')
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none')
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -773,7 +775,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+        ObjectDiff simpleDiff = dataModels[0].diff(imported.pop(), 'none')
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -786,8 +788,8 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 2
 
         when:
-        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        simpleDiff = dataModels[0].diff(imported[0], 'none')
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none')
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -815,7 +817,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+        ObjectDiff simpleDiff = dataModels[0].diff(imported.pop(), 'none')
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -828,8 +830,8 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         imported.size() == 2
 
         when:
-        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        simpleDiff = dataModels[0].diff(imported[0], 'none')
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none')
 
         then:
         simpleDiff.objectsAreIdentical()

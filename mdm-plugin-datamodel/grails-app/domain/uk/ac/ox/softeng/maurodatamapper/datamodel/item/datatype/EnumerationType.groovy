@@ -17,13 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -58,30 +59,38 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
 
     @Override
     def beforeValidate() {
-        long st = System.currentTimeMillis()
         super.beforeValidate()
         if (enumerationValues) {
             // If model exists and this is a new ET then sort children
             if (model?.id && !id) fullSortOfChildren(enumerationValues)
-            enumerationValues.each { ev ->
+            enumerationValues.each {ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
                 ev.beforeValidate()
             }
         }
-        log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
     ObjectDiff<EnumerationType> diff(EnumerationType otherDataType, String context) {
-        catalogueItemDiffBuilder(EnumerationType, this, otherDataType)
-            .appendList(EnumerationValue, 'enumerationValues', this.enumerationValues, otherDataType.enumerationValues)
+        diff(otherDataType, context, null, null)
+    }
+
+    ObjectDiff<EnumerationType> diff(EnumerationType otherDataType, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<EnumerationType> base = DiffBuilder.catalogueItemDiffBuilder(EnumerationType, this, otherDataType, lhsDiffCache, rhsDiffCache)
+
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(EnumerationValue, 'enumerationValues', this.enumerationValues, otherDataType.enumerationValues)
+        } else {
+            base.appendCollection(EnumerationValue, 'enumerationValues')
+        }
+        base
     }
 
     int countEnumerationValuesByKey(String key) {
-        enumerationValues?.count { it.key == key } ?: 0
+        enumerationValues?.count {it.key == key} ?: 0
     }
 
     EnumerationValue findEnumerationValueByKey(String key) {
-        enumerationValues?.find { it.key == key }
+        enumerationValues?.find {it.key == key}
     }
 
     EnumerationType addToEnumerationValues(Map args) {

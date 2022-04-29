@@ -27,16 +27,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DeleteAllParams
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-
-import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 class DataModelController extends ModelController<DataModel> {
@@ -86,60 +82,6 @@ class DataModelController extends ModelController<DataModel> {
         dataModelService
     }
 
-    @Transactional
-    def deleteAllUnusedDataClasses() {
-        if (handleReadOnly()) {
-            return
-        }
-
-        DataModel dataModel = queryForResource params.dataModelId
-
-        if (!dataModel) return notFound(params.dataModelId)
-
-        dataModelService.deleteAllUnusedDataClasses(dataModel)
-
-        render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
-    @Transactional
-    def deleteAllUnusedDataTypes() {
-        if (handleReadOnly()) {
-            return
-        }
-
-        DataModel dataModel = queryForResource params.dataModelId
-
-        if (!dataModel) return notFound(params.dataModelId)
-
-        dataModelService.deleteAllUnusedDataTypes(dataModel)
-
-        render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
-    @Transactional
-    def deleteAll() {
-        // Command object binding is not performed when the HTTP method id DELETE
-        DeleteAllParams deleteAllParams = new DeleteAllParams()
-        bindData deleteAllParams, request.inputStream
-        deleteAllParams.validate()
-
-        if (deleteAllParams.hasErrors()) {
-            respond deleteAllParams.errors, status: UNPROCESSABLE_ENTITY
-            return
-        }
-
-        List<DataModel> deleted = dataModelService.deleteAll(deleteAllParams.ids, deleteAllParams.permanent)
-
-        if (deleted) {
-            deleted.each {
-                updateResource(it)
-            }
-            respond deleted, status: HttpStatus.OK, view: 'index'
-        } else {
-            render status: NO_CONTENT
-        }
-    }
-
     def search(SearchParams searchParams) {
 
         if (searchParams.hasErrors()) {
@@ -185,13 +127,15 @@ class DataModelController extends ModelController<DataModel> {
         if (!dataTypeToBeImported) return notFound(DataType, params.otherDataTypeId)
 
         if (request.method == 'PUT') {
-            if (!validateImportAddition(instance, dataTypeToBeImported)) return
-            log.debug('Importing DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
-            instance.addToImportedDataTypes(dataTypeToBeImported)
+            if (dataModelService.validateImportAddition(instance, dataTypeToBeImported)) {
+                log.debug('Importing DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
+                instance.addToImportedDataTypes(dataTypeToBeImported)
+            }
         } else {
-            if (!validateImportRemoval(instance, dataTypeToBeImported)) return
-            log.debug('Removing import of DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
-            instance.removeFromImportedDataTypes(dataTypeToBeImported)
+            if (dataModelService.validateImportRemoval(instance, dataTypeToBeImported)) {
+                log.debug('Removing import of DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
+                instance.removeFromImportedDataTypes(dataTypeToBeImported)
+            }
         }
 
         if (!validateResource(instance, 'update')) return
@@ -214,13 +158,15 @@ class DataModelController extends ModelController<DataModel> {
         if (!dataClassToBeImported) return notFound(DataClass, params.otherDataClassId)
 
         if (request.method == 'PUT') {
-            if (!validateImportAddition(instance, dataClassToBeImported)) return
-            log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
-            instance.addToImportedDataClasses(dataClassToBeImported)
+            if (dataModelService.validateImportAddition(instance, dataClassToBeImported)) {
+                log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+                instance.addToImportedDataClasses(dataClassToBeImported)
+            }
         } else {
-            if (!validateImportRemoval(instance, dataClassToBeImported)) return
-            log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
-            instance.removeFromImportedDataClasses(dataClassToBeImported)
+            if (dataModelService.validateImportRemoval(instance, dataClassToBeImported)) {
+                log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+                instance.removeFromImportedDataClasses(dataClassToBeImported)
+            }
         }
 
         if (!validateResource(instance, 'update')) return
@@ -242,32 +188,36 @@ class DataModelController extends ModelController<DataModel> {
         dataModelService.checkForAndAddDefaultDataTypes model, params.defaultDataTypeProvider
     }
 
-    protected boolean validateImportAddition(DataModel instance, ModelItem importingItem) {
-        if (importingItem.model.id == instance.id) {
-            instance.errors.reject('invalid.imported.modelitem.same.datamodel',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] to be imported belongs to the DataModel already')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
+    @Transactional
+    def subset(Subset subsetData) {
+        if (!subsetData.validate()) {
+            respond subsetData.errors
+            return
         }
-        if (!importingItem.model.finalised) {
-            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] to be imported does not belong to a finalised DataModel')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        return true
+
+        DataModel sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
+
+        DataModel targetModel = queryForResource params.otherDataModelId
+        if (!targetModel) return notFound(params.otherDataModelId)
+
+        dataModelService.subset(sourceModel, targetModel, subsetData, currentUserSecurityPolicyManager)
+
+        if (!validateResource(targetModel, 'update')) return
+        updateResource(targetModel)
+        updateResponse(targetModel)
     }
 
-    protected boolean validateImportRemoval(DataModel instance, ModelItem importingItem) {
-        if (importingItem.model.id == instance.id) {
-            instance.errors.reject('invalid.imported.deletion.modelitem.same.datamodel',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] belongs to the DataModel and cannot be removed as an import')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        return true
+    def intersects() {
+
+        DataModel sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
+
+        DataModel targetModel = queryForResource params.otherDataModelId
+        if (!targetModel) return notFound(params.otherDataModelId)
+
+        respond(intersection: dataModelService.intersects(sourceModel, targetModel))
     }
+
+
 }

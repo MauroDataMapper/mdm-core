@@ -32,7 +32,7 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
     static responseFormats = ['json', 'xml', 'csv']
 
-    static includesExcludes = ["include": ["key", "value", "publiclyVisible", "category"]]
+    static includesExcludes = [include: ['key', 'value', 'publiclyVisible', 'category']]
 
     ApiPropertyController() {
         super(ApiProperty)
@@ -67,6 +67,16 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         saveResponse instance
     }
 
+    /**
+     * Override the base method so that we can set instance.lastUpdatedBy
+     */
+    @Transactional
+    @Override
+    protected boolean validateResource(ApiProperty instance, String view) {
+        instance.lastUpdatedBy = currentUser.emailAddress
+        super.validateResource(instance, view)
+    }
+
     @Override
     protected ApiProperty saveResource(ApiProperty resource) {
         ApiProperty apiProperty = super.saveResource(resource)
@@ -82,8 +92,8 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
     @Override
     protected List<ApiProperty> listAllReadableResources(Map params) {
         if (!apiPropertyService.count()) {
-            throw new ApiInternalException('AS01', "Api Properties have not been loaded. " +
-                                                   "Please contact the System Administrator")
+            throw new ApiInternalException('AS01', 'Api Properties have not been loaded. ' +
+                                                   'Please contact the System Administrator')
         }
         if ((params as GrailsParameterMap).boolean('openAccess')) return apiPropertyService.findAllByPubliclyVisible(params)
         currentUserSecurityPolicyManager.isApplicationAdministrator() ? apiPropertyService.list(params) : []
@@ -100,12 +110,28 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
         Collection instances = createResources()
 
+        // Iterate each instance, validating each one after the previous has been saved.
+        ApiProperty errorInstance
         instances.each {instance ->
-            saveResource instance
+
+            if (!errorInstance) {
+                instance.validate()
+
+                if (instance.hasErrors()) {
+                    errorInstance = instance
+                    transactionStatus.setRollbackOnly()
+                } else {
+                    saveResource instance
+                }
+            }
         }
 
-        // Respond with the index listing
-        index()
+        if (errorInstance) {
+            respond errorInstance.errors
+            return
+        } else {
+            return index()
+        }
     }
 
     /**
@@ -128,7 +154,7 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
             ApiProperty cleanedInstance = new ApiProperty()
 
             // Copy the included properties to a cleaned instance
-            includesExcludes["include"].each {
+            includesExcludes['include'].each {
                 cleanedInstance[it] = instance[it]
             }
 

@@ -21,10 +21,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FilePar
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 
+import groovy.transform.AutoClone
 
 /**
  * Created by james on 01/06/2017.
  */
+@AutoClone
 class DataModelFileImporterProviderServiceParameters extends DataModelImporterProviderServiceParameters {
 
     @ImportParameterConfig(

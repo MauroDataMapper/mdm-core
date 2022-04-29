@@ -23,7 +23,6 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.order.Ordered
 import io.micronaut.core.type.Argument
-import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.OK
 
@@ -43,7 +42,6 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         'admin/providers'
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'test get exporters'() {
         when:
         GET('exporters', Argument.of(String))
@@ -51,31 +49,45 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "JsonExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON DataModel Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "name": "ReferenceDataJsonExporterService",
+    "version": "4.0",
+    "displayName": "JSON Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
-    "providerType": "DataModelExporter",
+    "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
     "fileType": "text/json",
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "XML DataModel Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "name": "ReferenceDataXmlExporterService",
+    "version": "5.0",
+    "displayName": "XML Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
-    "providerType": "DataModelExporter",
+    "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "FolderJsonExporterService",
+    "version": "1.0",
+    "displayName": "JSON Folder Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+
+    ],
+    "providerType": "FolderExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
     "canExportMultipleDomains": false
   }
 ]''')
@@ -91,7 +103,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "order": ''' + Ordered.LOWEST_PRECEDENCE + ''',
     "providerType": "Email",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "Basic Email Provider",
     "name": "BasicEmailProviderService",
@@ -115,7 +127,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -129,7 +141,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -143,7 +155,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +

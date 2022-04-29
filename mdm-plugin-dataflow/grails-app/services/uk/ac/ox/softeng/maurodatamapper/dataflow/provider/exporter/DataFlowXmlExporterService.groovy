@@ -71,5 +71,5 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     @Override
     String getExportViewPath() {
         '/exportModel/exportDataFlow'
-    }     
+    }
 }

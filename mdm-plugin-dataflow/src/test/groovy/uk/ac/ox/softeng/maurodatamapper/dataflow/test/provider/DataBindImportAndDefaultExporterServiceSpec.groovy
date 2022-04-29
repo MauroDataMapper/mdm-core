@@ -119,7 +119,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         ]
     }
 
-
     void 'Y01: test export and import the bootstrapped DataFlow'() {
         given:
         setupData()
@@ -135,12 +134,11 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         //The bootstrapped DataFlow intentionally uses non-unique labels for DataElementComponent and DataClassComponent
         //Consequently the order in which output varies from test to test. The XML validator which compares actual to expected
         //XML cannot deal with this, so we avoid making this comparison for XML.
-        if (getImportType() == "json") {
+        if (getImportType() == 'json') {
             validateExportedModel('bootstrappedDataFlow', exported)
         } else {
             true
         }
-
 
         when:
         DataFlow imported = dataFlowImporterService.importDataFlow(admin, exported.bytes)

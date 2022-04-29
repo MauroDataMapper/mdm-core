@@ -26,11 +26,13 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
+import org.junit.jupiter.api.Tag
 import org.springframework.cache.Cache
 
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     GroupRoleService groupRoleService
@@ -43,7 +45,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         id = GroupRole.findByName('reader').id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -51,7 +53,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         groupRoleService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -74,7 +76,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         b.displayName == 'Container Group Administrator'
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -82,7 +84,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         groupRoleService.count() == 10
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -124,7 +126,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         Set<GroupRole> roles = groupRoleService.findAllContainerLevelRoles()
 
         then:
-        roles.size() == 6
+        roles.size() == 5
 
         and:
         roles.any {it.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
@@ -132,7 +134,6 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         roles.any {it.name == 'author'}
         roles.any {it.name == 'reviewer'}
         roles.any {it.name == 'reader'}
-        roles.any {it.name == 'container_group_admin'}
 
     }
 
@@ -144,7 +145,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         Set<GroupRole> roles = groupRoleService.findAllSecurableResourceLevelRoles(Folder)
 
         then:
-        roles.size() == 6
+        roles.size() == 5
 
         and:
         roles.any {it.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
@@ -152,7 +153,6 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         roles.any {it.name == 'author'}
         roles.any {it.name == 'reviewer'}
         roles.any {it.name == 'reader'}
-        roles.any {it.name == 'container_group_admin'}
 
     }
 
@@ -222,7 +222,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         cache.get('reviewer', VirtualGroupRole).allowedRoles.size() == 2
         cache.get('author', VirtualGroupRole).allowedRoles.size() == 3
         cache.get('editor', VirtualGroupRole).allowedRoles.size() == 4
-        cache.get(GroupRole.CONTAINER_ADMIN_ROLE_NAME, VirtualGroupRole).allowedRoles.size() == 6
+        cache.get(GroupRole.CONTAINER_ADMIN_ROLE_NAME, VirtualGroupRole).allowedRoles.size() == 5
 
         and:
         cache.get('container_group_admin', VirtualGroupRole).allowedRoles.size() == 1

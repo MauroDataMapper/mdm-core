@@ -7,6 +7,13 @@ DataType dt = dataType as DataType
 
 'mdm:dataType' {
     layout '/catalogueItem/_export.gml', catalogueItem: dt
+    if (dt.summaryMetadata) {
+        'mdm:summaryMetadata' {
+            dt.summaryMetadata.each {sm ->
+                layout '/summaryMetadata/export.gml', summaryMetadata: sm
+            }
+        }
+    }
 
     'mdm:domainType'(dt.domainType)
 

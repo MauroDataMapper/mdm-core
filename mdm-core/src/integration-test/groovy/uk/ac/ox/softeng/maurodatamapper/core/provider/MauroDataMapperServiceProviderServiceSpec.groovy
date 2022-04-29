@@ -43,7 +43,7 @@ class MauroDataMapperServiceProviderServiceSpec extends MdmSpecification {
         map.values().flatten().size() == mauroDataMapperServiceProviderService.providerServices.size()
 
         and:
-        map.values().flatten().each {p ->
+        map.values().flatten().every {p ->
             mauroDataMapperServiceProviderService.providerServices.any {it == p}
         }
     }

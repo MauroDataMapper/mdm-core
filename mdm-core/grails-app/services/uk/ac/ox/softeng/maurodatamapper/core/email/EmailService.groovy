@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.commons.text.StringSubstitutor
@@ -34,6 +35,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Slf4j
+@SuppressFBWarnings('LI_LAZY_INIT_STATIC')
 class EmailService implements AnonymisableService {
 
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
@@ -108,6 +110,54 @@ class EmailService implements AnonymisableService {
     }
 
     /**
+     * Alternative to the above method for use when the API Property keys are not in the ApiPropertyEnum
+     * @param baseUrl
+     * @param subjectProperty
+     * @param bodyProperty
+     * @param user
+     * @param informationAwareItem
+     */
+    void sendEmailToUser(String baseUrl,
+                         String subjectProperty,
+                         String bodyProperty,
+                         User user,
+                         InformationAware informationAwareItem) {
+
+        Map<String, String> propertiesMap = buildUserPropertiesMap(user, informationAwareItem, baseUrl, null)
+
+        SendEmailTask task = new SendEmailTask(this)
+            .using(getEmailProviderService())
+            .from(getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_NAME, propertiesMap), getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_ADDRESS, propertiesMap))
+            .to("${user.getFirstName()} ${user.getLastName()}", user.getEmailAddress())
+            .subject(getApiPropertyAndSubstitute(subjectProperty, propertiesMap))
+            .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
+
+        executorService.submit(task)
+    }
+
+    /**
+     * Alternative to when the properties map needs top be specified externally
+     * @param subjectProperty
+     * @param bodyProperty
+     * @param user
+     * @param Map<string, string> propertieMap
+     */
+    void sendEmailToUser(String subjectProperty,
+                         String bodyProperty,
+                         User user,
+                         Map<String, String> propertiesMap) {
+
+        SendEmailTask task = new SendEmailTask(this)
+            .using(getEmailProviderService())
+            .from(getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_NAME, propertiesMap), getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_ADDRESS, propertiesMap))
+            .to("${user.getFirstName()} ${user.getLastName()}", user.getEmailAddress())
+            .subject(getApiPropertyAndSubstitute(subjectProperty, propertiesMap))
+            .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
+
+        executorService.submit(task)
+    }
+
+    /**
      * Delete all emails sent to the specified address
      * @param sentTo
      */
@@ -145,6 +195,16 @@ class EmailService implements AnonymisableService {
     String getApiPropertyAndSubstitute(ApiPropertyEnum key,
                                        Map<String, String> propertiesMap) {
         ApiProperty property = apiPropertyService.findByApiPropertyEnum(key)
+        if (property) {
+            StringSubstitutor sub = new StringSubstitutor(propertiesMap)
+            return sub.replace(property.value)
+        }
+        null
+    }
+
+    String getApiPropertyAndSubstitute(String key,
+                                       Map<String, String> propertiesMap) {
+        ApiProperty property = apiPropertyService.findByKey(key)
         if (property) {
             StringSubstitutor sub = new StringSubstitutor(propertiesMap)
             return sub.replace(property.value)

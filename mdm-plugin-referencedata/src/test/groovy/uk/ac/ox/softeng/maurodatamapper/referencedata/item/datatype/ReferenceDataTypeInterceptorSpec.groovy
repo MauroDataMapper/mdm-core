@@ -51,6 +51,6 @@ class ReferenceDataTypeInterceptorSpec extends ContainedResourceInterceptorUnitS
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 }

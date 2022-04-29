@@ -79,7 +79,13 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
         if (result.name() == 'terminologies') {
             log.debug('Importing Terminology list')
-            return convertToList(result as NodeChild).collect { bindMapToTerminology(currentUser, it) }
+            List<Map> xmlMaps = convertToList(result as NodeChild)
+            List<Map> terminologyMaps = xmlMaps.findAll {it}
+            if (!terminologyMaps) throw new ApiBadRequestException('XIS03', 'Cannot import XML as terminology/ies is not present')
+            if (terminologyMaps.size() < xmlMaps.size()) log.warn('Cannot import certain XML as terminology/ies is not present')
+
+            log.debug('Importing list of Terminology maps')
+            return terminologyMaps.collect {bindMapToTerminology(currentUser, new HashMap(it))}
         }
 
         // Handle single Terminology map or exportModel passed to this method, for backwards compatibility

@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.authority
 
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
-import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
@@ -28,7 +27,6 @@ import io.micronaut.http.HttpStatus
 /**
  * @since 31/08/2021
  */
-@Rollback
 @Integration
 @Slf4j
 class AuthorityFunctionalSpec extends ResourceFunctionalSpec<Authority> {
@@ -100,8 +98,8 @@ class AuthorityFunctionalSpec extends ResourceFunctionalSpec<Authority> {
         responseBody().defaultAuthority
         responseBody().readableByEveryone
         responseBody().readableByAuthenticatedUsers
-        responseBody().availableActions.sort() == ["show",
-                                                   "update"].sort()
+        responseBody().availableActions.sort() == ['show',
+                                                   'update'].sort()
     }
 
     void 'test trying to delete the default authority'() {
@@ -114,6 +112,27 @@ class AuthorityFunctionalSpec extends ResourceFunctionalSpec<Authority> {
 
         then:
         verifyResponse(HttpStatus.FORBIDDEN, response)
+    }
+
+    void 'T01 : test trying to create 2 default authorities'() {
+        given:
+        Authority authority = getDefaultAuthority()
+
+        expect:
+        authority
+        authority.defaultAuthority
+
+        when:
+        POST('', [
+            url             : 'https://functional-spec-authority.com',
+            label           : 'Functional Spec Authority',
+            defaultAuthority: true
+        ])
+
+        then:
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors.first().message == 'A default authority already exists'
     }
 
     @Override

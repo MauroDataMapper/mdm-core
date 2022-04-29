@@ -18,11 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.test.functional.merge
 
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-
-import java.nio.charset.Charset
 
 import static uk.ac.ox.softeng.maurodatamapper.test.http.RestClientInterface.MAP_ARG
 
@@ -72,7 +71,7 @@ abstract class BaseTestMergeBuilder {
     }
 
     String getIdFromPath(String rootResourceId, String path, boolean mustExist = true) {
-        functionalSpec.GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        functionalSpec.GET("$rootResourceId/path/${Utils.safeUrlEncode(path)}")
         if (mustExist) {
             verifyResponse OK, response
             assert responseBody().id
@@ -84,7 +83,7 @@ abstract class BaseTestMergeBuilder {
     }
 
     String getIdFromPathNoValidation(String rootResourceId, String path) {
-        functionalSpec.GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        functionalSpec.GET("$rootResourceId/path/${Utils.safeUrlEncode(path)}")
         if (response.status == OK) {
             return responseBody().id
         }

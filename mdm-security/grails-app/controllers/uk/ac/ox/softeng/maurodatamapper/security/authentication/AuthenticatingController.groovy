@@ -70,14 +70,14 @@ class AuthenticatingController implements ResourcelessMdmController {
 
     private def loginProcess(Map<String, Object> authenticationInformation) {
         if (!authenticationInformation) {
-            log.warn("Login attempt with authentication information")
-            errorResponse(BAD_REQUEST, "Authentication Information not provided")
+            log.warn('Login attempt with authentication information')
+            errorResponse(BAD_REQUEST, 'Authentication Information not provided')
             return false
         }
 
        String alreadyLoggedInEmailAddress
         if (authenticatingService.isAuthenticatedSession(session)) {
-            log.warn("Login attempt while a user currently logged in")
+            log.warn('Login attempt while a user currently logged in')
             alreadyLoggedInEmailAddress = authenticatingService.getEmailAddressForSession(session)
         }
 
@@ -85,12 +85,12 @@ class AuthenticatingController implements ResourcelessMdmController {
         CatalogueUser user = authenticatingService.authenticateAndObtainUser(authenticationInformation, params.scheme)
 
         if (!user) {
-            log.warn("Authentication attempt with invalid authentication information",)
+            log.warn('Authentication attempt with invalid authentication information',)
             return unauthorised('Invalid credentials')
         }
 
         if (!user) {
-            log.warn("Authentication attempt with invalid authentication information",)
+            log.warn('Authentication attempt with invalid authentication information',)
             return unauthorised('Invalid credentials')
         }
 

@@ -23,9 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -35,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.TermCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
@@ -51,6 +56,9 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
+import org.hibernate.search.mapper.orm.session.SearchSession
 
 @Slf4j
 @Transactional
@@ -85,7 +93,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     String getUrlResourceName() {
-        "terminologies"
+        'terminologies'
     }
 
     Long count() {
@@ -97,8 +105,38 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     Terminology validate(Terminology terminology) {
-        log.debug('Validating Terminology')
+        log.debug('Validating Terminology with {} TRTs, {} Ts, {} TRs', terminology.termRelationshipTypes.size(),
+                  terminology.terms.size(),
+                  terminology.allTermRelationships.size())
+        Collection<Term> terms = []
+        if (terminology.terms) {
+            terms.addAll(terminology.terms)
+            terminology.terms.clear()
+        }
+
+        long st = System.currentTimeMillis()
         terminology.validate()
+        log.debug('Validated Terminology in {}', Utils.timeTaken(st))
+
+        st = System.currentTimeMillis()
+        terms.each {it.validate()}
+        terminology.terms.addAll(terms)
+        // To be able to register the errors in the Terminology we need to add the Termss back to the Terminology
+        terms.eachWithIndex {t, i ->
+            if (t.hasErrors()) {
+                t.errors.fieldErrors.each {err ->
+                    terminology.errors.rejectValue("terms[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
+        }
+        def termsValidity = new TermCollectionValidator(terminology).isValid(terms)
+        if (termsValidity instanceof List) {
+            terminology.errors.rejectValue('terms', termsValidity[0] as String, ['terms', Terminology, terms, termsValidity[1], termsValidity[2]] as Object[],
+                                           'Property [{0}] of class [{1}] has non-unique values [{3}] on property [{4}]')
+        }
+
+        log.debug('Validated {} terms in {}', terms.size(), Utils.timeTaken(st))
+
         terminology
     }
 
@@ -130,13 +168,18 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     Terminology saveModelWithContent(Terminology terminology) {
+        saveModelWithContent(terminology, ModelItemService.BATCH_SIZE)
+    }
+
+    Terminology saveModelWithContent(Terminology terminology, Integer modelItemBatchSize) {
+
 
         if (terminology.terms.any { it.id } || terminology.termRelationshipTypes.any { it.id }) {
             throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
                                            new IllegalStateException('Terminology has previously saved content'))
         }
 
-        log.debug('Saving {} complete terminology', terminology.label)
+        log.debug('Saving {} terminology with content', terminology.label)
 
         long start = System.currentTimeMillis()
         Collection<Term> terms = []
@@ -158,14 +201,21 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.breadcrumbTree.children) {
-            terminology.breadcrumbTree.children.each { it.skipValidation(true) }
+            terminology.breadcrumbTree.disableValidation()
         }
 
-        save(terminology)
+        long st = System.currentTimeMillis()
 
+        // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+
+        save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
         sessionFactory.currentSession.flush()
+        log.debug('Save of Terminology and BreadcrumbTree took {}', Utils.timeTaken(st))
 
-        saveContent(terms, termRelationshipTypes)
+        saveContent(modelItemBatchSize, terms, termRelationshipTypes)
+
         log.debug('Complete save of Terminology complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(terminology.id)
@@ -176,14 +226,17 @@ class TerminologyService extends ModelService<Terminology> {
         save(failOnError: true, validate: false, flush: true, model)
     }
 
-    void saveContent(Collection<Term> terms,
+
+    // Need to find a way to disable lucene and then rerun on all new entities AFTER
+    void saveContent(Integer modelItemBatchSize,
+                     Collection<Term> terms,
                      Collection<TermRelationshipType> termRelationshipTypes,
                      Set<TermRelationship> termRelationships = [] as HashSet) {
 
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.debug('Disabling validation on contents')
-        termRelationshipTypes.each { trt ->
+        termRelationshipTypes.each {trt ->
             trt.skipValidation(true)
         }
 
@@ -201,15 +254,15 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         long subStart = System.currentTimeMillis()
-        termRelationshipTypeService.saveAll(termRelationshipTypes)
+        termRelationshipTypeService.saveAll(termRelationshipTypes, modelItemBatchSize)
         log.debug('Saved {} termRelationshipTypes in {}', termRelationshipTypes.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        termRelationships.addAll termService.saveAllAndGetTermRelationships(terms)
+        termRelationships.addAll termService.saveAll(terms, modelItemBatchSize)
         log.debug('Saved {} terms in {}', terms.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        termRelationshipService.saveAll(termRelationships)
+        termRelationshipService.saveAll(termRelationships, modelItemBatchSize)
         log.debug('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
 
         if (Environment.current != Environment.TEST) {
@@ -249,11 +302,6 @@ class TerminologyService extends ModelService<Terminology> {
         log.trace('Breadcrumb trees removed')
 
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
-    }
-
-    @Override
-    List<Terminology> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
-        Terminology.withReadable(Terminology.by(), constrainedIds, includeDeleted).list()
     }
 
     @Override
@@ -589,7 +637,7 @@ class TerminologyService extends ModelService<Terminology> {
             tr.createdBy = tr.createdBy ?: terminology.createdBy
         }
 
-        log.debug("Terminology associations checked")
+        log.debug('Terminology associations checked')
     }
 
     @Override
@@ -600,6 +648,11 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     TerminologyJsonExporterService getJsonModelExporterProviderService() {
         terminologyJsonExporterService
+    }
+
+    @Override
+    void updateModelItemPathsAfterFinalisationOfModel(Terminology model) {
+        updateModelItemPathsAfterFinalisationOfModel model, 'terminology', 'term', 'term_relationship', 'term_relationship_type'
     }
 
     @Override
@@ -656,4 +709,37 @@ class TerminologyService extends ModelService<Terminology> {
         0
     }
 
+    @Override
+    CachedDiffable<Terminology> loadEntireModelIntoDiffCache(UUID modelId) {
+        long start = System.currentTimeMillis()
+        Terminology loadedModel = get(modelId)
+        log.debug('Loading entire model [{}] into memory', loadedModel.path)
+
+        // Load direct content
+
+        log.trace('Loading Term')
+        List<Term> terms = termService.findAllByTerminologyId(modelId)
+
+        log.trace('Loading TermRelationshipType')
+        List<TermRelationshipType> trts = termRelationshipTypeService.findAllByTerminologyId(modelId)
+
+        log.trace('Loading TermRelationship')
+        List<TermRelationship> trs = termRelationshipService.findAllBySourceTermIdInList(terms.collect {it.id})
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
+                                            terms.collect {it.id},
+                                            trts.collect {it.id},
+                                            trs.collect {it.id})
+
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
+        createCatalogueItemDiffCaches(diffCache,'termRelationshipTypes', trts, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'termRelationships',trs, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'terms',terms, facetData)
+
+        log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedModel, diffCache)
+    }
 }

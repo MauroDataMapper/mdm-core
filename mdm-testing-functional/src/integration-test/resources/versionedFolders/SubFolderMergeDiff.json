@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder With Sub Folders$source",
   "label": "Functional Test VersionedFolder With Sub Folders",
-  "count": 86,
+  "count": 105,
   "diffs": [
     {
       "fieldName": "description",
@@ -85,6 +85,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 2$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 2$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 2$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "fieldName": "description",
@@ -280,6 +289,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel 3$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 3$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 3$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 3$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "fieldName": "description",
@@ -483,6 +501,12 @@
       "type": "modification"
     },
     {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Created DataModel in Source$source",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
       "fieldName": "description",
       "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source@description",
       "sourceValue": "DescriptionLeft",
@@ -541,6 +565,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "fieldName": "description",
@@ -610,6 +643,117 @@
       "commonAncestorValue": "some original value",
       "isMergeConflict": false,
       "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "referenceDataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@referenceDataTypePath",
+      "sourceValue": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "targetValue": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "referenceDataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningNoDifference@referenceDataTypePath",
+      "sourceValue": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "targetValue": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rde:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
     }
   ]
 }

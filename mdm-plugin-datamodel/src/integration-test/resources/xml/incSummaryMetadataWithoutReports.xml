@@ -1,0 +1,139 @@
+<?xml version='1.0'?>
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+  <mdm:dataModel>
+    <mdm:id>bafb05e1-2df9-4bce-8778-72fe74b0d592</mdm:id>
+    <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
+    <mdm:lastUpdated>2022-02-08T15:08:05.514Z</mdm:lastUpdated>
+    <mdm:summaryMetadata>
+      <mdm:summaryMetadata>
+        <mdm:id>2d3228a3-a63b-44a0-b970-389bb47be45f</mdm:id>
+        <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
+        <mdm:lastUpdated>2022-02-08T15:08:05.524Z</mdm:lastUpdated>
+        <mdm:label>Heads and Tails</mdm:label>
+        <mdm:description>Instance Count</mdm:description>
+        <mdm:summaryMetadataType>NUMBER</mdm:summaryMetadataType>
+      </mdm:summaryMetadata>
+    </mdm:summaryMetadata>
+    <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+    <mdm:finalised>false</mdm:finalised>
+    <mdm:branchName>main</mdm:branchName>
+    <mdm:authority>
+      <mdm:id>0ea309de-3518-46dc-93a7-de2744ef35f0</mdm:id>
+      <mdm:label>Test Authority</mdm:label>
+      <mdm:url>http://localhost</mdm:url>
+      <mdm:lastUpdated>2021-12-02T12:22:37.051Z</mdm:lastUpdated>
+    </mdm:authority>
+    <mdm:type>Data Standard</mdm:type>
+    <mdm:dataTypes>
+      <mdm:dataType>
+        <mdm:id>077d1477-e378-4c14-aaa6-8900ab14c859</mdm:id>
+        <mdm:label>Coin</mdm:label>
+        <mdm:lastUpdated>2022-02-08T15:08:05.56Z</mdm:lastUpdated>
+        <mdm:summaryMetadata>
+          <mdm:summaryMetadata>
+            <mdm:id>a5968235-1956-405a-a34c-81df94ed8985</mdm:id>
+            <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
+            <mdm:lastUpdated>2022-02-08T15:08:05.565Z</mdm:lastUpdated>
+            <mdm:label>Coin</mdm:label>
+            <mdm:description>Value Distribution</mdm:description>
+            <mdm:summaryMetadataType>MAP</mdm:summaryMetadataType>
+          </mdm:summaryMetadata>
+        </mdm:summaryMetadata>
+        <mdm:domainType>EnumerationType</mdm:domainType>
+        <mdm:enumerationValues>
+          <mdm:enumerationValue>
+            <mdm:id>f0399d6f-8483-4270-8801-a14d779345ee</mdm:id>
+            <mdm:index>0</mdm:index>
+            <mdm:key>Tails</mdm:key>
+            <mdm:value>Tails</mdm:value>
+            <mdm:lastUpdated>2022-02-08T15:08:05.562Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>342668bb-41e5-4b72-8175-ae85ba55ceae</mdm:id>
+            <mdm:index>1</mdm:index>
+            <mdm:key>Heads</mdm:key>
+            <mdm:value>Heads</mdm:value>
+            <mdm:lastUpdated>2022-02-08T15:08:05.562Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+        </mdm:enumerationValues>
+      </mdm:dataType>
+    </mdm:dataTypes>
+    <mdm:childDataClasses>
+      <mdm:dataClass>
+        <mdm:id>98f67c35-ad89-4189-94ed-47c4c29d4d26</mdm:id>
+        <mdm:label>Heads and Tails</mdm:label>
+        <mdm:lastUpdated>2022-02-08T15:08:05.581Z</mdm:lastUpdated>
+        <mdm:summaryMetadata>
+          <mdm:summaryMetadata>
+            <mdm:id>087beb0a-fb10-4607-9351-ad4042096359</mdm:id>
+            <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
+            <mdm:lastUpdated>2022-02-08T15:08:05.584Z</mdm:lastUpdated>
+            <mdm:label>Coin</mdm:label>
+            <mdm:description>Value Distribution</mdm:description>
+            <mdm:summaryMetadataType>MAP</mdm:summaryMetadataType>
+          </mdm:summaryMetadata>
+        </mdm:summaryMetadata>
+        <mdm:dataElements>
+          <mdm:dataElement>
+            <mdm:id>35d68a9c-3cc2-49a2-874d-69216eab5478</mdm:id>
+            <mdm:label>Coin</mdm:label>
+            <mdm:lastUpdated>2022-02-08T15:08:05.603Z</mdm:lastUpdated>
+            <mdm:summaryMetadata>
+              <mdm:summaryMetadata>
+                <mdm:id>ff6796f2-f31d-4357-8877-9af27f08f124</mdm:id>
+                <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
+                <mdm:lastUpdated>2022-02-08T15:08:05.605Z</mdm:lastUpdated>
+                <mdm:label>Coin</mdm:label>
+                <mdm:description>Value Distribution</mdm:description>
+                <mdm:summaryMetadataType>MAP</mdm:summaryMetadataType>
+              </mdm:summaryMetadata>
+            </mdm:summaryMetadata>
+            <mdm:dataType>
+              <mdm:id>077d1477-e378-4c14-aaa6-8900ab14c859</mdm:id>
+              <mdm:label>Coin</mdm:label>
+              <mdm:lastUpdated>2022-02-08T15:08:05.56Z</mdm:lastUpdated>
+              <mdm:summaryMetadata>
+                <mdm:summaryMetadata>
+                  <mdm:id>a5968235-1956-405a-a34c-81df94ed8985</mdm:id>
+                  <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
+                  <mdm:lastUpdated>2022-02-08T15:08:05.565Z</mdm:lastUpdated>
+                  <mdm:label>Coin</mdm:label>
+                  <mdm:description>Value Distribution</mdm:description>
+                  <mdm:summaryMetadataType>MAP</mdm:summaryMetadataType>
+                </mdm:summaryMetadata>
+              </mdm:summaryMetadata>
+              <mdm:domainType>EnumerationType</mdm:domainType>
+              <mdm:enumerationValues>
+                <mdm:enumerationValue>
+                  <mdm:id>f0399d6f-8483-4270-8801-a14d779345ee</mdm:id>
+                  <mdm:index>0</mdm:index>
+                  <mdm:key>Tails</mdm:key>
+                  <mdm:value>Tails</mdm:value>
+                  <mdm:lastUpdated>2022-02-08T15:08:05.562Z</mdm:lastUpdated>
+                </mdm:enumerationValue>
+                <mdm:enumerationValue>
+                  <mdm:id>342668bb-41e5-4b72-8175-ae85ba55ceae</mdm:id>
+                  <mdm:index>1</mdm:index>
+                  <mdm:key>Heads</mdm:key>
+                  <mdm:value>Heads</mdm:value>
+                  <mdm:lastUpdated>2022-02-08T15:08:05.562Z</mdm:lastUpdated>
+                </mdm:enumerationValue>
+              </mdm:enumerationValues>
+            </mdm:dataType>
+            <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
+            <mdm:minMultiplicity>1</mdm:minMultiplicity>
+          </mdm:dataElement>
+        </mdm:dataElements>
+      </mdm:dataClass>
+    </mdm:childDataClasses>
+  </mdm:dataModel>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2022-02-08T15:10:09.451911Z</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
+      <exp:name>DataModelXmlExporterService</exp:name>
+      <exp:version>5.1</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>

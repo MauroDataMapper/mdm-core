@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ContainedResourceInterceptorUnitSpec
 
@@ -35,6 +36,9 @@ class ReferenceEnumerationValueInterceptorSpec extends ContainedResourceIntercep
         log.debug('Setting up ReferenceEnumerationValueInterceptorSpec')
         mockDomains(ReferenceDataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType,
                     ReferenceEnumerationType, ReferenceEnumerationValue)
+        interceptor.referenceEnumerationTypeService = Stub(ReferenceEnumerationTypeService) {
+            existsByReferenceDataModelIdAndId(_, _) >> true
+        }
     }
 
     @Override
@@ -54,6 +58,6 @@ class ReferenceEnumerationValueInterceptorSpec extends ContainedResourceIntercep
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 }

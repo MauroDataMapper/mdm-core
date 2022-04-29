@@ -18,12 +18,16 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.api.exception.ApiDiffException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
+import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormEntity
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import java.time.OffsetDateTime
 
@@ -34,7 +38,13 @@ import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.fieldDiff
 Always in relation to the lhs
  */
 
+@Slf4j
 class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
+
+    private static final HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
+
+    DiffCache lhsDiffCache
+    DiffCache rhsDiffCache
 
     List<FieldDiff> diffs
 
@@ -42,10 +52,15 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     String rightId
     boolean versionedDiff
 
-
     ObjectDiff(Class<O> targetClass) {
+        this(targetClass, new DiffCache(), new DiffCache())
+    }
+
+    ObjectDiff(Class<O> targetClass, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         super(targetClass)
         diffs = []
+        this.lhsDiffCache = lhsDiffCache
+        this.rhsDiffCache = rhsDiffCache
     }
 
     @Override
@@ -58,9 +73,16 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
         if (leftId != objectDiff.leftId) return false
         if (rightId != objectDiff.rightId) return false
-        if (diffs != objectDiff.diffs) return false
+        diffs == objectDiff.diffs
+    }
 
-        return true
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (diffs != null ? diffs.hashCode() : 0)
+        result = 31 * result + leftId.hashCode()
+        result = 31 * result + rightId.hashCode()
+        result
     }
 
     @Override
@@ -99,6 +121,16 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         this
     }
 
+    ObjectDiff<O> withRightHandSideCache(DiffCache rhsDiffCache) {
+       this.rhsDiffCache = rhsDiffCache
+        this
+    }
+
+    ObjectDiff<O> withLeftHandSideCache(DiffCache lhsDiffCache) {
+        this.lhsDiffCache = lhsDiffCache
+        this
+    }
+
     ObjectDiff<O> asVersionedDiff() {
         versionedDiff = true
         this
@@ -120,9 +152,63 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         append(fieldDiff(OffsetDateTime), fieldName, lhs, rhs)
     }
 
+    def <K> ObjectDiff<O> append(FieldDiff<K> fieldDiff, String fieldName, K lhs, K rhs) {
+        validateFieldNameNotNull(fieldName)
+        if (lhs == null && rhs == null) {
+            return this
+        }
+        if (lhs != rhs) {
+            append(fieldDiff.fieldName(fieldName).leftHandSide(lhs).rightHandSide(rhs))
+        }
+        this
+    }
+
+    ObjectDiff<O> append(FieldDiff fieldDiff) {
+        diffs.add(fieldDiff)
+        this
+    }
+
+    FieldDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff') Closure closure) {
+        diffs.find closure
+    }
+
+    @Deprecated
     def <K extends Diffable> ObjectDiff<O> appendList(Class<K> diffableClass, String fieldName,
-                                                      Collection<K> lhs, Collection<K> rhs, String context = null,
+                                                      Collection<K> appendingLhs, Collection<K> appendingRhs, String context = null,
                                                       boolean addIfEmpty = false) throws ApiDiffException {
+        appendCollection(diffableClass, fieldName, appendingLhs, appendingRhs, context, addIfEmpty)
+    }
+
+    def <K extends Diffable> ObjectDiff<O> appendCollection(Class<K> diffableClass, String fieldName,
+                                                            String context = null,
+                                                            boolean addIfEmpty = false) throws ApiDiffException {
+
+        Collection<K> lhs = lhsDiffCache.getCollection(fieldName, diffableClass)
+        Collection<K> rhs = rhsDiffCache.getCollection(fieldName, diffableClass)
+        appendCollection(diffableClass, fieldName, lhs, rhs, context, addIfEmpty, true)
+    }
+
+    def <K extends Diffable> ObjectDiff<O> appendCollection(Class<K> diffableClass, String fieldName,
+                                                            Collection<K> appendingLhs, Collection<K> appendingRhs, String context = null,
+                                                            boolean addIfEmpty = false) throws ApiDiffException {
+        log.warn('Adding collection [{}] to [{}] without caching, this will be slower', fieldName, leftIdentifier)
+        Collection<K> lhs
+        Collection<K> rhs
+        if (GormEntity.isAssignableFrom(diffableClass)) {
+            lhs = appendingLhs.collect {hibernateProxyHandler.unwrapIfProxy(it)} as Collection<K>
+            rhs = appendingRhs.collect {hibernateProxyHandler.unwrapIfProxy(it)} as Collection<K>
+        } else {
+            lhs = appendingLhs
+            rhs = appendingRhs
+        }
+
+        appendCollection(diffableClass, fieldName, lhs, rhs, context, addIfEmpty, false)
+    }
+
+    def <K extends Diffable> ObjectDiff<O> appendCollection(Class<K> diffableClass, String fieldName,
+                                                            Collection<K> lhs, Collection<K> rhs, String context,
+                                                            boolean addIfEmpty, boolean caching) throws ApiDiffException {
 
         validateFieldNameNotNull(fieldName)
 
@@ -173,7 +259,9 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
             if (rObj) {
                 // If robj then it exists and has not been created
                 created.remove(rObj)
-                ObjectDiff od = lObj.diff(rObj, context)
+                ObjectDiff od = caching ?
+                                lObj.diff(rObj, context, lhsDiffCache.getDiffCache(lObj.getPath()), rhsDiffCache.getDiffCache(rObj.getPath())) :
+                                lObj.diff(rObj, context, null, null)
                 // If not equal then objects have been modified
                 if (!od.objectsAreIdentical()) {
                     modified.add(od)
@@ -190,30 +278,10 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
                        .withModifiedDiffs(modified))
         }
         this
+
     }
 
-    def <K> ObjectDiff<O> append(FieldDiff<K> fieldDiff, String fieldName, K lhs, K rhs) {
-        validateFieldNameNotNull(fieldName)
-        if (lhs == null && rhs == null) {
-            return this
-        }
-        if (lhs != rhs) {
-            append(fieldDiff.fieldName(fieldName).leftHandSide(lhs).rightHandSide(rhs))
-        }
-        this
-    }
-
-    ObjectDiff<O> append(FieldDiff fieldDiff) {
-        diffs.add(fieldDiff)
-        this
-    }
-
-    FieldDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff') Closure closure) {
-        diffs.find closure
-    }
-
-    private static void validateFieldNameNotNull(final String fieldName) throws ApiDiffException {
+    static void validateFieldNameNotNull(final String fieldName) throws ApiDiffException {
         if (!fieldName) {
             throw new ApiDiffException('OD01', 'Field name cannot be null or blank')
         }

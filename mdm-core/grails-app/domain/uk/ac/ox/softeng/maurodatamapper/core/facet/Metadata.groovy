@@ -17,7 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
@@ -31,7 +33,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
-    public final static Integer BATCH_SIZE = 5000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
 
@@ -52,6 +54,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static mapping = {
+        batchSize(10)
         namespace type: 'text'
         key type: 'text'
         value type: 'text'
@@ -86,6 +89,12 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
     def beforeValidate() {
         value = value ?: 'N/A'
+//        beforeValidateCheck()
+    }
+
+    @Override
+    def beforeInsert() {
+        beforeInsertCheck()
     }
 
     @Override
@@ -94,13 +103,20 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     @Override
-    ObjectDiff<Metadata> diff(Metadata obj, String context) {
+    ObjectDiff<Metadata> diff(Metadata that, String context) {
+        diff(that, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<Metadata> diff(Metadata that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         DiffBuilder.objectDiff(Metadata)
             .leftHandSide(id.toString(), this)
-            .rightHandSide(obj.id.toString(), obj)
-            .appendString('namespace', this.namespace, obj.namespace)
-            .appendString('key', this.key, obj.key)
-            .appendString('value', this.value, obj.value)
+            .rightHandSide(that.id.toString(), that)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
+            .appendString('namespace', this.namespace, that.namespace)
+            .appendString('key', this.key, that.key)
+            .appendString('value', this.value, that.value)
     }
 
     @Override

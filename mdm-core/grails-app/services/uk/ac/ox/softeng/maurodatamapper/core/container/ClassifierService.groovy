@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -255,7 +255,7 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     List<Classifier> findAllByCatalogueItem(UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItem catalogueItem, Map pagination = [:]) {
-        new PaginatedResultList(findAllReadableByCatalogueItem(userSecurityPolicyManager, catalogueItem), pagination)
+        new InMemoryPagedResultList(findAllReadableByCatalogueItem(userSecurityPolicyManager, catalogueItem), pagination)
     }
 
     List<Classifier> findAllReadableByCatalogueItem(UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItem catalogueItem) {

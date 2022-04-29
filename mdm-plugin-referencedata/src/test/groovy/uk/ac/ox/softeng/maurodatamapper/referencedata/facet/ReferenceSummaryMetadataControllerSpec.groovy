@@ -41,7 +41,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
         mockDomains(Folder, ReferenceDataModel, ReferenceSummaryMetadata, ReferenceSummaryMetadataReport)
         log.debug('Setting up reference summary metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost')
         checkAndSave(testAuthority)
         referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
         checkAndSave referenceDataModel

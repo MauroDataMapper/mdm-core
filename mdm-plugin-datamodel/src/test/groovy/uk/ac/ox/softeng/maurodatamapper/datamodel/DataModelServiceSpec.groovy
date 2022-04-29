@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
@@ -36,7 +37,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
@@ -50,6 +50,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     def setup() {
         log.debug('Setting up DataModelServiceSpec unit')
+        mockArtefact(MergeDiffService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(DataClassService)
         mockArtefact(DataElementService)
@@ -68,7 +69,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
             }
         }
-
 
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
@@ -103,12 +103,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         BootstrapModels.buildAndSaveComplexDataModel(messageSource, testFolder, testAuthority)
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<DataModel> dataModelList = service.list(max: 2, offset: 2, sort: 'dateCreated')
 
@@ -129,13 +129,13 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 5
@@ -150,7 +150,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataModel.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
@@ -174,31 +174,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         and:
         service.findAllDataStandards().size() == 3
-    }
-
-    void 'test finalising model'() {
-
-        when:
-        DataModel dataModel = service.get(id)
-
-        then:
-        !dataModel.finalised
-        !dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
-
-        when:
-        service.finaliseModel(dataModel, admin, null, null, null)
-
-        then:
-        checkAndSave(dataModel)
-
-        when:
-        dataModel = service.get(id)
-
-        then:
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
     }
 
     void 'DMSV01 : test validation on valid model'() {
@@ -260,11 +235,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
+        invalid.errors.fieldErrorCount == 1
         invalid.errors.getFieldError('dataClasses[0].label')
-        invalid.errors.getFieldError('dataClasses[0].path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -327,11 +301,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
+        invalid.errors.fieldErrorCount == 1
         invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
-        invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].path'}
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
@@ -30,7 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
@@ -46,6 +46,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
     def setup() {
         log.debug('Setting up TerminologyServiceSpec unit')
+        mockArtefact(MergeDiffService)
         mockArtefact(TermService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(TermRelationshipService)
@@ -82,12 +83,12 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         id = terminology1.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Terminology> terminologyList = service.list(max: 2, offset: 2, sort: 'dateCreated')
 
@@ -108,13 +109,13 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 5
@@ -129,7 +130,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         Terminology.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         Terminology terminology = new Terminology(createdBy: UNIT_TEST, label: 'saving test', folder: testFolder, authority: testAuthority)
@@ -144,31 +145,6 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         then:
         saved.breadcrumbTree
         saved.breadcrumbTree.domainId == saved.id
-    }
-
-    void 'test finalising model'() {
-
-        when:
-        Terminology terminology = service.get(id)
-
-        then:
-        !terminology.finalised
-        !terminology.dateFinalised
-        terminology.documentationVersion == Version.from('1')
-
-        when:
-        service.finaliseModel(terminology, admin, null, null, null)
-
-        then:
-        checkAndSave(terminology)
-
-        when:
-        terminology = service.get(id)
-
-        then:
-        terminology.finalised
-        terminology.dateFinalised
-        terminology.documentationVersion == Version.from('1')
     }
 
     void 'DMSV01 : test validation on valid model'() {
@@ -208,12 +184,13 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 3
+        invalid.errors.errorCount == 4
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 3
+        invalid.errors.fieldErrorCount == 4
         invalid.errors.getFieldError('terms[0].code')
         invalid.errors.getFieldError('terms[0].definition')
         invalid.errors.getFieldError('terms[0].label')
+        invalid.errors.getFieldError('terms[0].path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

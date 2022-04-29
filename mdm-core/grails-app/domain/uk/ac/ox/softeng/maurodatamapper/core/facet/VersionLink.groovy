@@ -51,7 +51,7 @@ class VersionLink implements MultiFacetItemAware {
     }
 
     static mapping = {
-        batchSize 20
+        batchSize 10
         multiFacetAwareItemId index: 'version_link_catalogue_item_idx'
         targetModelId index: 'version_link_target_model_idx'
     }
@@ -65,6 +65,15 @@ class VersionLink implements MultiFacetItemAware {
     static transients = ['targetModel', 'model', 'multiFacetAwareItem']
 
     VersionLink() {
+    }
+
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
     }
 
     @Override
@@ -131,6 +140,10 @@ class VersionLink implements MultiFacetItemAware {
 
     static DetachedCriteria<VersionLink> byTargetModelIdAndId(Serializable modelId, Serializable resourceId) {
         byTargetModelId(modelId).idEq(Utils.toUuid(resourceId))
+    }
+
+    static DetachedCriteria<VersionLink> byModelIdInList(List<UUID> multiFacetAwareItemIds) {
+        by().inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
     static DetachedCriteria<VersionLink> byAnyModelId(Serializable multiFacetAwareItemId) {

@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 @Singleton
+@SuppressFBWarnings('MS_PKGPROTECT')
 class ConfigurableProfileFieldTypes {
 
     public static final String DATE_FORMAT_KEY = 'datatype.date.formats'
@@ -28,9 +31,9 @@ class ConfigurableProfileFieldTypes {
     public static final String[] DATETIME_FORMAT_DEFAULT = ['dd/MM/yyyy\'T\'HH:mm:ss', 'dd-MM-yyyy\'T\'HH:mm:ss']
     public static final String[] TIME_FORMAT_DEFAULT = ['HH:mm:ss', 'HH:mm']
 
-    String[] dateFormats = new String[10]
-    String[] dateTimeFormats = new String[10]
-    String[] timeFormats = new String[10]
+    String[] dateFormats
+    String[] dateTimeFormats
+    String[] timeFormats
 
     String[] getDateFormats() {
         dateFormats ?: DATE_FORMAT_DEFAULT

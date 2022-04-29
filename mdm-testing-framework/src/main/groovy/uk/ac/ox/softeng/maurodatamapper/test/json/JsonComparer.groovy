@@ -83,7 +83,7 @@ trait JsonComparer {
             }
 
             String contentReplaced = replaceContentWithMatchersFlag ? replaceContentWithMatchers(toBeCleaned) : toBeCleaned
-            body = prettyPrint(contentReplaced)
+            body = prettyPrintJson(contentReplaced)
 
             String message = reformatJsonDiffErrorMessage(error.message)
 
@@ -107,7 +107,7 @@ trait JsonComparer {
             .replaceAll(p, '"fileContents": "\\\${json-unit.matches:fileContents}"')
     }
 
-    String prettyPrint(String text) {
+    String prettyPrintJson(String text) {
         try {
             return JsonOutput.prettyPrint(text).replaceAll(/ {4}/, '  ')
         } catch (Exception ignored) {}

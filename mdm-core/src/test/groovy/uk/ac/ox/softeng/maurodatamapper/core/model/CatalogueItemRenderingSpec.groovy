@@ -42,7 +42,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     def setup() {
         mockDomains(Folder, BasicModel, BasicModelItem, Authority)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
         basicModel = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc,
@@ -56,7 +56,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering of model using base catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/baseCatalogueItem", model: [catalogueItem: basicModel])
+        def json = render(template: '/catalogueItem/baseCatalogueItem', model: [catalogueItem: basicModel])
 
         then:
         verifyJson('''{
@@ -68,7 +68,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering of model item base catalogue item with breadcrumbs'() {
         when:
-        def json = render(template: "/catalogueItem/baseCatalogueItem", model: [catalogueItem: basicModelItem])
+        def json = render(template: '/catalogueItem/baseCatalogueItem', model: [catalogueItem: basicModelItem])
 
         then:
         verifyJson('''{
@@ -89,7 +89,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering model catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/catalogueItem", model: [catalogueItem: basicModel])
+        def json = render(template: '/catalogueItem/catalogueItem', model: [catalogueItem: basicModel])
 
         then:
         verifyJson('''{
@@ -102,7 +102,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering of model item catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/catalogueItem", model: [catalogueItem: basicModelItem])
+        def json = render(template: '/catalogueItem/catalogueItem', model: [catalogueItem: basicModelItem])
 
         then:
         verifyJson('''{
@@ -124,7 +124,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering model full catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/catalogueItem_full", model: [catalogueItem            : basicModel,
+        def json = render(template: '/catalogueItem/catalogueItem_full', model: [catalogueItem            : basicModel,
                                                                                  userSecurityPolicyManager:
                                                                                      PublicAccessSecurityPolicyManager.instance])
 
@@ -141,7 +141,7 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering of model item full catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/catalogueItem_full", model: [catalogueItem            : basicModelItem,
+        def json = render(template: '/catalogueItem/catalogueItem_full', model: [catalogueItem            : basicModelItem,
                                                                                  userSecurityPolicyManager:
                                                                                      PublicAccessSecurityPolicyManager.instance])
 

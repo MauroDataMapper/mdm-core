@@ -17,10 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class AnnotationInterceptor extends FacetInterceptor {
+
+    AnnotationService annotationService
 
     @Override
     Class getFacetClass() {
@@ -31,6 +34,14 @@ class AnnotationInterceptor extends FacetInterceptor {
     void checkAdditionalIds() {
         Utils.toUuid(params, 'annotationId')
     }
+
+    @Override
+    void checkParentId() throws ApiBadRequestException {
+        if (params.annotationId && !annotationService.existsByMultiFacetAwareItemIdAndId(params.multiFacetAwareItemId, params.annotationId)) {
+            throw new ApiBadRequestException('AI01', 'Provided annotationId is not inside provided multiFacetAwareItemId')
+        }
+    }
+
 
     boolean before() {
         facetResourceChecks()

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.Dat
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.web.databinding.DataBindingUtils
 import groovy.util.logging.Slf4j
 import org.springframework.core.GenericTypeResolver
@@ -32,6 +33,7 @@ import org.springframework.core.GenericTypeResolver
 abstract class DataBindDataFlowImporterProviderService<T extends DataFlowFileImporterProviderServiceParameters> extends
     DataFlowImporterProviderService<T> {
 
+    @SuppressFBWarnings(value = 'BC_IMPOSSIBLE_CAST', justification = 'abstract method')
     abstract DataFlow importDataFlow(User currentUser, byte[] content)
 
     List<DataFlow> importDataFlows(User currentUser, byte[] content) {

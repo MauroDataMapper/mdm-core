@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -94,7 +96,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     static mapping = {
         summaryMetadata cascade: 'all-delete-orphan'
-        dataClass index: 'data_element_data_class_idx', cascade: 'none'
+        dataClass index: 'data_element_data_class_idx', cascade: 'none', cascadeValidate: 'none'
         dataType index: 'data_element_data_type_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
         model cascade: 'none'
         importingDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
@@ -139,12 +141,11 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     def beforeValidate() {
-        long st = System.currentTimeMillis()
+//        long st = System.currentTimeMillis()
         beforeValidateModelItem()
-        summaryMetadata?.each {
-            if (!it.createdBy) it.createdBy = createdBy
-            it.multiFacetAwareItem = this
-        }
+            summaryMetadata?.each {
+                it.beforeValidateCheck(this)
+            }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level
         if (dataType && !dataType.ident() && getModel().id && !dataType.shouldSkipValidation()) {
@@ -152,7 +153,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             dataType.createdBy = createdBy
             dataType.beforeValidate()
         }
-        log.trace('DE before validate {} took {}', this.label, Utils.timeTaken(st))
+//        log.debug('DE {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override
@@ -185,12 +186,22 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {
-        catalogueItemDiffBuilder(DataElement, this, otherDataElement)
-            .appendString('dataType.label', this.dataType.label, otherDataElement.dataType.label)
+        diff(otherDataElement, context, null, null)
+    }
+
+    ObjectDiff<DataElement> diff(DataElement otherDataElement, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<DataElement> diff = DiffBuilder.catalogueItemDiffBuilder(DataElement, this, otherDataElement, lhsDiffCache, rhsDiffCache)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataElement.maxMultiplicity)
 
+        // Aside from branch and version, is this Data Element pointing to a different Data Type?
+        if (!this.dataType.getPath().matches(otherDataElement.dataType.getPath(), this.dataClass.dataModel.getPath().last().modelIdentifier)) {
+            diff.appendString('dataTypePath',
+                             this.dataType.getPath().toString(),
+                             otherDataElement.dataType.getPath().toString())
+        }
 
+        diff
     }
 
     static DetachedCriteria<DataElement> by() {

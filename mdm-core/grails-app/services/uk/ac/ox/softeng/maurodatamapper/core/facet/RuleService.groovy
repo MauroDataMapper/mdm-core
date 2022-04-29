@@ -89,9 +89,9 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
         domain.addToRules(facet)
     }
 
-    boolean validate(Rule rule) {
+    Rule validate(Rule rule) {
         boolean valid = rule.validate()
-        if (!valid) return false
+        if (!valid) return rule
 
         MultiFacetAware multiFacetAwareItem = rule.multiFacetAwareItem ?: findMultiFacetAwareItemByDomainTypeAndId(rule.multiFacetAwareItemDomainType,
                                                                                                                    rule.multiFacetAwareItemId)
@@ -103,9 +103,13 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
         }) {
             rule.errors.rejectValue('name', 'default.not.unique.message', ['name', Rule, rule.name].toArray(),
                                     'Property [{0}] of class [{1}] with value [{2}] must be unique')
-            return false
         }
-        true
+        rule
+    }
+
+
+    boolean existsByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        Rule.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).count() == 1
     }
 
     @Override
@@ -116,6 +120,11 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
     @Override
     List<Rule> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
         Rule.withFilter(Rule.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
+    }
+
+    @Override
+    List<Rule> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        Rule.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
     }
 
     @Override

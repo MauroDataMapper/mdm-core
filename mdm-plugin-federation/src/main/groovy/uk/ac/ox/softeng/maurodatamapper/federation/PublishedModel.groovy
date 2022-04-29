@@ -20,13 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
-import groovy.transform.Sortable
-
 import java.time.OffsetDateTime
 import java.util.regex.Pattern
 
-@Sortable(includes = ['modelLabel', 'modelVersion'])
-class PublishedModel {
+class PublishedModel implements Comparable<PublishedModel> {
 
     UUID modelId
     String modelLabel
@@ -75,5 +72,47 @@ class PublishedModel {
 
     void setDescription(String description) {
         if (description && description != title) this.description = description
+    }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        PublishedModel that = (PublishedModel) o
+
+        if (author != that.author) return false
+        if (dateCreated != that.dateCreated) return false
+        if (datePublished != that.datePublished) return false
+        if (description != that.description) return false
+        if (lastUpdated != that.lastUpdated) return false
+        if (modelId != that.modelId) return false
+        if (modelLabel != that.modelLabel) return false
+        if (modelType != that.modelType) return false
+        if (modelVersion != that.modelVersion) return false
+        previousModelId == that.previousModelId
+    }
+
+    @Override
+    int hashCode() {
+        int result
+        result = modelId.hashCode()
+        result = 31 * result + modelLabel.hashCode()
+        result = 31 * result + modelVersion.hashCode()
+        result = 31 * result + (description != null ? description.hashCode() : 0)
+        result = 31 * result + modelType.hashCode()
+        result = 31 * result + lastUpdated.hashCode()
+        result = 31 * result + dateCreated.hashCode()
+        result = 31 * result + datePublished.hashCode()
+        result = 31 * result + (author != null ? author.hashCode() : 0)
+        result = 31 * result + (previousModelId != null ? previousModelId.hashCode() : 0)
+        result
+    }
+
+    @Override
+    int compareTo(PublishedModel that) {
+        int res = this.modelLabel <=> that.modelLabel
+        if (res == 0) res = this.modelVersion <=> that.modelVersion
+        res
     }
 }

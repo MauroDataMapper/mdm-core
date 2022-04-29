@@ -139,7 +139,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
         '''{
   "count": 0,
   "items": [
-    
+
   ]
 }'''
     }

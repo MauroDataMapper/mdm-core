@@ -34,6 +34,9 @@ class DataClassInterceptorSpec extends ContainedResourceInterceptorUnitSpec impl
     def setup() {
         log.debug('Setting up DataClassInterceptorSpec')
         mockDomains(DataModel, DataClass, DataElement, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue)
+        interceptor.dataClassService = Stub(DataClassService) {
+            existsByDataModelIdAndId(_, _) >> true
+        }
     }
 
     @Override
@@ -48,7 +51,7 @@ class DataClassInterceptorSpec extends ContainedResourceInterceptorUnitSpec impl
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 
     @Override

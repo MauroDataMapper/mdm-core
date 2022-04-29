@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -34,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.gorm.HQLPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
@@ -56,6 +59,8 @@ import org.hibernate.search.mapper.orm.session.SearchSession
 
 import java.util.function.BiFunction
 
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_SORT
+
 @Slf4j
 @Transactional
 class DataElementService extends ModelItemService<DataElement> implements SummaryMetadataAwareService {
@@ -64,6 +69,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
     DataModelService dataModelService
+    PathService pathService
 
     @Override
     DataElement get(Serializable id) {
@@ -86,7 +92,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     void deleteAll(Collection<DataElement> dataElements) {
-        dataElements.each { delete(it) }
+        dataElements.each {delete(it)}
     }
 
     void delete(UUID id) {
@@ -143,26 +149,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    DataElement updateFacetsAfterInsertingCatalogueItem(DataElement catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
-        }
-        catalogueItem
-    }
-
-    @Override
     DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each { sm ->
+            catalogueItem.summaryMetadata.each {sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each { smr ->
+                sm.summaryMetadataReports.each {smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -189,7 +182,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -220,14 +213,14 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
-            log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
-            def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
+            log.debug('Matching up {} DataElements to a possible {} DataTypes', dataElements.size(), dataModel.dataTypes.size())
+            def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each { label, elements ->
+            grouped.each {label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 DataType dataType = dataModel.findDataTypeByLabel(label)
 
@@ -238,7 +231,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                     dataType.createdBy = dataElement.createdBy
                     dataModel.addToDataTypes(dataType)
                 }
-                elements.each { dataType.addToDataElements(it) }
+                elements.each {dataType.addToDataElements(it)}
             }
         }
     }
@@ -259,8 +252,34 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
     }
 
-    List<DataElement> findAllByDataClassIdIncludingImported(UUID dataClassId, Map filter, Map pagination) {
-        DataElement.withFilter(DataElement.byDataClassIdIncludingImported(dataClassId), filter).list(pagination)
+    List<DataElement> findAllByDataClassIdIncludingImported(UUID dataClassId, Map filters, Map pagination) {
+        Map<String, Object> queryParams = [dataClassId: dataClassId]
+        queryParams.putAll(extractFiltersAsHQLParameters(filters, 'dataType'))
+
+        String baseQuery = applyHQLFilters('''
+FROM DataElement de
+LEFT JOIN de.importingDataClasses idc
+INNER JOIN de.dataType dt
+WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filters)
+
+        // Cannot sort DEs including imported using idx combined with any other field
+        String sortedQuery = applyHQLSort(baseQuery, 'de', pagination[ARGUMENT_SORT] ?: ['label': 'asc'], pagination, true)
+
+        new HQLPagedResultList<DataElement>(DataElement)
+            .list("SELECT DISTINCT de ${sortedQuery}".toString())
+            .count("SELECT COUNT(DISTINCT de.id) ${baseQuery}".toString())
+            .queryParams(queryParams)
+            .paginate(pagination)
+            .postProcess {
+                it.dataType = proxyHandler.unwrapIfProxy(it.dataType)
+                it.trackChanges() // unwrapping the proxy changes the object and therefore is detected as a "change" this call undos this change as its not actually one
+            }
+    }
+
+    String applyHQLFilters(String originalQuery, String ciQueryPrefix, Map filters) {
+        StringBuilder filteredQuery = new StringBuilder(super.applyHQLFilters(originalQuery, ciQueryPrefix, filters))
+        if (filters.dataType) filteredQuery.append '\nAND lower(dt.label) LIKE lower(:dataType)'
+        filteredQuery.toString()
     }
 
     List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {
@@ -362,7 +381,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
@@ -378,13 +397,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         copy
     }
 
-    DataElement copyCatalogueItemInformation(DataElement original,
+    DataElement copyModelItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
                                              boolean copySummaryMetadata,
                                              CopyInformation copyInformation) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
@@ -392,12 +411,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    DataElement copyCatalogueItemInformation(DataElement original,
+    DataElement copyModelItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
                                              CopyInformation copyInformation) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
+        copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
@@ -431,7 +450,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
         SearchResult<SimilarityPair<DataElement>> searchResult = searchSession.search(DataElement)
             .extension(LuceneExtension.get())
-            .select { pf ->
+            .select {pf ->
                 pf.composite(new BiFunction<DataElement, Float, SimilarityPair<DataElement>>() {
 
                     @Override
@@ -443,13 +462,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                     }
                 }, pf.entity(), pf.score())
             }
-            .where { lsf ->
+            .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
                     .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path.last()]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
-                moreLikeThisQueries.each { mlt ->
+                moreLikeThisQueries.each {mlt ->
                     boolStep.should(lsf.bool().must(lsf.fromLuceneQuery(mlt)).boost(mlt.boost))
                 }
 
@@ -481,10 +500,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
                 dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each { de ->
-            fromDataElements.each { fde ->
+        dataElements.each {de ->
+            fromDataElements.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any { it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id }) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -516,7 +535,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * @param label The label of the DataElement being sought
      */
     DataElement findDataElement(DataClass dataClass, String label) {
-        dataClass.dataElements.find { it.label == label.trim() }
+        dataClass.dataElements.find {it.label == label.trim()}
     }
 
     /**
@@ -542,13 +561,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     void propagateContentsInformation(DataElement catalogueItem, DataElement previousVersionCatalogueItem) {
-        previousVersionCatalogueItem.summaryMetadata.each { previousSummaryMetadata ->
-            if (catalogueItem.summaryMetadata.any { it.label == previousSummaryMetadata.label }) return
+        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
             SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
                                                                   description: previousSummaryMetadata.description,
                                                                   summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
 
-            previousSummaryMetadata.summaryMetadataReports.each { previousSummaryMetadataReport ->
+            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
                 summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
                                                             reportValue: previousSummaryMetadataReport.reportValue,
                                                             createdBy: previousSummaryMetadataReport.createdBy
@@ -568,6 +587,62 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     void preBatchSaveHandling(List<DataElement> modelItems) {
         // Fix HS issue around non-session loaded DT.
         // This may have an adverse effect on saving, which will need to be tested
-        dataTypeService.getAll(modelItems.collect { it.dataType.id })
+        dataTypeService.getAll(modelItems.collect {it.dataType.id})
+    }
+
+    /**
+     * Special handler to apply a modification patch to a DataType.
+     * In the diff we set a mergeField called dataTypePath. In this method we use that dataTypePath to find the
+     * relevant DataType.
+     * 1. Find the data type in source
+     * 2. Use the path of that data type to find the same data type in target
+     * 3. Set the data type of the target data element to be that data type
+     *
+     * Note that this leads to a merge conflict in in the following scenario (as highlighted by test MD05 in DataModelFunctionalSpec):
+     * 1. Common ancestor model has dataType1 and dataType2. dataElement has a dataType of dataType1.
+     * 2. Create source and main branches from the common ancestor
+     * 3. On source branch, change the dataElement to have a dataType of dataType2
+     * 4. Merge the source into main.
+     * 5. Make some more other changes to the source branch
+     * 6. Get the mergeDiff for source into main again.
+     * The mergeDiff looks like
+     *{*   "fieldName": "dataTypePath",
+     *    "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:existingDataElement@dataTypePath",
+     *    "sourceValue": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+     *    "targetValue": "dm:Functional Test DataModel 1$main|dt:existingDataType2",
+     *    "commonAncestorValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+     *    "isMergeConflict": true,
+     *    "type": "modification"
+     *}* because both source and main have a different data type to the one in common ancestor.
+     * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, DataElement targetDomain, String fieldName) {
+        if (fieldName == 'dataTypePath') {
+            // This is the dataType that has been changed on the source
+            DataType sourceDataType = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+
+            if (!sourceDataType) {
+                throw new ApiInternalException('DES01', "Cannot find DataType with path ${modificationPatch.sourceValue}")
+            }
+
+            // We need the equivalent (i.e. matches by path) dataType on the target
+            DataType targetDataType = pathService.findResourceByPathFromRootResource(targetDomain.dataClass.dataModel, sourceDataType.getPath()
+                .getChildPath())
+
+            if (targetDataType) {
+                targetDomain.dataType = targetDataType
+                return true
+            } else {
+                throw new ApiInternalException(
+                    'DES02',
+                    "Cannot find DataType with path ${sourceDataType.getPath().getChildPath()} on target DataModel ${targetDomain.dataClass.dataModel.id}")
+            }
+        }
+
+        false
     }
 }

@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -74,31 +73,18 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         int res = 0
         if (that instanceof CatalogueItem) {
             if (that.class != this.class) res = this.order <=> that.order
-            if (res == 0) this.label <=> that.label
+            if (res == 0) res = this.label <=> that.label
         }
         if (that instanceof Model) {
-            res == 0 ? this.documentationVersion <=> that.documentationVersion : res
-            res == 0 ? this.modelVersion <=> that.modelVersion : res
-            res == 0 ? this.branchName <=> that.branchName : res
+            res = res == 0 ? this.documentationVersion <=> that.documentationVersion : res
+            res = res == 0 ? this.modelVersion <=> that.modelVersion : res
+            res = res == 0 ? this.branchName <=> that.branchName : res
         }
         res
     }
 
     Path getFullPathInsideFolder() {
         Path.from(folder.path, path)
-    }
-
-    static <T extends Model> ObjectDiff modelDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
-        catalogueItemDiffBuilder(diffClass, lhs, rhs)
-            .appendBoolean('deleted', lhs.deleted, rhs.deleted)
-            .appendBoolean('finalised', lhs.finalised, rhs.finalised)
-            .appendString('modelType', lhs.modelType, rhs.modelType)
-            .appendString('author', lhs.author, rhs.author)
-            .appendString('organisation', lhs.organisation, rhs.organisation)
-            .appendString('documentationVersion', lhs.documentationVersion.toString(), rhs.documentationVersion.toString())
-            .appendString('modelVersion', lhs.modelVersion.toString(), rhs.modelVersion.toString())
-            .appendString('branchName', lhs.branchName, rhs.branchName)
-            .appendOffsetDateTime('dateFinalised', lhs.dateFinalised, rhs.dateFinalised)
     }
 
     static <T extends Model> DetachedCriteria<T> withReadable(DetachedCriteria<T> criteria, List<UUID> readableIds, Boolean includeDeleted) {
@@ -118,9 +104,17 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     }
 
+    static <T extends Model> DetachedCriteria<T> byContainerIdInList(String containerPropertyName, Collection<UUID> containerIds) {
+        by().inList("${containerPropertyName}.id", containerIds)
+    }
+
     static <T extends Model> DetachedCriteria<T> byFolderId(UUID folderId) {
         by()
         .eq('folder.id', folderId)
+    }
+
+    static <T extends Model> DetachedCriteria<T> byFolderIdInList(Collection<UUID> folderIds) {
+        by().inList('folder.id', folderIds)
     }
 
     static <T extends Model> DetachedCriteria<T> byClassifierId(UUID classifierId) {

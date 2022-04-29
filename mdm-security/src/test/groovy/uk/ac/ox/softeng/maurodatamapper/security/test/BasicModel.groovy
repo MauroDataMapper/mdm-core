@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.security.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
@@ -97,7 +99,11 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
     }
 
     ObjectDiff<BasicModel> diff(BasicModel obj, String context) {
-        modelDiffBuilder(BasicModel, this, obj)
+        diff(obj, context,null,null)
+    }
+
+    ObjectDiff<BasicModel> diff(BasicModel obj, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.modelDiffBuilder(BasicModel, this, obj, lhsDiffCache, rhsDiffCache)
     }
 
     @Override

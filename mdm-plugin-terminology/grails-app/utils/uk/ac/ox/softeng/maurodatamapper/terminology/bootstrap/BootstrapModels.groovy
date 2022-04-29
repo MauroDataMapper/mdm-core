@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import groovy.util.logging.Slf4j
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -37,6 +38,7 @@ import java.time.temporal.ChronoUnit
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
+@Slf4j
 class BootstrapModels {
 
     public static final String COMPLEX_TERMINOLOGY_NAME = 'Complex Test Terminology'
@@ -81,7 +83,7 @@ class BootstrapModels {
         checkAndSave(messageSource, classifier1)
         checkAndSave(messageSource, terminology)
 
-        terminology.addToRules(name: "Bootstrapped Functional Test Rule",
+        terminology.addToRules(name: 'Bootstrapped Functional Test Rule',
                                description: 'Functional Test Description',
                                createdBy: DEVELOPMENT)
 
@@ -110,6 +112,8 @@ class BootstrapModels {
             description = 'Example of truncated term label when code and definition are the same'
         }
 
+        checkAndSave(messageSource, terminology)
+
         TermRelationshipType is = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a', displayLabel: 'Is A')
         TermRelationshipType isPartOf = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a-part-of', displayLabel: 'Is A Part Of',
                                                                  childRelationship: true)
@@ -121,6 +125,8 @@ class BootstrapModels {
                    .addToTermRelationshipTypes(isPartOf)
                    .addToTermRelationshipTypes(broaderThan)
                    .addToTermRelationshipTypes(narrowerThan)
+
+        checkAndSave(messageSource, terminology)
 
         (1..99).each {
             Term source = terms[it]
@@ -154,16 +160,16 @@ class BootstrapModels {
         }
         checkAndSave(messageSource, terminology)
 
-        narrowerThan.addToRules(name: "Bootstrapped Functional Test Rule",
+        narrowerThan.addToRules(name: 'Bootstrapped Functional Test Rule',
                                 description: 'Functional Test Description',
                                 createdBy: DEVELOPMENT)
-        terminology.findTermByCode('CTT1').addToRules(name: "Bootstrapped Functional Test Rule",
+        terminology.findTermByCode('CTT1').addToRules(name: 'Bootstrapped Functional Test Rule',
                                                       description: 'Functional Test Description',
                                                       createdBy: DEVELOPMENT)
         terminology.findTermByCode('CTT1').sourceTermRelationships[0]
-                   .addToRules(name: "Bootstrapped Functional Test Rule",
-                               description: 'Functional Test Description',
-                               createdBy: DEVELOPMENT)
+            .addToRules(name: 'Bootstrapped Functional Test Rule',
+                        description: 'Functional Test Description',
+                        createdBy: DEVELOPMENT)
 
         checkAndSave(messageSource, terminology)
 
@@ -249,7 +255,7 @@ class BootstrapModels {
 
         checkAndSave(messageSource, codeSet)
 
-        codeSet.addToRules(name: "Bootstrapped Functional Test Rule",
+        codeSet.addToRules(name: 'Bootstrapped Functional Test Rule',
                            description: 'Functional Test Description',
                            createdBy: DEVELOPMENT)
 

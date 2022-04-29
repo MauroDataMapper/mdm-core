@@ -20,13 +20,16 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
@@ -37,7 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
-@SuppressWarnings("ClashingTraitMethods")
+@SuppressWarnings('ClashingTraitMethods')
 @Slf4j
 @Transactional
 class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> implements DefaultReferenceDataTypeProvider,
@@ -48,6 +51,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     ReferenceEnumerationTypeService referenceEnumerationTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataModelService referenceDataModelService
+    ReferenceEnumerationValueService referenceEnumerationValueService
 
     @Override
     ReferenceDataType get(Serializable id) {
@@ -57,7 +61,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         // Have to override as the DataType class is abstract and can therefore not be instantiated
-        pathPrefix == "rdt"
+        pathPrefix == 'rdt'
     }
 
     Long count() {
@@ -65,7 +69,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    List<ReferenceDataType> list(Map args=[:]) {
+    List<ReferenceDataType> list(Map args = [:]) {
         ReferenceDataType.list(args)
     }
 
@@ -85,7 +89,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         referenceDataType.breadcrumbTree.removeFromParent()
 
         List<ReferenceDataElement> referenceDataElements = referenceDataElementService.findAllByReferenceDataType(referenceDataType)
-        referenceDataElements.each { referenceDataElementService.delete(it) }
+        referenceDataElements.each {referenceDataElementService.delete(it)}
 
         switch (referenceDataType.domainType) {
             case ReferenceDataType.PRIMITIVE_DOMAIN_TYPE:
@@ -153,7 +157,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
             new ReferencePrimitiveType(label: 'Timestamp', description: 'A timestamp'),
             new ReferencePrimitiveType(label: 'Boolean', description: 'A true or false value'),
             new ReferencePrimitiveType(label: 'Duration', description: 'A time period in arbitrary units')
-        ].collect { new DefaultReferenceDataType(it) }
+        ].collect {new DefaultReferenceDataType(it)}
     }
 
     @Override
@@ -169,23 +173,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     void delete(Serializable id) {
         ReferenceDataType dataType = get(id)
         if (dataType) delete(dataType)
-    }
-
-    @Override
-    ReferenceDataType updateFacetsAfterInsertingCatalogueItem(ReferenceDataType referenceDataType) {
-        if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
-            referenceEnumerationTypeService.updateFacetsAfterInsertingCatalogueItem(referenceDataType as ReferenceEnumerationType)
-        } else {
-            super.updateFacetsAfterInsertingCatalogueItem(referenceDataType) as ReferenceDataType
-        }
-        if (referenceDataType.referenceSummaryMetadata) {
-            referenceDataType.referenceSummaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = referenceDataType.getId()
-            }
-            ReferenceSummaryMetadata.saveAll(referenceDataType.referenceSummaryMetadata)
-        }
-        referenceDataType
     }
 
     @Override
@@ -220,10 +207,13 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
     }
 
-    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
-                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                            boolean copySummaryMetadata = false) {
+    @Override
+    ReferenceDataType copy(Model copiedDataModel, ReferenceDataType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceDataType(copiedDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
 
+    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
+                                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false, CopyInformation copyInformation = null) {
         ReferenceDataType copy
 
         String domainType = original.domainType
@@ -233,15 +223,19 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
                 break
             case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new ReferenceEnumerationType()
-                original.referenceEnumerationValues.each { ev ->
-                    copy.addToReferenceEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
+                CopyInformation referenceEnumerationTypeCopyInformation = new CopyInformation(copyIndex: true)
+                original.referenceEnumerationValues.sort().each {ev ->
+                    copy.addToReferenceEnumerationValues(
+                        referenceEnumerationValueService
+                            .copyReferenceEnumerationValue(copiedReferenceDataModel, ev, copy, userSecurityPolicyManager.user, userSecurityPolicyManager,
+                                                           referenceEnumerationTypeCopyInformation))
                 }
                 break
             default:
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedReferenceDataModel.addToReferenceDataTypes(copy)
@@ -250,12 +244,12 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    ReferenceDataType copyCatalogueItemInformation(ReferenceDataType original,
-                                                   ReferenceDataType copy,
-                                                   User copier,
-                                                   UserSecurityPolicyManager userSecurityPolicyManager,
-                                                   boolean copySummaryMetadata = false) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+    ReferenceDataType copyModelItemInformation(ReferenceDataType original,
+                                               ReferenceDataType copy,
+                                               User copier,
+                                               UserSecurityPolicyManager userSecurityPolicyManager,
+                                               boolean copySummaryMetadata = false, CopyInformation copyInformation) {
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
@@ -299,12 +293,12 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     private void mergeDataTypes(ReferenceDataType keep, ReferenceDataType replace) {
-        replace.referenceDataElements?.each { de ->
+        replace.referenceDataElements?.each {de ->
             keep.addToReferenceDataElements(de)
         }
         List<Metadata> mds = []
         mds += replace.metadata ?: []
-        mds.findAll { !keep.findMetadataByNamespaceAndKey(it.namespace, it.key) }.each { md ->
+        mds.findAll {!keep.findMetadataByNamespaceAndKey(it.namespace, it.key)}.each {md ->
             replace.removeFromMetadata(md)
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
@@ -319,6 +313,10 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     @Override
     List<ReferenceDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceDataType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    ReferenceDataType findByReferenceDataModelIdAndLabel(Serializable referenceDataModelId, String label) {
+        ReferenceDataType.byReferenceDataModelIdAndLabel(referenceDataModelId, label).find()
     }
 
     @Override

@@ -269,7 +269,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [
-      
+
                 ],
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
@@ -283,7 +283,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [
-      
+
                 ],
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +

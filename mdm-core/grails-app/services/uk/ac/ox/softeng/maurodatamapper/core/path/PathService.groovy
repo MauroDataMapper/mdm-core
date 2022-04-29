@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -99,7 +100,7 @@ class PathService {
         def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier(modelIdentifierOverride))
 
         if (!child) {
-            log.warn("Child [{}] does not exist in root resource [{}]", childNode, Path.from(rootResourceOfPath))
+            log.warn('Child [{}] does not exist in root resource [{}]', childNode, Path.from(rootResourceOfPath))
             return null
         }
 
@@ -178,6 +179,8 @@ class PathService {
 
     List<UUID> findAllResourceIdsInPath(Path path) {
 
+        log.trace('Finding all resource ids in path of size {}', path.size())
+        long start = System.currentTimeMillis()
         List<UUID> ids = []
         UUID parentId = null
         path.each {node ->
@@ -189,6 +192,7 @@ class PathService {
             ids << domain.id
             parentId = domain.id
         }
+        log.trace('Finding resource ids took {}', Utils.timeTaken(start))
         ids
     }
 

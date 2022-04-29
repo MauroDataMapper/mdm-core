@@ -41,13 +41,13 @@ class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceF
 
     def setup() {
         mockDomains(Folder, BasicModel, Edit, ReferenceFile, Authority)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
         checkAndSave(basicModel)
-        Path lf = Paths.get('grails-app/conf/logback.groovy')
+        Path lf = Paths.get('src/test/resources/userimagefile_string_content.txt')
         logFile = new ReferenceFile().with {
             fileName = lf.fileName
             fileContents = Files.readAllBytes(lf)
@@ -76,12 +76,12 @@ class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceF
 
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<ReferenceFile> referenceFiles = service.list(max: 2, offset: 1)
 
@@ -104,12 +104,12 @@ class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceF
         referenceFiles[1].fileSize == 'jhsdkjfhsdgfsdnmbhfjhsdjghsdjgjfhsd'.size().toLong()
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 3
 

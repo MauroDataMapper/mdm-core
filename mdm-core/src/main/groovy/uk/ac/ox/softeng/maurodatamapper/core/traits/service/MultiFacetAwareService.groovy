@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -29,6 +31,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import groovy.transform.SelfType
@@ -39,6 +43,7 @@ import org.grails.orm.hibernate.cfg.Mapping
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.cfg.Table
 import org.hibernate.SessionFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * @since 17/03/2021
@@ -46,6 +51,9 @@ import org.hibernate.SessionFactory
 @SelfType(MdmDomainService)
 @Slf4j
 trait MultiFacetAwareService<K extends MultiFacetAware> {
+
+    @Autowired(required = false)
+    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
 
     abstract GrailsApplication getGrailsApplication()
 
@@ -114,46 +122,6 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
     Table getDomainEntityTable(PersistentEntity persistentEntity) {
         Mapping mapping = persistentEntity.mapping.mappedForm as Mapping
         mapping.table
-    }
-
-    K updateFacetsAfterInsertingMultiFacetAware(K multiFacetAware) {
-        if (multiFacetAware.metadata) {
-            multiFacetAware.metadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            Metadata.saveAll(multiFacetAware.metadata)
-        }
-        if (multiFacetAware.rules) {
-            multiFacetAware.rules.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            Rule.saveAll(multiFacetAware.rules)
-        }
-        if (multiFacetAware.annotations) {
-            multiFacetAware.annotations.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            Annotation.saveAll(multiFacetAware.annotations)
-        }
-        if (multiFacetAware.semanticLinks) {
-            multiFacetAware.semanticLinks.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            SemanticLink.saveAll(multiFacetAware.semanticLinks)
-        }
-        if (multiFacetAware.referenceFiles) {
-            multiFacetAware.referenceFiles.each {
-                if (!it.isDirty()) it.trackChanges()
-                it.beforeValidate()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            ReferenceFile.saveAll(multiFacetAware.referenceFiles)
-        }
-        multiFacetAware
     }
 
     K checkFacetsAfterImportingMultiFacetAware(K multiFacetAware) {
@@ -229,4 +197,26 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
         cachedInformation
     }
 
+    @SuppressWarnings('GroovyAssignabilityCheck')
+    Map<String, Map<UUID, List<Diffable>>> loadAllDiffableFacetsIntoMemoryByIds(List<UUID> multiFacetAwareItemIds) {
+        Map<String, Map<UUID, List<Diffable>>> data = [:]
+        multiFacetItemAwareServices.each {service ->
+            if (Utils.parentClassIsAssignableFromChild(Diffable, service.getDomainClass())) {
+                String facet = service.getDomainClass().simpleName
+                log.debug('Loading facet type {} for {} ids', facet, multiFacetAwareItemIds.size())
+                Map<UUID, List<Diffable>> facetData = [:]
+                if (multiFacetAwareItemIds) {
+                    facetData = service.findAllByMultiFacetAwareItemIdInList(multiFacetAwareItemIds).groupBy {MultiFacetItemAware mfia -> mfia.multiFacetAwareItemId}
+                }
+                data[facet] = facetData
+            }
+        }
+        data
+    }
+
+    void addFacetDataToDiffCache(DiffCache diffCache, Map<String, Map<UUID, List<Diffable>>> facetData, UUID catalogueItemId) {
+        diffCache.addField('metadata', facetData.Metadata[catalogueItemId])
+        diffCache.addField('annotations', facetData.Annotation[catalogueItemId])
+        diffCache.addField('rules', facetData.Rule[catalogueItemId])
+    }
 }

@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 
@@ -40,6 +41,7 @@ trait EditHistoryAware {
         editedPropertyNames(dirtyPropertyNames)
     }
 
+    @SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
     List<String> editedPropertyNames(List<String> dirtyPropertyNames) {
         dirtyPropertyNames - DIRTY_PROPERTY_NAMES_TO_IGNORE
     }
@@ -81,6 +83,7 @@ trait EditHistoryAware {
         addToEditsTransactionally EditTitle.UPDATE, editor, editLabel, dirtyPropertyNames
     }
 
+    @SuppressWarnings('UnusedMethodParameter')
     void addDeletedEdit(User deleter) {
         // No-op
     }

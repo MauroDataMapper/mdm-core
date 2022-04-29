@@ -30,7 +30,7 @@ class CallableConstraints {
                                                                                                          GormProperties.CONSTRAINTS, Closure)
 
         for (Closure c : constraints.findAll()) {
-            c = (Closure<?>) c.clone();
+            c = (Closure<?>) c.clone()
             c.setResolveStrategy(Closure.DELEGATE_ONLY)
             c.setDelegate(delegate)
             c.call()

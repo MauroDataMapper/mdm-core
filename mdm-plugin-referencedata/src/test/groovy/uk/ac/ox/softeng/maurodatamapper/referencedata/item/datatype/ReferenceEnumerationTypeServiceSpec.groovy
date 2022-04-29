@@ -96,13 +96,13 @@ class ReferenceEnumerationTypeServiceSpec extends BaseUnitSpec implements Servic
         id = et1.id
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<ReferenceEnumerationType> enumerationTypeList = service.list(max: 2, offset: 1)
@@ -119,12 +119,12 @@ class ReferenceEnumerationTypeServiceSpec extends BaseUnitSpec implements Servic
         enumerationTypeList[1].referenceEnumerationValues.size() == 3
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 3

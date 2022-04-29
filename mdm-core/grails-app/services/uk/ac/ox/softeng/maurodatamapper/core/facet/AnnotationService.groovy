@@ -78,14 +78,23 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
         annotation
     }
 
+    boolean existsByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        Annotation.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).count() == 1
+    }
+
     @Override
     Annotation findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
-        Annotation.byyMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
+        Annotation.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
     List<Annotation> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
         Annotation.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
+    }
+
+    @Override
+    List<Annotation> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        Annotation.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
     }
 
     @Override

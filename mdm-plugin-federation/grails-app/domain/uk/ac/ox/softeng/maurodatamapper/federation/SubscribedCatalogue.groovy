@@ -31,7 +31,6 @@ import java.time.OffsetDateTime
 
 class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAware, InformationAware {
 
-    private static final int DEFAULT_REFRESH_PERIOD = 7
     public static final String DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY = 'maurodatamapper.federation.subscribedcatalogue.default.timeout'
 
     UUID id
@@ -75,10 +74,10 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
     }
 
     void setUrl(String url) {
-        if (url.endsWith("/")) {
-            this.url = url.substring(0, url.lastIndexOf("/"));
+        if (url.endsWith('/')) {
+            this.url = url.substring(0, url.lastIndexOf('/'))
         } else {
-            this.url = url;
+            this.url = url
         }
     }
 

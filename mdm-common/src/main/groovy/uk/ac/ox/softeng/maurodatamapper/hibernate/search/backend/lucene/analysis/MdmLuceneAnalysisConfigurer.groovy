@@ -61,6 +61,11 @@ class MdmLuceneAnalysisConfigurer implements LuceneAnalysisConfigurer {
             .tokenFilter(ASCIIFoldingFilterFactory)
             .tokenFilter(LowerCaseFilterFactory)
 
+        context.analyzer('termLabel').custom()
+            .tokenizer(WhitespaceTokenizerFactory)
+            .tokenFilter(WordDelimiterGraphFilterFactory)
+            .param('splitOnNumerics', '0')
+            .tokenFilter(LowerCaseFilterFactory)
     }
 
 }

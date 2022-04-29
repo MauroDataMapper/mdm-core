@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
@@ -102,27 +103,26 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
         Files.readAllBytes(testFilePath)
     }
 
-    ReferenceDataModel importAndConfirm(byte[] bytes) {
-        ReferenceDataModel imported = importerService.importReferenceDataModel(admin, bytes)
+    ReferenceDataModel importModel(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
 
-        assert imported
+        ReferenceDataModel imported = importerService.importDomain(admin, basicParameters)
         imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
-        log.info('Saving imported model')
-        assert referenceDataModelService.saveModelWithContent(imported)
+        referenceDataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
-        assert referenceDataModelService.count() == 3
-
-        ReferenceDataModel referenceDataModel = referenceDataModelService.get(imported.id)
-
-        log.info('Confirming imported model')
-
-        confirmReferenceDataModel(referenceDataModel)
-        referenceDataModel
+        sessionFactory.currentSession.clear()
+        log.debug('ReferenceDataModel saved')
+        referenceDataModelService.get(imported.id)
     }
 
+    ReferenceDataModel importAndConfirm(byte[] bytes) {
+        ReferenceDataModel dm = importModel(bytes)
+        assert referenceDataModelService.count() == 3
+        confirmReferenceDataModel(dm)
+        dm
+    }
 
     void confirmReferenceDataModel(referenceDataModel) {
         assert referenceDataModel
@@ -192,11 +192,11 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
+        ObjectDiff diff = referenceDataModelService.get(exampleReferenceDataModelId).diff(imported, 'none', null, null)
 
         then:
         diff.numberOfDiffs == 1
-        diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
+        diff.diffs.find {it.fieldName == 'rules'}.deleted.size() == 1
     }
 
     void 'RDM03: test empty data import'() {
@@ -433,7 +433,7 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
 
         //Classifiers
         rdm.classifiers.size() == 1
-        rdm.classifiers[0].label == "An imported classifier"
+        rdm.classifiers[0].label == 'An imported classifier'
 
         //Reference Data Types
         rdm.referenceDataTypes.size() == 2

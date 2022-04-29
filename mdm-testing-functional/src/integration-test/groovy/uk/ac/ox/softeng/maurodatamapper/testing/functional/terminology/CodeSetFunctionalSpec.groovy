@@ -150,7 +150,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         "label": "Mauro Data Mapper",
         "defaultAuthority": true
       }
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",
@@ -240,7 +240,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "xml",
@@ -254,7 +254,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "json",
@@ -285,7 +285,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
@@ -298,7 +298,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",

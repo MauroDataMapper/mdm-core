@@ -81,11 +81,6 @@ class UserSecurityPolicy {
         destroyed.get() ? Collections.emptyList() : securableResourceGroupRoles
     }
 
-    VirtualSecurableResourceGroupRole getVirtualRoleForSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
-        SortedSet roles = getVirtualSecurableResourceGroupRoles()[id]
-        roles && roles.first().matchesDomainResourceType(securableResourceClass) ? roles.find {it.matchesGroupRole(roleName)} : null
-    }
-
     Map<UUID, SortedSet<VirtualSecurableResourceGroupRole>> getVirtualSecurableResourceGroupRoles() {
         holdForLock() // Ensure roles are only returned if theres no lock
         destroyed.get() ? Collections.emptyMap() : virtualSecurableResourceGroupRoles
@@ -128,7 +123,7 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy inGroups(Set<UserGroup> userGroups) {
-        this.userGroups = userGroups == null ? new HashSet<UserGroup>() : userGroups
+        this.userGroups = userGroups == null ? new HashSet<UserGroup>() : new HashSet<>(userGroups)
         this
     }
 
@@ -228,6 +223,8 @@ class UserSecurityPolicy {
     }
 
     void destroy() {
+        // Incase the policy is being rebuilt we should hold until unlocked. No access can happen while its locked anyway
+        holdForLock()
         destroyed.set(true)
     }
 
@@ -236,11 +233,17 @@ class UserSecurityPolicy {
     }
 
     boolean isAuthenticated() {
+        // If the policy is locked then the user is not fully authenticated
+        holdForLock()
+        user && user.emailAddress != UnloggedUser.instance.emailAddress
+    }
+
+    boolean isAuthenticatedForBuilding() {
         user && user.emailAddress != UnloggedUser.instance.emailAddress
     }
 
     boolean hasUserGroups() {
-        userGroups
+        !userGroups.isEmpty()
     }
 
     UserSecurityPolicy setNoAccess() {
@@ -250,18 +253,30 @@ class UserSecurityPolicy {
         this
     }
 
+    VirtualSecurableResourceGroupRole getVirtualRoleForSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
+        getVirtualRolesForSecuredResource(securableResourceClass, id).find {it.matchesGroupRole(roleName)}
+    }
+
+    SortedSet<VirtualSecurableResourceGroupRole> getVirtualRolesForSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        SortedSet roles = getVirtualSecurableResourceGroupRoles()[id]
+        roles && roles.first().matchesDomainResourceType(securableResourceClass) ? roles : new TreeSet<VirtualSecurableResourceGroupRole>()
+    }
+
+    SortedSet<VirtualSecurableResourceGroupRole> getVirtualRolesForSecuredResource(String securableResourceDomainType, UUID id) {
+        SortedSet roles = getVirtualSecurableResourceGroupRoles()[id]
+        roles && roles.first().matchesDomainResourceType(securableResourceDomainType) ? roles : new TreeSet<VirtualSecurableResourceGroupRole>()
+    }
+
     boolean isManagedByGroup(UserGroup userGroup) {
-        userGroup.id in userGroups*.id
+        userGroup.id in getUserGroups()*.id
     }
 
     boolean managesVirtualAccessToSecurableResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        Set<VirtualSecurableResourceGroupRole> roles = virtualSecurableResourceGroupRoles[id]
-        roles ? roles.first().matchesDomainResourceType(securableResourceClass) : false
+        getVirtualRolesForSecuredResource(securableResourceClass, id)
     }
 
     boolean managesVirtualAccessToSecurableResource(String securableResourceDomainType, UUID id) {
-        Set<VirtualSecurableResourceGroupRole> roles = virtualSecurableResourceGroupRoles[id]
-        roles ? roles.first().matchesDomainResourceType(securableResourceDomainType) : false
+        getVirtualRolesForSecuredResource(securableResourceDomainType, id)
     }
 
     boolean managesVirtualAccessToSecurableResource(SecurableResource securableResource) {

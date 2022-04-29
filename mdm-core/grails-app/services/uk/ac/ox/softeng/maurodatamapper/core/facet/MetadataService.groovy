@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProv
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -148,9 +148,9 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         log.debug('{} Metadata batch saved, took {}', metadata.size(), Utils.timeTaken(start))
     }
 
-    boolean validate(Metadata metadata) {
+    Metadata validate(Metadata metadata) {
         boolean valid = metadata.validate()
-        if (!valid) return false
+        if (!valid) return metadata
 
         MultiFacetAware multiFacetAwareItem =
             metadata.multiFacetAwareItem ?: findMultiFacetAwareItemByDomainTypeAndId(metadata.multiFacetAwareItemDomainType,
@@ -159,9 +159,8 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         if (multiFacetAwareItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
             metadata.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.name, metadata.value].toArray(),
                                         'Property [{0}] of class [{1}] with value [{2}] must be unique')
-            return false
         }
-        true
+        metadata
     }
 
     @Override
@@ -172,6 +171,11 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
     @Override
     List<Metadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
         Metadata.withFilter(Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
+    }
+
+    @Override
+    List<Metadata> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        Metadata.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
     }
 
     List<Metadata> findAllByMultiFacetAwareItemIdAndNamespace(UUID multiFacetAwareItemId, String namespace, Map pagination = [:]) {
@@ -190,7 +194,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
                 returnResult.addAll(containerService.findAllByMetadataNamespace(namespace))
             }
         }
-        return new PaginatedResultList<MetadataAware>(returnResult, pagination)
+        return new InMemoryPagedResultList<MetadataAware>(returnResult, pagination)
     }
 
 

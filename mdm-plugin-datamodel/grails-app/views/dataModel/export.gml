@@ -9,6 +9,13 @@ DataModel dm = dataModel as DataModel
 
 'mdm:dataModel' {
     layout '/catalogueItem/_export.gml', catalogueItem: dm
+    if (dm.summaryMetadata) {
+        'mdm:summaryMetadata' {
+            dm.summaryMetadata.each {sm ->
+                layout '/summaryMetadata/export.gml', summaryMetadata: sm
+            }
+        }
+    }
 
     if (dm.author) 'mdm:author' {yield dm.author}
     if (dm.organisation) 'mdm:organisation' {yield dm.organisation}

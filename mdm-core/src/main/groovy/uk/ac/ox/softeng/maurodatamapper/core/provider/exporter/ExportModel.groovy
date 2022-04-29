@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.xml.Namespace
 
@@ -30,25 +30,25 @@ class ExportModel {
     Namespace xmlNamespace
     Namespace modelXmlNamespace
 
-    ExportModel(CatalogueItem model, String modelType, String version, ExportMetadata exportMetadata) {
-        this([export: model], modelType, '', version, version, '', exportMetadata)
+    ExportModel(MdmDomain mdmDomain, String modelType, String version, ExportMetadata exportMetadata) {
+        this([export: mdmDomain], modelType, '', version, version, '', exportMetadata)
     }
 
-    ExportModel(List<CatalogueItem> models, String modelType, String multiModelType, String version, ExportMetadata exportMetadata) {
-        this([export: models], modelType, multiModelType, version, version, '', exportMetadata)
+    ExportModel(List<MdmDomain> mdmDomains, String modelType, String multiModelType, String version, ExportMetadata exportMetadata) {
+        this([export: mdmDomains], modelType, multiModelType, version, version, '', exportMetadata)
     }
 
-    ExportModel(CatalogueItem model, String modelType, String version, String templateFileExtension, ExportMetadata exportMetadata) {
-        this([export: model], modelType, '', version, version, templateFileExtension, exportMetadata)
+    ExportModel(MdmDomain mdmDomain, String modelType, String version, String templateFileExtension, ExportMetadata exportMetadata) {
+        this([export: mdmDomain], modelType, '', version, version, templateFileExtension, exportMetadata)
     }
 
-    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templateFileExtension, ExportMetadata exportMetadata) {
-        this([export: model], modelType, '', version, modelVersion, templateFileExtension, exportMetadata)
+    ExportModel(MdmDomain mdmDomain, String modelType, String version, String modelVersion, String templateFileExtension, ExportMetadata exportMetadata) {
+        this([export: mdmDomain], modelType, '', version, modelVersion, templateFileExtension, exportMetadata)
     }
 
-    ExportModel(List<CatalogueItem> models, String modelType, String multiModelType, String version, String modelVersion, String templateFileExtension,
+    ExportModel(List<MdmDomain> mdmDomains, String modelType, String multiModelType, String version, String modelVersion, String templateFileExtension,
                 ExportMetadata exportMetadata) {
-        this([export: models], modelType, multiModelType, version, modelVersion, templateFileExtension, exportMetadata)
+        this([export: mdmDomains], modelType, multiModelType, version, modelVersion, templateFileExtension, exportMetadata)
     }
 
     private ExportModel(Map<String, Object> exportMap, String modelType, String multiModelType, String version, String modelVersion, String templateFileExtension,

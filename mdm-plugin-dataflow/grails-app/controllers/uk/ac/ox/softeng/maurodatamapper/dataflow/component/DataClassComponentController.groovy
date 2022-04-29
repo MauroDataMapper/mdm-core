@@ -95,7 +95,7 @@ class DataClassComponentController extends EditLoggingController<DataClassCompon
     @Override
     protected DataClassComponent createResource() {
         DataClassComponent resource = super.createResource() as DataClassComponent
-        resource.dataFlow = dataFlowService.get(params.dataFlowId)
+        resource.dataFlow = dataFlowService.findByTargetDataModelIdAndId(params.dataModelId, params.dataFlowId)
         if (resource.targetDataClasses && resource.sourceDataClasses) {
             dataClassService.addDataClassesAreFromDataClasses(resource.targetDataClasses, resource.sourceDataClasses, currentUser)
         }

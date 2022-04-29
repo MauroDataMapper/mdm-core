@@ -46,9 +46,9 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
         //Create the RuleRepresentation
         RuleRepresentation resource = super.createResource() as RuleRepresentation
         //Create an association between the Rule and RuleRepresentation
-        ruleService.get(params.ruleId)?.addToRuleRepresentations(resource)
+        ruleService.findByMultiFacetAwareItemIdAndId(params.multiFacetAwareItemId, params.ruleId)?.addToRuleRepresentations(resource)
         resource
-    }    
+    }
 
     @Override
     protected RuleRepresentation saveResource(RuleRepresentation resource) {
@@ -57,7 +57,7 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
         ruleService.
             addCreatedEditToMultiFacetAwareItemOfRule(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         resource
-    }     
+    }
 
     @Override
     protected RuleRepresentation updateResource(RuleRepresentation resource) {
@@ -67,12 +67,12 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
         ruleService.
             addUpdatedEditToMultiFacetAwareItemOfRule(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId,
                                                       dirtyPropertyNames)
-    }        
+    }
 
     @Override
     void deleteResource(RuleRepresentation resource) {
         serviceDeleteResource(resource)
-    } 
+    }
 
     @Override
     void serviceDeleteResource(RuleRepresentation resource) {
@@ -85,6 +85,6 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
         ruleService.get(params.ruleId)?.removeFromRuleRepresentations(resource)
 
         //Delete the RuleRepresentation
-        ruleRepresentationService.delete(resource, true)           
+        ruleRepresentationService.delete(resource, true)
     }
 }

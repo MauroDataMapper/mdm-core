@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
 
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
+import java.nio.charset.Charset
 import java.time.Duration
 
 /**
@@ -36,6 +37,9 @@ import java.time.Duration
 @Slf4j
 @CompileStatic
 class Utils {
+
+    private Utils() {
+    }
 
     static String timeTaken(long start) {
         getTimeString(System.currentTimeMillis() - start)
@@ -81,7 +85,7 @@ class Utils {
         List<String> arguments = runtimeMxBean.getInputArguments()
         Logger logger = LoggerFactory.getLogger(clazz)
 
-        logger.warn("Running with JVM args : {}", arguments.size())
+        logger.warn('Running with JVM args : {}', arguments.size())
         Map<String, String> map = arguments.collectEntries {arg ->
             arg.split('=').toList()
         }.sort() as Map<String, String>
@@ -162,10 +166,29 @@ class Utils {
 
     static Map<String, Object> cleanPrefixFromMap(Map<String, Object> map, String prefix) {
         map.findAll {it.key.startsWith(prefix)}
-            .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]}
+            .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]} as Map<String, Object>
     }
 
     static byte[] copyOf(byte[] contents) {
         Arrays.copyOf(contents, contents.size())
+    }
+
+    static String safeUrlEncode(String value) {
+        // URLEncoder converts spaces to + which we dont allow
+        String encoded = URLEncoder.encode(value, Charset.defaultCharset())
+        encoded.replaceAll(/\+/, '%20')
+    }
+
+    static String safeUrlDecode(String value) {
+        try {
+            // To allow our paths to contain the legitimate + character we do NOT allow it to be used as a url encoded "space"
+            URLDecoder.decode(value.replaceAll(/\+/, '%2b'), Charset.defaultCharset())
+        } catch (IllegalArgumentException | NullPointerException ignored) {
+            value
+        }
+    }
+
+    static List<UUID> gatherIds(Collection<UUID>... ids) {
+        ids.collectMany {it}.findAll()
     }
 }

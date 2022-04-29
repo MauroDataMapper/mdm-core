@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
@@ -49,6 +50,7 @@ import java.util.concurrent.ThreadFactory
  * @since 14/04/2021
  */
 @Slf4j
+@SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Methods exist for future programming')
 class FederationClient implements Closeable {
 
     static final String API_KEY_HEADER = 'apiKey'

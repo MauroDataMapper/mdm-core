@@ -27,38 +27,38 @@ import grails.plugins.Plugin
 class MdmPluginFederationGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "5.1.1 > *"
+    def grailsVersion = '5.1.7 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
     ]
 
-    def title = "Mauro Data Mapper Federation Plugin"
+    def title = 'Mauro Data Mapper Federation Plugin'
     // Headline display name of the plugin
-    def author = "Oliver Freeman"
-    def authorEmail = "oliver.freeman@bdi.ox.ac.uk"
+    def author = 'Oliver Freeman'
+    def authorEmail = 'oliver.freeman@bdi.ox.ac.uk'
     def description = '''\
 The federation domain, services and controllers for the Mauro Data Mapper backend.
 '''
 
     // URL to the plugin's documentation
-    def documentation = ""
+    def documentation = ''
 
     // Extra (optional) plugin metadata
 
     // License: one of 'APACHE', 'GPL2', 'GPL3'
-    def license = "APACHE"
+    def license = 'APACHE'
 
     // Details of company behind the plugin (if there is one)
-    def organization = [name: "Oxford University BRC Informatics", url: "www.ox.ac.uk"]
+    def organization = [name: 'Oxford University BRC Informatics', url: 'www.ox.ac.uk']
 
     // Any additional developers beyond the author specified above.
     def developers = [[name: 'James Welch', email: 'james.welch@bdi.ox.ac.uk']]
 
     // Location of the plugin's issue tracker.
-    def issueManagement = [system: "YouTrack", url: "https://maurodatamapper.myjetbrains.com"]
+    def issueManagement = [system: 'YouTrack', url: 'https://maurodatamapper.myjetbrains.com']
 
     // Online location of the plugin's browseable source code.
-    def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
+    def scm = [url: 'https://github.com/mauroDataMapper/mdm-core']
 
     def dependsOn = [
         mdmCore      : '5.0.0 > *',
@@ -86,20 +86,5 @@ The federation domain, services and controllers for the Mauro Data Mapper backen
             opmlSubscribedCatalogueRenderer(MdmOpmlSubscribedCatalogueCollectionRenderer, SubscribedCatalogue) {
             }
         }
-    }
-
-    void doWithDynamicMethods() {
-    }
-
-    void doWithApplicationContext() {
-    }
-
-    void onChange(Map<String, Object> event) {
-    }
-
-    void onConfigChange(Map<String, Object> event) {
-    }
-
-    void onShutdown(Map<String, Object> event) {
     }
 }

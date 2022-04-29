@@ -65,7 +65,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         id = folder.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupDomainData()
 
@@ -73,7 +73,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         versionedFolderService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupDomainData()
 
@@ -84,7 +84,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         folderList.size() == 2
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupDomainData()
 
@@ -92,7 +92,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         versionedFolderService.count() == 8
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupDomainData()
 

@@ -1,0 +1,24 @@
+[
+  {
+    "sectionName": "Partially Invalid Section",
+    "sectionDescription": "Section with one valid and one invalid field",
+    "fields": [
+      {
+        "fieldName": "Valid Field",
+        "metadataPropertyName": "validField",
+        "description": "A field which is valid",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "text"
+      },
+      {
+        "fieldName": "Invalid Field with blank description",
+        "metadataPropertyName": "blankDescriptionField",
+        "description": "",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "int"
+      }
+    ]
+  }
+]

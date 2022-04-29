@@ -25,7 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
@@ -42,6 +44,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.MultipleUnsavedModelsLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -89,9 +92,6 @@ abstract class ModelService<K extends Model>
     @Autowired(required = false)
     Set<MdmDomainService> domainServices
 
-    @Autowired(required = false)
-    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
-
     @Autowired
     VersionedFolderService versionedFolderService
 
@@ -106,6 +106,9 @@ abstract class ModelService<K extends Model>
 
     @Autowired
     PathService pathService
+
+    @Autowired
+    MergeDiffService mergeDiffService
 
     @Autowired
     MessageSource messageSource
@@ -129,8 +132,6 @@ abstract class ModelService<K extends Model>
     abstract void deleteAllInContainer(Container container)
 
     abstract void removeAllFromContainer(Container container)
-
-    abstract List<K> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted)
 
     abstract List<K> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:])
 
@@ -171,6 +172,14 @@ abstract class ModelService<K extends Model>
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
     abstract ExporterProviderService getJsonModelExporterProviderService()
+
+    abstract void updateModelItemPathsAfterFinalisationOfModel(K model)
+
+    abstract CachedDiffable<K> loadEntireModelIntoDiffCache(UUID modelId)
+
+    List<K> findAllByFolderIdInList(Collection<UUID> folderIds) {
+        getDomainClass().byFolderIdInList(folderIds).list() as List<K>
+    }
 
     void deleteModelAndContent(K model) {
         deleteModelsAndContent(Collections.singleton(model.id))
@@ -236,7 +245,23 @@ abstract class ModelService<K extends Model>
         []
     }
 
+    List<K> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
+        getDomainClass().withReadable(getDomainClass().by(), constrainedIds, includeDeleted).list() as List<K>
+    }
+
+    List<K> findAllReadableModelsInContainersById(List<UUID> constrainedIds, String containerPropertyName, Collection<UUID> containerIds, boolean includeDeleted) {
+        getDomainClass().withReadable(getDomainClass().byContainerIdInList(containerPropertyName, containerIds), constrainedIds, includeDeleted).list() as List<K>
+    }
+
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
+                                  boolean includeModelSuperseded, boolean includeDeleted) {
+        findAllReadableModels(userSecurityPolicyManager, null, null, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+    }
+
+    List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager,
+                                  String containerPropertyName,
+                                  Collection<UUID> containerIds,
+                                  boolean includeDocumentSuperseded,
                                   boolean includeModelSuperseded, boolean includeDeleted) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getDomainClass())
         if (!ids) return []
@@ -252,6 +277,9 @@ abstract class ModelService<K extends Model>
             constrainedIds = findAllExcludingDocumentAndModelSupersededIds(ids)
         }
         if (!constrainedIds) return []
+
+        containerIds ?
+        findAllReadableModelsInContainersById(constrainedIds, containerPropertyName, containerIds, includeDeleted) :
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 
@@ -297,17 +325,24 @@ abstract class ModelService<K extends Model>
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
                     String versionTag) {
-        log.debug('Finalising model')
+        log.debug('Finalising model {}', model.path)
         long start = System.currentTimeMillis()
 
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        // No requirement to have a breadcrumbtree
-        breadcrumbTreeService.finalise(model.breadcrumbTree)
-
         model.modelVersion = getNextModelVersion(model, requestedModelVersion, versionChangeType)
-
         model.modelVersionTag = versionTag
+
+        // ModelItem paths are like BT treestrings then need to be updated to replace the branch with the model version
+        updateModelItemPathsAfterFinalisationOfModel(model)
+
+        if(model.breadcrumbTree) {
+            // No requirement to have a breadcrumbtree
+            model.breadcrumbTree.update(model)
+            breadcrumbTreeService.finalise(model.breadcrumbTree)
+        }
+
+
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
@@ -316,7 +351,7 @@ abstract class ModelService<K extends Model>
                                       "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
-        log.debug('Model finalised took {}', Utils.timeTaken(start))
+        log.trace('Model finalised took {}', Utils.timeTaken(start))
         model
     }
 
@@ -512,23 +547,12 @@ abstract class ModelService<K extends Model>
 
     List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
         /*
-          We can process modifications in any order
+          We have to process modifications in after everything else incase the modifications require something to have been created
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
         objectPatchData.patches.sort {l, r ->
-            switch (l.type) {
-                case 'modification':
-                    if (r.type == 'modification') return 0
-                    else return -1
-                case 'creation':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'deletion') return -1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-                case 'deletion':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'creation') return 1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-            }
+            if (l.type == r.type) return getSortResultForFieldPatchPath(l.path, r.path)
+            l <=> r
         }
     }
 
@@ -690,7 +714,9 @@ abstract class ModelService<K extends Model>
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
-        thisModel.diff(otherModel, 'none')
+        CachedDiffable<K> thisCachedDiffable = loadEntireModelIntoDiffCache(thisModel.id)
+        CachedDiffable<K> otherCachedDiffable = loadEntireModelIntoDiffCache(otherModel.id)
+        thisCachedDiffable.diff(otherCachedDiffable, 'none')
     }
 
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
@@ -698,7 +724,7 @@ abstract class ModelService<K extends Model>
         if (leftModel.label != rightModel.label) {
             throw new ApiBadRequestException('MS03',
                                              "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
-                                             "common ancestor")
+                                             'common ancestor')
         }
 
         K finalisedLeftParent = getFinalisedParent(leftModel)
@@ -775,8 +801,12 @@ abstract class ModelService<K extends Model>
     MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
         K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel, 'none')
-        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel, 'none')
+        CachedDiffable<K> sourceCachedDiffable = loadEntireModelIntoDiffCache(sourceModel.id)
+        CachedDiffable<K> targetCachedDiffable = loadEntireModelIntoDiffCache(targetModel.id)
+        CachedDiffable<K> caCachedDiffable = loadEntireModelIntoDiffCache(commonAncestor.id)
+
+        ObjectDiff<K> caDiffSource = caCachedDiffable.diff(sourceCachedDiffable, 'none')
+        ObjectDiff<K> caDiffTarget = caCachedDiffable.diff(targetCachedDiffable, 'none')
 
         // Remove the branchname as  diff as we know its a diff and for merging we dont want it
         Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
@@ -786,14 +816,14 @@ abstract class ModelService<K extends Model>
         caDiffSource.diffs.removeIf(branchNamePredicate)
         caDiffTarget.diffs.removeIf(branchNamePredicate)
 
-        DiffBuilder
-            .mergeDiff(sourceModel.class as Class<K>)
-            .forMergingDiffable(sourceModel)
-            .intoDiffable(targetModel)
-            .havingCommonAncestor(commonAncestor)
-            .withCommonAncestorDiffedAgainstSource(caDiffSource)
-            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
-            .generate()
+        mergeDiffService.generateMergeDiff(DiffBuilder
+                                               .mergeDiff(sourceModel.class as Class<K>)
+                                               .forMergingDiffable(sourceModel)
+                                               .intoDiffable(targetModel)
+                                               .havingCommonAncestor(commonAncestor)
+                                               .withCommonAncestorDiffedAgainstSource(caDiffSource)
+                                               .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+        )
     }
 
     @Override
@@ -831,19 +861,6 @@ abstract class ModelService<K extends Model>
             }
         }
         model
-    }
-
-    @Override
-    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.versionLinks) {
-            catalogueItem.versionLinks.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            VersionLink.saveAll(catalogueItem.versionLinks)
-        }
-        catalogueItem
     }
 
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
@@ -1076,5 +1093,44 @@ abstract class ModelService<K extends Model>
     @Override
     boolean isMultiFacetAwareFinalised(K multiFacetAwareItem) {
         multiFacetAwareItem.finalised
+    }
+
+
+    void updateModelItemPathsAfterFinalisationOfModel(K model, String schema, String... tables) {
+        String pathBefore = model.uncheckedPath.toString()
+        model.checkPath()
+        String pathAfter = model.path.toString()
+        tables.each {table ->
+            updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, schema, table)
+        }
+    }
+
+    void updateModelItemPathsAfterFinalisationOfModel(String pathBefore, String pathAfter, String schema, String table) {
+        log.debug('Updating {} from [{}] to [{}]', table, pathBefore, pathAfter)
+        String pathLike = "${pathBefore}%"
+        sessionFactory.currentSession.createSQLQuery("UPDATE ${schema}.${table} " +
+                                                     'SET path = REPLACE(path, :pathBefore, :pathAfter) ' +
+                                                     'WHERE path LIKE :pathLike')
+            .setParameter('pathBefore', pathBefore)
+            .setParameter('pathAfter', pathAfter)
+            .setParameter('pathLike', pathLike)
+            .executeUpdate()
+    }
+
+    Collection<K> validateMultipleModels(Collection<K> models) {
+        // Validate each of the models as normal
+        models.each {validate(it)}
+        // Check all the models meet label requirements
+        new MultipleUnsavedModelsLabelValidator().isValid(models)
+        models
+    }
+
+    boolean areModelsInsideSameVersionedFolder(K model, Model otherModel) {
+        // Assert they're both inside a VF otherwise we could just confirm they're inside the same folder
+        if (!versionedFolderService.isVersionedFolderFamily(model.folder) || !versionedFolderService.isVersionedFolderFamily(otherModel.folder)) return false
+        Path modelPath = getFullPathForModel(model)
+        Path otherModelPath = getFullPathForModel(otherModel)
+        modelPath.getParent() == otherModelPath.getParent()
+
     }
 }

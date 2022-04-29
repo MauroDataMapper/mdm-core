@@ -55,7 +55,7 @@ class EnumerationValueController extends CatalogueItemController<EnumerationValu
     @Override
     protected EnumerationValue createResource() {
         EnumerationValue resource = super.createResource() as EnumerationValue
-        enumerationTypeService.get(params.enumerationTypeId ?: params.dataTypeId)?.addToEnumerationValues(resource)
+        enumerationTypeService.findByDataModelIdAndId(params.dataModelId, params.enumerationTypeId ?: params.dataTypeId)?.addToEnumerationValues(resource)
         resource
     }
 }

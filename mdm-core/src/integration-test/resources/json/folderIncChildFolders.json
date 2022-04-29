@@ -1,0 +1,94 @@
+{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder",
+    "childFolders": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Empty Child Folder",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "Folder"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Child Folder with Facets and Own Child Folder",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "Folder",
+        "metadata": [
+          {
+            "id": "${json-unit.matches:id}",
+            "namespace": "test.com",
+            "key": "mdk1",
+            "value": "mdv1",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "namespace": "test.com/simple",
+            "key": "mdk1",
+            "value": "mdv1",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "namespace": "test.com/simple",
+            "key": "mdk2",
+            "value": "mdv2",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          }
+        ],
+        "annotations": [
+          {
+            "id": "${json-unit.matches:id}",
+            "createdBy": "integration-test@test.com",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "label": "Test Annotation 1",
+            "description": "Test Annotation 1 description"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "createdBy": "integration-test@test.com",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "label": "Test Annotation 2",
+            "description": "Test Annotation 2 description"
+          }
+        ],
+        "rules": [
+          {
+            "id": "${json-unit.matches:id}",
+            "createdBy": "integration-test@test.com",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "name": "Test Rule 1",
+            "description": "Test Rule 1 description"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "createdBy": "integration-test@test.com",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "name": "Test Rule 2",
+            "description": "Test Rule 2 description"
+          }
+        ],
+        "childFolders": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Inner Child Folder",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "domainType": "Folder"
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}

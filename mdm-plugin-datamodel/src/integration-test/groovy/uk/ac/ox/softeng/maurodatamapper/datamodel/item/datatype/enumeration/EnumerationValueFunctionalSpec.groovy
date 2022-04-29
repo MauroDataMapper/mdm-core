@@ -139,7 +139,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
         '''{
   "index": 1,
   "id": "${json-unit.matches:id}",
-  "category": null, 
+  "category": null,
   "value": "Other",
   "key": "O"
 }'''

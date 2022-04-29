@@ -28,18 +28,21 @@ import groovy.transform.stc.SimpleType
  * @since 28/08/2020
  */
 @CompileStatic
-class Path implements Serializable {
+class Path implements Serializable, Cloneable {
 
     //Need to escape the vertical bar which we are using as the split delimiter
-    static String PATH_DELIMITER = '\\|'
+    static String PATH_DELIMITER = '|'
+    static String ESCAPED_PATH_DELIMITER = '\\|'
 
     //Arbitrary maximum number of nodes, to avoid unexpectedly long iteration
     static int MAX_NODES = 10
 
     List<PathNode> pathNodes
+    boolean checked
 
     private Path() {
         pathNodes = []
+        checked = false
     }
 
     /*
@@ -53,7 +56,7 @@ class Path implements Serializable {
         this()
 
         if (path) {
-            String[] splits = path.split(PATH_DELIMITER, MAX_NODES)
+            String[] splits = path.split(ESCAPED_PATH_DELIMITER, MAX_NODES)
             int lastIndex = splits.size() - 1
 
             splits.eachWithIndex {String node, int i ->
@@ -158,14 +161,11 @@ class Path implements Serializable {
         if (getClass() != o.class) return false
 
         Path path = (Path) o
-
-        if (pathNodes != path.pathNodes) return false
-
-        return true
+        pathNodes == path.pathNodes
     }
 
     int hashCode() {
-        return (pathNodes != null ? pathNodes.hashCode() : 0)
+        (pathNodes != null ? pathNodes.hashCode() : 0)
     }
 
     static Path from(String path) {

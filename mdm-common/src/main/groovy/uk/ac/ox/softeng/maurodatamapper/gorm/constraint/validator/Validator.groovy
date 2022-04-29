@@ -22,5 +22,5 @@ package uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator
  */
 interface Validator<T> {
 
-    Object isValid(T value);
+    Object isValid(T value)
 }

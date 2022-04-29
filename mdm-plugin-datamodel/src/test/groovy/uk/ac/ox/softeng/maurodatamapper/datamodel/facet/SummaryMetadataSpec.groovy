@@ -33,7 +33,7 @@ class SummaryMetadataSpec extends MdmDomainSpec<SummaryMetadata> implements Doma
 
     def setup() {
         misc = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'misc')
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost')
         db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: testAuthority)
         mockDomains(Folder, DataModel, SummaryMetadata)
         checkAndSave(misc)

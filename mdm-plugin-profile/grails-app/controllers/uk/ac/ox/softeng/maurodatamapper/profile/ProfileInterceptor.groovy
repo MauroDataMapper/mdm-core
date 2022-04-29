@@ -64,7 +64,7 @@ class ProfileInterceptor extends FacetInterceptor {
 
         // This tests that we *might* be able to save.
         // ProfileController.saveMany must check access for every profile service provider referenced in the request body
-        if (actionName == "saveMany") {
+        if (actionName == 'saveMany') {
             boolean userCanSaveIgnoreFinalise = currentUserSecurityPolicyManager.userCanWriteResourceId(Metadata, null,
                                                                                                         owningSecureResourceClass, owningSecureResourceId,
                                                                                                         'saveIgnoreFinalise')

@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 
@@ -27,9 +29,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ReferenceType extends DataType<ReferenceType> {
 
-    DataClass referenceClass
-
-    static belongsTo = DataClass
+    static belongsTo = [referenceClass:DataClass]
 
     static constraints = {
         referenceClass validator: {val, obj ->
@@ -45,7 +45,7 @@ class ReferenceType extends DataType<ReferenceType> {
     }
 
     static mapping = {
-        referenceClass index: 'reference_type_reference_class_idx', fetch: 'join', cascade: 'none'
+        referenceClass index: 'reference_type_reference_class_idx', fetch: 'join'
     }
 
     ReferenceType() {
@@ -53,7 +53,11 @@ class ReferenceType extends DataType<ReferenceType> {
     }
 
     ObjectDiff<ReferenceType> diff(ReferenceType otherDataType, String context) {
-        catalogueItemDiffBuilder(ReferenceType, this, otherDataType)
+        diff(otherDataType, context, null, null)
+    }
+
+    ObjectDiff<ReferenceType> diff(ReferenceType otherDataType, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(ReferenceType, this, otherDataType, lhsDiffCache, rhsDiffCache)
             .appendString('referenceClass.label', this.referenceClass.label, otherDataType.referenceClass.label)
     }
 

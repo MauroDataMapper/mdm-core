@@ -72,13 +72,13 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         }
 
         // Allow uninverting...why?
-        System.setProperty("hibernate.search.index_uninverting_allowed", "true")
+        System.setProperty('hibernate.search.index_uninverting_allowed', 'true')
 
         // Find all catalogue items which meet the initial search parameters
         PaginatedHibernateSearchResult<CatalogueItem> result =
             mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams,
                                                                   pagination)
-        log.debug("Results size: " + result.count)
+        log.debug('Results size: ' + result.count)
         if (result.isEmpty()) return []
 
         Set<UUID> foundDataModelIds = [] as HashSet
@@ -94,7 +94,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
             }
         }
 
-        log.debug("DataModels size: " + foundDataModelIds.size())
+        log.debug('DataModels size: ' + foundDataModelIds.size())
 
         // Set the sort parameter
         if (searchParams.sort) {
@@ -111,7 +111,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
             dataModelProfileProviderService.createProfileFromEntity(dataModel)
         }
 
-        log.debug("profiledResults size: " + profiledResults.size())
+        log.debug('profiledResults size: ' + profiledResults.size())
         profiledResults
     }
 

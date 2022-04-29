@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+
+model {
+    Rule export
+}
+
+json {
+    if (export.id) id export.id
+    createdBy export.createdBy
+    if (export.lastUpdated) lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
+    name export.name
+    if (export.description) description export.description
+    if (export.ruleRepresentations) ruleRepresentations g.render(export.ruleRepresentations)
+}

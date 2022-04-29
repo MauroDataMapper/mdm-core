@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
+
+model {
+    SummaryMetadataReport export
+}
+
+json {
+    if (export.id) id export.id
+    if (export.lastUpdated) lastUpdated export.lastUpdated
+    reportDate export.reportDate
+    reportValue export.reportValue
+}

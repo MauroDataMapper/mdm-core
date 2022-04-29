@@ -93,7 +93,7 @@ class PermissionsController implements ResourcelessMdmController {
    protected SecurableResource findSecurableResourceByDomainTypeAndId(Class domainType, UUID securableResourceId) {
        SecurableResourceService service = securableResourceServices.find {it.handles(domainType)}
        if (!service) throw new ApiBadRequestException('PC01', "Securable resource retrieval for resource [${domainType}] with no supporting " +
-                                                              "service")
+                                                              'service')
        service.get(securableResourceId)
    }
 }

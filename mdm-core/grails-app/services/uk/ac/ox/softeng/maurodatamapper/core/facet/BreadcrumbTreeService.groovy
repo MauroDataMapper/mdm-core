@@ -31,11 +31,15 @@ class BreadcrumbTreeService {
 
     def finalise(BreadcrumbTree breadcrumbTree) {
         if (!breadcrumbTree) return
-        log.debug('Finalising BreadcrumbTree')
+        log.trace('Finalising BreadcrumbTree')
         long start = System.currentTimeMillis()
         breadcrumbTree.finalised = true
         String treeStringBefore = breadcrumbTree.treeString
         breadcrumbTree.buildTree()
+        breadcrumbTree.domainEntity.checkPath()
+        breadcrumbTree.path = breadcrumbTree.domainEntity.getUncheckedPath()
+
+        // Update all the modelitem tree strings
         String treeStringAfter = breadcrumbTree.treeString
         String treeStringLike = "${treeStringBefore}%"
         sessionFactory.currentSession.createSQLQuery('UPDATE core.breadcrumb_tree ' +
@@ -45,7 +49,7 @@ class BreadcrumbTreeService {
             .setParameter('treeStringAfter', treeStringAfter)
             .setParameter('treeStringLike', treeStringLike)
             .executeUpdate()
-        breadcrumbTree.save(false)
-        log.debug('BT finalisation took {}', Utils.timeTaken(start))
+        breadcrumbTree.save()
+        log.trace('BT finalisation took {}', Utils.timeTaken(start))
     }
 }

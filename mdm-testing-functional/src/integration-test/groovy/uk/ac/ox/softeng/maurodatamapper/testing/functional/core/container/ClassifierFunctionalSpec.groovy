@@ -164,18 +164,18 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
 }'''
     }
 
-    void "Test the catalogueItems action for classifier"() {
-        when: "The catalogueItems action on a known classifier ID is requested unlogged in"
+    void 'Test the catalogueItems action for classifier'() {
+        when: 'The catalogueItems action on a known classifier ID is requested unlogged in'
         GET("${getTestClassifierId()}/catalogueItems")
 
-        then: "The response is not found"
+        then: 'The response is not found'
         response.status == NOT_FOUND
 
         when: "The catalogueItems action is requested on a known classifier ID (with no catalogueItems) logged in as editor"
         loginEditor()
         GET("classifiers/${getTestClassifierId()}/catalogueItems", STRING_ARG, true)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, '''{
   "count": 0,
   "items": []
@@ -185,19 +185,19 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         loginAdmin()
         GET("${getTestClassifierId()}/catalogueItems", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, '''{
   "count": 0,
   "items": []
 }'''
 
-        when: "A classifier is added to a terminology"
+        when: 'A classifier is added to a terminology'
         loginAdmin()
         POST("terminologies/${getSimpleTerminologyId()}/classifiers", [
             label: 'A test classifier for a terminology'
         ], MAP_ARG, true)
 
-        then: "Resource is created"
+        then: 'Resource is created'
         response.status == CREATED
         String newId = response.body().id
 
@@ -205,7 +205,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         loginAdmin()
         GET("${newId}/catalogueItems", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, '''{
   "count": 1,
   "items": [
@@ -217,26 +217,26 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   ]
 }'''
 
-        when: "The classifier is requested from the terminology"
+        when: 'The classifier is requested from the terminology'
         loginAdmin()
         GET("terminologies/${getSimpleTerminologyId()}/classifiers/${newId}", MAP_ARG, true)
 
-        then: "Resource is shown"
+        then: 'Resource is shown'
         verifyResponse(OK, response)
         assert responseBody().id == newId
 
-        when: "The classifier is deleted from the terminology"
+        when: 'The classifier is deleted from the terminology'
         loginAdmin()
         DELETE("terminologies/${getSimpleTerminologyId()}/classifiers/${newId}", MAP_ARG, true)
 
-        then: "Resource is deleted"
+        then: 'Resource is deleted'
         response.status == HttpStatus.NO_CONTENT
 
         when: "The catalogueItems action is requested on the new classifier ID (which has been deleted from the terminology) logged in as admin"
         loginAdmin()
         GET("${newId}/catalogueItems", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, '''{
   "count": 0,
   "items": []
@@ -246,7 +246,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         removeValidIdObject(newId)
     }
 
-    void "CA01 test the creation of a classifier as part of a terminology"() {
+    void 'CA01 test the creation of a classifier as part of a terminology'() {
         given: 'putting a catalog item id'
         String terminologyId = getSimpleTerminologyId()
 
@@ -277,7 +277,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         verifyResponse(FORBIDDEN, response)
     }
 
-    void "CA01A Test as an editor"() {
+    void 'CA01A Test as an editor'() {
         given: 'putting a catalog item id'
         String terminologyId = getSimpleTerminologyId()
 
@@ -297,11 +297,11 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     }
 
 
-    void "CA01B Test as an Admin"() {
+    void 'CA01B Test as an Admin'() {
         given: 'putting a catalog item id'
         String terminologyId = getSimpleTerminologyId()
 
-        when: "Admin"
+        when: 'Admin'
         loginAdmin()
         POST("terminologies/$terminologyId/classifiers", [
             label: 'A test classifier for a terminology'
@@ -317,7 +317,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     }
 
 
-    void "CA02 Test the catalogueItems delete action for classifier"() {
+    void 'CA02 Test the catalogueItems delete action for classifier'() {
 
         given: 'putting a catalog item id'
         String terminologyId = getSimpleTerminologyId()

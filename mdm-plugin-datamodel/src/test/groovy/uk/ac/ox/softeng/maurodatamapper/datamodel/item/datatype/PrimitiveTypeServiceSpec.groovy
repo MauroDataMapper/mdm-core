@@ -136,13 +136,13 @@ class PrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<P
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<PrimitiveType> primitiveTypeList = service.list(max: 2, offset: 1, sort: 'label')
@@ -157,12 +157,12 @@ class PrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<P
         primitiveTypeList[1].label == 'varchar'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 3

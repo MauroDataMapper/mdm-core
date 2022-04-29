@@ -84,12 +84,12 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         id = element.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<ReferenceDataElement> dataElementList = service.list(max: 2, offset: 2)
@@ -110,13 +110,13 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         dataElementList[1].referenceDataTypeId == ReferenceDataType.findByLabel('integer').id
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 5
@@ -128,7 +128,7 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         service.count() == 4
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         ReferenceDataElement dataElement = new ReferenceDataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', referenceDataModel: referenceDataModelId,

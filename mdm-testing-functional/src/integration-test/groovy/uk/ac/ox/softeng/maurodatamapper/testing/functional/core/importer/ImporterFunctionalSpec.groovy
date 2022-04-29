@@ -45,7 +45,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
     void 'test datamodel importer parameters'() {
         given:
         DataModelJsonImporterService jsonImporterService = new DataModelJsonImporterService()
-        String endpoint = "parameters/" +
+        String endpoint = 'parameters/' +
                           "${jsonImporterService.class.packageName}/" +
                           "${jsonImporterService.class.simpleName}/" +
                           "${jsonImporterService.version}"
@@ -67,7 +67,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
     void 'test terminology importer parameters'() {
         given:
         TerminologyJsonImporterService jsonImporterService = new TerminologyJsonImporterService()
-        String endpoint = "parameters/" +
+        String endpoint = 'parameters/' +
                           "${jsonImporterService.class.packageName}/" +
                           "${jsonImporterService.class.simpleName}/" +
                           "${jsonImporterService.version}"

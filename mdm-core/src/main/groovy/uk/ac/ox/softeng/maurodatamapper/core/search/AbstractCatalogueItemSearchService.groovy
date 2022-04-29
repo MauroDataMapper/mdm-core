@@ -28,7 +28,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfi
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedAfterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedBeforeFilter
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.compiler.GrailsCompileStatic
@@ -76,9 +78,11 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         Set<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
 
+        int addtlClauseCount = 0
         searchParamFilters.each { f ->
             SearchParamFilter filter = f.getDeclaredConstructor().newInstance()
             if (filter.doesApply(searchParams)) {
+                addtlClauseCount++
                 if (additional) {
                     additional <<= filter.getClosure(searchParams)
                 } else {
@@ -90,6 +94,13 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         if (!filteredDomainsToSearch) {
             return new PaginatedHibernateSearchResult<K>(new ArrayList<K>(), 0)
+        }
+
+        // Do an estimated increase to the clause count, this should make sure at least the number of owningIds and paths clauses dont cause an initial failure
+        int currentMaxClauseCount = HibernateSearch.getCurrentMaxClauseCount()
+        int estimatedClauseCount = (owningIds.size() * 2) + addtlClauseCount + 10
+        if (currentMaxClauseCount <= estimatedClauseCount) {
+            HibernateSearch.increaseMaxClauseCount(estimatedClauseCount)
         }
 
         long start = System.currentTimeMillis()
@@ -129,11 +140,11 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @CompileDynamic
     protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-
-        domainsToSearch.collect { domain ->
+        List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
+        domainsToSearch.collect {domain ->
             log.debug('Domain searching {}', domain)
             domain
-                .labelHibernateSearch(domain, searchTerm, owningIds, pathService.findAllPathsForIds(owningIds).collect { it.last() }, [:], additional)
+                .labelHibernateSearch(domain, searchTerm, owningIds, pathNodes, [:], additional)
                 .results
         }.flatten().findAll() as List<K>
 
@@ -142,9 +153,10 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @CompileDynamic
     protected List<K> performStandardSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        domainsToSearch.collect { domain ->
+        List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
+        domainsToSearch.collect {domain ->
             log.debug('Domain searching {}', domain)
-            domain.standardHibernateSearch(domain, searchTerm, owningIds, pathService.findAllPathsForIds(owningIds).collect { it.last() }, [:],
+            domain.standardHibernateSearch(domain, searchTerm, owningIds, pathNodes, [:],
                                            additional).results
         }.flatten().findAll() as List<K>
     }
@@ -153,9 +165,10 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     protected List<K> performCustomSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds,
                                           @DelegatesTo(HibernateSearchApi) Closure additional,
                                           @DelegatesTo(HibernateSearchApi) Closure customSearch) {
-        domainsToSearch.collect { domain ->
+        List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
+        domainsToSearch.collect {domain ->
             log.debug('Domain searching {}', domain)
-            domain.customHibernateSearch(domain, owningIds, pathService.findAllPathsForIds(owningIds).collect { it.last() }, [:], additional,
+            domain.customHibernateSearch(domain, owningIds, pathNodes, [:], additional,
                                          customSearch).results
         }.flatten().findAll() as List<K>
     }

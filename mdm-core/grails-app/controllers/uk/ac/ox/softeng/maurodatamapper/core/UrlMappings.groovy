@@ -25,7 +25,6 @@ class UrlMappings {
 
     static mappings = {
 
-
         '500'(view: '/error')
         '404'(view: '/notFound')
         '410'(view: '/gone')
@@ -62,7 +61,6 @@ class UrlMappings {
             // Open access url
             get "/session/isAuthenticated/$sessionId?"(controller: 'session', action: 'isAuthenticatedSession') // New Url
             get '/session/isApplicationAdministration'(controller: 'session', action: 'isApplicationAdministrationSession') // New Url
-            get '/session/keepAlive'(controller: 'session', action: 'keepAlive') // New Url
             get '/properties'(controller: 'apiProperty', action: 'index') {
                 openAccess = true
             }
@@ -85,6 +83,8 @@ class UrlMappings {
                 get '/search'(controller: 'folder', action: 'search')
 
                 put "/folder/$destinationFolderId"(controller: 'folder', action: 'changeFolder')
+
+                get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'folder', action: 'exportFolder')
             }
 
             '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {
@@ -214,7 +214,6 @@ class UrlMappings {
                     '/representations'(resources: 'ruleRepresentation', excludes: DEFAULT_EXCLUDES)
                 }
             }
-
 
             group "/$resourceDomainType/$resourceId", {
                 /*

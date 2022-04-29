@@ -36,12 +36,12 @@ class ProfileSpecificationProfileServiceSpec extends BaseUnitSpec implements Ser
     def cleanup() {
     }
 
-    void "Profile correctly loaded"() {
+    void 'Profile correctly loaded'() {
         JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(service)
-        expect: "2 fields in the profile specification profile"
-            service.profileApplicableForDomains() == ["DataModel"]
+        expect: '2 fields in the profile specification profile'
+        service.profileApplicableForDomains() == ['DataModel']
 
-            jsonProfile.sections.size() == 1
+        jsonProfile.sections.size() == 1
         jsonProfile.sections[0].fields.size() == 3
     }
 }

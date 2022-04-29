@@ -37,7 +37,7 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
     def setup() {
         mockDomains(Folder, BasicModel, Edit, Annotation, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
@@ -67,12 +67,12 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
 
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Annotation> annotationList = service.list(max: 2, offset: 2)
 
@@ -94,12 +94,12 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
         annotationList[1].childAnnotations[0].path.toString() == 'ann:parent annotation|ann:parent annotation [1]|ann:parent annotation [1] [0]'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 5
 

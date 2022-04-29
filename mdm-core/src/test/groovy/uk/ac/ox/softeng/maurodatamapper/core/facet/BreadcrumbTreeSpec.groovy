@@ -36,7 +36,7 @@ class BreadcrumbTreeSpec extends BaseUnitSpec implements DomainUnitTest<Breadcru
 
     def setup() {
         mockDomains(Folder, BasicModel, BasicModelItem, Authority)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
         basicModel = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc, authority: testAuthority)
@@ -75,7 +75,7 @@ class BreadcrumbTreeSpec extends BaseUnitSpec implements DomainUnitTest<Breadcru
         domain.tree == "${rid}|${BasicModel.simpleName}|test|false"
     }
 
-    void "test Modelitem breadcrumb"() {
+    void 'test Modelitem breadcrumb'() {
         when:
         BasicModelItem con = new BasicModelItem(createdBy: editor.emailAddress, label: 'content')
         basicModel.addToModelItems(con)
@@ -121,7 +121,7 @@ ${con.id}|${BasicModelItem.simpleName}|content|null
 ${child.id}|${BasicModelItem.simpleName}|child|null"""
     }
 
-    void "test moving Modelitem breadcrumb"() {
+    void 'test moving Modelitem breadcrumb'() {
         when:
         BasicModelItem con = new BasicModelItem(createdBy: editor.emailAddress, label: 'content')
         basicModel.addToModelItems(con)
@@ -157,6 +157,7 @@ ${con.id}|${BasicModelItem.simpleName}|content|null
 ${child.id}|${BasicModelItem.simpleName}|child|null"""
 
         when:
+        child = con.childModelItems.first()
         con.removeFromChildModelItems(child)
         basicModel.addToModelItems(child)
         checkAndSave(child)
@@ -167,7 +168,7 @@ ${child.id}|${BasicModelItem.simpleName}|child|null"""
 ${child.id}|${BasicModelItem.simpleName}|child|null"""
     }
 
-    void "test 2 Modelitems in tree breadcrumb"() {
+    void 'test 2 Modelitems in tree breadcrumb'() {
         when:
         BasicModelItem bmi1 = new BasicModelItem(createdBy: editor.emailAddress, label: 'bmi1')
         BasicModelItem bmi2 = new BasicModelItem(createdBy: editor.emailAddress, label: 'bmi2')

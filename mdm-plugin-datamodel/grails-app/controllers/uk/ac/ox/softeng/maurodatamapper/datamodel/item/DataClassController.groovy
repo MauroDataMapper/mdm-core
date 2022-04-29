@@ -189,13 +189,15 @@ class DataClassController extends CatalogueItemController<DataClass> {
         if (!dataClassToBeImported) return notFound(DataClass, params.otherDataClassId)
 
         if (request.method == 'PUT') {
-            if (!validateImportAddition(instance, dataClassToBeImported)) return
-            log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
-            instance.addToImportedDataClasses(dataClassToBeImported)
+            if (dataClassService.validateImportAddition(instance, dataClassToBeImported)) {
+                log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+                instance.addToImportedDataClasses(dataClassToBeImported)
+            }
         } else {
-            if (!validateImportRemoval(instance, dataClassToBeImported)) return
-            log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
-            instance.removeFromImportedDataClasses(dataClassToBeImported)
+            if (dataClassService.validateImportRemoval(instance, dataClassToBeImported)) {
+                log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+                instance.removeFromImportedDataClasses(dataClassToBeImported)
+            }
         }
 
         if (!validateResource(instance, 'update')) return
@@ -218,13 +220,15 @@ class DataClassController extends CatalogueItemController<DataClass> {
         if (!dataElementToBeImported) return notFound(DataClass, params.otherDataClassId)
 
         if (request.method == 'PUT') {
-            if (!validateImportAddition(instance, dataElementToBeImported)) return
-            log.debug('Importing DataElement {} from {}', params.otherDataElementId, params.otherDataClassId)
-            instance.addToImportedDataElements(dataElementToBeImported)
+            if (dataClassService.validateImportAddition(instance, dataElementToBeImported)) {
+                log.debug('Importing DataElement {} from {}', params.otherDataElementId, params.otherDataClassId)
+                instance.addToImportedDataElements(dataElementToBeImported)
+            }
         } else {
-            if (!validateImportRemoval(instance, dataElementToBeImported)) return
-            log.debug('Removing import of DataElement {} from {}', params.otherDataElementId, params.otherDataClassId)
-            instance.removeFromImportedDataElements(dataElementToBeImported)
+            if (dataClassService.validateImportRemoval(instance, dataElementToBeImported)) {
+                log.debug('Removing import of DataElement {} from {}', params.otherDataElementId, params.otherDataClassId)
+                instance.removeFromImportedDataElements(dataElementToBeImported)
+            }
         }
 
         if (!validateResource(instance, 'update')) return
@@ -244,7 +248,9 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected List<DataClass> listAllReadableResources(Map params) {
-        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
+        params.sort = params.sort ?: ['label': 'asc']
+        // Cannot sort DCs including imported using idx combined with any other field
+        if (params.sort instanceof Map && (params.sort as Map).size() > 1) (params.sort as Map).remove('idx')
         if (params.dataClassId) {
             if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
                 notFound(params.dataClassId)
@@ -280,7 +286,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
     protected DataClass createResource() {
         DataClass resource = super.createResource() as DataClass
         if (params.dataClassId) {
-            dataClassService.get(params.dataClassId)?.addToDataClasses(resource)
+            dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)?.addToDataClasses(resource)
         }
         dataModelService.get(params.dataModelId)?.addToDataClasses(resource)
 
@@ -308,43 +314,5 @@ class DataClassController extends CatalogueItemController<DataClass> {
             return false
         }
         true
-    }
-
-    protected boolean validateImportAddition(DataClass instance, ModelItem importingItem) {
-        if (instance.id == importingItem.id) {
-            instance.errors.reject('invalid.imported.dataclass.into.self',
-                                   [importingItem.id].toArray(),
-                                   'DataClass [{0}] cannot be imported into itself')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        UUID owningDataClassId = importingItem.instanceOf(DataClass) ? importingItem.parentDataClass?.id : importingItem.dataClass.id
-        if (owningDataClassId == instance.id) {
-            instance.errors.reject('invalid.imported.modelitem.same.dataclass',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] to be imported belongs to the DataClass already')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        if (importingItem.model.id != instance.model.id && !importingItem.model.finalised) {
-            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] to be imported does not belong to a finalised DataModel')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        return true
-    }
-
-    protected boolean validateImportRemoval(DataClass instance, ModelItem importingItem) {
-        UUID owningDataClassId = importingItem.instanceOf(DataClass) ? importingItem.parentDataClass?.id : importingItem.dataClass.id
-        if (owningDataClassId == instance.id) {
-            instance.errors.reject('invalid.imported.deletion.modelitem.same.dataclass',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] belongs to the DataClass and cannot be removed as an import')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        return true
     }
 }

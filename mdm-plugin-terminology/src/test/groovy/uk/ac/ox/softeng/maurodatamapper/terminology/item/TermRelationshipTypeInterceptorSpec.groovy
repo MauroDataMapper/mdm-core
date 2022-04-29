@@ -50,7 +50,7 @@ class TermRelationshipTypeInterceptorSpec extends ContainedResourceInterceptorUn
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'TSI01'
+        'MII01'
     }
 
     @Override

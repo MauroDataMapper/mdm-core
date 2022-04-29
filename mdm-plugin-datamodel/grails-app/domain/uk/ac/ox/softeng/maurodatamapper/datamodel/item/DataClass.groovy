@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -107,10 +109,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         breadcrumbTree fetch: 'join'
         dataElements cascade: 'all-delete-orphan'
         dataClasses cascade: 'all-delete-orphan'
-        referenceTypes cascade: 'none'
+        referenceTypes cascade: 'none', cascadeValidate: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
-        dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
-        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
+        dataModel index: 'data_class_data_model_idx', cascadeValidate: 'none' //, cascade: 'none',
+        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update', cascadeValidate: 'none'
         extendedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
             name  : 'join_dataclass_to_extended_data_class',
             key   : 'dataclass_id',
@@ -188,20 +190,19 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     def beforeValidate() {
-        long st = System.currentTimeMillis()
+//        long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
-        summaryMetadata?.each {
-            if (!it.createdBy) it.createdBy = createdBy
-            it.multiFacetAwareItem = this
-        }
+            summaryMetadata?.each {
+                it.beforeValidateCheck(this)
+            }
         // New save/validate so all DEs and DCs are also new so sort the indexes now
         // This avoids repeated calls to the individual DE or DC during their beforeValidate
         if (!id) {
             if (dataElements) fullSortOfChildren(dataElements)
             if (dataClasses) fullSortOfChildren(dataClasses)
         }
-        log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
+//                log.debug('DC {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override
@@ -215,12 +216,22 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     ObjectDiff<DataClass> diff(DataClass otherDataClass, String context) {
-        catalogueItemDiffBuilder(DataClass, this, otherDataClass)
+        diff(otherDataClass, context, null, null)
+    }
+
+    ObjectDiff<DataClass> diff(DataClass otherDataClass, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<DataClass> base = DiffBuilder.catalogueItemDiffBuilder(DataClass, this, otherDataClass, lhsDiffCache, rhsDiffCache)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataClass.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataClass.maxMultiplicity)
-            .appendList(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
-            .appendList(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
 
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
+                .appendCollection(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
+        } else {
+            base.appendCollection(DataClass, 'dataClasses')
+                .appendCollection(DataElement, 'dataElements')
+        }
+        base
     }
 
     @Override

@@ -33,6 +33,7 @@ class VersionSpec extends Specification {
         version.major == 3
         version.minor == 1
         version.patch == 2
+        version.snapshot == false
 
         when:
         version = Version.from('3.1.0')
@@ -41,6 +42,7 @@ class VersionSpec extends Specification {
         version.major == 3
         version.minor == 1
         version.patch == 0
+        version.snapshot == false
     }
 
     void 'conversion of simple version string'() {
@@ -51,6 +53,7 @@ class VersionSpec extends Specification {
         version.major == 3
         version.minor == 1
         version.patch == 0
+        version.snapshot == false
 
         when:
         version = Version.from('3.0')
@@ -59,6 +62,7 @@ class VersionSpec extends Specification {
         version.major == 3
         version.minor == 0
         version.patch == 0
+        version.snapshot == false
 
         when:
         version = Version.from('0.1')
@@ -67,6 +71,7 @@ class VersionSpec extends Specification {
         version.major == 0
         version.minor == 1
         version.patch == 0
+        version.snapshot == false
     }
 
     void 'conversion of major only version string'() {
@@ -77,6 +82,7 @@ class VersionSpec extends Specification {
         version.major == 3
         version.minor == 0
         version.patch == 0
+        version.snapshot == false
 
         when:
         version = Version.from('2')
@@ -85,6 +91,7 @@ class VersionSpec extends Specification {
         version.major == 2
         version.minor == 0
         version.patch == 0
+        version.snapshot == false
 
         when:
         version = Version.from('1')
@@ -93,6 +100,45 @@ class VersionSpec extends Specification {
         version.major == 1
         version.minor == 0
         version.patch == 0
+        version.snapshot == false
+    }
+
+    void 'conversion of snapshot version string'(){
+        when:
+        Version version = Version.from('SNAPSHOT')
+
+        then:
+        version.major == 0
+        version.minor == 0
+        version.patch == 0
+        version.snapshot == true
+
+        and:
+        version.toString() == 'SNAPSHOT'
+
+        when:
+        version = Version.from('1.0.0-SNAPSHOT')
+
+        then:
+        version.major == 1
+        version.minor == 0
+        version.patch == 0
+        version.snapshot == true
+
+        and:
+        version.toString() == '1.0.0-SNAPSHOT'
+
+        when:
+        version = Version.from('1.2.3-SNAPSHOT')
+
+        then:
+        version.major == 1
+        version.minor == 2
+        version.patch == 3
+        version.snapshot == true
+
+        and:
+        version.toString() == '1.2.3-SNAPSHOT'
     }
 
     void 'comparison of versions'() {

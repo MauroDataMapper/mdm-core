@@ -22,7 +22,6 @@
   <mdm:terminologies>
     <mdm:terminology>
       <mdm:id>Invalid Terminology ID</mdm:id>
-      <mdm:label>Invalid Terminology</mdm:label>
     </mdm:terminology>
     <mdm:terminology>
       <mdm:id>dd1d02c8-8450-4c92-8c66-c0ee61cc0f76</mdm:id>

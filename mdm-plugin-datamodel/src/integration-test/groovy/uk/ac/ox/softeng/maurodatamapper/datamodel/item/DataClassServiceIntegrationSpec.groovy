@@ -21,16 +21,23 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 
+import grails.gorm.PagedResultList
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import spock.lang.Retry
 
 @Slf4j
@@ -94,9 +101,34 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(link)
 
         id = parent.id
+
+        userSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
     }
 
-    void "test get"() {
+    void setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues() {
+        DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Root Data Class', dataModel: dataModel)
+        dataModel.addToDataClasses(dataClass)
+
+        for (int i in 1..5) {
+            DataClass childDataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Child Data Class ' + i, dataModel: dataModel, idx: i - 1)
+            dataClass.addToDataClasses(childDataClass)
+        }
+
+        DataType enumerationType = new EnumerationType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Enumeration Type')
+        for (int i in 1..5) {
+            enumerationType.addToEnumerationValues(new EnumerationValue(createdBy: StandardEmailAddress.INTEGRATION_TEST, key: 'Key ' + i, value: 'Value ' + i, idx: i - 1))
+        }
+        dataModel.addToDataTypes(enumerationType)
+
+        for (int i in 1..5) {
+            DataElement dataElement = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Element ' + i, dataType: enumerationType, idx: i - 1)
+            dataClass.addToDataElements(dataElement)
+        }
+
+        checkAndSave(dataModel)
+    }
+
+    void 'test get'() {
         given:
         setupData()
 
@@ -104,7 +136,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataClassService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -127,7 +159,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataClassList[1].dataClasses.find {it.label == 'Integration child'}
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -135,7 +167,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataClassService.count() == 5
     }
 
-    void "test delete child dataclass"() {
+    void 'test delete child dataclass'() {
         given:
         setupData()
         DataClass dataClass = DataClass.findByLabel('Integration child')
@@ -330,6 +362,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
+    @Tag('non-parallel')
     void 'test copying simple DataClass with simple data elements'() {
         given:
         setupData()
@@ -383,8 +416,8 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
-    void 'test metadata saved at parent'()
-    {
+    @Tag('non-parallel')
+    void 'test metadata saved at parent'() {
         given:
         setupData()
 
@@ -417,7 +450,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataClass complex = dataModel.dataClasses.find {it.label == 'Integration grandparent'}
         DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
-        dataModelService.updateFacetsAfterInsertingCatalogueItem(copyModel)
         sessionFactory.currentSession.flush()
         dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor, userSecurityPolicyManager)
 
@@ -486,6 +518,332 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copiedElement.dataType == referenceType
     }
 
+    void 'test copying dataclass with ordered dataclasses, dataelements and enumerationvalues'() {
+        given:
+        setupData()
+        setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues()
+        DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
+        checkAndSave(copyModel)
+
+        when:
+        DataClass parentClass = dataModel.childDataClasses.find {it.label == 'Root Data Class'}
+
+        then:
+        parentClass.dataClasses.size() == 5
+        parentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        and:
+        parentClass.dataElements.size() == 5
+        parentClass.dataElements.every {dc ->
+            dc.label.startsWith('Data Element') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataElement dataElement = parentClass.dataElements.sort().first()
+        EnumerationType enumerationType = dataElement.dataType
+
+        then:
+        enumerationType.enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
+        }
+
+        when:
+        DataClass original = dataClassService.get(parentClass.id)
+        dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(copyModel)
+
+        when:
+        DataClass copiedParentClass = copyModel.childDataClasses.find {it.label == 'Root Data Class'}
+
+        then:
+        copiedParentClass.dataClasses.size() == 5
+        copiedParentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        and:
+        copiedParentClass.dataElements.size() == 5
+        copiedParentClass.dataElements.every {dc ->
+            dc.label.startsWith('Data Element') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataElement copiedDataElement = copiedParentClass.dataElements.sort().first()
+        EnumerationType copiedEnumerationType = copiedDataElement.dataType
+
+        then:
+        copiedEnumerationType.domainType == 'EnumerationType'
+        copiedEnumerationType.enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
+        }
+    }
+
+    void 'test copying dataclass without index order'() {
+        given:
+        setupData()
+        setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues()
+
+        when:
+        DataClass parentClass = dataModel.childDataClasses.find {it.label == 'Root Data Class'}
+
+        then:
+        parentClass.dataClasses.size() == 5
+        parentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataClass original = parentClass.dataClasses.sort().first()
+        dataClassService.copyDataClass(dataModel, original, editor, userSecurityPolicyManager, parentClass, false, new CopyInformation(copyLabel: 'Child Copied Class'))
+
+        then:
+        original.idx == 0
+        checkAndSave(dataModel)
+
+        when:
+        DataClass copied = parentClass.dataClasses.find {it.label == 'Child Copied Class'}
+        List<DataClass> dataClasses = parentClass.dataClasses.sort()
+
+        then:
+        copied.label == 'Child Copied Class'
+        copied.idx != original.idx
+        copied.idx == 5
+        dataClasses.size() == 6
+        dataClasses.take(5).every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+        dataClasses.last() == copied
+    }
+
+    void 'LIST01 : test getting all DataClasses inside a DataClass with importing involved'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataClassIds = buildChildDataClassImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 1]
+
+        when:
+        PagedResultList<DataClass> result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.standalone, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Standalone DC 1'
+        result[1].label == 'Standalone DC 2'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.providing, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Providing DC 1'
+        result[1].label == 'Providing DC 2'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.providingAndImporting, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 15
+        result[0].label == 'Providing DC 3'
+        result[1].label == 'Providing DC 4'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.importingOneLocation, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 5
+        result[0].label == 'Providing DC 3'
+        result[1].label == 'Providing DC 4'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.importingTwoLocations, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Providing DC 3'
+        result[1].label == 'Providing DC 4'
+    }
+
+    void 'LIST02 : test getting all DataClasses  inside a DataClass with importing involved with label filtering'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataClassIds = buildChildDataClassImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 0]
+        Map<String, Object> filter = [label: '6']
+
+        when:
+        PagedResultList<DataClass> result =
+            dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.standalone, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Standalone DC 6'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.providing, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Providing DC 6'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.providingAndImporting, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DC 6'
+        result[1].label == 'ProvidingImporting DC 6'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.importingOneLocation, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Providing DC 6'
+
+        when:
+        result = dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModel.id, dataClassIds.importingTwoLocations, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DC 6'
+        result[1].label == 'ProvidingImporting DC 6'
+    }
+
+
+    void 'LIST03 : test getting all root DataClasses inside a DataModel with importing involved'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataModelIds = buildRootDataClassImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 1]
+
+        when:
+        PagedResultList<DataClass> result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.standalone, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Standalone DC 1'
+        result[1].label == 'Standalone DC 2'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.providing, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Providing DC 1'
+        result[1].label == 'Providing DC 2'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.providingAndImporting, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 15
+        result[0].label == 'Providing DC 3'
+        result[1].label == 'Providing DC 4'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.importingOneLocation, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 5
+        result[0].label == 'Providing DC 3'
+        result[1].label == 'Providing DC 4'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.importingTwoLocations, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Providing DC 3'
+        result[1].label == 'Providing DC 4'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.importingThreeLocations, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 22
+        result[0].label == 'Providing child DC 4.3'
+        result[1].label == 'Providing child DC 4.5'
+    }
+
+    void 'LIST04 : test getting all root DataClasses inside a DataModel with importing involved with label filtering'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataModelIds = buildRootDataClassImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 0]
+        Map<String, Object> filter = [label: '6']
+
+        when:
+        PagedResultList<DataClass> result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.standalone, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Standalone DC 6'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.providing, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Providing DC 6'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.providingAndImporting, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DC 6'
+        result[1].label == 'ProvidingImporting DC 6'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.importingOneLocation, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Providing DC 6'
+
+        when:
+        result = dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelIds.importingTwoLocations, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DC 6'
+        result[1].label == 'ProvidingImporting DC 6'
+    }
+
     private void setupImportingData() {
         // DataModel: Integration test model
         //      DataClass: Integration Test Importing Parent DataClass (directly owned)
@@ -506,5 +864,131 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(importingParent)
         dataModel.addToDataClasses(importingParent)
         checkAndSave(dataModel)
+    }
+
+    Map<String, UUID> buildChildDataClassImportingStructure() {
+
+        DataClass standalone = new DataClass(label: 'standalone', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (0..9).each {i ->
+            standalone.addToDataClasses(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Standalone DC $i")
+        }
+        dataModel.addToDataClasses(standalone)
+        checkAndSave(standalone)
+
+        DataClass providing = new DataClass(label: 'providing', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (0..9).each {i ->
+            providing.addToDataClasses(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Providing DC $i")
+        }
+        dataModel.addToDataClasses(providing)
+        checkAndSave(providing)
+
+        DataClass providingAndImporting = new DataClass(label: 'providingAndImporting', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (0..9).each {i ->
+            providingAndImporting.addToDataClasses(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "ProvidingImporting DC $i")
+        }
+        (2..6).each {i ->
+            providingAndImporting.addToImportedDataClasses(providing.dataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        dataModel.addToDataClasses(providingAndImporting)
+        checkAndSave(providingAndImporting)
+
+        DataClass importingOneLocation = new DataClass(label: 'importingOneLocation', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (2..6).each {i ->
+            importingOneLocation.addToImportedDataClasses(providing.dataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        dataModel.addToDataClasses(importingOneLocation)
+        checkAndSave(importingOneLocation)
+
+        DataClass importingTwoLocations = new DataClass(label: 'importingTwoLocations', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (2..6).each {i ->
+            importingTwoLocations.addToImportedDataClasses(providing.dataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        (5..9).each {i ->
+            importingTwoLocations.addToImportedDataClasses(providingAndImporting.dataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        dataModel.addToDataClasses(importingTwoLocations)
+        checkAndSave(importingTwoLocations)
+
+        [
+            standalone           : standalone.id,
+            providing            : providing.id,
+            providingAndImporting: providingAndImporting.id,
+            importingOneLocation : importingOneLocation.id,
+            importingTwoLocations: importingTwoLocations.id
+        ]
+    }
+
+    Map<String, UUID> buildRootDataClassImportingStructure() {
+
+        DataModel standalone = new DataModel(label: 'standalone', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder,
+                                             authority: testAuthority)
+        (0..9).each {i ->
+            standalone.addToDataClasses(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Standalone DC $i")
+        }
+        checkAndSave(standalone)
+
+        DataModel providing = new DataModel(label: 'providing', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder,
+                                            authority: testAuthority)
+        (0..9).each {i ->
+            DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Providing DC $i")
+            (0..9).each {j ->
+                DataClass child = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Providing child DC ${i}.${j}")
+                parent.addToDataClasses(child)
+                providing.addToDataClasses(child)
+            }
+            providing.addToDataClasses(parent)
+        }
+        checkAndSave(providing)
+
+        DataModel providingAndImporting = new DataModel(label: 'providingAndImporting', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder,
+                                                        authority: testAuthority)
+        (0..9).each {i ->
+            providingAndImporting.addToDataClasses(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "ProvidingImporting DC $i")
+        }
+        (2..6).each {i ->
+            providingAndImporting.addToImportedDataClasses(providing.childDataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        checkAndSave(providingAndImporting)
+
+        DataModel importingOneLocation = new DataModel(label: 'importingOneLocation', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder,
+                                                       authority: testAuthority)
+        (2..6).each {i ->
+            importingOneLocation.addToImportedDataClasses(providing.childDataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        checkAndSave(importingOneLocation)
+
+        DataModel importingTwoLocations = new DataModel(label: 'importingTwoLocations', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder,
+                                                        authority: testAuthority)
+        (2..6).each {i ->
+            importingTwoLocations.addToImportedDataClasses(providing.childDataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        (5..9).each {i ->
+            importingTwoLocations.addToImportedDataClasses(providingAndImporting.childDataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        checkAndSave(importingTwoLocations)
+
+        DataModel importingThreeLocations = new DataModel(label: 'importingThreeLocations', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder,
+                                                          authority: testAuthority)
+        (2..6).each {i ->
+            importingThreeLocations.addToImportedDataClasses(providing.childDataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        (5..9).each {i ->
+            importingThreeLocations.addToImportedDataClasses(providingAndImporting.childDataClasses.find {dc -> dc.label.endsWith("${i}")})
+        }
+        (4..7).each {i ->
+            [1, 3, 5].each {j ->
+                importingThreeLocations.addToImportedDataClasses(providing.dataClasses.find {dc -> dc.label.endsWith("${i}.${j}")})
+            }
+        }
+        checkAndSave(importingThreeLocations)
+
+        [
+            standalone             : standalone.id,
+            providing              : providing.id,
+            providingAndImporting  : providingAndImporting.id,
+            importingOneLocation   : importingOneLocation.id,
+            importingTwoLocations  : importingTwoLocations.id,
+            importingThreeLocations: importingThreeLocations.id
+        ]
     }
 }

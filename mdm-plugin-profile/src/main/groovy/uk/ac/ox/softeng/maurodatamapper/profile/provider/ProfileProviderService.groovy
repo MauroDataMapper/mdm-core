@@ -72,6 +72,10 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         false
     }
 
+    String getUniqueIdentifierKey() {
+        "${getMetadataNamespace()}.${getName()}.${getVersion()}"
+    }
+
     P getNewProfile() {
         getProfileClass().getDeclaredConstructor().newInstance()
     }

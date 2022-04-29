@@ -18,17 +18,16 @@
 package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
-
-import java.nio.charset.Charset
 
 /**
  * @since 28/08/2020
  */
 @Slf4j
-class PathNode implements Serializable {
+class PathNode implements Serializable, Cloneable {
 
     static final String MODEL_PATH_IDENTIFIER_SEPARATOR = '$'
     static final String ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR = "\\${MODEL_PATH_IDENTIFIER_SEPARATOR}"
@@ -67,7 +66,7 @@ class PathNode implements Serializable {
     }
 
     void parseIdentifier(String fullIdentifier, boolean isLast) {
-        String parsed = safeUrlDecode(fullIdentifier)
+        String parsed = Utils.safeUrlDecode(fullIdentifier)
         if (!parsed) return
 
         if (isLast) {
@@ -119,7 +118,7 @@ class PathNode implements Serializable {
             return modelIdentifier == pathNode.modelIdentifier
         }
 
-        return true
+        true
     }
 
     int hashCode() {
@@ -142,7 +141,7 @@ class PathNode implements Serializable {
 
     boolean matchesPrefix(String otherPrefix) {
         if (prefix != otherPrefix) {
-            log.trace("Resource prefix [{}] does not match the path node [{}]", otherPrefix, this)
+            log.trace('Resource prefix [{}] does not match the path node [{}]', otherPrefix, this)
             return false
         }
         true
@@ -170,7 +169,7 @@ class PathNode implements Serializable {
 
         identifierSplit = otherPathNode.identifier.split(/:/)
         if (identifier == identifierSplit[0]) return true
-        log.trace("Resource identifier [{}] does not match the path node [{}]", otherPathNode, this)
+        log.trace('Resource identifier [{}] does not match the path node [{}]', otherPathNode, this)
         false
     }
 
@@ -197,13 +196,5 @@ class PathNode implements Serializable {
 
     PathNode clone() {
         new PathNode(this.prefix, this.identifier, this.modelIdentifier, this.attribute)
-    }
-
-    static safeUrlDecode(String value) {
-        try {
-            URLDecoder.decode(value, Charset.defaultCharset())
-        } catch (IllegalArgumentException | NullPointerException ignored) {
-            value
-        }
     }
 }

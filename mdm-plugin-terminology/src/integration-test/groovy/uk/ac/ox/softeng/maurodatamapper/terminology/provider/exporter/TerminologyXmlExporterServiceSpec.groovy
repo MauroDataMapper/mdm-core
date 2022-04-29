@@ -28,6 +28,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import org.junit.jupiter.api.Tag
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -40,6 +41,7 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyXmlImporterService, TerminologyXmlExporterService>
     implements XmlValidator {
 
@@ -66,7 +68,7 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
 
         Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
+            Files.writeString(expectedPath, (prettyPrintXml(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
         validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', exporterService.version)

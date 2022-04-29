@@ -3,7 +3,7 @@ maurodatamapper:
         public: false
         max:
             lock:
-                time: 5
+                time: 30
     bootstrap:
         adminuser: true
         folder: true

@@ -44,7 +44,9 @@ import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormEntityApi
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 
 @Transactional
 @Slf4j
@@ -71,13 +73,20 @@ class UserSecurityPolicyService {
     @Autowired
     GrailsApplication grailsApplication
 
+    @Value('${maurodatamapper.security.max.lock.time:30}')
+    int maxLockTime
+
+    UserSecurityPolicy buildInitialSecurityPolicy(CatalogueUser catalogueUser, Set<UserGroup> userGroups) {
+        UserSecurityPolicy
+            .builder()
+            .forUser(catalogueUser)
+            .inGroups(userGroups)
+            .withMaxLockTime(getMaxLockTime())
+            .lock()
+    }
+
     UserSecurityPolicy buildUserSecurityPolicy(CatalogueUser catalogueUser, Set<UserGroup> userGroups) {
-        int maxLockTime = grailsApplication.config.getProperty('maurodatamapper.security.max.lock.time', Integer, 5)
-        buildUserSecurityPolicy UserSecurityPolicy
-                                    .builder()
-                                    .forUser(catalogueUser)
-                                    .inGroups(userGroups)
-                                    .withMaxLockTime(maxLockTime)
+        buildUserSecurityPolicy(buildInitialSecurityPolicy(catalogueUser, userGroups))
     }
 
     UserSecurityPolicy buildUserSecurityPolicy(UserSecurityPolicy userSecurityPolicy) {
@@ -89,13 +98,11 @@ class UserSecurityPolicyService {
             userSecurityPolicy.user, groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
         )
 
-        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = buildInternalSecurity(userSecurityPolicy.isAuthenticated())
-
-        // Add the actual user with full permissions for themselves
-        virtualSecurableResourceGroupRoles.addAll(personalUserRoles)
-
-        // If no usergroups then the user has no permissions apart from their own user
+        // If no usergroups then the user has no permissions apart from their own user and what is public/authenticated access
         if (!userSecurityPolicy.hasUserGroups()) {
+
+            Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = buildInternalSecurity(userSecurityPolicy.isAuthenticatedForBuilding())
+
             return userSecurityPolicy
                 .withVirtualRoles(personalUserRoles)
                 .includeVirtualRoles(virtualSecurableResourceGroupRoles)
@@ -103,7 +110,7 @@ class UserSecurityPolicyService {
 
         buildUserSecurityPolicyForContent(userSecurityPolicy,
                                           userSecurityPolicy.getAssignedUserGroupApplicationRoles(),
-                                          virtualSecurableResourceGroupRoles)
+                                          personalUserRoles)
     }
 
     UserSecurityPolicy updatePolicyWithAccessInUserGroup(UserSecurityPolicy userSecurityPolicy, UserGroup userGroup) {
@@ -240,18 +247,21 @@ class UserSecurityPolicyService {
         if (fullSecureableResourceAccessRole) {
             virtualSecurableResourceGroupRoles.addAll(buildFullAccessToAllSecurableResources(fullSecureableResourceAccessRole))
         } else {
+            // Build the public/authenticated access
+            virtualSecurableResourceGroupRoles.addAll(buildInternalSecurity(userSecurityPolicy.isAuthenticatedForBuilding()))
             // Otherwise use the assigned roles to define access
             virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToSecurableResources(securableResourceGroupRoles))
-        }
-
-        // If any container admin privileges then we need to make sure the container group admin role is added to the application level
-        if (virtualSecurableResourceGroupRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}) {
-            inheritedApplicationGroupRoles.add(groupRoleService.getFromCache(GroupRole.CONTAINER_GROUP_ADMIN_ROLE_NAME).groupRole)
+            // If any container admin privileges then we need to make sure the container group admin role is added to the application level
+            if (virtualSecurableResourceGroupRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}) {
+                inheritedApplicationGroupRoles.add(groupRoleService.getFromCache(GroupRole.CONTAINER_GROUP_ADMIN_ROLE_NAME).groupRole)
+            }
         }
 
         // Add all users and groups access (only valid for application roles)
-        virtualSecurableResourceGroupRoles.addAll(buildCatalogueUserVirtualRoles(inheritedApplicationGroupRoles))
-        virtualSecurableResourceGroupRoles.addAll(buildUserGroupVirtualRoles(inheritedApplicationGroupRoles))
+        if(inheritedApplicationGroupRoles) {
+            virtualSecurableResourceGroupRoles.addAll(buildCatalogueUserVirtualRoles(inheritedApplicationGroupRoles))
+            virtualSecurableResourceGroupRoles.addAll(buildUserGroupVirtualRoles(inheritedApplicationGroupRoles))
+        }
 
         userSecurityPolicy
             .withApplicationRoles(inheritedApplicationGroupRoles)
@@ -297,7 +307,6 @@ class UserSecurityPolicyService {
     }
 
     private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToFoldersOfModel(Model model,
-                                                                                         ModelService modelService,
                                                                                          UserGroup userGroup,
                                                                                          GroupRole appliedGroupRole) {
 
@@ -360,6 +369,7 @@ class UserSecurityPolicyService {
     }
 
     private Set<VirtualSecurableResourceGroupRole> buildFullAccessToAllSecurableResources(VirtualGroupRole accessRole) {
+        log.debug('Building full access to system')
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         Set<GroupRole> inheritedContainerRoles = groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).allowedRoles
         // Don't bother with usergroups or users as these will be implicitly defined by the other roles under application_admin
@@ -383,6 +393,7 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToSecurableResources(
         List<SecurableResourceGroupRole> securableResourceGroupRoles) {
 
+        log.debug('Building controlled access to system')
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         securableResourceGroupRoles.each {sgr ->
 
@@ -398,23 +409,23 @@ class UserSecurityPolicyService {
                 }
             )
 
-            // If we're securing a container then we need to create virtual roles for all its contents
-            ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
-            if (containerService) {
-                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
-                                                                                                     containerService,
-                                                                                                     allowedRoles,
-                                                                                                     sgr.userGroup,
-                                                                                                     sgr.groupRole))
+            if ((sgr.securableResource as GormEntityApi).instanceOf(Container)) {
+                // If we're securing a container then we need to create virtual roles for all its contents
+                ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
+                if (containerService) {
+                    virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
+                                                                                                         containerService,
+                                                                                                         allowedRoles,
+                                                                                                         sgr.userGroup,
+                                                                                                         sgr.groupRole))
 
+                }
             }
 
-            // If we're securing a model we need to make sure the model's folder tree is readable
-            // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
-            ModelService modelService = modelServices.find {it.handles(sgr.securableResourceDomainType)}
-            if (modelService) {
+            if ((sgr.securableResource as GormEntityApi).instanceOf(Model)) {
+                // If we're securing a model we need to make sure the model's folder tree is readable
+                // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
                 virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
-                                                                                                modelService,
                                                                                                 sgr.userGroup,
                                                                                                 sgr.groupRole))
             }

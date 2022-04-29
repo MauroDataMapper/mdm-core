@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
@@ -142,6 +143,8 @@ class DataElementController extends CatalogueItemController<DataElement> {
             notFound(params.dataClassId)
             return null
         }
+        // Cannot sort DEs including imported using idx combined with any other field
+        if (params.sort instanceof Map && (params.sort as Map).size() > 1) (params.sort as Map).remove('idx')
         return dataElementService.findAllByDataClassIdIncludingImported(params.dataClassId, params, params)
     }
 
@@ -158,13 +161,22 @@ class DataElementController extends CatalogueItemController<DataElement> {
     @Override
     protected DataElement createResource() {
         DataElement resource = super.createResource() as DataElement
-        dataClassService.get(params.dataClassId)?.addToDataElements(resource)
+        DataType boundDataType = dataTypeService.checkBoundDataType(params.dataModelId, resource.dataType)
+        if (boundDataType) boundDataType.addToDataElements(resource)
+        else resource.dataType = null
+        // Protect against mismatch DM and DC (DC not inside DM
+        dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)?.addToDataElements(resource)
         resource
     }
 
     @Override
     protected DataElement updateResource(DataElement resource) {
-        if (!resource.dataType.ident()) resource.dataType.save()
+        if (!resource.dataType.ident()) {
+            DataType boundDataType = dataTypeService.checkBoundDataType(params.dataModelId, resource.dataType)
+            if (boundDataType) boundDataType.addToDataElements(resource)
+            else resource.dataType = null
+            if (resource.dataType && !resource.dataType.ident()) resource.dataType.save()
+        }
         super.updateResource(resource) as DataElement
     }
 

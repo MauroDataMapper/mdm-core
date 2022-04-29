@@ -62,7 +62,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Requires({
     String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
     HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
-    connection.setRequestMethod("GET")
+    connection.setRequestMethod('GET')
     connection.connect()
     connection.getResponseCode() == 200
 })
@@ -81,7 +81,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         safeSessionFlush()
 
         adminApiKey = new ApiKey(catalogueUser: getUserByEmailAddress(ADMIN),
-                                 name: "Functional Test",
+                                 name: 'Functional Test',
                                  expiryDate: LocalDate.now().plusDays(5),
                                  createdBy: FUNCTIONAL_TEST).save(flush: true).id
 

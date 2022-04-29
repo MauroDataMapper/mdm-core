@@ -44,7 +44,7 @@ class SummaryMetadataControllerSpec extends ResourceControllerSpec<SummaryMetada
         mockDomains(Folder, DataModel, SummaryMetadata, SummaryMetadataReport)
         log.debug('Setting up summary metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost')
         checkAndSave(testAuthority)
         dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
         checkAndSave dataModel

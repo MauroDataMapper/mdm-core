@@ -26,10 +26,12 @@ import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     GroupRole editorRole
@@ -78,7 +80,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
 
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -86,7 +88,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         securableResourceGroupRoleService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -115,7 +117,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         b.groupRole.id == groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -123,7 +125,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         securableResourceGroupRoleService.count() == 4
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 

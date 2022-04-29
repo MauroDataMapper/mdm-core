@@ -44,8 +44,8 @@ json {
     version Holders.getPluginManager()?.getGrailsPlugin('mdmCore')?.version ?: 'Unknown Version'
 
     // If there are errors then render those
-    if (errors) validationErrors tmpl."/errors/errors"(errors)
-    else if (errorsList) validationErrors tmpl."/errors/errors"(errorsList)
+    if (errors) validationErrors tmpl.'/errors/errors'(errors)
+    else if (errorsList) validationErrors tmpl.'/errors/errors'(errorsList)
 
     else if (determinedHttpStatus != BAD_REQUEST) {
         // SQL Exceptions are iterable so we need to only show the first

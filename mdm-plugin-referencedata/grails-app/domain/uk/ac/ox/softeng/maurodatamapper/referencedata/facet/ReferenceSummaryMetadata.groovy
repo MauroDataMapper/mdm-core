@@ -32,7 +32,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware {
 
-    public final static Integer BATCH_SIZE = 5000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
     ReferenceSummaryMetadataType summaryMetadataType
@@ -56,6 +56,15 @@ class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware 
 
     static mapping = {
         summaryMetadataReports cascade: 'all-delete-orphan'
+    }
+
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
     }
 
     @Override

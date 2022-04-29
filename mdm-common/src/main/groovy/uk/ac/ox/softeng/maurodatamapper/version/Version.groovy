@@ -32,7 +32,7 @@ class Version implements Comparable<Version> {
     int patch
     boolean snapshot
 
-    static final Pattern VERSION_PATTERN = ~/(\d+)(\.(\d+)(\.(\d+))?)?(-SNAPSHOT)?/
+    static final Pattern VERSION_PATTERN = ~/((\d+)(\.(\d+)(\.(\d+))?)?(-SNAPSHOT)?)|SNAPSHOT/
 
     @Override
     int compareTo(Version that) {
@@ -54,9 +54,7 @@ class Version implements Comparable<Version> {
         if (major != version.major) return false
         if (minor != version.minor) return false
         if (patch != version.patch) return false
-        if (snapshot != version.snapshot) return false
-
-        return true
+        snapshot == version.snapshot
     }
 
     @Override
@@ -66,18 +64,20 @@ class Version implements Comparable<Version> {
         result = 31 * result + minor
         result = 31 * result + patch
         result = 31 * result + (snapshot ? 1 : 0)
-        return result
+        result
     }
 
     @Override
     String toString() {
+        if (major == 0 && minor == 0 && patch == 0 && snapshot) {
+            return 'SNAPSHOT'
+        }
         snapshot ? "${major}.${minor}.${patch}-SNAPSHOT" : "${major}.${minor}.${patch}"
     }
 
     static Version nextMajorVersion(Version version) {
         new Version(major: version.major + 1, minor: 0, patch: 0)
     }
-
 
     static Version nextMinorVersion(Version version) {
         new Version(major: version.major, minor: version.minor + 1, patch: 0)
@@ -89,17 +89,19 @@ class Version implements Comparable<Version> {
 
     static Version from(String versionStr) {
 
-        if (!versionStr) throw new IllegalStateException("Must have a version")
+        if (!versionStr) throw new IllegalStateException('Must have a version')
+
+        if (versionStr == 'SNAPSHOT') return new Version(major: 0, minor: 0, patch: 0, snapshot: true)
 
         Matcher m = VERSION_PATTERN.matcher(versionStr)
         if (!m.matches()) {
             throw new IllegalStateException("Version '${versionStr}' does not match the expected pattern")
         }
 
-        new Version(major: m.group(1).toInteger(),
-                    minor: m.group(3)?.toInteger() ?: 0,
-                    patch: m.group(5)?.toInteger() ?: 0,
-                    snapshot: m.group(6) ? true : false
+        new Version(major: m.group(2).toInteger(),
+                    minor: m.group(4)?.toInteger() ?: 0,
+                    patch: m.group(6)?.toInteger() ?: 0,
+                    snapshot: m.group(7) ? true : false
         )
     }
 

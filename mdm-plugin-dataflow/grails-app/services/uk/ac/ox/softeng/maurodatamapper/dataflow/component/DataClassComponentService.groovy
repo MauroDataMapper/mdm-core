@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -32,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 @Slf4j
 @Transactional
@@ -40,8 +40,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
     DataElementComponentService dataElementComponentService
     PathService pathService
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     @Override
     DataClassComponent get(Serializable id) {
@@ -52,7 +50,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     List<DataClassComponent> getAll(Collection<UUID> ids) {
         DataClassComponent.getAll(ids).findAll()
     }
-
 
     List<DataClassComponent> list(Map args) {
         DataClassComponent.list(args)
@@ -144,6 +141,10 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         DataClassComponent.byDataFlowIdAndId(dataFlowId, Utils.toUuid(id)).get()
     }
 
+    boolean existsByDataFlowIdAndId(UUID dataFlowId, Serializable id) {
+        DataClassComponent.byDataFlowIdAndId(dataFlowId, Utils.toUuid(id)).count() == 1
+    }
+
     List<DataClassComponent> findAllByDataFlowId(UUID dataFlowId, Map pagination = [:]) {
         DataClassComponent.byDataFlowId(dataFlowId).list(pagination)
     }
@@ -186,7 +187,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     }
 
     DataClassComponent findOrCreateDataClassComponentForDataElementComponent(DataElementComponent dataElementComponent, User user) {
-
+        throw new ApiNotYetImplementedException('DCCS', 'findOrCreateDataClassComponentForDataElementComponent')
     }
 
    /**
@@ -223,7 +224,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
             dataClassComponent.sourceDataClasses = resolvedSourceDataClasses
         }
-
 
         def rawTargetDataClasses = dataClassComponent.targetDataClasses
         Set<DataClass> resolvedTargetDataClasses = []

@@ -368,7 +368,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -459,7 +459,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -572,7 +572,6 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
   ]
 }'''
     }
-
 
     void 'Test the permanent delete action correctly deletes an instance with folder inside'() {
         when: 'Creating a top folder'
@@ -783,7 +782,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         then:
         verifyJsonResponse OK, '''{
             "count": 0,
-            "items": [                
+            "items": [
             ]
         }'''
 
@@ -815,7 +814,6 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         'RV'   | 'Reviewer'      | true    | false
         'AU'   | 'Author'        | true    | false
         'ED'   | 'Editor'        | true    | expectations.editorsCan('update')
-
     }
 
     void '#prefix-14 : test moving folder with admin role into admin folder [allowed] (as #name)'() {
@@ -897,7 +895,6 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         String dmId2 = responseBody().id
         PUT("dataModels/${dmId}/readByEveryone", [:], MAP_ARG, true)
         verifyResponse(OK, response)
-
 
         when: 'getting the folder its not public but its readable due to the DM'
         // it has to be readable as it will be "clickable" in the tree
@@ -994,11 +991,127 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         then:
         verifyResponse(NOT_FOUND, response)
 
-
         cleanup:
         loginAdmin()
         DELETE("dataModels/${dmId2}?permanent=true", MAP_ARG, true)
         verifyResponse(NO_CONTENT, response)
         removeValidIdObject(id)
+    }
+
+    void 'FE-#prefix-01 : test export a single Folder (as #name)'() {
+        when:
+        login(name)
+        GET("${testFolderId}/export/uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter/FolderJsonExporterService/1.0", canRead ? STRING_ARG : MAP_ARG)
+
+        then:
+        if (!canRead) verifyNotFound(response, testFolderId)
+        else {
+            verifyJsonResponse(OK, '''{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder"
+  },
+  "exportMetadata": {
+    "exportedBy": "${json-unit.any-string}",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}''')
+        }
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
+    }
+
+    void 'FE-#prefix-02 : test export a Folder with child Folders (as #name)'() {
+        given:
+        List<String> ids = []
+
+        when:
+        loginCreator()
+        POST("${testFolderId}/folders", [label: 'Functional Test Folder 2'])
+        ids << response.body().id
+        POST("${testFolderId}/folders", [label: 'Functional Test Folder 3'])
+        ids << response.body().id
+        POST("${ids[1]}/folders", [label: 'Functional Test Folder 4'])
+        ids << response.body().id
+
+        login(name)
+        GET("${testFolderId}/export/uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter/FolderJsonExporterService/1.0", canRead ? STRING_ARG : MAP_ARG)
+
+        then:
+        if (!canRead) verifyNotFound(response, testFolderId)
+        else {
+            verifyJsonResponse(OK, '''{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder",
+    "childFolders": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Folder 2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "Folder"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Folder 3",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "Folder",
+        "childFolders": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test Folder 4",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "domainType": "Folder"
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "${json-unit.any-string}",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}''')
+        }
+
+        cleanup:
+        ids.reverseEach { removeValidIdObject(it) }
+        // Should not be necessary to clean up roles but log files indicate that occasionally they are left over
+        ids.each { cleanUpRoles(it) }
+        cleanupUserGroups()
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
     }
 }

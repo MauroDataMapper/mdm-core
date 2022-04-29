@@ -117,7 +117,8 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         if (!versionLink.model) {
             versionLink.model = findVersionLinkAwareByDomainTypeAndId(versionLink.modelDomainType, versionLink.modelId)
         }
-        if (!versionLink.targetModel) {
+        // If theres no target or the target has changed and the id's dont match then load using the stored id and domain type
+        if (!versionLink.targetModel || versionLink.targetModel.id != versionLink.targetModelId) {
             versionLink.targetModel = findVersionLinkAwareByDomainTypeAndId(versionLink.targetModelDomainType, versionLink.targetModelId)
         }
         versionLink
@@ -180,6 +181,11 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     @Override
     List<VersionLink> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
         findAllBySourceOrTargetModelId(multiFacetAwareItemId, paginate)
+    }
+
+    @Override
+    List<VersionLink> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        VersionLink.byModelIdInList(multiFacetAwareItemIds).list()
     }
 
     @Override

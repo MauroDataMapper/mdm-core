@@ -50,7 +50,11 @@ import grails.plugins.Plugin
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
+import org.grails.web.servlet.view.CompositeViewResolver
+import org.grails.web.servlet.view.SitemeshLayoutViewResolver
+import org.hibernate.dialect.PostgreSQL94Dialect
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
+import org.springframework.util.ClassUtils
 
 /**
  * @since 01/11/2017
@@ -61,45 +65,46 @@ class MdmCoreGrailsPlugin extends Plugin {
     static String DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME = 'defaultUserSecurityPolicyManager'
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "5.1.1 > *"
+    def grailsVersion = '5.1.7 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
+        'grails-app/views/error.gsp'
     ]
 
-    def title = "Mauro Data Mapper Core Plugin"
+    def title = 'Mauro Data Mapper Core Plugin'
     // Headline display name of the plugin
-    def author = "Oliver Freeman"
-    def authorEmail = "oliver.freeman@bdi.ox.ac.uk"
+    def author = 'Oliver Freeman'
+    def authorEmail = 'oliver.freeman@bdi.ox.ac.uk'
     def description = '''\
-The core domain, services and controllers for the Mauro Data Mapper backend. 
+The core domain, services and controllers for the Mauro Data Mapper backend.
 This is basically the backend API.
 '''
 
     // URL to the plugin's documentation
-    def documentation = ""
+    def documentation = ''
 
     // Extra (optional) plugin metadata
 
     // License: one of 'APACHE', 'GPL2', 'GPL3'
-    def license = "APACHE"
+    def license = 'APACHE'
 
     // Details of company behind the plugin (if there is one)
-    def organization = [name: "Oxford University BRC Informatics", url: "www.ox.ac.uk"]
+    def organization = [name: 'Oxford University BRC Informatics', url: 'www.ox.ac.uk']
 
     // Any additional developers beyond the author specified above.
     def developers = [[name: 'James Welch', email: 'james.welch@bdi.ox.ac.uk']]
 
     // Location of the plugin's issue tracker.
-    def issueManagement = [system: "YouTrack", url: "https://maurodatamapper.myjetbrains.com"]
+    def issueManagement = [system: 'YouTrack', url: 'https://maurodatamapper.myjetbrains.com']
 
     // Online location of the plugin's browseable source code.
-    def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
+    def scm = [url: 'https://github.com/mauroDataMapper/mdm-core']
 
     def dependsOn = [
         hibernate      : '7.2.0 > *',
         interceptors   : grailsVersion,
         services       : grailsVersion,
+        controllers    : grailsVersion,
         assetPipeline  : '3.3.6 > *',
         jsonView       : '2.2.0 > *',
         markupView     : '2.2.0 > *',
@@ -112,7 +117,41 @@ This is basically the backend API.
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
-            boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
+            /*
+            Ensure that if using PG9.4+ then the reWriteBatchedInserts property is in the datasource properties
+            This is needed to get PG to actually do batch processing of inserts.
+            Whilst the hibernate settings get hibernate to perform batching of inserts and updates the batches are sent to PG which doesnt actually then
+            perform batch inserts but individual sql inserts. This property gets the PG JDBC driver to rewrite the batches as 1 insert statement with multiple
+            sets of values, which is what we want.
+             */
+            Map<String, Map> dataSources = config.getProperty('dataSources', Map<String, Map>, [:])
+            boolean dataSourcesConfig = true
+            if (!dataSources) {
+                dataSourcesConfig = false
+                def defaultDataSource = config.getProperty('dataSource', Map)
+                if (defaultDataSource) {
+                    dataSources['dataSource'] = defaultDataSource
+                }
+            }
+            if (dataSources) {
+                dataSources.each {String k, Map ds ->
+                    String dialect = ds.dialect
+                    Class dialectClass = ClassUtils.forName(dialect, this.class.classLoader)
+                    if (Utils.parentClassIsAssignableFromChild(PostgreSQL94Dialect, dialectClass)) {
+                        Map dsProperties = ds.properties ?: [:]
+                        String connectionProperties = dsProperties.connectionProperties ?: ''
+                        if (!connectionProperties.contains('reWriteBatchedInserts')) {
+                            String key = dataSourcesConfig ? "dataSources.${k}.properties.connectionProperties" : 'dataSource.properties.connectionProperties'
+                            connectionProperties = connectionProperties ? "${connectionProperties};reWriteBatchedInserts=true" : 'reWriteBatchedInserts=true'
+                            config.setAt(key, connectionProperties)
+                            dsProperties.connectionProperties = connectionProperties
+                            ds['properties'] = dsProperties
+                        }
+                    }
+                }
+            }
+
+            boolean rebuildIndexes = config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
             if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
              * Load in the HS analysers used by the hibernate search functionality
@@ -120,7 +159,7 @@ This is basically the backend API.
             hibernateSearchMappingConfigurer(MdmHibernateSearchMappingConfigurer)
 
             // Ensure the uuid2 generator is used for mapping ids
-            grailsApplication.config.setAt('grails.gorm.default.mapping', {
+            config.setAt('grails.gorm.default.mapping', {
                 id generator: 'uuid2'
             })
 
@@ -131,7 +170,7 @@ This is basically the backend API.
              * The default is either no access, or complete access (and that means complete unfettered access to everything
              * maurodatamapper.security.public property defines what the default is
              */
-            boolean publicAccess = grailsApplication.config.getProperty('maurodatamapper.security.public', Boolean)
+            boolean publicAccess = config.getProperty('maurodatamapper.security.public', Boolean)
             if (publicAccess) {
                 log.warn('Running in public access mode. All actions will be available to any user')
             }
@@ -198,9 +237,6 @@ This is basically the backend API.
 
     }
 
-    void doWithDynamicMethods() {
-    }
-
     void doWithApplicationContext() {
         if (config.getProperty('env', String) == 'live') outputRuntimeArgs()
         else Utils.outputRuntimeArgs(MdmCoreGrailsPlugin)
@@ -210,6 +246,15 @@ This is basically the backend API.
          */
         DataBindingSourceRegistry registry = applicationContext.getBean(DataBindingSourceRegistry.BEAN_NAME)
         registry.addDataBindingSourceCreator(applicationContext.getBean(CsvDataBindingSourceCreator))
+
+        /**
+         * Remove the SitemeshLayoutViewResolver as this resolves GSP files which we dont need or use
+         */
+        SitemeshLayoutViewResolver sitemeshLayoutViewResolver = applicationContext.getBean(SitemeshLayoutViewResolver)
+        if (sitemeshLayoutViewResolver) {
+            CompositeViewResolver compositeViewResolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
+            compositeViewResolver.viewResolvers.remove(sitemeshLayoutViewResolver)
+        }
     }
 
     void outputRuntimeArgs() {

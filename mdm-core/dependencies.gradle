@@ -2,13 +2,13 @@ dependencies {
 
     api project(':mdm-common')
 
-    implementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
-    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
-    implementation group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMailVersion
-    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
-    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutilsVersion
+    implementation group: 'org.apache.commons', name: 'commons-text'
+    implementation group: 'org.apache.commons', name: 'commons-csv'
+    implementation group: 'org.simplejavamail', name: 'simple-java-mail'
+    implementation group: 'com.google.guava', name: 'guava'
+    implementation group: 'commons-beanutils', name: 'commons-beanutils'
 
-    implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion"
+    implementation "org.grails.plugins:hibernate-search"
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'
@@ -22,6 +22,6 @@ dependencies {
 
     testImplementation project(':mdm-testing-framework')
 
-    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
+    api group: 'com.github.spotbugs', name: 'spotbugs-annotations'
 }
 

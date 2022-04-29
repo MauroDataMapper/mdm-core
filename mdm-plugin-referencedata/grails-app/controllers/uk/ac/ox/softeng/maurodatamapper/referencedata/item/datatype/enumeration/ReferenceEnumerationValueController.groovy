@@ -55,7 +55,9 @@ class ReferenceEnumerationValueController extends CatalogueItemController<Refere
     @Override
     protected ReferenceEnumerationValue createResource() {
         ReferenceEnumerationValue resource = super.createResource() as ReferenceEnumerationValue
-        referenceEnumerationTypeService.get(params.referenceEnumerationTypeId ?: params.referenceDataTypeId)?.addToReferenceEnumerationValues(resource)
+        referenceEnumerationTypeService.findByReferenceDataModelIdAndId(
+            params.referenceDataModelId,
+            params.referenceEnumerationTypeId ?: params.referenceDataTypeId)?.addToReferenceEnumerationValues(resource)
         resource
     }
 }

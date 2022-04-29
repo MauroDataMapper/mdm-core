@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTermin
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
+import org.junit.jupiter.api.Tag
 
 /**
  * @since 18/09/2020
@@ -33,6 +33,7 @@ import spock.lang.PendingFeature
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyXmlImporterService> {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'XTIS02'
@@ -82,7 +83,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         // exception.errorCode == 'TODO'
     }
 
-    @PendingFeature
     void 'test multi-import invalid Terminologies'() {
         given:
         setupData()
@@ -95,21 +95,21 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given a single invalid model'
         importModels(loadTestFile('invalidTerminologyInList'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given multiple invalid models'
         importModels(loadTestFile('invalidTerminologies'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'not given export metadata'
         // importModels(loadTestFile('noExportMetadata'))
@@ -137,7 +137,7 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+        ObjectDiff simpleDiff = terminologies.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -164,7 +164,7 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+        ObjectDiff simpleDiff = terminologies.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -191,8 +191,8 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+        ObjectDiff simpleDiff = terminologies[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = terminologies[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -202,7 +202,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature
     void 'test multi-import Terminologies with invalid models'() {
         given:
         setupData()
@@ -221,7 +220,7 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported.pop())
+        ObjectDiff simpleDiff = terminologies[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -234,8 +233,8 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 2
 
         when:
-        simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+        simpleDiff = terminologies[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = terminologies[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

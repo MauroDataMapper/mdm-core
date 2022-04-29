@@ -136,7 +136,7 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         '''{
   "index": 1,
   "id": "${json-unit.matches:id}",
-  "category": null, 
+  "category": null,
   "value": "Other",
   "key": "O"
 }'''

@@ -17,11 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 
 import static io.micronaut.http.HttpStatus.OK
 
@@ -31,6 +31,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Transactional
+@Slf4j
 class MetadataFunctionalSpec extends BaseFunctionalSpec {
 
     @Override
@@ -49,9 +50,17 @@ class MetadataFunctionalSpec extends BaseFunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.provider.email"
+  },
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
+
+    ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter"
   }
 ]'''
     }
@@ -72,7 +81,7 @@ class MetadataFunctionalSpec extends BaseFunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.provider.email"
   }

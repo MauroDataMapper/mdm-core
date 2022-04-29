@@ -241,7 +241,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
@@ -255,7 +255,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
@@ -286,7 +286,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -300,7 +300,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -314,7 +314,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -660,7 +660,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         loginEditor()
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.1', [
             finalised                      : true,
             folderId                       : testFolderId.toString(),
             modelName                      : 'FT Test Reference Data Model',
@@ -739,7 +739,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
       }
     },
     {
-      "rule": {
+      "rules": {
         "created": [
           {
             "value": {
@@ -775,7 +775,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
             "count": 1,
             "diffs": [
               {
-                "rule": {
+                "rules": {
                   "created": [
                     {
                       "value": {

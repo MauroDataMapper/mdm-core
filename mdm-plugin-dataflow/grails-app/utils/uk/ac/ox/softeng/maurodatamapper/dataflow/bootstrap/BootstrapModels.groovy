@@ -135,8 +135,8 @@ class BootstrapModels {
 
             dataFlow.addToDataClassComponents(
                 new DataClassComponent(label: 'aToD', createdBy: DEVELOPMENT,
-                                       definition: '''SELECT * 
-INTO TargetFlowDataModel.tableD 
+                                       definition: '''SELECT *
+INTO TargetFlowDataModel.tableD
 FROM SourceFlowDataModel.tableA''')
                     .addToSourceDataClasses(sourceDataClasses.tableA)
                     .addToTargetDataClasses(targetDataClasses.tableD)
@@ -164,7 +164,7 @@ FROM SourceFlowDataModel.tableA''')
                 .addToDataClassComponents(
                     new DataClassComponent(label: 'bAndCToE', createdBy: DEVELOPMENT,
                                            definition: '''INSERT INTO TargetFlowDataModel.tableE
-SELECT  
+SELECT
     b.columnE1                                      AS columnE,
     b.columnF                                       AS columnR,
     CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,

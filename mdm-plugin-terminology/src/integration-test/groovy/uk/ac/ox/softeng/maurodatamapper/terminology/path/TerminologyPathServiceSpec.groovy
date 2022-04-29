@@ -80,7 +80,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
     "terminology 4" (not finalised)
 
     "terminology 5" (finalised version 1.0.0)
-    "terminology 5" (finalised version 2.0.0)        
+    "terminology 5" (finalised version 2.0.0)
 
     "code set 1"
            ->     "terminology 1 term 1"
@@ -171,7 +171,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
     }
 
-    void "1 test getting terminology by ID and path"() {
+    void '1 test getting terminology by ID and path'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -185,7 +185,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1.label
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology1.id
 
         /*
@@ -197,7 +197,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2.label
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology2.id
 
         /*
@@ -209,7 +209,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1.label
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology1.id
 
         /*
@@ -221,7 +221,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2.label
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology2.id
 
         /*
@@ -245,7 +245,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         !catalogueItem
     }
 
-    void "2 test getting terminology by path only"() {
+    void '2 test getting terminology by path only'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -258,7 +258,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1.label
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology1.id
 
         /*
@@ -270,11 +270,11 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2.label
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology2.id
     }
 
-    void "3 test getting terms for terminology"() {
+    void '3 test getting terms for terminology'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -288,7 +288,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term1.id
 
         when:
@@ -297,7 +297,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term1.id
 
         /*
@@ -309,7 +309,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term1.id
 
         /*
@@ -321,7 +321,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term2.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term2.id
 
         /*
@@ -333,7 +333,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology2_term1.id
 
         /*
@@ -345,7 +345,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2_term2.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology2_term2.id
 
         /*
@@ -357,7 +357,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2_term2.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology2_term2.id
 
         /*
@@ -388,7 +388,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem == null
     }
 
-    void "4 test getting code set by ID and path"() {
+    void '4 test getting code set by ID and path'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -402,7 +402,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == codeSet1.label
-        catalogueItem.domainType == "CodeSet"
+        catalogueItem.domainType == 'CodeSet'
         catalogueItem.id == codeSet1.id
 
         /*
@@ -414,7 +414,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == codeSet2.label
-        catalogueItem.domainType == "CodeSet"
+        catalogueItem.domainType == 'CodeSet'
         catalogueItem.id == codeSet2.id
 
         /*
@@ -426,7 +426,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == codeSet1.label
-        catalogueItem.domainType == "CodeSet"
+        catalogueItem.domainType == 'CodeSet'
         catalogueItem.id == codeSet1.id
 
         /*
@@ -438,7 +438,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == codeSet2.label
-        catalogueItem.domainType == "CodeSet"
+        catalogueItem.domainType == 'CodeSet'
         catalogueItem.id == codeSet2.id
 
         /*
@@ -470,7 +470,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == codeSet1.label
-        catalogueItem.domainType == "CodeSet"
+        catalogueItem.domainType == 'CodeSet'
         catalogueItem.id == codeSet1.id
 
         /*
@@ -482,11 +482,11 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == codeSet2.label
-        catalogueItem.domainType == "CodeSet"
+        catalogueItem.domainType == 'CodeSet'
         catalogueItem.id == codeSet2.id
     }
 
-    void "5 test getting terms for codeset"() {
+    void '5 test getting terms for codeset'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -500,7 +500,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term1.id
 
         /*
@@ -512,7 +512,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term2.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term2.id
 
         /*
@@ -524,7 +524,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology2_term1.id
 
         when:
@@ -533,7 +533,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology2_term1.id
 
         /*
@@ -545,7 +545,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology2_term2.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology2_term2.id
 
         /*
@@ -583,17 +583,17 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == terminology1_term1.label
-        catalogueItem.domainType == "Term"
+        catalogueItem.domainType == 'Term'
         catalogueItem.id == terminology1_term1.id
     }
 
-    void "7 test get Terminology by path when there is a branch"() {
+    void '7 test get Terminology by path when there is a branch'() {
         given:
         setupData()
         CatalogueItem catalogueItem
 
         /*
-        Terminology 3 by path. When using the label 'terminology 3' we expect to retrieve the terminology on the 
+        Terminology 3 by path. When using the label 'terminology 3' we expect to retrieve the terminology on the
         main branch, rather than the one on the draft branch
         */
         when:
@@ -602,7 +602,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 3'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology3main.id
         catalogueItem.description == terminology3main.description
 
@@ -612,7 +612,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 3'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology3main.id
 
         when: 'using the branch name draft'
@@ -621,11 +621,11 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 3'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology3draft.id
     }
 
-    void "8 test get Terminology by path when there are finalised and non-finalised versions"() {
+    void '8 test get Terminology by path when there are finalised and non-finalised versions'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -640,7 +640,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 4'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology4notFinalised.id
         catalogueItem.description == terminology4notFinalised.description
 
@@ -650,12 +650,12 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 4'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology4finalised.id
 
     }
 
-    void "FV : test get Terminology by path when there are two finalised versions"() {
+    void 'FV : test get Terminology by path when there are two finalised versions'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -670,7 +670,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 5'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology5second.id
         catalogueItem.modelVersion.toString() == '2.0.0'
 
@@ -680,7 +680,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 5'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology5second.id
         catalogueItem.modelVersion.toString() == '2.0.0'
 
@@ -690,7 +690,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 5'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology5second.id
         catalogueItem.modelVersion.toString() == '2.0.0'
 
@@ -700,7 +700,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         catalogueItem.label == 'terminology 5'
-        catalogueItem.domainType == "Terminology"
+        catalogueItem.domainType == 'Terminology'
         catalogueItem.id == terminology5first.id
         catalogueItem.modelVersion.toString() == '1.0.0'
     }

@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -115,8 +117,12 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
         false
     }
 
-    ObjectDiff<DataElementComponent> diff(DataElementComponent otherDataFlow, String context) {
-        catalogueItemDiffBuilder(DataElementComponent, this, otherDataFlow)
+    ObjectDiff<DataElementComponent> diff(DataElementComponent dataElementComponent, String context) {
+        diff(dataElementComponent, context, null, null)
+    }
+
+    ObjectDiff<DataElementComponent> diff(DataElementComponent dataElementComponent, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(DataElementComponent, this, dataElementComponent, lhsDiffCache,rhsDiffCache)
     }
 
     static DetachedCriteria<DataElementComponent> by() {

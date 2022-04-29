@@ -59,7 +59,7 @@ class AnnotationController extends FacetController<Annotation> {
     protected Annotation createResource() {
         Annotation resource = super.createResource() as Annotation
         if (params.annotationId) {
-            annotationService.get(params.annotationId)?.addToChildAnnotations(resource)
+            annotationService.findByMultiFacetAwareItemIdAndId(params.multiFacetAwareItemId, params.annotationId)?.addToChildAnnotations(resource)
         }
         if (!resource.label && resource.parentAnnotation) {
             resource.label = "${resource.parentAnnotation.label} [${resource.parentAnnotation.childAnnotations.size()}]"

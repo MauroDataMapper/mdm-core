@@ -145,7 +145,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
   "createdBy": "user@functional-test.com"
 }'''
 
-    void "Test the index action"() {
+    void 'Test the index action'() {
         given: 'expect users have actually logged in'
         loginEditor()
         loginAuthenticated()
@@ -153,17 +153,17 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginAdmin()
         logout()
 
-        when: "The index action is requested unlogged in"
+        when: 'The index action is requested unlogged in'
         GET("$endpoint")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyForbidden response
 
-        when: "The index action is requested as admin"
+        when: 'The index action is requested as admin'
         loginAdmin()
         GET("$endpoint?sort=emailAddress", STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{
   "count": 10,
   "items": [
@@ -376,29 +376,29 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
 }'''
     }
 
-    void "Test the save/self registration action correctly persists an instance"() {
-        when: "The save action is executed with no content"
+    void 'Test the save/self registration action correctly persists an instance'() {
+        when: 'The save action is executed with no content'
         POST("$endpoint", [:])
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with invalid data"
+        when: 'The save action is executed with invalid data'
         POST("$endpoint", invalidJson)
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST("$endpoint", validJson, STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, selfRegisteredJson
 
         cleanup:
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the save/self registration action cannot be achieved when logged in"() {
+    void 'Test the save/self registration action cannot be achieved when logged in'() {
         when: 'logged in as editor'
         loginEditor()
         POST("$endpoint", validJson)
@@ -414,9 +414,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         verifyResponse(METHOD_NOT_ALLOWED, response)
     }
 
-    void "Test the admin registration action correctly persists an instance"() {
+    void 'Test the admin registration action correctly persists an instance'() {
 
-        when: "The admin registration action is called with valid data but not logged in"
+        when: 'The admin registration action is called with valid data but not logged in'
         POST("$adminEndpoint/adminRegister", validJson)
 
         then:
@@ -429,35 +429,35 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         then:
         verifyForbidden response
 
-        when: "The admin registration  action is executed with no content"
+        when: 'The admin registration  action is executed with no content'
         loginAdmin()
         POST("$adminEndpoint/adminRegister", [:])
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with invalid data"
+        when: 'The save action is executed with invalid data'
         POST("$adminEndpoint/adminRegister", invalidJson)
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
 
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST("$adminEndpoint/adminRegister", validJson, STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, adminRegisteredJson
 
         cleanup:
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the update action correctly updates an instance"() {
+    void 'Test the update action correctly updates an instance'() {
         given:
         def id = adminRegisterNewUser()
         def update = [firstName: 'hello']
 
-        when: "The update action is called with valid data but not logged in"
+        when: 'The update action is called with valid data but not logged in'
         PUT("$endpoint/$id", update)
 
         then:
@@ -474,7 +474,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginUser(id)
         PUT("$endpoint/$id", update)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
         response.body().firstName == 'hello'
 
@@ -482,7 +482,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginAdmin()
         PUT("$endpoint/$id", [firstName: 'byebye'])
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
         response.body().firstName == 'byebye'
 
@@ -490,11 +490,11 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the show action correctly renders an instance"() {
+    void 'Test the show action correctly renders an instance'() {
         given:
         String id = getUserByEmailAddress(userEmailAddresses.editor).id
 
-        when: "When the show action is called to retrieve a resource unlogged in"
+        when: 'When the show action is called to retrieve a resource unlogged in'
         GET("$endpoint/$id")
 
         then:
@@ -511,7 +511,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginEditor()
         GET("$endpoint/$id", STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{
       "id": "${json-unit.matches:id}",
       "emailAddress": "editor@test.com",
@@ -535,7 +535,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginAdmin()
         GET("$endpoint/$id", STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{
       "id": "${json-unit.matches:id}",
       "emailAddress": "editor@test.com",
@@ -556,41 +556,41 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
     }'''
     }
 
-    void "Test the delete action correctly deletes an instance"() {
+    void 'Test the delete action correctly deletes an instance'() {
         given:
         String id = adminRegisterNewUser()
 
-        when: "When the delete action is executed on an existing instance unlogged in"
+        when: 'When the delete action is executed on an existing instance unlogged in'
         DELETE("$endpoint/$id")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyNotFound response, id
 
-        when: "When the delete action is executed on an existing instance as normal user"
+        when: 'When the delete action is executed on an existing instance as normal user'
         loginEditor()
         DELETE("$endpoint/$id")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyNotFound response, id
 
         when: 'logged in as user whose id it is'
         loginUser(id)
         DELETE("$endpoint/$id")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyForbidden response
 
-        when: "When the delete action is executed on an unknown instance as admin"
+        when: 'When the delete action is executed on an unknown instance as admin'
         loginAdmin()
         DELETE("${UUID.randomUUID()}")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse NOT_FOUND, response
 
-        when: "When the delete action is executed on an existing instance as admin"
+        when: 'When the delete action is executed on an existing instance as admin'
         DELETE("$endpoint/$id")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
         response.body().disabled == true
 
@@ -598,7 +598,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the permanent delete action correctly deletes an instance"() {
+    void 'Test the permanent delete action correctly deletes an instance'() {
         given:
         String id = adminRegisterNewUser()
         loginAdmin()
@@ -610,10 +610,10 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         then: 'The response is OK'
         verifyResponse OK, response
 
-        when: "The permanent delete action is executed on an existing instance as admin"
+        when: 'The permanent delete action is executed on an existing instance as admin'
         DELETE("$endpoint/$id?permanent=true")
 
-        then: "The response is NO_CONTENT"
+        then: 'The response is NO_CONTENT'
         verifyResponse NO_CONTENT, response
 
         when: 'Get the user again'
@@ -626,11 +626,11 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         logout()
     }
 
-    void "Test getting the user preferences"() {
+    void 'Test getting the user preferences'() {
         given:
         String id = getUserByEmailAddress(userEmailAddresses.editor).id
 
-        when: "Getting the user preferences but not logged in"
+        when: 'Getting the user preferences but not logged in'
         GET("$endpoint/$id/userPreferences")
 
         then:
@@ -647,18 +647,18 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginEditor()
         GET("$endpoint/$id/userPreferences")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
         when: 'logged in as admin'
         loginAdmin()
         GET("$endpoint/$id/userPreferences")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
     }
 
-    void "Test updating the user preferences"() {
+    void 'Test updating the user preferences'() {
         given:
         String id = adminRegisterNewUser()
         def update = [
@@ -666,7 +666,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
             anotherThing: 'wibble'
         ]
 
-        when: "Getting the user preferences but not logged in"
+        when: 'Getting the user preferences but not logged in'
         PUT("$endpoint/$id/userPreferences", update)
 
         then:
@@ -683,7 +683,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         loginUser(id)
         PUT("$endpoint/$id/userPreferences", update)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
         and:
@@ -705,7 +705,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
             anotherThing: 'wibble'
         ])
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
         and:
@@ -818,7 +818,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the approve registration works"() {
+    void 'Test the approve registration works'() {
         given: 'user self registered'
         String id = selfRegisterNewUser()
 
@@ -847,7 +847,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the reject registration works"() {
+    void 'Test the reject registration works'() {
         given: 'user self registered'
         String id = selfRegisterNewUser()
 

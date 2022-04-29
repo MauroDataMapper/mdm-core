@@ -110,7 +110,13 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
 
     @Override
     Path buildPath() {
-        parent ? Path.from(parent.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
+        if (parent) {
+            // We only want to call the getpath method once
+            Path parentPath = parent?.getPath()
+            parentPath ? Path.from(parentPath, pathPrefix, pathIdentifier) : null
+        } else {
+            Path.from(pathPrefix, pathIdentifier)
+        }
     }
 
     @Override
@@ -141,12 +147,13 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
     Set<GroupRole> extractAllowedRoles() {
         Set<GroupRole> allowed = [this] as Set
         children.findAll {
-            this.applicationLevelRole ? it.applicationLevelRole == this.applicationLevelRole : true
+            it.applicationLevelRole == this.applicationLevelRole
         }.each {
             allowed.addAll(it.extractAllowedRoles())
         }
         // Make sure the container group admin role is included inside container admin
-        if (name == CONTAINER_ADMIN_ROLE_NAME) allowed.add(findByName(CONTAINER_GROUP_ADMIN_ROLE_NAME))
+        // This is breaking sort/comparisons of the allowedRoles as the CGA is an application role
+        //        if (name == CONTAINER_ADMIN_ROLE_NAME) allowed.add(findByName(CONTAINER_GROUP_ADMIN_ROLE_NAME))
         allowed
     }
 

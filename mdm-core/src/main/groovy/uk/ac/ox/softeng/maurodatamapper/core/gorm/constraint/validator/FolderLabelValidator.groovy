@@ -18,13 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.Validator
 
 /**
  *
  * @since 30/01/2018
  */
-class FolderLabelValidator implements Validator<String> {
+class FolderLabelValidator extends LabelValidator {
 
     final Folder folder
 
@@ -34,12 +33,10 @@ class FolderLabelValidator implements Validator<String> {
 
     @Override
     Object isValid(String value) {
-        if (value == null) return ['default.null.message']
-        if (!value) return ['default.blank.message']
-
+        def res = super.isValid(value)
+        if (res !instanceof Boolean) return res
         //parentFolder is nullable, and id may be null at this point
         if (Folder.countByLabelAndParentFolderAndIdNotEqual(value, folder.parentFolder, folder.id)) return ['default.not.unique.message']
-
         true
     }
 }

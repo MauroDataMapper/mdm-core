@@ -13,17 +13,21 @@ model {
 json {
 
     if (dataType.instanceOf(EnumerationType)) {
-        enumerationValues g.render(dataType.getProperty('enumerationValues'))
+        EnumerationType et = dataType as EnumerationType
+        enumerationValues g.render(et.enumerationValues?.sort() ?: [])
     }
     if (dataType.instanceOf(ReferenceType)) {
-        referenceClass tmpl.'/dataClass/dataClass'(dataClass: dataType.getProperty('referenceClass'), renderLinks: false)
+        ReferenceType rt = dataType as ReferenceType
+        referenceClass tmpl.'/dataClass/dataClass'(dataClass: rt.referenceClass, renderLinks: false)
     }
     if (dataType.instanceOf(PrimitiveType)) {
-        if (dataType.getProperty('units')) units dataType.getProperty('units')
+        PrimitiveType pt = dataType as PrimitiveType
+        if (pt.units) units pt.units
     }
     if (dataType.instanceOf(ModelDataType)) {
-        modelResourceId dataType.getProperty('modelResourceId')
-        modelResourceDomainType dataType.getProperty('modelResourceDomainType')
+        ModelDataType mdt = dataType as ModelDataType
+        modelResourceId mdt.modelResourceId
+        modelResourceDomainType mdt.modelResourceDomainType
     }
     if (owningDataModelId && dataType.model.id != owningDataModelId) imported true
 }

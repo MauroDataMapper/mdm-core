@@ -52,7 +52,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
         mockDomains(Folder, BasicModel, Authority)
         log.debug('Setting up semantic link controller unit')
         mockDomains(Folder, BasicModel, Edit, SemanticLink)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), authority: testAuthority)

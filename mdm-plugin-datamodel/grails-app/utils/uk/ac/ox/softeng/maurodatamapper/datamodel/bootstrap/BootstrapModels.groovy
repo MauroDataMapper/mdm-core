@@ -70,7 +70,7 @@ class BootstrapModels {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
 
         if (!simpleDataModel) {
-            log.debug("Creating simple datamodel")
+            log.debug('Creating simple datamodel')
             simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
 
             Classifier classifier
@@ -78,12 +78,11 @@ class BootstrapModels {
             classifier = Classifier.findByLabel('test classifier simple')
 
             if (!classifier) {
-                log.debug("creating test classifier simple")
+                log.debug('creating test classifier simple')
                 classifier = new Classifier(createdBy: DEVELOPMENT, label: 'test classifier simple', readableByAuthenticatedUsers: true)
                 checkAndSave(messageSource, classifier)
-            } else {
-                log.debug("test classifier simple already exists")
             }
+
             simpleDataModel.addToClassifiers(classifier)
             checkAndSave(messageSource, simpleDataModel)
 
@@ -102,8 +101,8 @@ class BootstrapModels {
             checkAndSave(messageSource, simpleDataModel)
         }
 
-        log.debug("Simple Test DataModel id = {}", simpleDataModel.id.toString())
-        log.debug("test classifier simple id = {}", simpleDataModel.classifiers[0].id.toString())
+        log.debug('Simple Test DataModel id = {}', simpleDataModel.id.toString())
+        log.debug('test classifier simple id = {}', simpleDataModel.classifiers[0].id.toString())
         simpleDataModel
     }
 
@@ -111,7 +110,7 @@ class BootstrapModels {
         DataModel simpleDataModel = DataModel.findByLabel(dataModelName)
 
         if (!simpleDataModel) {
-            log.debug("Creating simple datamodel")
+            log.debug('Creating simple datamodel')
             simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: dataModelName, folder: folder, authority: authority)
 
             Classifier classifier
@@ -122,9 +121,8 @@ class BootstrapModels {
                 log.debug("creating ${classifierName}")
                 classifier = new Classifier(createdBy: DEVELOPMENT, label: classifierName, readableByAuthenticatedUsers: true)
                 checkAndSave(messageSource, classifier)
-            } else {
-                log.debug("${classifierName} already exists")
             }
+
             simpleDataModel.addToClassifiers(classifier)
             checkAndSave(messageSource, simpleDataModel)
 
@@ -195,15 +193,15 @@ class BootstrapModels {
             dataModel.addToDataClasses(parent)
             checkAndSave(messageSource, dataModel)
 
-            parent.addToRules(name: "Bootstrapped Functional Test Rule",
+            parent.addToRules(name: 'Bootstrapped Functional Test Rule',
                               description: 'Functional Test Description',
                               createdBy: DEVELOPMENT)
 
-            dataModel.addToRules(name: "Bootstrapped Functional Test Rule",
+            dataModel.addToRules(name: 'Bootstrapped Functional Test Rule',
                                  description: 'Functional Test Description',
                                  createdBy: DEVELOPMENT)
 
-            stringPrimitive.addToRules(name: "Bootstrapped Functional Test Rule",
+            stringPrimitive.addToRules(name: 'Bootstrapped Functional Test Rule',
                                        description: 'Functional Test Description',
                                        createdBy: DEVELOPMENT)
 
@@ -247,7 +245,7 @@ class BootstrapModels {
 
             checkAndSave(messageSource, dataModel)
 
-            el2.addToRules(name: "Bootstrapped Functional Test Rule",
+            el2.addToRules(name: 'Bootstrapped Functional Test Rule',
                            description: 'Functional Test Description',
                            createdBy: DEVELOPMENT)
 
@@ -271,7 +269,10 @@ class BootstrapModels {
             simpleDataModel = new DataModel(createdBy: DEVELOPMENT,
                                             label: FINALISED_EXAMPLE_DATAMODEL_NAME,
                                             folder: folder,
-                                            authority: authority)
+                                            authority: authority,
+                                            finalised: true,
+                                            dateFinalised: OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
+                                            modelVersion: Version.from('1.0.0'))
 
 
             checkAndSave(messageSource, simpleDataModel)
@@ -299,14 +300,6 @@ class BootstrapModels {
                 .addToDataTypes(primitiveType1)
 
             checkAndSave(messageSource, simpleDataModel)
-
-            simpleDataModel.finalised = true
-            simpleDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-            simpleDataModel.breadcrumbTree.finalised = true
-            simpleDataModel.breadcrumbTree.updateTree()
-            simpleDataModel.modelVersion = Version.from('1.0.0')
-
-            checkAndSave(messageSource, simpleDataModel)
         }
 
         simpleDataModel
@@ -321,7 +314,7 @@ class BootstrapModels {
       \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
        \_ fork ---- main                                               \_ interestingBranch (v5)
     */
-        log.debug("Creating model version tree")
+        log.debug('Creating model version tree')
         User dev = [emailAddress: DEVELOPMENT] as User
         UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
 
@@ -459,14 +452,13 @@ class BootstrapModels {
 
         checkAndSave(messageSource, v1DataModel)
 
-        v1DataModel.addToRules(name: "Bootstrapped versioning Test Rule",
-                               description: "versioning Model rule Description",
+        v1DataModel.addToRules(name: 'Bootstrapped versioning Test Rule',
+                               description: 'versioning Model rule Description',
                                createdBy: DEVELOPMENT)
 
-        v1DataModel.addToRules(name: "Bootstrapped modify rule",
-                               description: "Bootstrapped rule for modification",
+        v1DataModel.addToRules(name: 'Bootstrapped modify rule',
+                               description: 'Bootstrapped rule for modification',
                                createdBy: DEVELOPMENT)
-
 
         v1DataModel.addToMetadata(namespace: 'versioning.com', key: 'map', value: '''
                                              /- anotherFork
@@ -534,12 +526,12 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
 
         checkAndSave(messageSource, v2DataModel)
 
-        v2DataModel.addToRules(name: "Bootstrapped versioning V2Model Rule",
-                               description: "versioning V2Model model Description",
+        v2DataModel.addToRules(name: 'Bootstrapped versioning V2Model Rule',
+                               description: 'versioning V2Model model Description',
                                createdBy: DEVELOPMENT)
 
-        v2DataModel.addToRules(name: "Bootstrapped versioning Deletion Rule",
-                               description: "versioning V2Model model for Deletion",
+        v2DataModel.addToRules(name: 'Bootstrapped versioning Deletion Rule',
+                               description: 'versioning V2Model model for Deletion',
                                createdBy: DEVELOPMENT)
 
         checkAndSave(messageSource, v2DataModel)

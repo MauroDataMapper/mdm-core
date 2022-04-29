@@ -37,7 +37,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.context.MessageSource
 
 @Slf4j
@@ -48,8 +47,6 @@ class TermService extends ModelItemService<Term> {
     MessageSource messageSource
     TerminologyService terminologyService
     TreeItemService treeItemService
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     @Override
     Term get(Serializable id) {
@@ -128,48 +125,25 @@ class TermService extends ModelItemService<Term> {
         }
     }
 
-    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms) {
-
-        List<Classifier> classifiers = terms.collectMany { it.classifiers ?: [] } as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
+    @Override
+    void preBatchSaveHandling(List<Term> modelItems) {
+        modelItems.each {t ->
+            t.sourceTermRelationships?.clear()
+            t.targetTermRelationships?.clear()
         }
+    }
 
-        Collection<Term> alreadySaved = terms.findAll { it.ident() && it.isDirty() }
-        Collection<Term> notSaved = terms.findAll { !it.ident() }
+    @Override
+    void gatherContents(Map<String, Object> gatheredContents, Term modelItem) {
+        List<TermRelationship> termRelationships = gatheredContents.getOrDefault('termRelationships', [])
+        termRelationships.addAll(modelItem.sourceTermRelationships ?: [])
+        termRelationships.addAll(modelItem.targetTermRelationships ?: [])
+        gatheredContents.termRelationships = termRelationships
+    }
 
-        Collection<TermRelationship> termRelationships = []
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved Terms', alreadySaved.size())
-            Term.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, BATCH_SIZE)
-            List batch = []
-            int count = 0
-
-            notSaved.each { t ->
-
-                termRelationships.addAll(t.sourceTermRelationships ?: [])
-                termRelationships.addAll(t.targetTermRelationships ?: [])
-
-                t.sourceTermRelationships?.clear()
-                t.targetTermRelationships?.clear()
-
-                batch << t
-                count++
-                if (count % BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
-                }
-            }
-            batchSave(batch)
-            batch.clear()
-        }
-        termRelationships
+    @Override
+    List<TermRelationship> returnGatheredContents(Map<String, Object> gatheredContents) {
+        gatheredContents.getOrDefault('termRelationships', []) as List<TermRelationship>
     }
 
     Long countByTerminologyId(UUID terminologyId) {
@@ -183,6 +157,11 @@ class TermService extends ModelItemService<Term> {
     List<UUID> findAllIdsByTerminologyId(UUID terminologyId) {
         Term.byTerminologyId(terminologyId).id().list() as List<UUID>
     }
+
+    boolean existsByTerminologyIdAndId(UUID terminologyId, Serializable id) {
+        Term.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).count() == 1
+    }
+
 
     Term findByTerminologyIdAndId(UUID terminologyId, Serializable id) {
         Term.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
@@ -404,50 +383,11 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndDepth(terminologyId, depth).list()
     }
 
-    private Boolean hasParentToRelationship(Term parent, Term child) {
-        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
-    }
-
     private boolean hasChild(Term parent, List<TermRelationship> knowledge) {
         knowledge.any {
             (it.targetTerm == parent && it.relationshipType.childRelationship) ||
             (it.sourceTerm == parent && it.relationshipType.parentalRelationship)
         }
-    }
-
-    private void singleBatchSave(Collection<Term> terms) {
-        if (!terms) {
-            return
-        }
-        long start = System.currentTimeMillis()
-        log.trace('Batch saving {} terms', terms.size())
-
-        Term.saveAll(terms)
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
-    /*
-     * Find a Term belonging to terminology and whose label is label
-     * @param terminology The Terminology to which the sought Term belongs
-     * @param label The label of the sought Term
-     */
-
-    private Term findTerm(Terminology terminology, String label) {
-        terminology.terms.find { it.label == label.trim() }
-    }
-
-    /*
-     * Find a Term belonging to codeSet and whose label is label
-     * @param codeSet The CodeSet to which the sought Term belongs
-     * @param label The label of the sought Term
-     */
-
-    private Term findTerm(CodeSet codeSet, String label) {
-        codeSet.terms.find { it.label == label.trim() }
     }
 
     /*

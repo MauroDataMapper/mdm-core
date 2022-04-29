@@ -38,7 +38,7 @@ class UserImageFileInterceptor implements MdmInterceptor {
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'userId')
         Utils.toUuid(params, 'catalogueUserId')
-        params.userId = params.catalogueUserId
+        if (params.catalogueUserId) params.userId = params.catalogueUserId
 
         // Anyone can read another user's image
         if (isShow()) return true

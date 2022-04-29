@@ -110,7 +110,8 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
             semanticLink.multiFacetAwareItem =
                 findMultiFacetAwareItemByDomainTypeAndId(semanticLink.multiFacetAwareItemDomainType, semanticLink.multiFacetAwareItemId)
         }
-        if (!semanticLink.targetMultiFacetAwareItem) {
+        // If theres no target or the target has changed and the id's dont match then load using the stored id and domain type
+        if (!semanticLink.targetMultiFacetAwareItem || semanticLink.targetMultiFacetAwareItem.id != semanticLink.targetMultiFacetAwareItemId) {
             semanticLink.targetMultiFacetAwareItem = findMultiFacetAwareItemByDomainTypeAndId(semanticLink.targetMultiFacetAwareItemDomainType,
                                                                                               semanticLink.targetMultiFacetAwareItemId)
         }
@@ -183,6 +184,12 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
     List<SemanticLink> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
         findAllBySourceOrTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
     }
+
+    @Override
+    List<SemanticLink> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        SemanticLink.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
 
     @Override
     DetachedCriteria<SemanticLink> getBaseDeleteCriteria() {

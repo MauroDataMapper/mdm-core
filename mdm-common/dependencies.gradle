@@ -1,24 +1,24 @@
 dependencies {
 
-    implementation platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
-    implementation platform("org.grails:grails-bom:$grailsVersion")
+    api platform(project(':mdm-bom'))
+
     implementation group: 'org.codehaus.groovy', name: 'groovy'
-    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
-    implementation group: 'org.grails', name: 'grails-core', version: grailsVersion
+    implementation group: 'com.google.guava', name: 'guava'
+    implementation group: 'org.grails', name: 'grails-core'
     implementation group: 'org.grails', name: 'grails-datastore-gorm'
     implementation group: 'org.grails', name: 'grails-datastore-gorm-hibernate5'
     implementation group: 'org.grails', name: 'grails-plugin-validation'
-    implementation "org.grails.plugins:views-json:$grailsViewsVersion"
+    implementation group: 'org.grails.plugins', name: 'views-json'
     implementation group: 'io.micronaut', name: 'micronaut-http'
-    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
+    api group: 'com.github.spotbugs', name: 'spotbugs-annotations'
 
     testImplementation 'org.spockframework:spock-core'
 
     /*
     Libraries required transitively
      */
-    api 'org.javassist:javassist:3.28.0-GA'
-    api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipelineVersion
+    api 'org.javassist:javassist'
+    api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core'
     api group: 'org.slf4j', name: 'slf4j-api'
     api group: 'ch.qos.logback', name: 'logback-classic'
 
@@ -27,21 +27,11 @@ dependencies {
      */
 
     //mathpere/grails-hibernate-search-plugin
-    api "org.grails.plugins:hibernate-search:$hibernateSearchVersion"
-    implementation('org.hibernate:hibernate-core') {
-        version {
-            strictly project.ext['hibernate.version']
-        }
-    }
-    api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrmVersion
-    api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrmVersion
-    api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version:hibernateSearchOrmVersion
-
-    constraints {
-        api("org.apache.lucene:lucene-analyzers-common:$luceneVersion") {
-            because 'hibernate-search-orm requires the older version, it has not been updated beyond'
-        }
-    }
-
+    api "org.grails.plugins:hibernate-search"
+    implementation 'org.hibernate:hibernate-core'
+    api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm'
+    api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene'
+    api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm'
+    api "org.apache.lucene:lucene-analyzers-common"
 
 }

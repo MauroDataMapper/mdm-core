@@ -25,8 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
-
-import java.nio.charset.StandardCharsets
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 28/04/2021
@@ -67,7 +66,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                 } else if (matchingField) {
                     field.currentValue = matchingField.value
                 } else {
-                    field.currentValue = ""
+                    field.currentValue = ''
                 }
                 field.validate()
             }
@@ -88,12 +87,12 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                 knownProperties.add(field.getUniqueKey(section.name))
             }
         }
-        return knownProperties
+        knownProperties
     }
 
     @Override
     String getJsonResourceFile() {
-        return null
+        null
     }
 
     @Override
@@ -102,50 +101,48 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
             return null
         }
         Metadata md = getProfileDataModel().metadata.find {md ->
-            md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "metadataNamespace"
+            md.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile' &&
+            md.key == 'metadataNamespace'
         }
         if (md) {
             return md.value
-        } else {
-            log.error("Invalid namespace!!")
-            return "invalid.namespace"
         }
+        log.error('Invalid namespace!!')
+        'invalid.namespace'
     }
 
     @Override
     String getDisplayName() {
-        return dataModelLabel
+        dataModelLabel
     }
 
     @Override
     String getName() {
-        return URLEncoder.encode(dataModelLabel, StandardCharsets.UTF_8);
+        Utils.safeUrlEncode(dataModelLabel)
     }
 
     @Override
     String getVersion() {
-        return dataModelVersion
+        dataModelVersion
     }
 
     @Override
     List<String> profileApplicableForDomains() {
         Metadata md = getProfileDataModel().metadata.find {md ->
-            md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "domainsApplicable"
+            md.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile' &&
+            md.key == 'domainsApplicable'
         }
         if (md) {
-            return md.value.tokenize(";")
-        } else {
-            return []
+            return md.value.tokenize(';')
         }
+        []
     }
 
     @Override
     Boolean canBeEditedAfterFinalisation() {
         Metadata md = getProfileDataModel().metadata.find {md ->
-            md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "editableAfterFinalisation"
+            md.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile' &&
+            md.key == 'editableAfterFinalisation'
         }
         md ? md.value.toBoolean() : false
     }
@@ -156,19 +153,18 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
 
     @Override
     UUID getDefiningDataModel() {
-        return dataModelId
+        dataModelId
     }
 
     @Override
     String getDefiningDataModelLabel() {
-        return dataModelLabel
+        dataModelLabel
     }
 
     @Override
     String getDefiningDataModelDescription() {
-        return dataModelDescription
+        dataModelDescription
     }
-
 
     List<ProfileSection> getSections() {
         DataModel dm = getProfileDataModel()
@@ -181,21 +177,21 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                         fieldName: dataElement.label,
                         description: dataElement.description,
                         metadataPropertyName: dataElement.metadata.find {
-                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
-                            it.key == "metadataPropertyName"
+                            it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
+                            it.key == 'metadataPropertyName'
                         }?.value,
                         maxMultiplicity: dataElement.maxMultiplicity ?: 1,
                         minMultiplicity: dataElement.minMultiplicity ?: 0,
                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
                         regularExpression: dataElement.metadata.find {
-                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
-                            it.key == "regularExpression"
+                            it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
+                            it.key == 'regularExpression'
                         }?.value,
                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
                                        ((EnumerationType) dataElement.dataType).enumerationValues.collect {it.key} : [],
                         defaultValue: dataElement.metadata.find {
-                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
-                            it.key == "defaultValue"
+                            it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
+                            it.key == 'defaultValue'
                         }?.value,
                         currentValue: '',
                         editableAfterFinalisation: {

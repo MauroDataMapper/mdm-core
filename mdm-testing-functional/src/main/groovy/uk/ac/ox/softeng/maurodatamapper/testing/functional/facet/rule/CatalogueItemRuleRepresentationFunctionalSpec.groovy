@@ -64,7 +64,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     @Transactional
     String getRuleId() {
-        Rule.findByMultiFacetAwareItemIdAndName(getCatalogueItemId(), "Bootstrapped Functional Test Rule").id.toString()
+        Rule.findByMultiFacetAwareItemIdAndName(getCatalogueItemId(), 'Bootstrapped Functional Test Rule').id.toString()
     }
 
     @Override
@@ -111,8 +111,8 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     @Override
     Map getValidJson() {
         [
-            language       : "sql",
-            representation : 'A > 0 AND A < 5'
+            language      : 'sql',
+            representation: 'A > 0 AND A < 5'
         ]
     }
 

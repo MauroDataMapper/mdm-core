@@ -17,41 +17,28 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.traits.controller
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.ModelItemInterceptor
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 20/03/2020
  */
-abstract class ReferenceDataModelSecuredInterceptor implements MdmInterceptor {
+abstract class ReferenceDataModelSecuredInterceptor extends ModelItemInterceptor {
 
-    abstract Class getModelItemClass()
-
-    void checkIds() {
-        Utils.toUuid(params, 'referenceDataModelId')
-        Utils.toUuid(params, 'id')
-        Utils.toUuid(params, 'otherReferenceDataModelId')
+    @Override
+    Class getModelClass() {
+        ReferenceDataModel
     }
 
-    void checkReferenceDataModelId() {
-        if (!params.referenceDataModelId) throw new ApiBadRequestException('DMSI01', 'No Reference Data Model Id provided against secured resource')
+    @Override
+    String getModelIdParameterField() {
+        'referenceDataModelId'
     }
 
-    void performChecks() {
-        checkIds()
-        checkReferenceDataModelId()
-    }
-
-    boolean checkStandardActions() {
-        checkActionAuthorisationOnUnsecuredResource(getModelItemClass(), params.id, ReferenceDataModel, params.referenceDataModelId)
-    }
-
-    boolean canReadReferenceDataModel() {
-        currentUserSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, params.referenceDataModelId) ?: notFound(ReferenceDataModel,
-                                                                                                                 params.referenceDataModelId.toString()
-        )
+    @Override
+    String getOtherModelIdParameterField() {
+        'otherReferenceDataModelId'
     }
 
     boolean canCopyFromReferenceDataModelToOtherReferenceDataModel() {

@@ -75,7 +75,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminologyService.get(id)
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -83,7 +83,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminologyService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -107,7 +107,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -115,7 +115,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminologyService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -133,7 +133,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         Terminology.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
         given:
         setupData()
 
@@ -333,8 +333,8 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         availableBranches.size() == 2
-        availableBranches.each {it.id in [draftModel.id, testModel.id]}
-        availableBranches.each {it.label == terminology.label}
+        availableBranches.every {it.id in [draftModel.id, testModel.id]}
+        availableBranches.every {it.label == terminology.label}
     }
 
     void 'TSM01 : test finding merge difference between two terminologies'() {

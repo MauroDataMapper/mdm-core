@@ -142,24 +142,24 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
     }
 
 
-    void "Test the save action correctly persists an instance for enumeration type"() {
-        when: "The save action is executed with valid data"
+    void 'Test the save action correctly persists an instance for enumeration type'() {
+        when: 'The save action is executed with valid data'
         POST('',
              [
-                 domainType       : 'ReferenceEnumerationType',
-                 label            : 'functional enumeration',
+                 domainType                : 'ReferenceEnumerationType',
+                 label                     : 'functional enumeration',
                  referenceEnumerationValues: [
                      [key: 'a', value: 'wibble'],
                      [key: 'b', value: 'wobble']
                  ]
              ], STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceEnumerationType",
-      "label": "functional enumeration",      
-      "model": "${json-unit.matches:id}",     
+      "label": "functional enumeration",
+      "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
           "domainType": "ReferenceDataModel",

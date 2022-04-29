@@ -17,11 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.traits.controller.TerminologySecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class TermRelationshipInterceptor extends TerminologySecuredInterceptor {
+
+    TermService termService
+    TermRelationshipTypeService termRelationshipTypeService
 
     @Override
     Class getModelItemClass() {
@@ -33,6 +38,16 @@ class TermRelationshipInterceptor extends TerminologySecuredInterceptor {
         super.checkIds()
         Utils.toUuid(params, 'termId')
         Utils.toUuid(params, 'termRelationshipTypeId')
+    }
+
+    @Override
+    void checkParentModelItemId() throws ApiBadRequestException {
+        if (params.containsKey('termId') && !termService.existsByTerminologyIdAndId(params.terminologyId, params.termId)) {
+            throw new ApiBadRequestException('DEI01', 'Provided termId is not inside provided terminology')
+        }
+        if (params.containsKey('termRelationshipTypeId') && !termRelationshipTypeService.existsByTerminologyIdAndId(params.terminologyId, params.termRelationshipTypeId)) {
+            throw new ApiBadRequestException('DEI01', 'Provided termRelationshipTypeId is not inside provided terminology')
+        }
     }
 
     boolean before() {

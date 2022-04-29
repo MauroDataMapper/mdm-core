@@ -50,12 +50,12 @@ class FolderServiceSpec extends BaseUnitSpec implements ServiceUnitTest<FolderSe
         id = folder.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Folder> folderList = service.list(max: 2, offset: 2)
 
@@ -63,12 +63,12 @@ class FolderServiceSpec extends BaseUnitSpec implements ServiceUnitTest<FolderSe
         folderList.size() == 2
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 6
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 6
         Folder folder = service.get(id)

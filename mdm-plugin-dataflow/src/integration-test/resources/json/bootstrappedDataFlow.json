@@ -1,27 +1,27 @@
 {
     "dataFlow": {
-        "id": "7dd81a66-58af-4dd2-80b2-62775544d925",
+        "id": "${json-unit.matches:id}",
         "label": "Sample DataFlow",
-        "lastUpdated": "2021-02-22T11:31:11.603Z",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "type": "Data Asset",
         "source": {
-            "id": "040344df-f64c-4587-a2ae-55856d5b6ad0",
+            "id": "${json-unit.matches:id}",
             "label": "SourceFlowDataModel",
             "path": "dm:SourceFlowDataModel$main",
             "type": "Data Asset"
         },
         "target": {
-            "id": "1f551f81-f1d0-4b2f-8d1e-5a4658e96af6",
+            "id": "${json-unit.matches:id}",
             "label": "TargetFlowDataModel",
             "path": "dm:TargetFlowDataModel$main",
             "type": "Data Asset"
         },
         "dataClassComponents": [
             {
-                "id": "158e96c4-3d55-4db3-ad25-602b12aca1a4",
+                "id": "${json-unit.matches:id}",
                 "label": "aToD",
-                "lastUpdated": "2021-02-22T11:31:11.552Z",
-                "definition": "SELECT * \nINTO TargetFlowDataModel.tableD \nFROM SourceFlowDataModel.tableA",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "definition": "SELECT *\nINTO TargetFlowDataModel.tableD\nFROM SourceFlowDataModel.tableA",
                 "sourceDataClasses": [
                     {
                         "label": "tableA",
@@ -36,9 +36,9 @@
                 ],
                 "dataElementComponents": [
                     {
-                        "id": "08a95045-0654-49c2-b3a3-8b52dfb52f1b",
+                        "id": "${json-unit.matches:id}",
                         "label": "Direct Copy",
-                        "lastUpdated": "2021-02-22T11:31:11.557Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnA",
@@ -61,9 +61,9 @@
                         ]
                     },
                     {
-                        "id": "ff270401-de64-4620-bd04-96fc07c560d1",
+                        "id": "${json-unit.matches:id}",
                         "label": "Direct Copy",
-                        "lastUpdated": "2021-02-22T11:31:11.559Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnB",
@@ -86,9 +86,9 @@
                         ]
                     },
                     {
-                        "id": "24f7fd88-2b44-49af-a5f7-4cad6b9a88b0",
+                        "id": "${json-unit.matches:id}",
                         "label": "Direct Copy",
-                        "lastUpdated": "2021-02-22T11:31:11.56Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnC",
@@ -111,9 +111,9 @@
                         ]
                     },
                     {
-                        "id": "0cc5c614-1745-4dd3-a2bb-b66f89c64734",
+                        "id": "${json-unit.matches:id}",
                         "label": "Direct Copy",
-                        "lastUpdated": "2021-02-22T11:31:11.561Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnD",
@@ -138,10 +138,10 @@
                 ]
             },
             {
-                "id": "3fb7fe4b-c359-4a84-ae04-802583139d8d",
+                "id": "${json-unit.matches:id}",
                 "label": "bAndCToE",
-                "lastUpdated": "2021-02-22T11:31:11.555Z",
-                "definition": "INSERT INTO TargetFlowDataModel.tableE\nSELECT  \n    b.columnE1                                      AS columnE,\n    b.columnF                                       AS columnR,\n    CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,\n    CASE\n        WHEN b.columnH IS NULL THEN b.columnI\n        ELSE b.columnH\n    END                                             AS columnT,\n    TRIM(c.columnJ)                                 AS columnU,\n    CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)  AS columnV\nFROM SourceFlowDataModel.tableB b\nINNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "definition": "INSERT INTO TargetFlowDataModel.tableE\nSELECT\n    b.columnE1                                      AS columnE,\n    b.columnF                                       AS columnR,\n    CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,\n    CASE\n        WHEN b.columnH IS NULL THEN b.columnI\n        ELSE b.columnH\n    END                                             AS columnT,\n    TRIM(c.columnJ)                                 AS columnU,\n    CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)  AS columnV\nFROM SourceFlowDataModel.tableB b\nINNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2",
                 "sourceDataClasses": [
                     {
                         "label": "tableC",
@@ -151,6 +151,7 @@
                         "label": "tableB",
                         "path": "dm:SourceFlowDataModel$main|dc:tableB"
                     }
+
                 ],
                 "targetDataClasses": [
                     {
@@ -160,9 +161,9 @@
                 ],
                 "dataElementComponents": [
                     {
-                        "id": "e82ef7b9-5d0a-46f9-b165-552b2658f9d0",
+                        "id": "${json-unit.matches:id}",
                         "label": "JOIN KEY",
-                        "lastUpdated": "2021-02-22T11:31:11.562Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnE1",
@@ -193,9 +194,9 @@
                         ]
                     },
                     {
-                        "id": "eabfe9f0-10d4-48fb-9169-abb59f05379d",
+                        "id": "${json-unit.matches:id}",
                         "label": "CONCAT",
-                        "lastUpdated": "2021-02-22T11:31:11.563Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "definition": "CONCAT(b.columnG,'_',c.columnJ)",
                         "sourceDataElements": [
                             {
@@ -227,9 +228,9 @@
                         ]
                     },
                     {
-                        "id": "aa83ad5e-678b-4466-a7d1-7718dc28095e",
+                        "id": "${json-unit.matches:id}",
                         "label": "Direct Copy",
-                        "lastUpdated": "2021-02-22T11:31:11.562Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnF",
@@ -252,9 +253,9 @@
                         ]
                     },
                     {
-                        "id": "221a93ec-c251-4ca9-9d77-2df94989d316",
+                        "id": "${json-unit.matches:id}",
                         "label": "CONCAT",
-                        "lastUpdated": "2021-02-22T11:31:11.565Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "definition": "CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)",
                         "sourceDataElements": [
                             {
@@ -294,9 +295,9 @@
                         ]
                     },
                     {
-                        "id": "71afe1f5-b3be-4b53-8ec5-a46da77e526e",
+                        "id": "${json-unit.matches:id}",
                         "label": "TRIM",
-                        "lastUpdated": "2021-02-22T11:31:11.565Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "sourceDataElements": [
                             {
                                 "label": "columnJ",
@@ -319,9 +320,9 @@
                         ]
                     },
                     {
-                        "id": "681809aa-fbf1-470d-b75f-eff51ee507b5",
+                        "id": "${json-unit.matches:id}",
                         "label": "CASE",
-                        "lastUpdated": "2021-02-22T11:31:11.564Z",
+                        "lastUpdated": "${json-unit.matches:offsetDateTime}",
                         "definition": "CASE\n    WHEN b.columnH IS NULL THEN b.columnI\n    ELSE b.columnH\nEND",
                         "sourceDataElements": [
                             {
@@ -358,7 +359,7 @@
     },
     "exportMetadata": {
         "exportedBy": "Admin User",
-        "exportedOn": "2021-02-22T11:47:23.161Z",
+        "exportedOn": "${json-unit.matches:offsetDateTime}",
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
             "name": "DataFlowJsonExporterService",

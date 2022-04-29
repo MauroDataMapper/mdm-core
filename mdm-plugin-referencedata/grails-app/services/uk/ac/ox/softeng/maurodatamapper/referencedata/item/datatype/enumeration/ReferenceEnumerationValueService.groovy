@@ -18,11 +18,16 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -127,5 +132,32 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     @Override
     List<ReferenceEnumerationValue> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceEnumerationValue.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    List<ReferenceEnumerationValue> findAllByReferenceDataModelId(Serializable dataModelId) {
+        ReferenceEnumerationValue.byReferenceDataModelId(dataModelId).list()
+    }
+
+    @Override
+    ReferenceEnumerationValue copy(Model copiedModel, ReferenceEnumerationValue original, CatalogueItem referenceEnumerationTypeToCopyInto,
+                                   UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceEnumerationValue(copiedModel as ReferenceDataModel, original, referenceEnumerationTypeToCopyInto as ReferenceEnumerationType,
+                                      userSecurityPolicyManager.user,
+                                      userSecurityPolicyManager)
+    }
+
+    ReferenceEnumerationValue copyReferenceEnumerationValue(ReferenceDataModel copiedReferenceDataModel, ReferenceEnumerationValue original,
+                                                            ReferenceEnumerationType referenceEnumerationTypeToCopyInto,
+                                                            User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
+        ReferenceEnumerationValue copy = new ReferenceEnumerationValue(key: original.key, value: original.value, category: original.category)
+
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+
+        ReferenceEnumerationType referenceEnumerationType = referenceEnumerationTypeToCopyInto ?:
+                                                            copiedReferenceDataModel.findReferenceDataTypeByLabelAndType(original.referenceEnumerationType.label,
+                                                                                                                         ReferenceEnumerationType.simpleName)
+        referenceEnumerationType.addToReferenceEnumerationValues(copy)
+        copy
     }
 }

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.json.view
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.core.GrailsApplication
 import grails.plugin.json.builder.JsonGenerator
 import grails.plugin.json.converters.InstantJsonConverter
@@ -46,6 +47,7 @@ import org.springframework.core.OrderComparator
  * @since 1.0
  */
 @Slf4j
+@SuppressFBWarnings('NM_SAME_SIMPLE_NAME_AS_SUPERCLASS')
 class JsonViewTemplateEngine extends grails.plugin.json.view.JsonViewTemplateEngine {
 
     final JsonGenerator mdmGenerator
@@ -90,7 +92,7 @@ class JsonViewTemplateEngine extends grails.plugin.json.view.JsonViewTemplateEng
         options.dateFormat(config.dateFormat, locale)
         options.timezone(config.timeZone)
 
-        ServiceLoader<JsonGenerator.Converter> loader = ServiceLoader.load(JsonGenerator.Converter.class);
+        ServiceLoader<JsonGenerator.Converter> loader = ServiceLoader.load(JsonGenerator.Converter.class)
         List<JsonGenerator.Converter> converters = []
         for (JsonGenerator.Converter converter : loader) {
             converters.add(converter)

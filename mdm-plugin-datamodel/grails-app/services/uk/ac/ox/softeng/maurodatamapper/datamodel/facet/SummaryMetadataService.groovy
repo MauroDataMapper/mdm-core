@@ -90,6 +90,10 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
         copy
     }
 
+    boolean existsByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        SummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).count() == 1
+    }
+
     @Override
     SummaryMetadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
         SummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
@@ -98,6 +102,11 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
     @Override
     List<SummaryMetadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
         SummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
+    }
+
+    @Override
+    List<SummaryMetadata> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        SummaryMetadata.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
     }
 
     @Override

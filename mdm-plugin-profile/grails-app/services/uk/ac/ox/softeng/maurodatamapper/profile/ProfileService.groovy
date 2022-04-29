@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -36,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
@@ -68,15 +69,15 @@ class ProfileService implements DataBinder {
     ProfileProviderService findProfileProviderService(String profileNamespace, String profileName, String profileVersion = null) {
 
         if (profileVersion) {
-            return getAllProfileProviderServices().find {
+            return getAllProfileProviderServices(true).find {
                 it.namespace == profileNamespace &&
-                it.getName() == profileName &&
+                it.getName() in [profileName, Utils.safeUrlEncode(profileName)] &&
                 it.version == profileVersion
             }
         }
-        getAllProfileProviderServices().findAll {
+        getAllProfileProviderServices(true).findAll {
             it.namespace == profileNamespace &&
-            it.getName() == profileName
+            it.getName() in [profileName, Utils.safeUrlEncode(profileName)]
         }.max()
     }
 
@@ -89,6 +90,12 @@ class ProfileService implements DataBinder {
     Profile validateProfile(ProfileProviderService profileProviderService, Profile submittedProfile) {
         Profile cleanProfile = profileProviderService.createCleanProfileFromProfile(submittedProfile)
         cleanProfile.validate()
+        cleanProfile
+    }
+
+    Profile validateProfileValues(ProfileProviderService profileProviderService, Profile submittedProfile) {
+        Profile cleanProfile = profileProviderService.createCleanProfileFromProfile(submittedProfile)
+        cleanProfile.validateCurrentValues()
         cleanProfile
     }
 
@@ -118,10 +125,10 @@ class ProfileService implements DataBinder {
         return validModels
     }
 
-    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
-                                                      UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      String domainType,
-                                                      Map pagination = [:]) {
+    InMemoryPagedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+                                                          UserSecurityPolicyManager userSecurityPolicyManager,
+                                                          String domainType,
+                                                          Map pagination = [:]) {
 
         List<Model> models = getAllModelsWithProfile(profileProviderService, userSecurityPolicyManager, domainType)
 
@@ -129,7 +136,7 @@ class ProfileService implements DataBinder {
         profiles.addAll(models.collect {model ->
             profileProviderService.createProfileFromEntity(model)
         })
-        new PaginatedResultList<>(profiles, pagination)
+        new InMemoryPagedResultList<>(profiles, pagination)
     }
 
     MultiFacetAwareService findServiceForMultiFacetAwareDomainType(String domainType) {
@@ -152,24 +159,22 @@ class ProfileService implements DataBinder {
         metadataList.collect {it.namespace} as Set
     }
 
-    Set<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = false) {
+    Set<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
 
-        getAllProfileProviderServices(finalisedOnly).findAll {
+        getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
             (usedNamespaces.contains(it.getMetadataNamespace()) &&
              (it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType) || it.profileApplicableForDomains().size() == 0))
         }
     }
 
-    Set<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = false) {
-        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem, finalisedOnly)
-        Set<ProfileProviderService> allProfiles = getAllProfileProviderServices(finalisedOnly).findAll {
+    Set<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
+        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem, finalisedOnly, latestVersionByMetadataNamespace)
+        Set<ProfileProviderService> allProfiles = getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
             it.profileApplicableForDomains().size() == 0 ||
             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType)
         }
-        Set<ProfileProviderService> unusedProfiles = new HashSet<ProfileProviderService>(allProfiles)
-        unusedProfiles.removeAll(usedProfiles)
-        unusedProfiles
+        allProfiles.findAll {!usedProfiles.contains(it)}
     }
 
     ProfileProviderService createDynamicProfileServiceFromModel(DataModel dataModel) {
@@ -182,7 +187,7 @@ class ProfileService implements DataBinder {
      * @param finalisedOnly If true then exclude dynamic profiles which are not finalised
      * @return
      */
-    Set<ProfileProviderService> getAllProfileProviderServices(boolean finalisedOnly = false) {
+    Set<ProfileProviderService> getAllProfileProviderServices(boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
         // First we'll get the ones we already know about...
         // (Except those that we've already disabled)
         Set<ProfileProviderService> allProfileServices = []
@@ -222,11 +227,14 @@ class ProfileService implements DataBinder {
             newDynamicModels.collect {dataModel -> createDynamicProfileServiceFromModel(dataModel)}
         )
 
-        return allProfileServices
+        if (latestVersionByMetadataNamespace) {
+            return allProfileServices.groupBy {new Tuple(it.namespace, it.name, it.metadataNamespace)}.collect {it.value.max()}.sort()
+        }
+        return allProfileServices.sort()
     }
 
     Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
-        getAllProfileProviderServices().findAll {
+        getAllProfileProviderServices(true).findAll {
             it.definingDataModel != null
         }
     }
@@ -234,7 +242,7 @@ class ProfileService implements DataBinder {
     def getMany(UUID modelId, ItemsProfilesDataBinding itemsProfiles) {
         List<ProfileProvided> profiles = []
 
-        itemsProfiles.multiFacetAwareItems.each { multiFacetAwareItemDataBinding ->
+        itemsProfiles.multiFacetAwareItems.each {multiFacetAwareItemDataBinding ->
             MultiFacetAware multiFacetAware = findMultiFacetAwareItemByDomainTypeAndId(
                 multiFacetAwareItemDataBinding.multiFacetAwareItemDomainType,
                 multiFacetAwareItemDataBinding.multiFacetAwareItemId)
@@ -248,7 +256,7 @@ class ProfileService implements DataBinder {
                 multiFacetAware instanceof ModelItem &&
                 multiFacetAware.model.id == modelId) {
 
-                itemsProfiles.profileProviderServices.each { profileProviderServiceDataBinding ->
+                itemsProfiles.profileProviderServices.each {profileProviderServiceDataBinding ->
                     ProfileProviderService profileProviderService = findProfileProviderService(
                         profileProviderServiceDataBinding.namespace,
                         profileProviderServiceDataBinding.name,
@@ -307,7 +315,7 @@ class ProfileService implements DataBinder {
 
                     if (validateOnly) {
                         ProfileProvided validated = new ProfileProvided()
-                        validated.profile = validateProfile(profileProviderService, submittedInstance)
+                        validated.profile = validateProfileValues(profileProviderService, submittedInstance)
                         validated.profileProviderService = profileProviderService
                         handledInstances.add(validated)
                     } else {
@@ -315,10 +323,14 @@ class ProfileService implements DataBinder {
 
                         if (profileProviderService.canBeEditedAfterFinalisation()) {
                             saveAllowed = userSecurityPolicyManager.userCanWriteResourceId(Metadata, null, model.class, model.id, 'saveIgnoreFinalise')
-                            log.debug("Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
+                            log.debug(
+                                "Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is " +
+                                "${saveAllowed}")
                         } else {
                             saveAllowed = userSecurityPolicyManager.userCanCreateResourceId(Metadata, null, model.class, model.id)
-                            log.debug("Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
+                            log.debug(
+                                "Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is " +
+                                "${saveAllowed}")
                         }
 
                         if (saveAllowed) {

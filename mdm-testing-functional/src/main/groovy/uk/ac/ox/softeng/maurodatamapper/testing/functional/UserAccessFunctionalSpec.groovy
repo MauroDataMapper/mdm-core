@@ -210,7 +210,7 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         loginCreator()
 
         when: 'creating a changelog'
-        POST("${getEditsFullPath(id)}/changelogs", ["description": "Functional Test Changelog"], MAP_ARG, true)
+        POST("${getEditsFullPath(id)}/changelogs", ['description': 'Functional Test Changelog'], MAP_ARG, true)
 
         then: 'the response is created'
         verifyResponse CREATED, response
@@ -223,8 +223,8 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         verifyResponse OK, response
         responseBody().count == 1
         responseBody().items[0].createdBy == userEmailAddresses.creator
-        responseBody().items[0].description == "Functional Test Changelog"
-        responseBody().items[0].title == "CHANGELOG"
+        responseBody().items[0].description == 'Functional Test Changelog'
+        responseBody().items[0].title == 'CHANGELOG'
         def changelogId = responseBody().items[0].id
 
         cleanup:

@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ContainedResourceInterceptorUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
@@ -33,6 +34,9 @@ class TermRelationshipInterceptorSpec extends ContainedResourceInterceptorUnitSp
     def setup() {
         log.debug('Setting up TermRelationshipInterceptorSpec')
         mockDomains(Folder, Terminology, Term, TermRelationship, TermRelationshipType, CodeSet)
+        interceptor.termService = Stub(TermService) {
+            existsByTerminologyIdAndId(_, _) >> true
+        }
     }
 
     @Override
@@ -47,7 +51,7 @@ class TermRelationshipInterceptorSpec extends ContainedResourceInterceptorUnitSp
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'TSI01'
+        'MII01'
     }
 
     @Override

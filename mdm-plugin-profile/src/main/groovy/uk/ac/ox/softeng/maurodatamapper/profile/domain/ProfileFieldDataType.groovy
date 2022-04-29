@@ -48,7 +48,7 @@ enum ProfileFieldDataType {
     }
 
     static ProfileFieldDataType findForLabel(String label) {
-        values().find {it.label.equalsIgnoreCase(label)}
+        values().find {it.label.equalsIgnoreCase(label)} ?: STRING
     }
 
     static ProfileFieldDataType findFor(String value) {
@@ -65,19 +65,19 @@ enum ProfileFieldDataType {
 
     String validateString(String input) {
         switch (label) {
-            case "boolean":
-                if (!input.equalsIgnoreCase("true") && !input.equalsIgnoreCase("false")) {
+            case 'boolean':
+                if (!input.equalsIgnoreCase('true') && !input.equalsIgnoreCase('false')) {
                     return 'Boolean'
                 }
                 return null
-            case "int":
+            case 'int':
                 try {
                     Integer.parseInt(input)
                     return null
                 } catch (Exception ignored) {
                     return 'Integer'
                 }
-            case "decimal":
+            case 'decimal':
                 try {
                     Double.parseDouble(input)
                     return null
@@ -85,7 +85,7 @@ enum ProfileFieldDataType {
                     return 'Decimal'
                 }
 
-            case "date":
+            case 'date':
                 try {
                     DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.dateFormats)
                     return null
@@ -93,7 +93,7 @@ enum ProfileFieldDataType {
                     return 'Date'
                 }
 
-            case "datetime":
+            case 'datetime':
                 try {
                     DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.dateTimeFormats)
                     return null
@@ -101,7 +101,7 @@ enum ProfileFieldDataType {
                     return 'DateTime'
                 }
 
-            case "time":
+            case 'time':
                 try {
                     DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.timeFormats)
                     return null
@@ -109,7 +109,7 @@ enum ProfileFieldDataType {
                     return 'Time'
                 }
 
-            case "model":
+            case 'model':
                 try {
                     Utils.toUuid(input)
                     return null
@@ -117,7 +117,7 @@ enum ProfileFieldDataType {
                     return 'Model'
                 }
 
-            case "folder":
+            case 'folder':
                 try {
                     Utils.toUuid(input)
                     return null
@@ -125,7 +125,7 @@ enum ProfileFieldDataType {
                     return 'Folder'
                 }
 
-            case "json":
+            case 'json':
                 try {
                     JsonSlurper jsonSlurper = new JsonSlurper()
                     jsonSlurper.parseText(input)

@@ -36,7 +36,7 @@ class TermInterceptor extends TerminologySecuredInterceptor {
     }
 
     @Override
-    void checkTerminologyId() {
+    void checkModelId() {
         if (!params.codeSetId && !params.terminologyId) {
             throw new ApiBadRequestException('TSI01', 'No TerminologyId or CodeSet provided against secured resource')
         }
@@ -46,7 +46,7 @@ class TermInterceptor extends TerminologySecuredInterceptor {
         performChecks()
 
         if (actionName in ['search', 'tree']) {
-            return canReadTerminology()
+            return canReadModel()
         }
 
         if (isIndex() && params.containsKey('codeSetId')) {

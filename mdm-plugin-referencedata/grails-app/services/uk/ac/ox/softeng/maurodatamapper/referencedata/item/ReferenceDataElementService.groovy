@@ -21,14 +21,19 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
@@ -36,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataEl
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -54,6 +60,7 @@ import java.util.function.BiFunction
 @Transactional
 class ReferenceDataElementService extends ModelItemService<ReferenceDataElement> implements ReferenceSummaryMetadataAwareService {
 
+    PathService pathService
     ReferenceDataTypeService referenceDataTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataModelService referenceDataModelService
@@ -103,19 +110,6 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement updateFacetsAfterInsertingCatalogueItem(ReferenceDataElement catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.referenceSummaryMetadata) {
-            catalogueItem.referenceSummaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
-        }
-        catalogueItem
-    }
-
-    @Override
     ReferenceDataElement findByIdJoinClassifiers(UUID id) {
         ReferenceDataElement.findById(id, [fetch: [classifiers: 'join']])
     }
@@ -142,6 +136,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         domainType == ReferenceDataElement.simpleName
     }
 
+    @Override
+    ReferenceDataElement findByParentIdAndLabel(UUID parentId, String label) {
+        findByReferenceDataModelIdAndLabel(parentId, label)
+    }
+
 
     @Override
     List<ReferenceDataElement> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -165,7 +164,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     void matchUpDataTypes(ReferenceDataModel referenceDataModel, Collection<ReferenceDataElement> dataElements) {
         if (referenceDataModel.referenceDataTypes == null) referenceDataModel.referenceDataTypes = [] as HashSet
         if (dataElements) {
-            log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), referenceDataModel.referenceDataTypes.size())
+            log.debug('Matching up {} DataElements to a possible {} DataTypes', dataElements.size(), referenceDataModel.referenceDataTypes.size())
             def grouped = dataElements.groupBy {it.referenceDataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
@@ -188,6 +187,10 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataElement findByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
         ReferenceDataElement.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
+    }
+
+    ReferenceDataElement findByReferenceDataModelIdAndLabel(Serializable referenceDataModelId, String label) {
+        ReferenceDataElement.byReferenceDataModelIdAndLabel(referenceDataModelId, label).find()
     }
 
     ReferenceDataElement findByReferenceDataTypeIdAndId(Serializable referenceDataTypeId, Serializable id) {
@@ -254,12 +257,19 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         dataElement
     }
 
+    @Override
+    ReferenceDataElement copy(Model copiedReferenceDataModel, ReferenceDataElement original, CatalogueItem nonModelParent,
+                              UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceDataElement(copiedReferenceDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
+
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
-                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
+                                                  UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
+                                                  CopyInformation copyInformation = null) {
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
                                                              maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         ReferenceDataType referenceDataType = copiedReferenceDataModel.findReferenceDataTypeByLabel(original.referenceDataType.label)
@@ -278,12 +288,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement copyCatalogueItemInformation(ReferenceDataElement original,
-                                                      ReferenceDataElement copy,
-                                                      User copier,
-                                                      UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      boolean copySummaryMetadata = false) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+    ReferenceDataElement copyModelItemInformation(ReferenceDataElement original,
+                                                  ReferenceDataElement copy,
+                                                  User copier,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager,
+                                                  boolean copySummaryMetadata = false, CopyInformation copyInformation = null) {
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
@@ -334,7 +344,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id],  [referenceDataModelToSearch.path.last()]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id], [referenceDataModelToSearch.path.last()]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(referenceDataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->
@@ -412,5 +422,30 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     @Override
     List<ReferenceDataElement> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceDataElement.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    /**
+     * Special handler to apply a modification patch to a ReferenceDataType.
+     * In the diff we set a mergeField called referenceDataTypePath. In this method we use that referenceDataTypePath to find the
+     * relevant ReferenceDataType.
+     * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, ReferenceDataElement targetDomain, String fieldName) {
+        if (fieldName == 'referenceDataTypePath') {
+            ReferenceDataType rdt = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+
+            if (rdt) {
+                targetDomain.referenceDataType = rdt
+                return true
+            } else {
+                throw new ApiInternalException('RDES01', "Cannot find ReferenceDataType with path ${modificationPatch.sourceValue}")
+            }
+        }
+
+        false
     }
 }

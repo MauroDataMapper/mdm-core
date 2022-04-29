@@ -185,7 +185,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      * @return A UUID as a string
      */
     private static String extractUuidFromTagUri(String url) {
-        final String separator = ":"
+        final String separator = ':'
         int lastPos = url.lastIndexOf(separator)
 
         return url.substring(lastPos + 1)
@@ -198,7 +198,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      * @return A UUID as a string
      */
     private static String extractUuidFromUrn(String url) {
-        final String separator = ":"
+        final String separator = ':'
         int lastPos = url.lastIndexOf(separator)
 
         return url.substring(lastPos + 1)

@@ -51,7 +51,7 @@ trait JsonWebUnitSpec extends GrailsWebUnitTest implements JsonComparer {
     void verifyResponse(HttpStatus expected) {
         HttpStatus actual = valueOf(status)
         if (actual != expected) {
-            log.error('Failed Response :: {}[{}]\n{}', actual.code, actual.reason, prettyPrint(response.text))
+            log.error('Failed Response :: {}[{}]\n{}', actual.code, actual.reason, prettyPrintJson(response.text))
         }
         assert actual == expected
     }

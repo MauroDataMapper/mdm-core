@@ -40,10 +40,7 @@ class FieldDiff<F> extends BiDirectionalDiff<F> {
         if (!super.equals(o)) return false
 
         FieldDiff<F> fieldDiff = (FieldDiff<F>) o
-
-        if (fieldName != fieldDiff.fieldName) return false
-
-        return true
+        fieldName == fieldDiff.fieldName
     }
 
     @Override
@@ -64,5 +61,12 @@ class FieldDiff<F> extends BiDirectionalDiff<F> {
     @Override
     String toString() {
         "${fieldName} :: ${left?.toString()} <> ${right?.toString()}"
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + fieldName.hashCode()
+        result
     }
 }

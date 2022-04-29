@@ -40,6 +40,8 @@ import io.micronaut.http.HttpStatus
  *
  *  |   GET    | /api/folders/${folderId}/search   | Action: search
  *  |   POST   | /api/folders/${folderId}/search   | Action: search
+ *
+ *  |   GET    | /api/folders/${folderId}/export    | Action: export
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.container.FolderController
  */
@@ -309,9 +311,9 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         cleanUpData(id)
     }
 
-    void 'Test saving a folder inside a folder and then moving it to another folder'() {
+    void 'MV01 : Test saving a folder inside a folder and then moving it to another folder'() {
         when: 'Create Parent Folder 1'
-        POST('', ["label": "Fuctional Test Parent Folder 1"])
+        POST('', ['label': 'Fuctional Test Parent Folder 1'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -325,7 +327,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         response.body().count == 0
 
         when: 'Create Parent Folder 2'
-        POST('', ["label": "Fuctional Test Parent Folder 2"])
+        POST('', ['label': 'Fuctional Test Parent Folder 2'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -339,7 +341,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         response.body().count == 0
 
         when: 'A child folder is added to Parent Folder 1'
-        POST("$parentFolder1Id/folders", ["label": "Functional Test Moved Folder"])
+        POST("$parentFolder1Id/folders", ['label': 'Functional Test Moved Folder'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -379,5 +381,167 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         then: 'The response is OK with one child folders'
         response.status == HttpStatus.OK
         response.body().count == 1
+    }
+
+    void 'MV02 : Test saving a folder inside a folder and then moving it to the root'() {
+        when: 'Create Parent Folder 1'
+        POST('', ['label': 'Fuctional Test Parent Folder 1'])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder1Id = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'A child folder is added to Parent Folder 1'
+        POST("$parentFolder1Id/folders", ['label': 'Functional Test Moved Folder'])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def movedFolderId = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        when: 'The folder is moved from Parent Folder 1 to root'
+        PUT("$movedFolderId/folder/root", [:])
+
+        then:
+        response.status == HttpStatus.OK
+        response.body().id == movedFolderId
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'List folders at root'
+        GET('')
+
+        then: 'The response is OK with two folders'
+        response.status == HttpStatus.OK
+        response.body().count == 2
+    }
+
+    void 'FE01 : test export Folder JSON'() {
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'The export action is executed with a valid instance'
+        String id = response.body().id
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter/FolderJsonExporterService/1.0", STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse(HttpStatus.OK, '''{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder"
+  },
+  "exportMetadata": {
+    "exportedBy": "Unlogged User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}''')
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    // TODO:
+    //  FE02 : test export Folder XML
+    //  FE03 : test export Folder with facets JSON
+    //  FE04 : test export Folder with facets XML
+
+    void 'FE05 : test export Folder with child Folders JSON'() {
+        given:
+        List<HttpStatus> responseStatuses = []
+        List<String> ids = []
+        Closure<Void> saveResponse = { ->
+            responseStatuses << response.status
+            ids << response.body().id
+        }
+
+        when: 'The save actions are executed with valid data'
+        POST('', validJson)
+        saveResponse()
+        POST("${ids[0]}/folders", [label: 'Functional Test Folder 2'])
+        saveResponse()
+        POST("${ids[0]}/folders", [label: 'Functional Test Folder 3'])
+        saveResponse()
+        POST("${ids[2]}/folders", [label: 'Functional Test Folder 4'])
+        saveResponse()
+
+        then: 'The responses are correct'
+        responseStatuses.every { it == HttpStatus.CREATED }
+        ids.every()
+
+        when: 'The export action is executed with a valid instance'
+        GET("${ids[0]}/export/uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter/FolderJsonExporterService/1.0", STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse(HttpStatus.OK, '''{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder",
+    "childFolders": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Folder 2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "Folder"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Folder 3",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "Folder",
+        "childFolders": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test Folder 4",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "domainType": "Folder"
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Unlogged User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}''')
+
+        cleanup:
+        ids.reverseEach { cleanUpData(it) }
     }
 }

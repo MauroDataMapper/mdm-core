@@ -71,7 +71,7 @@ class BreadcrumbTree {
     static mapping = {
         treeString type: 'text'
         label type: 'text'
-        parent cascade: 'none', cascadeValidate: 'none'
+        parent cascadeValidate: 'none' //, cascade: 'none'
         children cascade: 'all-delete-orphan'
         path type: PathUserType
     }
@@ -106,30 +106,46 @@ class BreadcrumbTree {
         this.topBreadcrumbTree = false
         if (catalogueItem.label) {
             this.label = catalogueItem.label
-            this.path = catalogueItem.path
+            this.path = catalogueItem.getUncheckedPath()
         } else {
             this.label = 'NOT_VALID'
         }
     }
 
     def beforeValidate() {
+        beforeValidateCheck(true)
+    }
+
+    def beforeValidateCheck(boolean cascade = true) {
+        if (this.shouldSkipValidation()) return
         if (id && !isDirty()) trackChanges()
         if (domainEntity) {
+            UUID originalId = domainId
             domainId = domainEntity.id
-            markDirty('domainId', domainEntity.id, getOriginalValue('domainId'))
+            markDirty('domainId', domainEntity.id, originalId)
+            String originalLabel = label
             label = domainEntity.label
-            markDirty('label', domainEntity.label, getOriginalValue('label'))
-            path = domainEntity.path
-            markDirty('path', domainEntity.path, getOriginalValue('path'))
+            markDirty('label', domainEntity.label, originalLabel)
+            Path originalPath = path
+            path = domainEntity.getUncheckedPath()
+            markDirty('path', path, originalPath)
         }
         checkTree()
-        // After checking the tree, if its changed (or we havent been saved before) then we will need to update all the children
-        if (isDirty('treeString')) {
-            children?.each {
-                it.buildTree()
-                it.beforeValidate()
+        if (cascade) {
+            // After checking the tree, if its changed (or we havent been saved before) then we will need to update all the children
+            if (isDirty('treeString') && children) {
+                children.each {
+                    it.buildTree()
+                    it.beforeValidate()
+                }
             }
         }
+    }
+
+    def beforeInsert() {
+        if (domainEntity && !domainId) domainId = domainEntity.getId()
+        checkTree()
+        true
     }
 
     String getTree() {
@@ -181,7 +197,7 @@ class BreadcrumbTree {
     }
 
     void update(CatalogueItem catalogueItem) {
-
+        this.domainEntity = catalogueItem
         if (catalogueItem.instanceOf(ModelItem)) {
 
             ModelItem modelItem = catalogueItem as ModelItem
@@ -198,10 +214,16 @@ class BreadcrumbTree {
         }
         buildTree()
         this.path = catalogueItem.path
+        catalogueItem.markDirty('breadcrumbTree')
     }
 
     Breadcrumb getBreadcrumb() {
         new Breadcrumb(domainId, domainType, label, finalised)
+    }
+
+    void disableValidation() {
+        skipValidation(true)
+        children?.each {it.disableValidation()}
     }
 
     static BreadcrumbTree findOrCreateBreadcrumbTree(CatalogueItem catalogueItem) {

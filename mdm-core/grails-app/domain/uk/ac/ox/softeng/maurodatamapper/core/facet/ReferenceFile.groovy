@@ -41,6 +41,7 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
     }
 
     static mapping = {
+        batchSize(10)
     }
 
     static transients = ['multiFacetAwareItem']
@@ -64,7 +65,13 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
     }
 
     def beforeValidate() {
+//        beforeValidateCheck()
         fileSize = fileContents?.size()
+    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
     }
 
     @Override

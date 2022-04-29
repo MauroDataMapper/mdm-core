@@ -19,8 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
@@ -37,7 +40,14 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentProperty
 import org.hibernate.SessionFactory
+
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_IGNORE_CASE
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_ORDER
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 
 @Slf4j
 abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomainService<K>, MultiFacetAwareService<K> {
@@ -81,22 +91,17 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
 
     @Override
     K save(Map args, K catalogueItem) {
-        // If inserting then we will need to update all the facets with the CIs "id" after insert
-        // If updating then we dont need to do this as the ID has already been done
-        boolean inserting = !(catalogueItem as GormEntity).ident() ?: args.insert
         Map saveArgs = new HashMap(args)
         if (args.flush) {
             saveArgs.remove('flush')
             (catalogueItem as GormEntity).save(saveArgs)
-            if (inserting) updateFacetsAfterInsertingCatalogueItem(catalogueItem)
             // We do need to ensure the BT hasnt changed (e.g. a move of a MI inside an M)
-            checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
+            if (!args.ignoreBreadcrumbs) checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
             sessionFactory.currentSession.flush()
         } else {
             (catalogueItem as GormEntity).save(args)
-            if (inserting) updateFacetsAfterInsertingCatalogueItem(catalogueItem)
             // We do need to ensure the BT hasnt changed (e.g. a move of a MI inside an M)
-            checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
+            if (!args.ignoreBreadcrumbs) checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
         }
         catalogueItem
     }
@@ -149,7 +154,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             copy.label = original.label
         }
 
-        classifierService.findAllReadableByCatalogueItem(userSecurityPolicyManager, original).each { copy.addToClassifiers(it) }
+        classifierService.findAllReadableByCatalogueItem(userSecurityPolicyManager, original).each {copy.addToClassifiers(it)}
 
         // Allow facets to be preloaded from the db and passed in via the copy information
         // Facets loaded in this way could be more than just those belonging to the item being copied so we need to extract only those relevant
@@ -171,21 +176,28 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             semanticLinks = semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
         }
 
-        metadata.each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
-        rules.each { rule ->
+        metadata.each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        rules.each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
             }
             copy.addToRules(copiedRule)
         }
-        semanticLinks.each { link ->
-            copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
-                                    targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
-                                    targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
-                                    unconfirmed: true)
+        semanticLinks.each {link ->
+            if (link.targetMultiFacetAwareItem) {
+                copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                        targetMultiFacetAwareItem: link.targetMultiFacetAwareItem,
+                                        unconfirmed: true)
+            } else {
+                copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                        targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
+                                        targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+                                        unconfirmed: true)
+            }
+
         }
         copy
     }
@@ -310,12 +322,19 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
 
     void checkBreadcrumbTreeAfterSavingCatalogueItem(K catalogueItem) {
         catalogueItem.breadcrumbTree?.trackChanges()
-        catalogueItem.breadcrumbTree?.beforeValidate()
+        catalogueItem.breadcrumbTree?.beforeValidateCheck()
         catalogueItem.breadcrumbTree?.save(validate: false)
     }
 
-    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
-        updateFacetsAfterInsertingMultiFacetAware(catalogueItem)
+    void checkBreadcrumbTreeAfterSavingCatalogueItems(Collection<K> catalogueItems) {
+        List<BreadcrumbTree> bts = catalogueItems.collect {it.breadcrumbTree}.findAll().each {
+            boolean skip = it.shouldSkipValidation()
+            if(skip) it.skipValidation(false)
+            it.trackChanges()
+            it.beforeValidateCheck(false)
+            if(skip) it.skipValidation(true)
+        }
+        BreadcrumbTree.saveAll(bts)
     }
 
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {
@@ -340,5 +359,98 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     @Override
     K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         findByParentIdAndLabel(parentId, pathIdentifier)
+    }
+
+    void createCatalogueItemDiffCaches(DiffCache diffCache, String field, List<CatalogueItem> catalogueItems,
+                                       Map<String, Map<UUID, List<Diffable>>> facetData) {
+        catalogueItems.each {ci ->
+            createCatalogueItemDiffCache(diffCache, ci, facetData)
+        }
+        diffCache.addField(field, catalogueItems)
+    }
+
+    DiffCache createCatalogueItemDiffCache(DiffCache parentCache, CatalogueItem catalogueItem,
+                                           Map<String, Map<UUID, List<Diffable>>> facetData) {
+        DiffCache ciDiffCache = new DiffCache()
+        addFacetDataToDiffCache(ciDiffCache, facetData, catalogueItem.id)
+        if(parentCache) parentCache.addDiffCache(catalogueItem.path, ciDiffCache)
+        ciDiffCache
+    }
+
+
+    String applyHQLSort(String originalQuery, String ciQueryPrefix, def sortObj, Map otherArgs, boolean isDistinct) {
+        if (sortObj == null) return originalQuery
+
+        boolean ignoreCase = true
+        Object caseArg = otherArgs[ARGUMENT_IGNORE_CASE]
+        if (caseArg instanceof Boolean) {
+            ignoreCase = (Boolean) caseArg
+        }
+        String orderParam = (String) otherArgs[ARGUMENT_ORDER]
+        PersistentEntity persistentEntity = getDomainClass().getGormPersistentEntity()
+        StringBuilder sortedQuery = new StringBuilder(originalQuery)
+        if (sortObj instanceof Map) {
+            sortedQuery.append '\nORDER BY '
+            Map sortMap = (Map) sortObj
+            Set keys = sortMap.keySet()
+            for (i in 0..<keys.size()) {
+                String sort = keys[i]
+                String order = ORDER_DESC.equalsIgnoreCase(sortMap[sort] as String) ? ORDER_DESC : ORDER_ASC
+
+                PersistentProperty persistentProperty = persistentEntity.getPropertyByName(sort)
+                // Dont try and 'lower' non character fields
+                if (ignoreCase && CharSequence.isAssignableFrom(persistentProperty.type)) {
+                    sortedQuery = addLowercaseSort(sortedQuery, ciQueryPrefix, sort, order, isDistinct, false)
+                } else sortedQuery.append(ciQueryPrefix).append('.').append(sort).append(' ').append(order)
+                if (i < keys.size() - 1) sortedQuery.append(', ')
+            }
+            sortMap.each {sort, providedOrder ->
+
+            }
+        } else {
+            String sort = (String) sortObj
+            String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC
+            PersistentProperty persistentProperty = persistentEntity.getPropertyByName(sort)
+            // Dont try and 'lower' non character fields
+            if (ignoreCase && CharSequence.isAssignableFrom(persistentProperty.type)) {
+                sortedQuery = addLowercaseSort(sortedQuery, ciQueryPrefix, sort, order, isDistinct, true)
+            } else sortedQuery.append('\nORDER BY ').append(ciQueryPrefix).append('.').append(sort).append(' ').append(order)
+        }
+        sortedQuery.toString()
+    }
+
+    private static StringBuilder addLowercaseSort(StringBuilder stringBuilder, String ciQueryPrefix, String sort, String order, boolean isDistinct, boolean isSingle) {
+        StringBuilder sortedQuery = new StringBuilder()
+        // Need to add the lower variant to the select query if isDistinct
+        if (isDistinct) sortedQuery.append('\n, lower(').append(ciQueryPrefix).append('.').append(sort).append(') ')
+        sortedQuery.append(stringBuilder.toString())
+        if (isSingle) sortedQuery.append('\nORDER BY ')
+        sortedQuery.append('lower(').append(ciQueryPrefix).append('.').append(sort).append(') ').append(order)
+    }
+
+    String applyHQLFilters(String originalQuery, String ciQueryPrefix, Map filters) {
+        StringBuilder filteredQuery = new StringBuilder(originalQuery)
+        if (filters.label) filteredQuery.append('\nAND lower(').append(ciQueryPrefix).append('.label) LIKE lower(:label)')
+        if (filters.description) filteredQuery.append('\nAND lower(').append(ciQueryPrefix).append('.description) LIKE lower(:description)')
+        if (filters.domainType) filteredQuery.append('\nAND lower(').append(ciQueryPrefix).append('.domainType) LIKE lower(:domainType)')
+        filteredQuery.toString()
+    }
+
+    Map<String, Object> extractFiltersAsHQLParameters(Map filters, String... addtlFilters) {
+        Map<String, Object> extractedFilters = [:]
+        ['label', 'description', 'domainType'].each {f ->
+            if (filters.containsKey(f)) {
+                extractedFilters[f] = "%${filters[f]}%".toString()
+            }
+        }
+
+        if (addtlFilters) {
+            addtlFilters.each {f ->
+                if (filters.containsKey(f)) {
+                    extractedFilters[f] = "%${filters[f]}%".toString()
+                }
+            }
+        }
+        extractedFilters
     }
 }

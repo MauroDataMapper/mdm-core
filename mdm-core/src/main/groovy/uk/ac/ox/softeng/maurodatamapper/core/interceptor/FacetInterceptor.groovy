@@ -36,7 +36,7 @@ abstract class FacetInterceptor implements MdmInterceptor {
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
 
-    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+    protected static final HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler();
 
     abstract Class getFacetClass()
 
@@ -58,12 +58,17 @@ abstract class FacetInterceptor implements MdmInterceptor {
         // No-op
     }
 
+    void checkParentId() throws ApiBadRequestException {
+        // no op
+    }
+
     void facetResourceChecks() {
         Utils.toUuid(params, 'id')
-        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType?: params.catalogueItemDomainType ?: params.containerDomainType
+        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType ?: params.catalogueItemDomainType ?: params.containerDomainType
         params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId
         checkAdditionalIds()
         mapDomainTypeToClass(getOwningType(), true)
+        checkParentId()
     }
 
     boolean checkActionAllowedOnFacet() {
@@ -71,7 +76,7 @@ abstract class FacetInterceptor implements MdmInterceptor {
             return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, getOwningClass(), getOwningId())
         }
 
-        Model model = proxyHandler.unwrapIfProxy(getOwningModel())
+        Model model = hibernateProxyHandler.unwrapIfProxy(getOwningModel())
         return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, model.getClass(), model.getId())
     }
 

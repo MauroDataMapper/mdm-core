@@ -34,7 +34,6 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.jupiter.api.Tag
 import org.spockframework.util.Assert
-import spock.lang.PendingFeature
 
 @Slf4j
 @Integration
@@ -105,7 +104,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModelService.get(id)
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -113,7 +112,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModelService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -129,15 +128,15 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         dm1.label == 'test database'
-        dm1.modelType == "ReferenceDataModel"
+        dm1.modelType == 'ReferenceDataModel'
 
         and:
         dm2.label == 'test form'
-        dm1.modelType == "ReferenceDataModel"
+        dm1.modelType == 'ReferenceDataModel'
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -145,7 +144,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModelService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -163,7 +162,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         ReferenceDataModel.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
         given:
         setupData()
 
@@ -290,74 +289,6 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         }
 
     }
-
-    @PendingFeature(reason = 'DataModel permission copying')
-    void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
-        given:
-        setupData()
-
-        when: 'finalising model and then creating a new doc version is allowed'
-        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
-        def result = referenceDataModelService.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
-
-        then:
-        checkAndSave(result)
-
-        when: 'load from DB to make sure everything is saved'
-        dataModel = referenceDataModelService.get(id)
-        ReferenceDataModel newDocVersion = referenceDataModelService.get(result.id)
-
-        then: 'old model is finalised and superseded'
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
-
-        and: 'new doc version model is draft v2'
-        newDocVersion.documentationVersion == Version.from('2')
-        !newDocVersion.finalised
-        !newDocVersion.dateFinalised
-
-        and: 'new doc version model matches old model'
-        newDocVersion.label == dataModel.label
-        newDocVersion.description == dataModel.description
-        newDocVersion.author == dataModel.author
-        newDocVersion.organisation == dataModel.organisation
-        newDocVersion.modelType == dataModel.modelType
-
-        newDocVersion.referenceDataTypes.size() == dataModel.referenceDataTypes.size()
-        newDocVersion.dataClasses.size() == dataModel.dataClasses.size()
-
-        and: 'annotations and edits are not copied'
-        !newDocVersion.annotations
-        newDocVersion.edits.size() == 1
-
-        and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
-
-        and:
-        dataModel.referenceDataTypes.every { odt ->
-            newDocVersion.referenceDataTypes.any {
-                it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
-            }
-        }
-        dataModel.dataClasses.every { odc ->
-            newDocVersion.dataClasses.any {
-                int idcs = it.dataClasses?.size() ?: 0
-                int odcs = odc.dataClasses?.size() ?: 0
-                int ides = it.referenceDataElements?.size() ?: 0
-                int odes = odc.referenceDataElements?.size() ?: 0
-                it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
-            }
-        }
-    }
-
 
     void 'DMSC04 : test creating a new documentation version on finalised superseded model'() {
         given:
@@ -541,72 +472,6 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
                 it.label == ode.label &&
                 it.id != ode.id &&
                 it.domainType == ode.domainType
-            }
-        }
-    }
-
-    @PendingFeature(reason = 'DataModel permission copying')
-    void 'DMSC11 : test creating a new branch model version on finalised model with permission copying'() {
-        given:
-        setupData()
-
-        when: 'finalising model and then creating a new version is allowed'
-        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
-        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                                  [copyDataFlows: false, throwErrors: true])
-
-        then:
-        checkAndSaveNewVersion(result)
-
-        when: 'load from DB to make sure everything is saved'
-        dataModel = referenceDataModelService.get(id)
-        ReferenceDataModel newVersion = referenceDataModelService.get(result.id)
-
-        then: 'old model is finalised and superseded'
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
-
-        and: 'new  version model is draft v2'
-        newVersion.documentationVersion == Version.from('1')
-        !newVersion.finalised
-        !newVersion.dateFinalised
-
-        and: 'new  version model matches old model'
-        newVersion.label != dataModel.label
-        newVersion.description == dataModel.description
-        newVersion.author == dataModel.author
-        newVersion.organisation == dataModel.organisation
-        newVersion.modelType == dataModel.modelType
-
-        newVersion.referenceDataTypes.size() == dataModel.referenceDataTypes.size()
-        newVersion.dataClasses.size() == dataModel.dataClasses.size()
-
-        and: 'annotations and edits are not copied'
-        !newVersion.annotations
-        newVersion.edits.size() == 1
-
-
-        and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
-
-        and:
-        dataModel.referenceDataTypes.every { odt ->
-            newVersion.referenceDataTypes.any {
-                it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
-            }
-        }
-        dataModel.dataClasses.every { odc ->
-            newVersion.dataClasses.any {
-                int idcs = it.dataClasses?.size() ?: 0
-                int odcs = odc.dataClasses?.size() ?: 0
-                int ides = it.referenceDataElements?.size() ?: 0
-                int odes = odc.referenceDataElements?.size() ?: 0
-                it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
             }
         }
     }
@@ -816,8 +681,8 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         availableBranches.size() == 2
-        availableBranches.each { it.id in [draftModel.id, testModel.id] }
-        availableBranches.each { it.label == dataModel.label }
+        availableBranches.every {it.id in [draftModel.id, testModel.id]}
+        availableBranches.every {it.label == dataModel.label}
     }
 
     void 'DMSV01 : test validation on valid model'() {

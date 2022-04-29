@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.SecurableResourceInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -34,7 +33,7 @@ class FolderInterceptor extends SecurableResourceInterceptor {
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'folderId')
         Utils.toUuid(params, 'versionedFolderId')
-        Utils.toUuid(params, 'destinationFolderId')
+        if (params.destinationFolderId != 'root') Utils.toUuid(params, 'destinationFolderId')
         params.folderId = params.folderId ?: params.versionedFolderId
     }
 
@@ -52,15 +51,23 @@ class FolderInterceptor extends SecurableResourceInterceptor {
         }
 
         if (actionName == 'changeFolder') {
-            boolean canReadDestinationFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.destinationFolderId)
+            UUID destinationFolderId = params.destinationFolderId == 'root' ? null : params.destinationFolderId
+            boolean canReadDestinationFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, destinationFolderId)
             boolean canReadFolderBeingMoved = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, getId())
 
             if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(Folder, getId(), actionName)) {
                 return forbiddenOrNotFound(canReadFolderBeingMoved, Folder, getId())
             }
 
-            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, params.destinationFolderId)) {
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, destinationFolderId)) {
                 return forbiddenOrNotFound(canReadDestinationFolder, Folder, params.destinationFolderId)
+            }
+            return true
+        }
+
+        if (actionName == 'exportFolder') {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, id)) {
+                return forbiddenOrNotFound(false, Folder, id)
             }
             return true
         }

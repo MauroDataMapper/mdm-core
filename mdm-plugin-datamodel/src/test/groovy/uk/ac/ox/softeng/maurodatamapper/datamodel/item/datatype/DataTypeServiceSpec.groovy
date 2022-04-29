@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -44,6 +45,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         mockArtefact(ReferenceTypeService)
         mockArtefact(PrimitiveTypeService)
         mockArtefact(EnumerationTypeService)
+        mockArtefact(EnumerationValueService)
         mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
@@ -121,13 +123,13 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<DataType> dataTypeList = service.list(max: 2, offset: 2, sort: 'label')
@@ -144,12 +146,12 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         dataTypeList[1].domainType == 'PrimitiveType'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 8
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         DataType pt = service.get(id)
 
@@ -167,7 +169,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         !DataElement.findByLabel('varcharel')
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         DataType dataType = new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', dataModel: dataModel)

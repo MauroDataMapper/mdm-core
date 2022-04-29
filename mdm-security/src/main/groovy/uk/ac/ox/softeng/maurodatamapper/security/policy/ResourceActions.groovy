@@ -39,6 +39,7 @@ class ResourceActions {
     public static final String MERGE_INTO_ACTION = 'mergeInto'
     public static final String READ_BY_EVERYONE_ACTION = 'readByEveryone'
     public static final String READ_BY_AUTHENTICATED_ACTION = 'readByAuthenticated'
+    public static final String SUBSET_ACTION = 'subset'
     public static final String FINALISED_EDIT_ACTIONS = 'finalisedEditActions'
     public static final String FINALISED_READ_ACTIONS = 'finalisedReadActions'
     public static final String SAVE_IGNORE_FINALISE = 'saveIgnoreFinalise'

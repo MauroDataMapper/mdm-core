@@ -272,7 +272,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
 
     void 'T06 : test getting the tree for empty terminology'() {
         when:
-        GET("/tree")
+        GET('/tree')
 
         then:
         verifyResponse METHOD_NOT_ALLOWED, response
@@ -362,7 +362,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
 
         then: 'The response is OK'
         verifyJsonResponse OK, '''{
-  "count": 13,
+  "count": 12,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -411,23 +411,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
       ],
       "code": "CTT100",
       "definition": "Complex Test Term 100"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "Term",
-      "label": "CTT101",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        }
-      ],
-      "code": "CTT101",
-      "definition": "CTT101",
-      "description": "Example of truncated term label when code and definition are the same"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -524,6 +507,22 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
       ],
       "code": "CTT16",
       "definition": "Complex Test Term 16"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "CTT17: Complex Test Term 17",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ],
+      "code": "CTT17",
+      "definition": "Complex Test Term 17"
     }
   ]
 }'''

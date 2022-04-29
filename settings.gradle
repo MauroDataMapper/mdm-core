@@ -1,6 +1,7 @@
 rootProject.name = 'mdm-core.ROOT'
 
 include(
+    'mdm-bom',
     'mdm-common',
     'mdm-testing-framework',
     'mdm-testing-functional',
@@ -18,3 +19,4 @@ include(
     'mdm-plugin-profile',
     'mdm-plugin-federation',
     )
+

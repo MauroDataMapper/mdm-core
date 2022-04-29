@@ -34,7 +34,7 @@ class UrlMappings {
                 put "/catalogueUsers/$catalogueUserId"(controller: 'userGroup', action: 'alterMembers')
                 delete "/catalogueUsers/$catalogueUserId"(controller: 'userGroup', action: 'alterMembers')
 
-                "/securableResourceGroupRoles"(resources: 'securableResourceGroupRole', excludes: DEFAULT_EXCLUDES)
+                '/securableResourceGroupRoles'(resources: 'securableResourceGroupRole', excludes: DEFAULT_EXCLUDES)
             }
 
             '/catalogueUsers'(resources: 'catalogueUser', excludes: DEFAULT_EXCLUDES) {
@@ -87,13 +87,13 @@ class UrlMappings {
             }
             group "/$securableResourceDomainType/$securableResourceId", {
                 group '/groupRoles', {
-                    get "/"(controller: "groupRole", action: "listGroupRolesAvailableToSecurableResource")
+                    get '/'(controller: 'groupRole', action: 'listGroupRolesAvailableToSecurableResource')
 
                     group "/$groupRoleId", {
 
-                        get "/"(controller: 'securableResourceGroupRole', action: 'index')
+                        get '/'(controller: 'securableResourceGroupRole', action: 'index')
 
-                        get "/userGroups"(controller: 'userGroup', action: 'index')
+                        get '/userGroups'(controller: 'userGroup', action: 'index')
                         post "/userGroups/$userGroupId"(controller: 'securableResourceGroupRole', action: 'save')
                         delete "/userGroups/$userGroupId"(controller: 'securableResourceGroupRole', action: 'delete')
                     }

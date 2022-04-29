@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -94,11 +95,18 @@ class RuleRepresentation implements MdmDomain, Diffable<RuleRepresentation>, Edi
     }
 
     @Override
-    ObjectDiff<RuleRepresentation> diff(RuleRepresentation obj, String context) {
+    ObjectDiff<RuleRepresentation> diff(RuleRepresentation that, String context) {
+        diff(that, context, null,null)
+    }
+
+    @Override
+    ObjectDiff<RuleRepresentation> diff(RuleRepresentation that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         DiffBuilder.objectDiff(RuleRepresentation)
             .leftHandSide(id.toString(), this)
-            .rightHandSide(obj.id.toString(), obj)
-            .appendString('language', this.language, obj.language)
+            .rightHandSide(that.id.toString(), that)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
+            .appendString('language', this.language, that.language)
     }
 
     static DetachedCriteria<RuleRepresentation> by() {

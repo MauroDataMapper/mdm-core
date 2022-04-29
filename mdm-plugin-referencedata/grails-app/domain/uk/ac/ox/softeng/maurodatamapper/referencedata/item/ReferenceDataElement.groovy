@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -83,9 +85,8 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     static mapping = {
         referenceSummaryMetadata cascade: 'all-delete-orphan'
-        referenceDataModel index: 'data_element_reference_data_model_idx' //, cascade: 'none'
-        referenceDataType index: 'data_element_data_type_idx', cascade: 'save-update', fetch: 'join'
-        model cascade: 'none'
+        referenceDataModel index: 'data_element_reference_data_model_idx', cascadeValidate: 'none' //, cascade: 'none'
+        referenceDataType index: 'data_element_data_type_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
     }
 
     static mappedBy = [
@@ -146,22 +147,28 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
     }
 
     @Override
-    String getDiffIdentifier(String context) {
-        "${referenceDataModel.getDiffIdentifier(context)}/${pathIdentifier}"
-    }
-
-    @Override
     Boolean hasChildren() {
         false
     }
 
-    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherDataElement, String context) {
-        catalogueItemDiffBuilder(ReferenceDataElement, this, otherDataElement)
-            .appendString('referenceDataType.label', this.referenceDataType.label, otherDataElement.referenceDataType.label)
-            .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)
-            .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataElement.maxMultiplicity)
+    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherReferenceDataElement, String context) {
+       diff(otherReferenceDataElement, context, null, null)
+    }
 
+    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherReferenceDataElement, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<ReferenceDataElement> diff = DiffBuilder.catalogueItemDiffBuilder(ReferenceDataElement, this, otherReferenceDataElement, lhsDiffCache, rhsDiffCache)
+            .appendNumber('minMultiplicity', this.minMultiplicity, otherReferenceDataElement.minMultiplicity)
+            .appendNumber('maxMultiplicity', this.maxMultiplicity, otherReferenceDataElement.maxMultiplicity)
 
+        // Aside from branch and version, is this Reference Data Element pointing to a different Reference Data Type?
+        if (!this.referenceDataType.getPath().matches(otherReferenceDataElement.referenceDataType.getPath(), this.referenceDataModel.getPath().last().modelIdentifier)) {
+            diff.
+                appendString('referenceDataTypePath',
+                             this.referenceDataType.getPath().toString(),
+                             otherReferenceDataElement.referenceDataType.getPath().toString())
+        }
+
+        diff
     }
 
     static DetachedCriteria<ReferenceDataElement> byReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable resourceId) {

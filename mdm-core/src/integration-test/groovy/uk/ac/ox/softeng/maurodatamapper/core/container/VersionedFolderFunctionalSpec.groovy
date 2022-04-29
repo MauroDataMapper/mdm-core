@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Rollback
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
@@ -287,5 +288,147 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         cleanup:
         DELETE(getDeleteEndpoint(id))
         assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+
+    void 'MV01 : Test saving a Versioned folder inside a folder and then moving it to another folder'() {
+        when: 'Create Parent Folder 1'
+        POST('folders', ['label': 'Fuctional Test Parent Folder 1'], MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder1Id = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("folders/$parentFolder1Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'Create Parent Folder 2'
+        POST('folders', ['label': 'Fuctional Test Parent Folder 2'], MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder2Id = response.body().id
+
+        when: 'List folders inside Parent Folder 2'
+        GET("folders/$parentFolder2Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'A child VF is added to Parent Folder 1'
+        POST("folders/$parentFolder1Id/versionedFolders", ['label': 'Functional Test Moved Folder'], MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def movedFolderId = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("folders/$parentFolder1Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        when: 'List folders inside Parent Folder 2'
+        GET("folders/$parentFolder2Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'The folder is moved from Parent Folder 1 to Parent Folder 2'
+        PUT("folders/$movedFolderId/folder/$parentFolder2Id", [:], MAP_ARG, true)
+
+        then:
+        response.status == HttpStatus.OK
+        response.body().id == movedFolderId
+
+        when: 'List folders inside Parent Folder 1'
+        GET("folders/$parentFolder1Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'List folders inside Parent Folder 2'
+        GET("folders/$parentFolder2Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        cleanup:
+        wipeoutFolders()
+    }
+
+    void 'MV02 : Test saving a Versioned folder inside a folder and then moving it to root'() {
+        when: 'Create Parent Folder 1'
+        POST('folders', ['label': 'Fuctional Test Parent Folder 1'], MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder1Id = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("folders/$parentFolder1Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'A child VF is added to Parent Folder 1'
+        POST("folders/$parentFolder1Id/versionedFolders", ['label': 'Functional Test Moved Folder'], MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def movedFolderId = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("folders/$parentFolder1Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        when: 'The folder is moved from Parent Folder 1 to root'
+        PUT("folders/$movedFolderId/folder/root", [:], MAP_ARG, true)
+
+        then:
+        response.status == HttpStatus.OK
+        response.body().id == movedFolderId
+
+        when: 'List folders inside Parent Folder 1'
+        GET("folders/$parentFolder1Id/folders", MAP_ARG, true)
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'List folders at root'
+        GET('folders', MAP_ARG, true)
+
+        then: 'The response is OK with 2 child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 2
+
+        when: 'List VFs at root'
+        GET('')
+
+        then: 'The response is OK with 1 child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        cleanup:
+        wipeoutFolders()
+    }
+
+    @Transactional
+    void wipeoutFolders() {
+        Folder.deleteAll(Folder.list())
     }
 }

@@ -17,12 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class ReferenceSummaryMetadataReportInterceptor extends FacetInterceptor {
+
+    ReferenceSummaryMetadataService referenceSummaryMetadataService
 
     @Override
     Class getFacetClass() {
@@ -37,5 +40,12 @@ class ReferenceSummaryMetadataReportInterceptor extends FacetInterceptor {
     boolean before() {
         facetResourceChecks()
         checkActionAllowedOnFacet()
+    }
+
+    @Override
+    void checkParentId() throws ApiBadRequestException {
+        if (!referenceSummaryMetadataService.existsByMultiFacetAwareItemIdAndId(params.multiFacetAwareItemId, params.referenceSummaryMetadataId)) {
+            throw new ApiBadRequestException('RSMRII01', 'Provided referenceSummaryMetadataId is not inside provided multiFacetAwareItemId')
+        }
     }
 }

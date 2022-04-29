@@ -63,7 +63,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
         log.debug('Setting up CatalogueItem unit')
         mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST))
     }
 
     Folder getTestFolder() {

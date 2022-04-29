@@ -59,7 +59,7 @@ class PublishFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String newerPublicId = response.body().id
 
-        PUT("dataModels/${newerPublicId}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("dataModels/${newerPublicId}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         PUT("dataModels/${newerPublicId}/readByEveryone", [:], MAP_ARG, true)
@@ -69,7 +69,7 @@ class PublishFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String newerId = response.body().id
 
-        PUT("dataModels/${newerId}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("dataModels/${newerId}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         logout()
@@ -82,7 +82,7 @@ class PublishFunctionalSpec extends FunctionalSpec {
         when:
         GET('models')
 
-        then: "The response is OK with no entries"
+        then: 'The response is OK with no entries'
         verifyResponse(OK, response)
         responseBody().authority.label == 'Mauro Data Mapper'
         responseBody().authority.url == 'http://localhost'

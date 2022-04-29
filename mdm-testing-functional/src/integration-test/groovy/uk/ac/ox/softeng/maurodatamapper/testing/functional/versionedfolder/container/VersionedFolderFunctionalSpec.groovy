@@ -18,16 +18,29 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.versionedfolder.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.merge.VersionedFolderMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
@@ -41,7 +54,6 @@ import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
-import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -51,6 +63,8 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
 
 /**
  * <pre>
@@ -455,7 +469,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyJsonResponse OK, '''{
             "count": 0,
-            "items": [                
+            "items": [
             ]
         }'''
 
@@ -509,7 +523,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         loginEditor()
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
             finalised : false,
             modelName : 'Functional Test Import',
             folderId  : id,
@@ -537,7 +551,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
                     "name": "DataModelJsonExporterService",
-                    "version": "3.0"
+                    "version": "3.1"
                 }
             }
         }'''.bytes.toList()
@@ -561,7 +575,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         loginEditor()
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
             finalised : false,
             modelName : 'Functional Test Import',
             folderId  : id,
@@ -589,7 +603,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
                     "name": "DataModelJsonExporterService",
-                    "version": "3.0"
+                    "version": "3.1"
                 }
             }
         }'''.bytes.toList()
@@ -615,7 +629,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse(OK, response)
 
         when: 'finalised'
-        PUT("$data.id/finalise", ["version": "3.9.0"])
+        PUT("$data.id/finalise", ['version': "3.9.0"])
 
         then:
         verifyForbidden response
@@ -732,6 +746,37 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         cleanupIds(data.id)
+    }
+
+    void 'F04 : Test finalisation endpoint for Versioned Folder with complex models'() {
+        given:
+        Map data = builder.buildComplexModelsForFinalisation()
+        loginEditor()
+
+        when: 'getting the folder before finalisation'
+        GET(data.commonAncestorId)
+
+        then:
+        response.status == OK
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'The folder gets finalised'
+        log.debug('------------------------')
+        PUT("$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
+        log.debug('------------------------')
+
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        responseBody().modelVersion == '1.0.0'
+
+        and:
+        verifyBreadcrumbTreesAndPaths()
+
+        cleanup:
+        cleanupIds(data.commonAncestorId)
     }
 
     void 'BMV01 : test creating a new branch model version of a VersionedFolder (as reader)'() {
@@ -1118,7 +1163,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then: 'the branched model data type points to the branched terminology'
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 4
         def mdt = responseBody().items.find{it.label == 'Functional Test Model Data Type'}
         def mdt2 = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}
         mdt.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
@@ -1845,8 +1890,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         when:
         GET("$data.v2/availableBranches")
@@ -1854,8 +1899,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         when:
         GET("$data.v1/availableBranches")
@@ -1863,8 +1908,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         when:
         GET("$data.main/availableBranches")
@@ -1872,8 +1917,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         cleanup:
         cleanupModelVersionTree(data)
@@ -1931,7 +1976,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   }]"""
 
@@ -2318,7 +2363,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                                                   [
                                                                       targetId: mergeData.target,
                                                                       sourceId: UUID.randomUUID().toString(),
-                                                                      label   : "Functional Test Model",
+                                                                      label   : 'Functional Test Model',
                                                                       count   : 0,
                                                                       patches : []
                                                                   ]
@@ -2333,7 +2378,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                                                   [
                                                                       targetId: UUID.randomUUID().toString(),
                                                                       sourceId: mergeData.source,
-                                                                      label   : "Functional Test Model",
+                                                                      label   : 'Functional Test Model',
                                                                       count   : 0,
                                                                       patches : []
                                                                   ]
@@ -2348,7 +2393,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                                                   [
                                                                       targetId: mergeData.target,
                                                                       sourceId: mergeData.source,
-                                                                      label   : "Functional Test Model",
+                                                                      label   : 'Functional Test Model',
                                                                       count   : 0,
                                                                       patches : []
                                                                   ]
@@ -2373,7 +2418,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : 0,
                     patches : []
                 ]
@@ -2413,7 +2458,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : diffs.size(),
                     patches : diffs
                 ]
@@ -2457,15 +2502,20 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.label as Set == [
                 'addLeftOnly',
                 'Functional Test Data Element with Model Data Type',
-                'Functional Test Data Element with Model Data Type Pointing Externally'] as Set
+                'Functional Test Data Element with Model Data Type Pointing Externally',
+                'existingDataElement'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 3
-        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type', 'Functional Test Model Data Type Pointing Externally'] as Set
+        responseBody().count == 5
+        responseBody().items.label as Set == ['addLeftOnly',
+                                              'Functional Test Model Data Type',
+                                              'Functional Test Model Data Type Pointing Externally',
+                                              'existingDataType1',
+                                              'existingDataType2'] as Set
         def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
         def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
 
@@ -2588,6 +2638,41 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
+        when:
+        Map targetReferenceDataModelMap = mergeData.targetMap.referenceDataModel
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataElements", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
+
+        then: 'addLeftOnly has been added to the referenceDataTypes'
+        responseBody().items.label as Set == ['addRightOnly', 'addLeftOnly', 'commonReferenceDataType'] as Set
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+
         cleanup:
         builder.cleanupTestMergeData(mergeData)
     }
@@ -2611,7 +2696,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : diffs.size(),
                     patches : diffs
                 ]
@@ -2774,6 +2859,41 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
         !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        when:
+        Map targetReferenceDataModelMap = mergeData.targetMap.referenceDataModel
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataElements", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addRightOnly', 'addLeftOnly', 'commonReferenceDataType'] as Set
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
@@ -2997,7 +3117,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         // If the 'Other Non-Versioned Folder' exists then delete it
         // Doing the cleanup here because it is difficult to pass the folder ID
         // to this method in all circumstances
-        GET("folders", MAP_ARG, true)
+        GET('folders', MAP_ARG, true)
         response.status() == OK
         def externalFolder = responseBody().items.find {it.label == 'Other Non-Versioned Folder'}
         if (externalFolder) {
@@ -3042,7 +3162,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         "id": "${data.newBranch}",
         "description": "New Model Version Of"
       }
-      
+
     ]
   },
   {
@@ -3055,7 +3175,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -3068,7 +3188,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": true,
     "targets": [
-      
+
     ]
   },
   {
@@ -3117,7 +3237,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -3150,7 +3270,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": true,
     "targets": [
-      
+
     ]
   },
   {
@@ -3187,7 +3307,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
     {
@@ -3200,7 +3320,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -3213,7 +3333,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   }
 ]"""
@@ -3295,7 +3415,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     String getIdFromPath(String rootResourceId, String path) {
-        GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        GET("$rootResourceId/path/${Utils.safeUrlEncode(path)}")
         verifyResponse OK, response
         assert responseBody().id
         responseBody().id
@@ -3307,5 +3427,38 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     String getExpectedMergeDiffJson() {
         VersionedFolderMergeBuilder.getExpectedMergeDiffJson()
+    }
+
+    @Transactional
+    void verifyBreadcrumbTreesAndPaths(){
+        sessionFactory.currentSession.clear()
+        BreadcrumbTree.list().each {
+            String uncheckedTreeString = it.treeString
+            it.checkTree()
+            if(it.isDirty('treeString')) log.warn('\nSaved     [{}]\nGenerated [{}]', uncheckedTreeString, it.treeString)
+        }
+        assertTrue 'All BT have correct treestring', BreadcrumbTree.list().every {
+            !it.isDirty('treeString')
+        }
+
+        checkPaths(Folder.list())
+        checkPaths(Terminology.list())
+        checkPaths(CodeSet.list())
+        checkPaths(DataModel.list())
+        checkPaths(Term.list())
+        checkPaths(DataClass.list())
+        checkPaths(DataElement.list())
+        checkPaths(DataType.list())
+        checkPaths(TermRelationshipType.list())
+        checkPaths(TermRelationship.list())
+    }
+
+    void checkPaths(List<MdmDomain> mdmDomains){
+        log.debug('Checking {}', mdmDomains.first().domainType)
+        mdmDomains.each {
+            Path uncheckedPath = it.getUncheckedPath()
+            Path checkedPath = it.getPath()
+            assertEquals('Stored path is correct', checkedPath, uncheckedPath)
+        }
     }
 }

@@ -191,8 +191,8 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }
 
 
-    void "Test the save action correctly persists an instance for enumeration type"() {
-        when: "The save action is executed with valid data"
+    void 'Test the save action correctly persists an instance for enumeration type'() {
+        when: 'The save action is executed with valid data'
         POST('',
              [
                  domainType       : 'EnumerationType',
@@ -203,7 +203,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
                  ]
              ], STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "EnumerationType",
@@ -238,9 +238,9 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
-    void "Test the save action correctly persists an instance for reference type"() {
+    void 'RT01 : Test the save action correctly persists an instance for reference type'() {
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('',
              [
                  domainType    : 'ReferenceType',
@@ -249,7 +249,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
              ]
              , STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ReferenceType",
@@ -282,18 +282,143 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
+    void 'RT02 : Test reference type saves without a label'() {
 
-    void "Test the save action correctly persists an instance for modeldata type"() {
-        when: "The save action is executed with valid data"
-        UUID modelId = UUID.randomUUID()
+        when: 'The save action is executed with valid data'
+        POST('',
+             [
+                 domainType    : 'ReferenceType',
+                 referenceClass: dataClassId
+             ]
+             , STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse CREATED, '''{
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "ReferenceType",
+      "availableActions": ["delete","show","update"],
+      "model": "${json-unit.matches:id}",
+      "id": "${json-unit.matches:id}",
+      "label": "Reference to Functional Test DataClass",
+      "breadcrumbs": [
+        {
+          "domainType": "DataModel",
+          "finalised": false,
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test DataModel"
+        }
+      ],
+      "referenceClass": {
+        "domainType": "DataClass",
+        "model": "${json-unit.matches:id}",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test DataClass",
+        "breadcrumbs": [
+          {
+            "domainType": "DataModel",
+            "finalised": false,
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel"
+          }
+        ]
+      }
+    }'''
+    }
+
+    void 'RT03 : Test reference type saves without a label for a second time'() {
+
+        when: 'The save action is executed with valid data'
+        POST('',
+             [
+                 domainType    : 'ReferenceType',
+                 referenceClass: dataClassId
+             ]
+             , STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse CREATED, '''{
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "ReferenceType",
+      "availableActions": ["delete","show","update"],
+      "model": "${json-unit.matches:id}",
+      "id": "${json-unit.matches:id}",
+      "label": "Reference to Functional Test DataClass",
+      "breadcrumbs": [
+        {
+          "domainType": "DataModel",
+          "finalised": false,
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test DataModel"
+        }
+      ],
+      "referenceClass": {
+        "domainType": "DataClass",
+        "model": "${json-unit.matches:id}",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test DataClass",
+        "breadcrumbs": [
+          {
+            "domainType": "DataModel",
+            "finalised": false,
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel"
+          }
+        ]
+      }
+    }'''
+
+        when: 'The save action is executed with valid data again'
+        POST('',
+             [
+                 domainType    : 'ReferenceType',
+                 referenceClass: dataClassId
+             ]
+             , STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse CREATED, '''{
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "ReferenceType",
+      "availableActions": ["delete","show","update"],
+      "model": "${json-unit.matches:id}",
+      "id": "${json-unit.matches:id}",
+      "label": "Reference to Functional Test DataClass (1)",
+      "breadcrumbs": [
+        {
+          "domainType": "DataModel",
+          "finalised": false,
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test DataModel"
+        }
+      ],
+      "referenceClass": {
+        "domainType": "DataClass",
+        "model": "${json-unit.matches:id}",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test DataClass",
+        "breadcrumbs": [
+          {
+            "domainType": "DataModel",
+            "finalised": false,
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel"
+          }
+        ]
+      }
+    }'''
+    }
+
+
+    void 'MDT01 : Test the save action correctly persists an instance for modeldata type'() {
+        when: 'The save action is executed with valid data'
         POST('', [
             domainType             : 'ModelDataType',
             label                  : 'functional modeldata',
-            modelResourceId        : modelId,
-            modelResourceDomainType: 'Terminology'
+            modelResourceId        : otherDataModelId,
+            modelResourceDomainType: 'DataModel'
         ], STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ModelDataType",
@@ -310,7 +435,36 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         }
       ],
       "modelResourceId": "${json-unit.matches:id}",
-      "modelResourceDomainType": "Terminology"
+      "modelResourceDomainType": "DataModel"
+    }'''
+    }
+
+    void 'MDT02 :  Test model data type saves without a label'() {
+        when: 'The save action is executed with valid data'
+        POST('', [
+            domainType             : 'ModelDataType',
+            modelResourceId        : otherDataModelId,
+            modelResourceDomainType: 'DataModel'
+        ], STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse CREATED, '''{
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "ModelDataType",
+      "availableActions": ["delete","show","update"],
+      "model": "${json-unit.matches:id}",
+      "id": "${json-unit.matches:id}",
+      "label": "Reference to Functional Test DataModel 2",
+      "breadcrumbs": [
+        {
+          "domainType": "DataModel",
+          "finalised": false,
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test DataModel"
+        }
+      ],
+      "modelResourceId": "${json-unit.matches:id}",
+      "modelResourceDomainType": "DataModel"
     }'''
     }
 

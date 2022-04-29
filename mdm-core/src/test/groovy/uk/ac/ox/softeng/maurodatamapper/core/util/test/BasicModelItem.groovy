@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.util.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -121,6 +123,10 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     }
 
     ObjectDiff<BasicModelItem> diff(BasicModelItem obj, String context) {
-        catalogueItemDiffBuilder(BasicModelItem, this, obj)
+       diff(obj, context, null, null)
+    }
+
+    ObjectDiff<BasicModelItem> diff(BasicModelItem obj, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(BasicModelItem, this, obj, lhsDiffCache, rhsDiffCache)
     }
 }

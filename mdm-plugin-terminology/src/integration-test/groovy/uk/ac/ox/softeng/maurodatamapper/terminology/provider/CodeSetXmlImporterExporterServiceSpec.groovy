@@ -38,8 +38,8 @@ import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import org.junit.jupiter.api.Tag
 import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.nio.charset.Charset
@@ -53,6 +53,7 @@ import java.nio.file.Paths
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements XmlValidator {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'XTIS02'
@@ -105,7 +106,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
+            Files.writeString(expectedPath, (prettyPrintXml(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
         validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export',
@@ -192,11 +193,16 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     }
 
     List<CodeSet> clearExpectedDiffsFromModels(List<UUID> modelIds) {
-        modelIds.collect {
-            codeSetService.get(it).tap {
-                dateFinalised = null
-            }
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<CodeSet> codeSets = modelIds.collect {
+            CodeSet codeSet = codeSetService.get(it)
+            removeRule(codeSet)
+            codeSet.dateFinalised = null
+            codeSet
         }
+        sessionFactory.currentSession.clear()
+        codeSets
     }
 
     void 'test that trying to export when specifying a null codeSetId fails with an exception'() {
@@ -238,7 +244,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = codeSetService.getDiffForModels(codeSetService.get(simpleCodeSetId), imported)
+        ObjectDiff diff = codeSetService.get(simpleCodeSetId).diff(imported, 'none', null, null)
 
         then:
         diff.objectsAreIdentical()
@@ -542,8 +548,8 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         Term term1 = cs.terms[1]
 
         then:
-        term0.label == "STT01: Simple Test Term 01" || term0.label == "STT02: Simple Test Term 02"
-        term1.label == "STT01: Simple Test Term 01" || term1.label == "STT02: Simple Test Term 02"
+        term0.label == 'STT01: Simple Test Term 01' || term0.label == 'STT02: Simple Test Term 02'
+        term1.label == 'STT01: Simple Test Term 01' || term1.label == 'STT02: Simple Test Term 02'
         term0.label != term1.label
 
         when:
@@ -622,7 +628,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         // exception.errorCode == 'TODO'
     }
 
-    @PendingFeature(reason = 'No exception was thrown')
     void 'test multi-import invalid CodeSets'() {
         given:
         setupData()
@@ -635,21 +640,21 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given a single invalid model'
         importModels(loadTestFile('invalidCodeSetInList'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given multiple invalid models'
         importModels(loadTestFile('invalidCodeSets'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'not given export metadata'
         // importModels(loadTestFile('noExportMetadata'))
@@ -679,7 +684,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets.pop(), imported.pop())
+        ObjectDiff simpleDiff = codeSets.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -708,7 +713,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets.pop(), imported.pop())
+        ObjectDiff simpleDiff = codeSets.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -737,8 +742,8 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
-        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+        ObjectDiff simpleDiff = codeSets[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = codeSets[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -748,7 +753,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature(reason = 'Invalid models are imported')
     void 'test multi-import CodeSets with invalid models'() {
         given:
         setupData()
@@ -769,21 +773,23 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported.pop())
+        ObjectDiff simpleDiff = codeSets[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
 
         when:
-        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets'))
+        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets')).each {
+            clearExpectedDiffsFromImport(it)
+        }
 
         then:
         imported
         imported.size() == 2
 
         when:
-        simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
-        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+        simpleDiff = codeSets[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = codeSets[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

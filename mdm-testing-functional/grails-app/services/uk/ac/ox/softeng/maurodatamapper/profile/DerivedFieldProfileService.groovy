@@ -26,7 +26,7 @@ class DerivedFieldProfileService extends JsonProfileProviderService {
 
     @Override
     String getMetadataNamespace() {
-        getNamespace() + ".derived"
+        getNamespace() + '.derived'
     }
 
     @Override

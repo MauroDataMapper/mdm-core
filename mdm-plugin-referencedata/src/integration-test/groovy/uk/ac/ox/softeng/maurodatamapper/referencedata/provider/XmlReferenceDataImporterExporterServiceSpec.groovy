@@ -145,7 +145,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
+            Files.writeString(expectedPath, (prettyPrintXml(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
 
@@ -194,11 +194,11 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
+        ObjectDiff diff = referenceDataModelService.get(exampleReferenceDataModelId).diff(imported, 'none', null, null)
 
         then:
         diff.numberOfDiffs == 3
-        diff.diffs.find { it.fieldName == 'rule' }.deleted.size() == 1
+        diff.diffs.find {it.fieldName == 'rules'}.deleted.size() == 1
         diff.diffs.find { it.fieldName == 'referenceDataTypes' }.modified.first().diffs.first().deleted.size() == 1
         diff.diffs.find { it.fieldName == 'referenceDataElements' }.modified.first().diffs.first().deleted.size() == 1
     }
@@ -437,7 +437,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         //Classifiers
         rdm.classifiers.size() == 1
-        rdm.classifiers[0].label == "An imported classifier"
+        rdm.classifiers[0].label == 'An imported classifier'
 
         //Reference Data Types
         rdm.referenceDataTypes.size() == 2

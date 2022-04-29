@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
@@ -63,7 +63,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true)
+        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', false))
     }
 
     def unusedProfiles() {
@@ -72,7 +72,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true)
+        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', true))
     }
 
     def nonProfileMetadata() {
@@ -84,7 +84,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
         Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
         respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(), params),
-                view: "/metadata/index"
+                view: '/metadata/index'
     }
 
     @Transactional
@@ -174,7 +174,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     }
 
     def validate() {
-        log.debug("Validating profile")
+        log.debug('Validating profile')
         MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!multiFacetAware) {
@@ -189,7 +189,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         Profile submittedInstance = profileProviderService.getNewProfile()
         bindData(submittedInstance, request)
 
-        Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
+        Profile validatedInstance = profileService.validateProfileValues(profileProviderService, submittedInstance)
 
         if (validatedInstance.hasErrors()) {
             respond validatedInstance.errors
@@ -210,7 +210,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      * @return
      */
     private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection) {
-        log.debug("Handling many items profiles")
+        log.debug('Handling many items profiles')
 
         // The multiFacetAware item referenced in the URI, is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
@@ -233,7 +233,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
-        PaginatedResultList<Profile> profiles =
+        InMemoryPagedResultList<Profile> profiles =
             profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.multiFacetAwareItemDomainType, params)
         respond profileList: profiles
     }

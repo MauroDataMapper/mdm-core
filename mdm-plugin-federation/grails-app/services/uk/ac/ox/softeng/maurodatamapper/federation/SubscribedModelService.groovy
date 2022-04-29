@@ -127,12 +127,12 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         Folder folder = folderService.get(subscribedModel.folderId)
 
         //Export the requested model from the SubscribedCatalogue
-        log.debug("Exporting SubscribedModel")
+        log.debug('Exporting SubscribedModel')
         try {
             String exportedJson = exportSubscribedModelFromSubscribedCatalogue(subscribedModel)
 
             if (!exportedJson) {
-                log.debug("No Json exported")
+                log.debug('No Json exported')
                 subscribedModel.errors.reject('invalid.subscribedmodel.export',
                                               'Could not export SubscribedModel from SubscribedCatalogue')
                 return subscribedModel.errors
@@ -148,7 +148,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
             if (parameters.hasProperty('importFile')?.type != FileParameter) {
                 throw new ApiInternalException('MSXX', "Assigned JSON importer ${modelImporterProviderService.class.simpleName} " +
-                                                       "for model cannot import file content")
+                                                       'for model cannot import file content')
             }
 
             parameters.importFile = new FileParameter(fileContents: exportedJson.getBytes())
@@ -187,7 +187,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             log.debug('Saved model')
 
             if (securityPolicyManagerService) {
-                log.debug("add security to saved model")
+                log.debug('add security to saved model')
                 userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel,
                                                                                                          userSecurityPolicyManager.user,
                                                                                                          savedModel.label)
@@ -201,7 +201,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             //Handle version linking
             Map versionLinks = getVersionLinks(modelService.getUrlResourceName(), subscribedModel)
             if (versionLinks) {
-                log.debug("add version links")
+                log.debug('add version links')
                 addVersionLinksToImportedModel(userSecurityPolicyManager.user, versionLinks, modelService, subscribedModel)
             }
 
@@ -258,7 +258,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
      * @return
      */
     void addVersionLinksToImportedModel(User currentUser, Map versionLinks, ModelService modelService, SubscribedModel subscribedModel) {
-        log.debug("addVersionLinksToImportedModel")
+        log.debug('addVersionLinksToImportedModel')
         List matches = []
         if (versionLinks && versionLinks.items) {
             matches = versionLinks.items.findAll {
@@ -268,7 +268,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
         if (matches) {
             matches.each {vl ->
-                log.debug("matched")
+                log.debug('matched')
                 //Get Subscribed models for the new (source) and old (target) versions of the model
                 SubscribedModel sourceSubscribedModel = subscribedModel
                 SubscribedModel targetSubscribedModel = findBySubscribedModelId(UUID.fromString(vl.targetModel.id))
@@ -290,14 +290,14 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                         }
 
                         if (!exists) {
-                            log.debug("setModelIsNewBranch")
+                            log.debug('setModelIsNewBranch')
                             modelService.setModelIsNewBranchModelVersionOfModel(localSourceModel, localTargetModel, currentUser)
                         }
                     }
                 }
             }
         }
-        log.debug("exit addVersionLinksToImportedModel")
+        log.debug('exit addVersionLinksToImportedModel')
     }
 
     /**

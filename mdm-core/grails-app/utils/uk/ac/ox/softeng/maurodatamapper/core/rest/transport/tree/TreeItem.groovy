@@ -18,10 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
@@ -49,7 +50,6 @@ class TreeItem implements Comparable<TreeItem> {
     int domainTypeIndex
     List<String> availableActions
 
-
     protected TreeItem(MdmDomain domain, String label, Boolean childrenExist, List<String> availableTreeActions) {
         childSet = [] as HashSet
         renderChildren = false
@@ -73,7 +73,7 @@ class TreeItem implements Comparable<TreeItem> {
 
         if (domainType != treeItem.domainType) return false
         if (id != treeItem.id) return false
-        if (label != treeItem.label) return false
+        if (label?.toLowerCase() != treeItem.label?.toLowerCase()) return false
 
         true
     }
@@ -93,9 +93,10 @@ class TreeItem implements Comparable<TreeItem> {
     }
 
     @Override
+    @SuppressFBWarnings(value = ['NP_NULL_PARAM_DEREF', 'NP_NULL_PARAM_DEREF', 'NP_NULL_ON_SOME_PATH'], justification = 'Groovy elvis operator')
     int compareTo(TreeItem that) {
         def res = this.domainTypeIndex <=> that.domainTypeIndex
-        if (res == 0) res = this.label <=> that.label
+        if (res == 0) res = this.label?.toLowerCase() <=> that.label?.toLowerCase()
         res
     }
 
@@ -201,7 +202,7 @@ class TreeItem implements Comparable<TreeItem> {
 
     private int setDomainTypeIndex(Class itemClass) {
         if (Container.isAssignableFrom(itemClass)) domainTypeIndex = 0
-        else if (ModelItem.isAssignableFrom(itemClass)) domainTypeIndex = 1
+        else if (Model.isAssignableFrom(itemClass)) domainTypeIndex = 1
         else domainTypeIndex = 2
     }
 }

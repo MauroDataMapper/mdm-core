@@ -150,15 +150,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    EnumerationType updateFacetsAfterInsertingCatalogueItem(EnumerationType enumerationType) {
-        super.updateFacetsAfterInsertingCatalogueItem(enumerationType) as EnumerationType
-        enumerationType.enumerationValues.each {
-            enumerationValueService.updateFacetsAfterInsertingCatalogueItem(it)
-        }
-        enumerationType
-    }
-
-    @Override
     EnumerationType checkFacetsAfterImportingCatalogueItem(EnumerationType enumerationType) {
         enumerationType = super.checkFacetsAfterImportingCatalogueItem(enumerationType) as EnumerationType
         enumerationType.enumerationValues.each {
@@ -217,5 +208,13 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
                 enumerationValueService.propagateDataFromPreviousVersion(enumerationValue, previousEnumerationValue)
             }
         }
+    }
+
+    EnumerationType findByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        EnumerationType.byDataModelIdAndId(dataModelId, id).find() as EnumerationType
+    }
+
+    boolean existsByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        EnumerationType.byDataModelIdAndId(dataModelId, id).count() == 1
     }
 }

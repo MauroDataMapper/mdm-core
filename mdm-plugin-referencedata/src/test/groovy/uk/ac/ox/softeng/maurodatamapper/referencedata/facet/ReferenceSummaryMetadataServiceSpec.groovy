@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -51,6 +52,7 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
     ReferenceDataModel referenceDataModel
 
     def setup() {
+        mockArtefact(MergeDiffService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(ClassifierService)
         mockArtefact(VersionLinkService)
@@ -98,12 +100,12 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
         id = referenceSummaryMetadata.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<ReferenceSummaryMetadata> summaryMetadata = service.list(max: 2, offset: 1)
 
@@ -124,12 +126,12 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 3
 

@@ -51,6 +51,12 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         TermRelationship.count()
     }
 
+    @Override
+    TermRelationship validate(TermRelationship modelItem) {
+        modelItem.validate()
+        modelItem
+    }
+
     void delete(Serializable id) {
         TermRelationship termRelationship = get(id)
         if (termRelationship) delete(termRelationship)
@@ -120,6 +126,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     List<TermRelationship> findAllBySourceTermIdInList(Collection<UUID> termIds) {
+        if (!termIds) return []
         TermRelationship.by().inList('sourceTerm.id', termIds).list()
     }
 
@@ -156,18 +163,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         source.addToSourceTermRelationships(copy)
         target.addToTargetTermRelationships(copy)
         copy
-    }
-
-    private void singleBatchSave(Collection<TermRelationship> termRelationships) {
-        long start = System.currentTimeMillis()
-        log.trace('Batch saving {} termRelationships', termRelationships.size())
-
-        TermRelationship.saveAll(termRelationships)
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
 
     @Override

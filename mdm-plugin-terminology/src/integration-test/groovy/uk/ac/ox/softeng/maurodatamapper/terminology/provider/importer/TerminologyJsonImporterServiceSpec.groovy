@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 /**
  * @since 17/09/2020
@@ -42,6 +43,7 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'
@@ -311,7 +313,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+        ObjectDiff simpleDiff = terminologies.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -338,7 +340,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+        ObjectDiff simpleDiff = terminologies.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -365,8 +367,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+        ObjectDiff simpleDiff = terminologies[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = terminologies[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -394,7 +396,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported.pop())
+        ObjectDiff simpleDiff = terminologies[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -407,8 +409,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 2
 
         when:
-        simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+        simpleDiff = terminologies[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = terminologies[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -436,7 +438,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(dataModels[0], imported.pop())
+        ObjectDiff simpleDiff = dataModels[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -449,8 +451,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         imported.size() == 2
 
         when:
-        simpleDiff = terminologyService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(dataModels[1], imported[1])
+        simpleDiff = dataModels[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

@@ -17,13 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassifierAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
@@ -36,13 +31,11 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.transform.SelfType
-import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 06/12/2019
  */
-@Slf4j
 @SelfType(GormEntity)
 trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
 
@@ -57,7 +50,7 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
                 list = aliases.collect {(it as Map).alias as String}
             } else list = aliases
 
-            aliasString = list.collect { (it as String).trim() }?.join('|')
+            aliasString = list.collect {(it as String).trim()}?.join('|')
         }
         aliasesString = aliasString ?: null
     }
@@ -69,26 +62,24 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
     void beforeValidateCatalogueItem() {
         checkPath() // get path to ensure its built
         if (breadcrumbTree) {
-            if (!breadcrumbTree.matchesPath(path)) {
+            // Dont need to "recheck" the path as we've just done that
+            if (!breadcrumbTree.matchesPath(getUncheckedPath())) {
                 breadcrumbTree.update(this)
             }
         } else {
             breadcrumbTree = new BreadcrumbTree(this)
         }
         metadata?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
-            it.beforeValidate()
+            it.beforeValidateCheck(this)
         }
         annotations?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
-            it.beforeValidate()
+            it.beforeValidateCheck(this)
         }
         referenceFiles?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
-            it.beforeValidate()
+            it.beforeValidateCheck(this)
+        }
+        rules?.each {
+            it.beforeValidateCheck(this)
         }
     }
 
@@ -99,20 +90,6 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
 
     void updateChildIndexes(ModelItem updated, Integer oldIndex) {
         // no-op
-    }
-
-    static <T extends CatalogueItem> ObjectDiff catalogueItemDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
-        String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
-        String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
-        DiffBuilder.objectDiff(diffClass)
-            .leftHandSide(lhsId, lhs)
-            .rightHandSide(rhsId, rhs)
-            .appendString('label', lhs.label, rhs.label)
-            .appendString('description', lhs.description, rhs.description)
-            .appendString('aliasesString', lhs.aliasesString, rhs.aliasesString)
-            .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
-            .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
-            .appendList(Rule, 'rule', lhs.rules, rhs.rules)
     }
 
     static <T extends CatalogueItem> DetachedCriteria<T> withCatalogueItemFilter(DetachedCriteria<T> criteria, Map filters) {

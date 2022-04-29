@@ -1,0 +1,7 @@
+model {
+    Collection<UUID> intersection
+}
+
+json {
+    intersects intersection
+}

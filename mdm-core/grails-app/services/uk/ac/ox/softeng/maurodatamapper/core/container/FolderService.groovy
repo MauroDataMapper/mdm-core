@@ -20,7 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.api.exception.ApiDiffException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -36,9 +40,11 @@ import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -172,18 +178,13 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     Folder save(Map args, Folder folder) {
-        // If inserting then we will need to update all the facets with the CIs "id" after insert
-        // If updating then we dont need to do this as the ID has already been done
-        boolean inserting = !(folder as GormEntity).ident() ?: args.insert
         Map saveArgs = new HashMap(args)
         if (args.flush) {
             saveArgs.remove('flush')
             (folder as GormEntity).save(saveArgs)
-            if (inserting) updateFacetsAfterInsertingMultiFacetAware(folder)
             sessionFactory.currentSession.flush()
         } else {
             (folder as GormEntity).save(args)
-            if (inserting) updateFacetsAfterInsertingMultiFacetAware(folder)
         }
         folder
     }
@@ -261,15 +262,16 @@ class FolderService extends ContainerService<Folder> {
         log.debug('Loading models into folder object diff for [{}] <> [{}] under context {}', leftHandSide.label, rightHandSide.label, context)
         List<Model> lhsModels = findAllModelsInFolder(leftHandSide)
         List<Model> rhsModels = findAllModelsInFolder(rightHandSide)
-        log.debug("{} models on LHS <> {} models on RHS", lhsModels.size(), rhsModels.size())
-        diff.appendList(Model, 'models', lhsModels, rhsModels, context)
+        log.debug('{} models on LHS <> {} models on RHS', lhsModels.size(), rhsModels.size())
+
+        appendModelsToDiffList(diff, 'models', lhsModels, rhsModels, context)
 
         // Recurse into child folder diffs
         ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'} as ArrayDiff<Folder>
 
         Collection<Folder> lhsFolders = childFolderDiff.left
         Collection<Folder> rhsFolders = childFolderDiff.right
-        log.debug("{} child folders on LHS <> {} child folders on RHS", lhsFolders.size(), rhsFolders.size())
+        log.debug('{} child folders on LHS <> {} child folders on RHS', lhsFolders.size(), rhsFolders.size())
 
         if (lhsFolders || rhsFolders) {
             log.debug('Loading child folder model content diffs')
@@ -322,19 +324,23 @@ class FolderService extends ContainerService<Folder> {
     Folder copyFolder(Folder original, Folder folderToCopyInto, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto)
-        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors,
+        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors, false,
                    userSecurityPolicyManager)
     }
 
     Folder copyFolder(Folder original, Folder copiedFolder, String label, User copier, boolean copyPermissions, String modelBranchName,
-                      Version modelCopyDocVersion, boolean throwErrors,
+                      Version modelCopyDocVersion, boolean throwErrors, boolean clearSession,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}[{}]', original.id, original.label)
         long start = System.currentTimeMillis()
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
+        sessionFactory.currentSession.flush()
+        if (clearSession) sessionFactory.currentSession.clear()
         copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
+        sessionFactory.currentSession.flush()
+        if (clearSession) sessionFactory.currentSession.clear()
         copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         log.debug('Folder copy complete in {}', Utils.timeTaken(start))
@@ -465,7 +471,7 @@ class FolderService extends ContainerService<Folder> {
                                                                   "${workingModel.label}${labelSuffix}",
                                                                   copyDocVersion, branchName, throwErrors,
                                                                   userSecurityPolicyManager)
-                            log.debug('Validating and saving model copy')
+                            log.debug('Validating and saving model copy {}', copiedModel.path)
                             service.validate(copiedModel)
                             if (copiedModel.hasErrors()) {
                                 throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copiedModel.errors, messageSource)
@@ -506,4 +512,137 @@ class FolderService extends ContainerService<Folder> {
         Path.from(folder)
     }
 
+    /**
+     * Custom handling for {@link uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff#appendList}.
+     * Loads the models directly into the 1st level cache/memory before a diff is attempted.
+     * Also clears the session after each diff to keep the cache clean and as small as possible
+     *
+     * @param folderDiff
+     * @param fieldName
+     * @param appendingLhs
+     * @param appendingRhs
+     * @param context
+     * @param addIfEmpty
+     * @return
+     * @throws ApiDiffException
+     */
+    @SuppressFBWarnings('UPM_UNCALLED_PRIVATE_METHOD')
+    private void appendModelsToDiffList(ObjectDiff folderDiff, String fieldName,
+                                        Collection<Model> appendingLhs, Collection<Model> appendingRhs, String context = null) throws ApiDiffException {
+
+        log.debug('Appending models to diff list for folder')
+        ObjectDiff.validateFieldNameNotNull(fieldName)
+
+        List<Model> diffableList = []
+
+        // Just make sure all objects are unwrapped. Unlikely but it can happen
+        Collection<Model> lhs = appendingLhs.collect {proxyHandler.unwrapIfProxy(it)} as Collection<Model>
+        Collection<Model> rhs = appendingRhs.collect {proxyHandler.unwrapIfProxy(it)} as Collection<Model>
+
+        ArrayDiff<Model> diff = arrayDiff(diffableList.class)
+            .fieldName(fieldName)
+            .leftHandSide(lhs ?: [])
+            .rightHandSide(rhs ?: []) as ArrayDiff<Model>
+
+        // If no lhs or rhs then nothing to compare
+        if (!lhs && !rhs) {
+            log.debug('No LHS or RHS so no diff')
+            folderDiff
+            return
+        }
+
+        // If no lhs then all rhs have been created/added
+        if (!lhs) {
+            log.debug('No LHS so adding RHS as created')
+            folderDiff.append(diff.createdObjects(rhs))
+            return
+        }
+
+        // If no rhs then all lhs have been deleted/removed
+        if (!rhs) {
+            log.debug('NO RHS so adding LHS as deleted')
+            folderDiff.append(diff.deletedObjects(lhs))
+            return
+        }
+
+        Collection<Model> deleted = []
+        Collection<ObjectDiff> modified = []
+
+        // Assume all rhs have been created new
+        List<Model> created = new ArrayList<>(rhs)
+
+        Map<String, Model> lhsMap = lhs.collectEntries {[it.getDiffIdentifier(context), it]}
+        Map<String, Model> rhsMap = rhs.collectEntries {[it.getDiffIdentifier(context), it]}
+        // This object diff is being performed on an object which has the concept of modelIdentifier, e.g branch name or version
+        // If this is the case we want to make sure we ignore any versioning on sub contents as child versioning is controlled by the parent
+        // This should only happen to models inside versioned folders, but we want to try and be more dynamic
+        if (folderDiff.isVersionedDiff()) {
+            log.debug('Versioned diff recollecting entries using paths')
+            Path childPath = Path.from((MdmDomain) lhs.first())
+            if (childPath.size() == 1 && childPath.first().modelIdentifier) {
+                // child collection has versioning
+                // recollect entries using the clean identifier rather than the full thing
+                lhsMap = lhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier(context)).first().identifier, it]}
+                rhsMap = rhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier(context)).first().identifier, it]}
+            }
+        }
+
+        log.debug('Checking each LHS for diff against its RHS partner')
+        // Work through each lhs object and compare to rhs object
+
+        lhsMap.each {di, lObj ->
+            Model rObj = rhsMap[di]
+            if (rObj) {
+                // If robj then it exists and has not been created
+                created.remove(rObj)
+
+                ModelService modelService = modelServices.find {it.handles(lObj.getClass())}
+                CachedDiffable<Model> lObjCachedDiffable = modelService.loadEntireModelIntoDiffCache(lObj.id)
+                CachedDiffable<Model> rObjCachedDiffable = modelService.loadEntireModelIntoDiffCache(rObj.id)
+
+                long start = System.currentTimeMillis()
+                ObjectDiff od = lObjCachedDiffable.diff(rObjCachedDiffable, context)
+
+                sessionFactory.currentSession.clear()
+
+                log.debug('Diff complete for [{}], session cleared, objects are identical [{}]. Took {}', di, od.objectsAreIdentical(), Utils.timeTaken(start))
+                // If not equal then objects have been modified
+                if (!od.objectsAreIdentical()) {
+                    modified.add(od)
+                }
+            } else {
+                log.debug('No RHS for lObj {} so adding lObj as deleted', di)
+                // If no robj then object has been deleted from lhs
+                deleted.add(lObj)
+            }
+        }
+
+        if (created || deleted || modified) {
+            log.debug('Adding diff to folder')
+            folderDiff.append(diff.createdObjects(created)
+                                  .deletedObjects(deleted)
+                                  .withModifiedDiffs(modified))
+        }
+    }
+
+    void createFolderDiffCaches(DiffCache diffCache, Map<UUID, List<Folder>> foldersMap,
+                                Map<String, Map<UUID, List<Diffable>>> facetData, UUID folderId) {
+
+        List<Folder> folders = foldersMap[folderId]
+        diffCache.addField('folders', folders)
+
+        folders.each {f ->
+            DiffCache fDiffCache = createFolderDiffCache(diffCache, f, facetData)
+            createFolderDiffCaches(fDiffCache, foldersMap, facetData, f.id)
+            diffCache.addDiffCache(f.path, fDiffCache)
+        }
+    }
+
+    DiffCache createFolderDiffCache(DiffCache parentCache, Folder folder,
+                                    Map<String, Map<UUID, List<Diffable>>> facetData) {
+        DiffCache fDiffCache = new DiffCache()
+        addFacetDataToDiffCache(fDiffCache, facetData, folder.id)
+        if (parentCache) parentCache.addDiffCache(folder.path, fDiffCache)
+        fDiffCache
+    }
 }

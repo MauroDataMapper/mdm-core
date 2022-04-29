@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -38,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
@@ -47,6 +49,9 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     DataTypeService dataTypeService
     DataModelService dataModelService
     PathService pathService
+
+    @Autowired(required = false)
+    List<ModelService> modelServices
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
@@ -222,5 +227,12 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
         }
 
         false
+    }
+
+    Model findModelByDomainTypeAndDomainId(String domainType, UUID domainId) {
+        for (ModelService service : modelServices) {
+            if (service.handles(domainType)) return service.get(domainId) as Model
+        }
+        null
     }
 }

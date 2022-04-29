@@ -28,10 +28,12 @@ import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 @Slf4j
 @Rollback
 @Integration
+@Tag('non-parallel')
 class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     UserGroupService userGroupService
@@ -57,7 +59,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         id = readers.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -65,7 +67,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         userGroupService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -98,7 +100,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -106,7 +108,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         userGroupService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -120,7 +122,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         userGroupService.count() == 4
     }
 
-    void "test save"() {
+    void 'test save'() {
         given:
         setupData()
 

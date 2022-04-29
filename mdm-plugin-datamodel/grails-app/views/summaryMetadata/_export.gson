@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+
+model {
+    SummaryMetadata export
+}
+
+json {
+    if (export.id) id export.id
+    if (export.createdBy) createdBy export.createdBy
+    if (export.lastUpdated) lastUpdated export.lastUpdated
+    label export.label
+    if (export.description) description export.description
+    summaryMetadataType export.summaryMetadataType
+    summaryMetadataReports tmpl.'/summaryMetadataReport/export'(export.summaryMetadataReports)
+}

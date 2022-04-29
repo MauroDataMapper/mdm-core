@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -31,14 +32,16 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
-    public final static Integer BATCH_SIZE = 10000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
 
     int rowNumber
     String value
+    ReferenceDataModel referenceDataModel
+    ReferenceDataElement referenceDataElement
 
-    static belongsTo = [referenceDataModel: ReferenceDataModel, referenceDataElement: ReferenceDataElement]
+    static belongsTo = [ReferenceDataModel, ReferenceDataElement]
 
     static constraints = {
         value blank: true, nullable: true, unique: ['rowNumber', 'referenceDataElement']
@@ -47,8 +50,8 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
     static mapping = {
         rowNumber type: 'integer'
         value type: 'text'
-        referenceDataModel index: 'reference_data_value_reference_data_model_idx'
-        referenceDataElement index: 'reference_data_value_reference_data_element_idx', cascade: 'save-update', fetch: 'join'
+        referenceDataModel index: 'reference_data_value_reference_data_model_idx', cascadeValidate: 'none' //, cascade: 'none'
+        referenceDataElement index: 'reference_data_value_reference_data_element_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
     }
 
     ReferenceDataValue() {
@@ -79,15 +82,24 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
     @Override
     Path buildPath() {
-        referenceDataElement?.path ? Path.from(referenceDataElement.path, pathPrefix, pathIdentifier) : null
+        // We only want to call the getpath method once
+        Path parentPath = referenceDataElement?.getPath()
+        parentPath ? Path.from(parentPath, pathPrefix, pathIdentifier) : null
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {
+        diff(otherValue, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         String lhsId = this.id ?: "Left:Unsaved_${this.domainType}"
         String rhsId = otherValue.id ?: "Right:Unsaved_${otherValue.domainType}"
         DiffBuilder.objectDiff(ReferenceDataValue)
             .leftHandSide(lhsId, this)
             .rightHandSide(rhsId, otherValue)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
             .appendNumber('rowNumber', this.rowNumber, otherValue.rowNumber)
             .appendString('value', this.value, otherValue.value)
     }
@@ -116,16 +128,16 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
     static DetachedCriteria<ReferenceDataValue> countByReferenceDataModelId(Serializable referenceDataModelId) {
         ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
             .projections {
-                countDistinct("rowNumber")
+                countDistinct('rowNumber')
             }
     }
 
     static DetachedCriteria<ReferenceDataValue> distinctRowNumbersByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
         ReferenceDataValue.byReferenceDataModelIdAndValueIlike(referenceDataModelId, valueSearch)
             .projections {
-                distinct("rowNumber")
+                distinct('rowNumber')
             }
-            .order("rowNumber", "asc")
+            .order('rowNumber', 'asc')
     }
 
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {

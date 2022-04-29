@@ -21,7 +21,6 @@
 <exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/codeSet/4.0">
   <mdm:codeSet>
     <mdm:id>Invalid CodeSet ID</mdm:id>
-    <mdm:label>Invalid CodeSet</mdm:label>
   </mdm:codeSet>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>

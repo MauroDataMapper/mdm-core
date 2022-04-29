@@ -41,7 +41,7 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
     def setup() {
         mockDomains(Folder, BasicModel, Annotation, Authority)
         log.debug('Setting up annotation controller unit')
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),

@@ -35,7 +35,7 @@ class SemanticLinkServiceSpec extends MultiFacetItemAwareServiceSpec<SemanticLin
     def setup() {
         mockDomains(Folder, BasicModel, Edit, SemanticLink, Authority)
 
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
@@ -73,12 +73,12 @@ class SemanticLinkServiceSpec extends MultiFacetItemAwareServiceSpec<SemanticLin
 
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<SemanticLink> semanticLinkList = service.list(max: 2, offset: 1)
 
@@ -91,12 +91,12 @@ class SemanticLinkServiceSpec extends MultiFacetItemAwareServiceSpec<SemanticLin
         semanticLinkList[0].targetMultiFacetAwareItemId == BasicModel.findByLabel('dm3').id
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 2
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 2
 

@@ -38,17 +38,18 @@ trait TemplateBasedExporter {
 
     ByteArrayOutputStream exportModel(ExportModel exportModel, String format) {
         log.debug('Exporting model using template')
-        Template template = templateEngine.resolveTemplate(exportViewPath)
 
+        Template template = templateEngine.resolveTemplate(exportViewPath)
         if (!template) {
             log.error('Could not find template for format {} at path {}', format, exportViewPath)
             throw new ApiInternalException('TBE02', "Could not find template for format ${format} at path ${exportViewPath}")
         }
+
         long start = System.currentTimeMillis()
-        def writable = template.make(exportModel: exportModel)
+        Writable writable = template.make(exportModel: exportModel)
         log.debug('Making template took {}', Utils.timeTaken(start))
         start = System.currentTimeMillis()
-        def sw = new StringWriter()
+        StringWriter sw = new StringWriter()
         writable.writeTo(sw)
         log.debug('Writing template took {}', Utils.timeTaken(start))
         start = System.currentTimeMillis()

@@ -34,7 +34,7 @@ class TreeItemSpec extends BaseUnitSpec {
 
     def setup() {
         mockDomains(BasicModel, BasicModelItem, Folder, Authority)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
         checkAndSave(misc)

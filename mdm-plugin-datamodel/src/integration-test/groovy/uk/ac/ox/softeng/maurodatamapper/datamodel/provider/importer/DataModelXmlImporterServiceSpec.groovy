@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataMode
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
+import org.junit.jupiter.api.Tag
 
 /**
  * @since 04/08/2017
@@ -33,6 +33,7 @@ import spock.lang.PendingFeature
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelXmlImporterService> {
 
     private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
@@ -83,7 +84,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         // exception.errorCode == 'TODO'
     }
 
-    @PendingFeature
     void 'M02 : test multi-import invalid DataModels'() {
         given:
         setupData()
@@ -96,21 +96,21 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given a single invalid model'
         importModels(loadTestFile('invalidDataModelInList'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given multiple invalid models'
         importModels(loadTestFile('invalidDataModels'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'not given export metadata'
         // importModels(loadTestFile('noExportMetadata'))
@@ -138,7 +138,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+        ObjectDiff simpleDiff = dataModels.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -165,7 +165,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+        ObjectDiff simpleDiff = dataModels.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -192,8 +192,8 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        ObjectDiff simpleDiff = dataModels[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -203,7 +203,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature
     void 'M06 : test multi-import DataModels with invalid models'() {
         given:
         setupData()
@@ -222,7 +221,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+        ObjectDiff simpleDiff = dataModels[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -235,8 +234,8 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 2
 
         when:
-        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        simpleDiff = dataModels[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_SAVE
-import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_UPDATE
 
 class UrlMappings {
 
@@ -58,8 +57,8 @@ class UrlMappings {
                 put "/folder/$folderId"(controller: 'dataModel', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportModel')
 
-                delete '/dataTypes/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataTypes')
-                delete '/dataClasses/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataClasses')
+                put "/subset/$otherDataModelId"(controller: 'dataModel', action: 'subset')
+                get "/intersects/$otherDataModelId"(controller: 'dataModel', action: 'intersects')
 
                 get '/hierarchy'(controller: 'dataModel', action: 'hierarchy')
 
@@ -150,11 +149,6 @@ class UrlMappings {
                 '/summaryMetadata'(resources: 'summaryMetadata', excludes: DEFAULT_EXCLUDES) {
                     '/summaryMetadataReports'(resources: 'summaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
-
-                /*
-            Model Imports
-             */
-                '/modelImports'(resources: 'modelImport', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
             }
         }
     }

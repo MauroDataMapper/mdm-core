@@ -85,7 +85,7 @@ class DataModelInterceptor extends ModelInterceptor {
 
         boolean canReadId = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())
 
-        if (actionName in ['suggestLinks']) {
+        if (actionName in ['suggestLinks', 'intersects']) {
             if (!canReadId) {
                 return notFound(DataModel, getId())
             }
@@ -103,6 +103,18 @@ class DataModelInterceptor extends ModelInterceptor {
                 return notFound(getSecuredClass(), params.otherDataModelId)
             }
             return true
+        }
+
+        if (actionName in ['subset']) {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
+                return notFound(getSecuredClass(), getId())
+            }
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), params.otherDataModelId)) {
+                return notFound(getSecuredClass(), params.otherDataModelId)
+            }
+
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), params.otherDataModelId, actionName) ?:
+                forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), params.otherDataModelId))
         }
 
         checkModelActionsAuthorised()

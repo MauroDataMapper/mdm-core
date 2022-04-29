@@ -61,7 +61,7 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
 
         // This log marker allows us to ignore all the inserts and DB queries in the logs prior,
         // thus allowing analysis of the SQL actioned for each test
-        log.debug("==> Test data setup and inserted into database took {} <==", Utils.timeTaken(start))
+        log.debug('==> Test data setup and inserted into database took {} <==', Utils.timeTaken(start))
     }
 
     void preDomainDataSetup() {

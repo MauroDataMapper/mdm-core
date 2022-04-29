@@ -69,10 +69,14 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
         if (!super.equals(o)) return false
 
         FieldMergeDiff<F> fieldDiff = (FieldMergeDiff<F>) o
+        fieldName == fieldDiff.fieldName
+    }
 
-        if (fieldName != fieldDiff.fieldName) return false
-
-        return true
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + fieldName.hashCode()
+        result
     }
 
     @Override
@@ -103,4 +107,5 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
         if (this.diffType == ArrayMergeDiff.simpleName && that.diffType == FieldMergeDiff.simpleName) return 1
         this.fieldName <=> that.fieldName
     }
+
 }

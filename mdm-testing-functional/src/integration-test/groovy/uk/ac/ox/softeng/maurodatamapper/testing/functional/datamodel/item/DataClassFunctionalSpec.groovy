@@ -568,7 +568,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataElement [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataElement [${data.nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
@@ -860,7 +861,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$data.id/dataClasses/$complexDataModelId/$data.internalId", [:])
