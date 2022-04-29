@@ -508,7 +508,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh "./gradlew --build-cache artifactoryPublish"
+                    sh "./gradlew --build-cache publish"
                 }
             }
         }
