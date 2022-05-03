@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
-import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmAtomPublishedModelRenderer
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -45,6 +44,8 @@ import java.time.format.DateTimeFormatter
 @Transactional
 @Slf4j
 class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
+
+    public static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
 
     @Autowired
     HttpClientConfiguration httpClientConfiguration
@@ -140,7 +141,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
                 datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 author = pm.author
                 description = pm.description
-                if (pm.links) links = pm.links.collect {link -> new Link(MdmAtomPublishedModelRenderer.RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
+                if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
             }
         }.sort()
     }

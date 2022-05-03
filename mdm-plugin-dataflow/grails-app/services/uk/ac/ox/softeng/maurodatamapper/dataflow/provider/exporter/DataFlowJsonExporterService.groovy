@@ -52,11 +52,6 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
         HIGHEST_PRECEDENCE
     }

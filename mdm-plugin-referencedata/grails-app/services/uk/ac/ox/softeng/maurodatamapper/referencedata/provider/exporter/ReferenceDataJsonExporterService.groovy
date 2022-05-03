@@ -49,11 +49,6 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
         HIGHEST_PRECEDENCE
     }

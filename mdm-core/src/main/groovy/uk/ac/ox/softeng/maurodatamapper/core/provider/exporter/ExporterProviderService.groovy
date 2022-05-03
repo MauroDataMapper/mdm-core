@@ -51,14 +51,6 @@ abstract class ExporterProviderService extends MauroDataMapperService {
         null
     }
 
-    /**
-     * Flag preferred/native ExporterProviderService, to be sorted first.
-     * @return true if preferred
-     */
-    boolean getIsPreferred() {
-        false
-    }
-
     @Override
     String getProviderType() {
         ProviderType.EXPORTER.name
@@ -67,8 +59,7 @@ abstract class ExporterProviderService extends MauroDataMapperService {
     @Override
     int compareTo(MauroDataMapperService that) {
         if (that instanceof ExporterProviderService) {
-            int result = that.isPreferred <=> this.isPreferred
-            if (result == 0) result = this.order <=> that.order
+            int result = this.order <=> that.order
             if (result == 0) result = super.compareTo(that)
             return result
         } else {

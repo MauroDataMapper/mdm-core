@@ -58,11 +58,6 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
         HIGHEST_PRECEDENCE
     }

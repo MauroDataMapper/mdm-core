@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
-import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmAtomPublishedModelRenderer
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
@@ -37,6 +36,8 @@ import org.springframework.http.HttpMethod
 @Slf4j
 class PublishService {
 
+    public static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
+
     AuthorityService authorityService
 
     @Autowired
@@ -49,7 +50,7 @@ class PublishService {
         String modelUrl = linkGenerator.link(resource: model, method: HttpMethod.GET, absolute: true)
         new PublishedModel(model).tap {
             links = modelService.getExporterProviderServices().sort().collect {exporterProviderService ->
-                new Link(MdmAtomPublishedModelRenderer.RELATIONSHIP_ALTERNATE,
+                new Link(LINK_RELATIONSHIP_ALTERNATE,
                          modelUrl + '/export/' + exporterProviderService.namespace + '/' + exporterProviderService.name + '/' + exporterProviderService.version).tap {
                     contentType = exporterProviderService.producesContentType
                 }
@@ -59,11 +60,12 @@ class PublishService {
 
     List<PublishedModel> findAllPublishedReadableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
         List<PublishedModel> publishedModels = []
+        UUID defaultAuthorityId = authorityService.getDefaultAuthority().id
         modelServices.each {modelService ->
             List<Model> readableModels = modelService.findAllReadableModels(userSecurityPolicyManager, false, true, false)
             // Only publish finalised models which belong to this instance of MDM
             List<Model> publishableModels = readableModels.findAll {Model model ->
-                model.finalised && model.authority.id == authorityService.getDefaultAuthority().id
+                model.finalised && model.authority.id == defaultAuthorityId
             }
 
             publishableModels.each {model ->

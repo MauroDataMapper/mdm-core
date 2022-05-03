@@ -58,11 +58,6 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
         HIGHEST_PRECEDENCE
     }

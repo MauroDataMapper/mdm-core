@@ -61,13 +61,8 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
-        HIGHEST_PRECEDENCE + 100
+        HIGHEST_PRECEDENCE + 1
     }
 
     @Override

@@ -58,11 +58,6 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
         HIGHEST_PRECEDENCE
     }

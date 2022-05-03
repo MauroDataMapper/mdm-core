@@ -61,11 +61,6 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
-    boolean getIsPreferred() {
-        true
-    }
-
-    @Override
     int getOrder() {
         HIGHEST_PRECEDENCE
     }
