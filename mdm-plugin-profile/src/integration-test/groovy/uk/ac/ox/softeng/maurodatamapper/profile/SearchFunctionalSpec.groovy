@@ -52,6 +52,9 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     UUID simpleDataModelId
 
+    @Shared
+    UUID dataClassId
+
     ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
 
     @Transactional
@@ -70,6 +73,8 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
 
         DataModel dataModel = BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
         complexDataModelId = dataModel.id
+
+        dataClassId = dataModel.dataClasses.find {it.label == 'content'}.id
 
         dataModel.allDataElements.sort().eachWithIndex {de, i ->
             profileSpecificationFieldProfileService.storeFieldInEntity(de, "value $i", 'metadataPropertyName', FUNCTIONAL_TEST)
@@ -348,5 +353,339 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
   ]
 }''')
 
+    }
+
+    void 'S04 : test searching using profile filter for results inside dataclass'() {
+        when:
+        POST("dataClasses/${dataClassId}/search", [
+            searchTerm   : "ele*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.label == 'ele1'}
+        responseBody().items.any {it.label == 'element2'}
+
+        when:
+        POST("dataClasses/${dataClassId}/search", [
+            searchTerm   : "ele*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value type'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.label == 'ele1'}
+    }
+
+    void 'S05 : test searching to include profile fields in results from dataclasses'() {
+        when:
+        POST("dataClasses/${dataClassId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
+            searchTerm   : "ele*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value'
+                ],
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "ele1",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "profileFields": [
+        {
+          "fieldName": "Metadata Property Name",
+          "metadataPropertyName": "metadataPropertyName",
+          "currentValue": "value type 1",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Default Value",
+          "metadataPropertyName": "defaultValue",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Regular expression",
+          "metadataPropertyName": "regularExpression",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "May be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "currentValue": "true",
+          "dataType": "boolean"
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "element2",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "profileFields": [
+        {
+          "fieldName": "Metadata Property Name",
+          "metadataPropertyName": "metadataPropertyName",
+          "currentValue": "value 2",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Default Value",
+          "metadataPropertyName": "defaultValue",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Regular expression",
+          "metadataPropertyName": "regularExpression",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "May be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "currentValue": "true",
+          "dataType": "boolean"
+        }
+      ]
+    }
+  ]
+}''')
+
+        when:
+        POST("dataModels/${complexDataModelId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
+            searchTerm   : "ele*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value type'
+                ],
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "ele1",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "profileFields": [
+        {
+          "fieldName": "Metadata Property Name",
+          "metadataPropertyName": "metadataPropertyName",
+          "dataType": "string",
+          "currentValue": "value type 1"
+        },
+        {
+          "fieldName": "Default Value",
+          "metadataPropertyName": "defaultValue",
+          "dataType": "string",
+          "currentValue": ""
+        },
+        {
+          "fieldName": "Regular expression",
+          "metadataPropertyName": "regularExpression",
+          "dataType": "string",
+          "currentValue": ""
+        },
+        {
+          "fieldName": "May be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "dataType": "boolean",
+          "currentValue": "true"
+        }
+      ]
+    }
+  ]
+}''')
+
+    }
+
+    void 'S06 : test searching to include profile fields in results from dataclasses with no search term'() {
+        when:
+        POST("dataClasses/${dataClassId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
+            searchTerm   : "*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value'
+                ],
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "ele1",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "profileFields": [
+        {
+          "fieldName": "Metadata Property Name",
+          "metadataPropertyName": "metadataPropertyName",
+          "currentValue": "value type 1",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Default Value",
+          "metadataPropertyName": "defaultValue",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Regular expression",
+          "metadataPropertyName": "regularExpression",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "May be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "currentValue": "true",
+          "dataType": "boolean"
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "element2",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "profileFields": [
+        {
+          "fieldName": "Metadata Property Name",
+          "metadataPropertyName": "metadataPropertyName",
+          "currentValue": "value 2",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Default Value",
+          "metadataPropertyName": "defaultValue",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "Regular expression",
+          "metadataPropertyName": "regularExpression",
+          "currentValue": "",
+          "dataType": "string"
+        },
+        {
+          "fieldName": "May be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "currentValue": "true",
+          "dataType": "boolean"
+        }
+      ]
+    }
+  ]
+}''')
     }
 }

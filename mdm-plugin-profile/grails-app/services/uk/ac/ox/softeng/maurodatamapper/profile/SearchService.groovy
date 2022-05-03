@@ -19,13 +19,14 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService as CoreSearchService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.SearchService as DataModelSearchService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
@@ -33,7 +34,6 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.datamodel.SearchService as DataModelSearchService
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
@@ -53,17 +53,20 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
     @Autowired
     DataModelService dataModelService
 
-    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                   SearchParams searchParams,
-                                                                                   Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableCatalogueItemsByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                                 SearchParams searchParams,
+                                                                                                 Map pagination = [:]) {
         mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams, pagination)
     }
 
-    PaginatedHibernateSearchResult<ModelItem> findAllByModelByHibernateSearch(Model model, SearchParams searchParams, Map pagination = [:]) {
-        if (model instanceof DataModel) {
-            mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(model.id, searchParams, pagination)
+    PaginatedHibernateSearchResult<ModelItem> findAllModelItemsByMultifacetAwareItemByHibernateSearch(MultiFacetAware multiFacetAware, SearchParams searchParams,
+                                                                                                      Map pagination = [:]) {
+        if (multiFacetAware instanceof DataModel) {
+            mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(multiFacetAware.id, searchParams, pagination)
+        } else if (multiFacetAware instanceof DataClass) {
+            mdmPluginDataModelSearchService.findAllByDataClassIdByHibernateSearch(multiFacetAware.id, searchParams, pagination)
         } else {
-            throw new ApiNotYetImplementedException('PSS', "${model.domainType} findAllByModelDomainTypeAndModelIdByHibernateSearch")
+            throw new ApiNotYetImplementedException('PSS', "${multiFacetAware.domainType} findAllByMultifacetAwareItemByHibernateSearch")
         }
     }
 

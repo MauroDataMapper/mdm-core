@@ -271,17 +271,14 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         PaginatedHibernateSearchResult<CatalogueItem> results
         if (params.multiFacetAwareItemDomainType) {
 
-            MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+            MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
-            if (!model) {
+            if (!multiFacetAware) {
                 return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
             }
-            if (!(model instanceof Model)) {
-                throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
-            }
-            results = mdmPluginProfileSearchService.findAllByModelByHibernateSearch(model, searchParams, params)
+            results = mdmPluginProfileSearchService.findAllModelItemsByMultifacetAwareItemByHibernateSearch(multiFacetAware, searchParams, params)
         } else {
-            results = mdmPluginProfileSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
+            results = mdmPluginProfileSearchService.findAllReadableCatalogueItemsByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
         }
         respond profileService.loadProfilesIntoCatalogueItems(profileProviderService, results)
     }

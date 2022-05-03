@@ -83,8 +83,11 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
         pagination.center = catalogueItem.path.geoPoint
         pagination.remove('order')
 
+        String searchTerm = searchParams.searchTerm ? searchParams.searchTerm : '*'
+        if (!searchTerm.endsWith('*')) searchTerm = "${searchTerm}*"
+
         findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(readableModelIds, searchParams, false, pagination) {
-            simpleQueryString "${searchParams.searchTerm}*", 'label_sort'
+            simpleQueryString searchTerm, 'label_sort'
             filter(ExcludedIdsFilterFactory.createFilterPredicate(searchPredicateFactory, [catalogueItem.id]))
         }
     }
