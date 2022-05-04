@@ -7,7 +7,7 @@ buildscript {
 
     }
     dependencies {
-        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
     }
 }
 
@@ -15,15 +15,6 @@ plugins {
     id 'groovy'
 }
 
-apply plugin: 'ox.softeng.ox-brc-standard'
-apply plugin: 'ox.softeng.ox-brc-artifactory'
-apply plugin: 'ox.softeng.static-code-analysis'
-
-repositories {
-    mavenLocal()
-    maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot'}
-    maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-release'}
-}
+apply plugin: 'uk.ac.ox.softeng.maurodatamapper.gradle.mdm-gradle'
 
 apply from: 'dependencies.gradle'
-apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"

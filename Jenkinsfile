@@ -134,7 +134,7 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '** /build/test-results/test /*.xml'
+                    junit allowEmptyResults: true, testResults: '**/build/test-results/test/*.xml'
                 }
             }
         }
@@ -169,7 +169,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit allowEmptyResults: true, testResults: '** /build/test-results/parallelIntegrationTest/*.xml'
+                            junit allowEmptyResults: true, testResults: '**/build/test-results/parallelIntegrationTest/*.xml'
                         }
                     }
                 }
@@ -192,7 +192,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit allowEmptyResults: true, testResults: '** /build/test-results/nonParallelIntegrationTest /*.xml'
+                            junit allowEmptyResults: true, testResults: '**/build/test-results/nonParallelIntegrationTest/*.xml'
                         }
                     }
                 }
@@ -457,7 +457,7 @@ pipeline {
         */
         stage('Static Code Analysis') {
             steps {
-                sh "./gradlew -PciRun=true staticCodeAnalysis jacocoTestReport"
+                sh "./gradlew -PciRun=true jacocoTestReport"
                 sh "./gradlew -PciRun=true staticCodeAnalysis"
             }
         }
@@ -497,7 +497,7 @@ pipeline {
             }
         }
 
-        stage('Deploy master to Artifactory') {
+        stage('Deploy main to Artifactory') {
             when {
                 allOf {
                     branch 'main'

@@ -7,23 +7,18 @@ buildscript {
 
     }
     dependencies {
-        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath "org.grails.plugins:hibernate5:$grailsHibernate5Version"
         classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
     }
 }
 
-plugins {
-    id 'project-report'
-    id 'jacoco'
-}
-
 apply plugin: "idea"
 apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.plugins.views-json"
 
-apply plugin: 'ox.softeng.grails'
+apply plugin: 'uk.ac.ox.softeng.maurodatamapper.gradle.mdm-grails'
 
 repositories {
     mavenLocal()
@@ -100,7 +95,6 @@ bootRun {
 // enable if you wish to package this plugin as a standalone application
 bootJar.enabled = false
 
-
 grails {
     plugins {
         implementation project(':mdm-core')
@@ -109,4 +103,3 @@ grails {
 }
 
 apply from: 'dependencies.gradle'
-apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"
