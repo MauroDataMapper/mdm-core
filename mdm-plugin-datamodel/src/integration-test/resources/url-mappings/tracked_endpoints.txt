@@ -100,3 +100,4 @@
 | GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id} | show |
 | GET    | /api/dataModels/${dataModelId}/intersects/${otherDataModelId} | intersects |
 | PUT    | /api/dataModels/${dataModelId}/subset/${otherDataModelId} | subset |
+| POST   | /api/dataModels/${dataModelId}/intersectsMany | intersectsMany |
