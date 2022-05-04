@@ -27,5 +27,5 @@ class SourceTargetIntersects implements Validateable {
     String sourceDataModelId
     String targetDataModelId
 
-    List<String> intersects
+    List<String> intersects = []
 }

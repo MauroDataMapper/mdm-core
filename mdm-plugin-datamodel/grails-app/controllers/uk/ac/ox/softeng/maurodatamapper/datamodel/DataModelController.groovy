@@ -225,6 +225,6 @@ class DataModelController extends ModelController<DataModel> {
         DataModel sourceModel = queryForResource params[alternateParamsIdKey]
         if (!sourceModel) return notFound(params[alternateParamsIdKey])
 
-        respond(intersectionMany: dataModelService.intersectsMany(sourceModel, intersects))
+        respond(intersectionMany: dataModelService.intersectsMany(currentUserSecurityPolicyManager, sourceModel, intersects))
     }
 }

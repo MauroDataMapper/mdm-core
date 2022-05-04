@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.SourceTargetIntersects
+
+model {
+    SourceTargetIntersects sourceTargetIntersects
+}
+
+json {
+    sourceDataModelId sourceTargetIntersects.sourceDataModelId
+    targetDataModelId sourceTargetIntersects.targetDataModelId
+    intersects sourceTargetIntersects.intersects
+}

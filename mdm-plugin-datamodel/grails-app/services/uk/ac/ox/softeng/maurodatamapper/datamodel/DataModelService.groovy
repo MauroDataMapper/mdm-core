@@ -1192,11 +1192,12 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * Return the Data Element intersection between source and many target Data Models, checking only the list
      * of Data Elements provided i.e. for each target model listed in intersects.targetDataModelIds, of the Data Elements listed
      * in intersects.dataElementsIds from the sourceDataModel, which are also present (i.e. match by path) in the targetDataModel
+     * @param currentUserSecurityPolicyManager - needed to check read access on the target data models
      * @param sourceDataModel
      * @param intersects
      * @return
      */
-    Collection<UUID> intersectsMany(DataModel sourceDataModel, Intersects intersects) {
+    Collection<UUID> intersectsMany(UserSecurityPolicyManager currentUserSecurityPolicyManager, DataModel sourceDataModel, Intersects intersects) {
         Collection<SourceTargetIntersects> manySourceTargetIntersects = []
 
         // Get all the data elements once. Using findByDataModelIdAndId means we are checking that data element
@@ -1210,26 +1211,31 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
         }
 
-        // TODO check user has read access on all the target data models
-
         intersects.targetDataModelIds.each {targetDataModelId ->
-            DataModel targetDataModel = get(targetDataModelId)
+            // The interceptor did not check read access on the target, so check it now
+            // Note that an invalid UUID can cause userCanReadSecuredResourceId to return true, so later we
+            // check if (targetDataModel)
+            boolean canReadTarget = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, Utils.toUuid(targetDataModelId))
+            if (canReadTarget) {
+                DataModel targetDataModel = get(targetDataModelId)
 
-            SourceTargetIntersects sourceTargetIntersects = new SourceTargetIntersects()
-            sourceTargetIntersects.sourceDataModelId = sourceDataModel.id
-            sourceTargetIntersects.targetDataModelId = targetDataModelId
+                if (targetDataModel) {
+                    SourceTargetIntersects sourceTargetIntersects = new SourceTargetIntersects()
+                    sourceTargetIntersects.sourceDataModelId = sourceDataModel.id
+                    sourceTargetIntersects.targetDataModelId = targetDataModelId
 
-            sourceDataElements.each {sourceDataElement ->
-                Path pathInSource = sourceDataElement.getPath()
+                    sourceDataElements.each { sourceDataElement ->
+                        Path pathInSource = sourceDataElement.getPath()
 
-                DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
+                        DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
 
-                if (dataElementInTarget) {
-                    sourceTargetIntersects.intersects << sourceDataElement.id
+                        if (dataElementInTarget) {
+                            sourceTargetIntersects.intersects << sourceDataElement.id
+                        }
+                    }
+                    manySourceTargetIntersects << sourceTargetIntersects
                 }
             }
-
-            manySourceTargetIntersects << sourceTargetIntersects
         }
 
         manySourceTargetIntersects
