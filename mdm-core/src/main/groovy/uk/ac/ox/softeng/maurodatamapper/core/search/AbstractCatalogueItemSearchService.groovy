@@ -26,14 +26,12 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.compiler.GrailsCompileStatic
 import grails.plugins.hibernate.search.HibernateSearchApi
-import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
-@GrailsCompileStatic
+//@GrailsCompileStatic
 abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
     @Autowired
@@ -77,30 +75,6 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
             return new PaginatedHibernateSearchResult<K>([], 0)
         }
 
-        // If only 1 domain to search then we can get HS to do all the pagination
-        // This will be faster than doing it in memory
-        // As geopoint distances in HS are in metres, for the time being we will do that in-memory
-        if (filteredDomainsToSearch.size() == 1 && pagination.sort != 'distance') {
-            String sortField = pagination.remove('sort')
-            String order = pagination.remove('order') ?: 'asc'
-            Integer max = removePaginationInteger(pagination, 'max')
-            Integer offsetAmount = removePaginationInteger(pagination, 'offset')
-
-            Closure paginationClosure = HibernateSearchApi.defineSearchQuery {
-                if (max) maxResults(max)
-                if (offsetAmount) offset(offsetAmount)
-                if (sortField) {
-                    sort("${sortField}_sort", order)
-                }
-            }
-            addtlClauseCount++
-            if (additional) {
-                additional <<= paginationClosure
-            } else {
-                additional = paginationClosure
-            }
-        }
-
         // Do an estimated increase to the clause count, this should make sure at least the number of owningIds and paths clauses dont cause an initial failure
         int currentMaxClauseCount = HibernateSearch.getCurrentMaxClauseCount()
         int estimatedClauseCount = (owningIds.size() * 2) + addtlClauseCount + 10
@@ -109,17 +83,30 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         }
 
         long start = System.currentTimeMillis()
+        PaginatedHibernateSearchResult<K> results
 
-        List<K> items = performSearch(owningIds, searchParams.searchTerm, searchParams.labelOnly,
-                                      filteredDomainsToSearch, additional, customSearch)
+        // If only 1 domain to search then we can get HS to do all the pagination
+        // This will be faster than doing it in memory
+        // As geopoint distances in HS are in metres, for the time being we will do that in-memory
+        if (filteredDomainsToSearch.size() == 1) {
+            results = performSearch(owningIds, searchParams.searchTerm, searchParams.labelOnly,
+                                    filteredDomainsToSearch.first(), pagination, additional, customSearch)
+            if (removeOwningIds) {
+                // Remove null entries and any which have an owning id, as we only want those inside the owners
+                results.removeIf {it.id in owningIds}
+            }
+        } else {
+            List<K> items = performSearch(owningIds, searchParams.searchTerm, searchParams.labelOnly,
+                                          filteredDomainsToSearch, additional, customSearch)
+            if (removeOwningIds) {
+                // Remove null entries and any which have an owning id, as we only want those inside the owners
+                items.removeIf {it.id in owningIds}
+            }
 
-        if (removeOwningIds) {
-            // Remove null entries and any which have an owning id, as we only want those inside the owners
-            items = items.findAll {!(it.id in owningIds)}
+            results = filteredDomainsToSearch.size() == 1 ?
+                      items as PaginatedHibernateSearchResult<K> :
+                      PaginatedHibernateSearchResult.paginateFullResultSet(items, pagination)
         }
-
-        PaginatedHibernateSearchResult<K> results = PaginatedHibernateSearchResult.paginateFullResultSet(items, pagination)
-
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}")
         results
     }
@@ -142,40 +129,71 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         performStandardSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
     }
 
-    @CompileDynamic
-    protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
+    PaginatedHibernateSearchResult<K> performSearch(List<UUID> owningIds,
+                                                    String searchTerm,
+                                                    Boolean labelOnly,
+                                                    Class<K> filteredDomainToSearch,
+                                                    Map pagination,
+                                                    @DelegatesTo(HibernateSearchApi) Closure additional,
+                                                    @DelegatesTo(HibernateSearchApi) Closure customSearch) {
+        List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
+        if (customSearch) {
+            log.debug('Performing hs custom search')
+            return performCustomSearch(filteredDomainToSearch, owningIds, pathNodes, pagination, additional, customSearch)
+        } else if (labelOnly) {
+            log.debug('Performing hs label search')
+            return performLabelSearch(filteredDomainToSearch, owningIds, pathNodes, searchTerm, pagination, additional)
+        }
+
+        log.debug('Performing hs standard search')
+        performStandardSearch(filteredDomainToSearch, owningIds, pathNodes, searchTerm, pagination, additional)
+    }
+
+    protected List<K> performLabelSearch(Set<Class<K>> filteredDomainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
-        domainsToSearch.collect {domain ->
-            log.debug('Domain searching {}', domain)
-            domain
-                .labelHibernateSearch(domain, searchTerm, owningIds, pathNodes, [:], additional)
-                .results
+        filteredDomainsToSearch.collect {domain ->
+            performLabelSearch(domain, owningIds, pathNodes, searchTerm, [:], additional).results
         }.flatten().findAll() as List<K>
 
     }
 
-    @CompileDynamic
-    protected List<K> performStandardSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
+    protected List<K> performStandardSearch(Set<Class<K>> filteredDomainsToSearch, List<UUID> owningIds, String searchTerm,
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
-        domainsToSearch.collect {domain ->
-            log.debug('Domain searching {}', domain)
-            domain.standardHibernateSearch(domain, searchTerm, owningIds, pathNodes, [:],
-                                           additional).results
+        filteredDomainsToSearch.collect {domain ->
+            performStandardSearch(domain, owningIds, pathNodes, searchTerm, [:], additional).results
         }.flatten().findAll() as List<K>
     }
 
-    @CompileDynamic
-    protected List<K> performCustomSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds,
+    protected List<K> performCustomSearch(Set<Class<K>> filteredDomainsToSearch, List<UUID> owningIds,
                                           @DelegatesTo(HibernateSearchApi) Closure additional,
                                           @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         List<PathNode> pathNodes = pathService.findAllPathsForIds(owningIds).collect {it.last()}
-        domainsToSearch.collect {domain ->
-            log.debug('Domain searching {}', domain)
-            domain.customHibernateSearch(domain, owningIds, pathNodes, [:], additional,
-                                         customSearch).results
+        filteredDomainsToSearch.collect {domain ->
+            performCustomSearch(domain, owningIds, pathNodes, [:], additional, customSearch).results
         }.flatten().findAll() as List<K>
+    }
+
+    protected PaginatedHibernateSearchResult<K> performLabelSearch(Class<K> domainToSearch, List<UUID> owningIds, List<PathNode> pathNodes, String searchTerm,
+                                                                   Map pagination, @DelegatesTo(HibernateSearchApi) Closure additional) {
+
+        log.debug('Domain searching {}', domainToSearch)
+        domainToSearch.labelHibernateSearch(domainToSearch, searchTerm, owningIds, pathNodes, pagination, additional)
+
+    }
+
+    protected PaginatedHibernateSearchResult<K> performStandardSearch(Class<K> domainToSearch, List<UUID> owningIds, List<PathNode> pathNodes, String searchTerm,
+                                                                      Map pagination, @DelegatesTo(HibernateSearchApi) Closure additional) {
+        log.debug('Domain searching {}', domainToSearch)
+        domainToSearch.standardHibernateSearch(domainToSearch, searchTerm, owningIds, pathNodes, pagination, additional)
+    }
+
+    protected PaginatedHibernateSearchResult<K> performCustomSearch(Class<K> domainToSearch, List<UUID> owningIds, List<PathNode> pathNodes, Map pagination,
+                                                                    @DelegatesTo(HibernateSearchApi) Closure additional,
+                                                                    @DelegatesTo(HibernateSearchApi) Closure customSearch) {
+        log.debug('Domain searching {}', domainToSearch)
+        domainToSearch.customHibernateSearch(domainToSearch, owningIds, pathNodes, pagination, additional, customSearch)
     }
 
     private static Integer removePaginationInteger(Map pagination, String field) {

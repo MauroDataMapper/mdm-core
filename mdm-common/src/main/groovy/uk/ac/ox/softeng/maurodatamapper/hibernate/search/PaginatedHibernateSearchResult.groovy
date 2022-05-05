@@ -47,6 +47,12 @@ class PaginatedHibernateSearchResult<K> {
         results.each closure
     }
 
+    void removeIf(@ClosureParams(value = FromString, options = ['K']) Closure closure) {
+        List<K> resultToRemove = results.findAll closure
+        count -= resultToRemove.size()
+        results = results.findAll {it !in resultToRemove}
+    }
+
     static <D> PaginatedHibernateSearchResult<D> paginateFullResultSet(List<D> fullResultSet, Map pagination) {
 
         if (!pagination) return new PaginatedHibernateSearchResult<D>(fullResultSet, fullResultSet.size())
@@ -56,7 +62,7 @@ class PaginatedHibernateSearchResult<K> {
         String sortKey = pagination.sort
         String order = pagination.order ?: 'asc'
 
-        List<D> sortedList = fullResultSet
+        List<D> sortedList = new ArrayList<>(fullResultSet)
         if ('distance' == sortKey) {
             String sortField = pagination.sortField
             GeoPoint center = pagination.center as GeoPoint
