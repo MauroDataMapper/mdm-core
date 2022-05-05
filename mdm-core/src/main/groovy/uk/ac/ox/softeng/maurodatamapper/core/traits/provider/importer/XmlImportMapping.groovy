@@ -25,12 +25,12 @@ import groovy.xml.slurpersupport.NodeChildren
  */
 trait XmlImportMapping {
 
-    Map<String, Object> convertToMap(NodeChild nodes) {
+    Map<String, Object> convertToMap(NodeChild nodes, List<String> exclude = ['id']) {
         Map<String, Object> map = [:]
         if (nodes.children().isEmpty()) {
             map[nodes.name()] = nodes.text()
         } else {
-            map = ((NodeChildren) nodes.children()).findAll {it.name() != 'id'}.collectEntries {NodeChild child ->
+            map = ((NodeChildren) nodes.children()).findAll {!exclude.contains(it.name())}.collectEntries {NodeChild child ->
                 String name = child.name()
                 def content = child.text()
 

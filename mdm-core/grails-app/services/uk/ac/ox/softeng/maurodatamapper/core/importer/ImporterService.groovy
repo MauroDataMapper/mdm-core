@@ -31,15 +31,20 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.Importe
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.importer.ImportParameterGroup
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.validation.ValidationErrors
 import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.lang3.reflect.FieldUtils
+<<<<<<< HEAD
 import org.grails.datastore.gorm.GormValidateable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+=======
+import org.springframework.beans.factory.annotation.Autowired
+>>>>>>> 859a0d39e (Add SubscribedCatalogueConverters for JSON and Atom subscribed catalogue WIP)
 import org.springframework.validation.Errors
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
@@ -57,12 +62,15 @@ class ImporterService implements DataBinder {
     @Autowired
     MessageSource messageSource
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
+    @Autowired
+    Set<ImporterProviderService> importerProviderServices
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
         User currentUser, T importer, P importParams) {
         importer.importDomains(currentUser, importParams).findAll()
     }
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> M importDomain(
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> M importDomain(
         User currentUser, T importer, P importParams) {
         M model = importer.importDomain(currentUser, importParams)
 

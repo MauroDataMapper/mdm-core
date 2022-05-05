@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation.web
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 
@@ -53,7 +54,7 @@ import java.util.concurrent.ThreadFactory
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Methods exist for future programming')
-class FederationClient implements Closeable {
+class FederationClient implements Closeable, XmlImportMapping {
 
     static final String API_KEY_HEADER = 'apiKey'
     private HttpClient client

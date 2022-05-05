@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -46,7 +47,8 @@ import java.time.format.DateTimeFormatter
 @Slf4j
 class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
 
-    public static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
+    @Autowired
+    Set<SubscribedCatalogueConverter> subscribedCatalogueConverters
 
     @Autowired
     HttpClientConfiguration httpClientConfiguration
@@ -80,29 +82,13 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
-            /*Map<String, Object> catalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-            }
-            if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
+            def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModels(subscribedCatalogue, true)
+
+            if (!subscribedAuthority.label || publishedModels == null) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
                                                   'Invalid subscription to catalogue at [{0}], response from catalogue is invalid')
             }
-            Authority thisAuthority = authorityService.defaultAuthority
-
-            // Under prod mode dont let a connection to ourselves exist
-            if (Environment.current == Environment.PRODUCTION) {
-                if (catalogueModels.authority.label == thisAuthority.label && catalogueModels.authority.url == thisAuthority.url) {
-                    subscribedCatalogue.errors.reject(
-                        'invalid.subscription.url.authority',
-                        [subscribedCatalogue.url,
-                         catalogueModels.authority.label,
-                         catalogueModels.authority.url].toArray(),
-                        'Invalid subscription to catalogue at [{0}] as it has the same Authority as this instance [{1}:{2}]')
-                }
-            }*/
-
-            def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModels(subscribedCatalogue, true)
 
             Authority thisAuthority = authorityService.defaultAuthority
 
@@ -141,85 +127,33 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      * @return List<PublishedModel> The list of published models returned by the catalogue
      *
      */
-    Object listPublishedModels(SubscribedCatalogue subscribedCatalogue, boolean includeAuthority = false) {
+    List listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
         FederationClient federationClient = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
 
-        switch (subscribedCatalogue.subscribedCatalogueType) {
-            case SubscribedCatalogueType.MDM_JSON:
-                Map<String, Object> subscribedCatalogueModels = federationClient.withCloseable {client ->
-                    client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-                }
+        SubscribedCatalogueConverter subscribedCatalogueConverter = getConverterForSubscribedCatalogue(subscribedCatalogue)
 
-                Authority subscribedAuthority
-                if (includeAuthority) {
-                    subscribedAuthority = new Authority(label: subscribedCatalogueModels.authority.label, url: subscribedCatalogueModels.authority.url)
-                }
-
-                List<PublishedModel> publishedModels = (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
-                    new PublishedModel().tap {
-                        modelId = Utils.toUuid(pm.modelId)
-                        title = pm.title // for compatibility with remote catalogue versions prior to 4.12
-                        if (pm.label) modelLabel = pm.label
-                        if (pm.version) modelVersion = Version.from(pm.version)
-                        modelType = pm.modelType
-                        lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        author = pm.author
-                        description = pm.description
-                        if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
-                    }
-                }.sort()
-
-                return [subscribedAuthority, publishedModels]
-
-                break
-            case SubscribedCatalogueType.ATOM:
-                GPathResult subscribedCatalogueModelsFeed = federationClient.withCloseable {client ->
-                    client.getSubscribedCatalogueModelsFromAtomFeed(subscribedCatalogue.apiKey)
-                }
-
-                Authority subscribedAuthority
-                if (includeAuthority) {
-                    subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name, url: subscribedCatalogueModelsFeed.author.uri)
-                }
-
-                List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {entry ->
-                    new PublishedModel().tap {
-                        modelId = Utils.toUuid(extractUuidFromUrn(entry.id))
-                        title = entry.title
-                        modelType = entry.category.@term
-                        lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        author = entry.author.name
-                        description = entry.summary
-                        links = entry.link.collect {link ->
-                            new Link(LINK_RELATIONSHIP_ALTERNATE, link.href).tap {contentType = link.@type}
-                        }
-                    }
-                }
-
-                return [subscribedAuthority, publishedModels]
-
-                break
-        }
+        subscribedCatalogueConverter.getPublishedModels(federationClient, subscribedCatalogue)
     }
 
-    List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
+    /*List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
             client.getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
         }
-    }
+    }*/
 
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
+            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+                client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+            }
         }
     }
 
     Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, UUID modelId) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
+            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+                client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
+            }
         }
     }
 
@@ -238,6 +172,10 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
                              httpClientConfiguration,
                              nettyClientSslBuilder,
                              mediaTypeCodecRegistry)
+    }
+
+    private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
+        subscribedCatalogueConverters.find {it.handles(subscribedCatalogue.subscribedCatalogueType)}
     }
 
     /**

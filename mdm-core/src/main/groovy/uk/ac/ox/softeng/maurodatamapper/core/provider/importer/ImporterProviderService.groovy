@@ -37,6 +37,8 @@ abstract class ImporterProviderService<D extends CatalogueItem, T extends Import
 
     abstract Boolean canImportMultipleDomains()
 
+    abstract Boolean handlesContentType(String contentType)
+
     List<String> getImportBlacklistedProperties() {
         ['id', 'domainType', 'lastUpdated']
     }
