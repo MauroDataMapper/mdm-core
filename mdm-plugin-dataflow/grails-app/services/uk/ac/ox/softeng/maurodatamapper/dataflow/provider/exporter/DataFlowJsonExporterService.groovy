@@ -47,6 +47,16 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+json'
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
+    }
+
+    @Override
     String getDisplayName() {
         'JSON DataFlow Exporter'
     }

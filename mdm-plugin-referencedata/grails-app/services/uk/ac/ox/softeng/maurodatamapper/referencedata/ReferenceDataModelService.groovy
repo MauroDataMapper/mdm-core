@@ -52,6 +52,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
@@ -87,6 +88,9 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     @Autowired
     Set<DefaultReferenceDataTypeProvider> defaultReferenceDataTypeProviders
+
+    @Autowired(required = false)
+    Set<ReferenceDataModelExporterProviderService> exporterProviderServices
 
     @Override
     ReferenceDataModel get(Serializable id) {

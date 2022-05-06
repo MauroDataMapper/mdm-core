@@ -47,6 +47,16 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+xml'
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE + 1
+    }
+
+    @Override
     String getDisplayName() {
         'XML DataFlow Exporter'
     }

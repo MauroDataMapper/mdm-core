@@ -54,6 +54,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Intersects
@@ -100,6 +101,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Autowired(required = false)
     Set<ModelService> modelServices
+
+    @Autowired(required = false)
+    Set<DataModelExporterProviderService> exporterProviderServices
 
     @Override
     DataModel get(Serializable id) {

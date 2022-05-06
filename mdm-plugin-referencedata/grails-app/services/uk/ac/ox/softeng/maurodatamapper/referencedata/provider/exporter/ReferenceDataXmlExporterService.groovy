@@ -44,6 +44,16 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+xml'
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE + 1
+    }
+
+    @Override
     String getDisplayName() {
         'XML Reference Data Exporter'
     }

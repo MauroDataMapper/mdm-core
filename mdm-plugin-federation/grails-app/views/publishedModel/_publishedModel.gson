@@ -16,4 +16,5 @@ json {
     if (publishedModel.author) author publishedModel.author
     if (publishedModel.description) description publishedModel.description
     if (publishedModel.previousModelId) previousModelId publishedModel.previousModelId
+    links tmpl.'/link/link'(publishedModel.links ?: [])
 }

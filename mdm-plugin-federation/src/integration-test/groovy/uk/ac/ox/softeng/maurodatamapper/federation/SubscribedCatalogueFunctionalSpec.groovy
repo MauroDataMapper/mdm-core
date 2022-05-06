@@ -21,12 +21,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
+
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
@@ -223,24 +227,15 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", STRING_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", MAP_ARG, true)
 
         then:
-        verifyJsonResponse OK, '''{
-    "count": 1,
-    "items": [
-        {
-            "dateCreated": "${json-unit.matches:offsetDateTime}",
-            "datePublished": "${json-unit.matches:offsetDateTime}",
-            "label": "Finalised Example Test DataModel",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "modelId": "${json-unit.matches:id}",
-            "modelType": "DataModel",
-            "title": "Finalised Example Test DataModel 1.0.0",
-            "version": "1.0.0"
-        }
-    ]
-}'''
+        verifyResponse OK, response
+        verifyBaseJsonResponse(responseBody(), true)
+        responseBody().items.size() == 1
+
+        and:
+        verifyJsonPublishedModel(responseBody().items.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
 
         cleanup:
         DELETE(subscribedCatalogueId)
@@ -254,13 +249,11 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", STRING_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
 
         then:
-        verifyJsonResponse OK, '''{
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "newerPublishedModels": []
-}'''
+        verifyResponse OK, response
+        verifyBaseNewerVersionsJsonResponse(responseBody(), false)
 
         cleanup:
         DELETE(subscribedCatalogueId)
@@ -275,36 +268,18 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", STRING_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
 
         then:
-        verifyJsonResponse OK, '''{
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "newerPublishedModels": [
-        {
-            "dateCreated": "${json-unit.matches:offsetDateTime}",
-            "datePublished": "${json-unit.matches:offsetDateTime}",
-            "label": "Finalised Example Test DataModel",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "modelId": "${json-unit.matches:id}",
-            "modelType": "DataModel",
-            "previousModelId": "${json-unit.matches:id}",
-            "title": "Finalised Example Test DataModel 2.0.0",
-            "version": "2.0.0"
-        },
-        {
-            "dateCreated": "${json-unit.matches:offsetDateTime}",
-            "datePublished": "${json-unit.matches:offsetDateTime}",
-            "label": "Finalised Example Test DataModel",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "modelId": "${json-unit.matches:id}",
-            "modelType": "DataModel",
-            "previousModelId": "${json-unit.matches:id}",
-            "title": "Finalised Example Test DataModel 3.0.0",
-            "version": "3.0.0"
-        }
-    ]
-}'''
+        verifyResponse OK, response
+        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
+        responseBody().newerPublishedModels.size() == 2
+
+        and:
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+                                 true)
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+                                 true)
 
         cleanup:
         DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
@@ -313,5 +288,50 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         verifyResponse NO_CONTENT, response
         DELETE(subscribedCatalogueId)
         verifyResponse NO_CONTENT, response
+    }
+
+    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
+        assert publishedModel
+        assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+        assert publishedModel.label
+        assert Version.from(publishedModel.version)
+        assert publishedModel.title == publishedModel.label + ' ' + publishedModel.version
+        assert publishedModel.modelType == modelType
+        assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        assert OffsetDateTime.parse(publishedModel.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        assert publishedModel.links.each {link ->
+            assert link.contentType
+            String exporterUrl = exporters.get(link.contentType)
+            assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
+        }
+        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+    }
+
+    private void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
+        if (expectEntries) {
+            assert responseBody.items.size() > 0
+            assert responseBody.items.size() == responseBody.count
+        } else {
+            assert responseBody.items.size() == 0
+            assert responseBody.count == 0
+        }
+    }
+
+    private void verifyBaseNewerVersionsJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
+        assert OffsetDateTime.parse(responseBody.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        if (expectEntries) {
+            assert responseBody.newerPublishedModels.size() > 0
+        } else {
+            assert responseBody.newerPublishedModels.size() == 0
+        }
+    }
+
+    private static Map<String, String> getDataModelExporters() {
+        [
+            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+        ]
     }
 }

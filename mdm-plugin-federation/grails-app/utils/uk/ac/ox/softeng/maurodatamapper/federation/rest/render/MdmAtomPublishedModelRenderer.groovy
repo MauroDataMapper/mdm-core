@@ -20,14 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.federation.rest.render
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 
 import grails.converters.XML
 import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.atom.AtomRenderer
 import groovy.util.logging.Slf4j
-import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.web.xml.StreamingMarkupWriter
 import org.grails.web.xml.XMLStreamWriter
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,7 +44,7 @@ import java.time.ZoneOffset
  * @see grails.rest.render.atom.AtomRenderer
  */
 @Slf4j
-class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
+class MdmAtomPublishedModelRenderer<T> extends AtomRenderer<T> {
 
     public static final LocalDate MINTED_DATE = LocalDate.of(2021, 1, 27)
     public static final String AUTHOR_TAG = 'author'
@@ -61,7 +60,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
     @Autowired
     AuthorityService authorityService
 
-    MdmAtomModelRenderer(Class<T> targetType) {
+    MdmAtomPublishedModelRenderer(Class<T> targetType) {
         super(targetType)
         //  excludes << 'path'
         //  excludes << 'breadcrumbTree'
@@ -78,17 +77,13 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
         XML xml = new XML(new XMLStreamWriter(streamingWriter))
 
-        final entity = mappingContext.getPersistentEntity(object.class.name)
-        boolean isDomain = entity != null
-
         Authority authority = authorityService.defaultAuthority
 
-        Set writtenObjects = []
         XMLStreamWriter writer = xml.getWriter()
         writer.startDocument(encoding, '1.0')
 
-        if (isDomain) {
-            writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
+        if (object instanceof PublishedModel) {
+            writePublishedModelWithLinks(object, xml)
         } else if (object instanceof Collection) {
             final locale = context.locale
             String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute: true)
@@ -132,22 +127,15 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
             linkSelf.title = title
             linkSelf.contentType = mimeTypes[0].name
-            linkSelf.hreflang = locale
-            writeLink(linkSelf, locale, xml)
-            def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
-            linkAlt.title = title
-            linkAlt.hreflang = locale
-            writeLink(linkAlt, locale, xml)
+            writeLink(linkSelf, null, xml)
 
             for (o in ((Collection) object)) {
-                final currentEntity = mappingContext.getPersistentEntity(o.class.name)
-                if (currentEntity) {
-                    writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects, false)
-                } else {
+                if (o !instanceof PublishedModel) {
                     throw new IllegalArgumentException(
-                        "Cannot render object [$o] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and" +
-                        " 'lastUpdated' properties")
+                        "Cannot render object [$o] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and " +
+                        "'lastUpdated' properties")
                 }
+                writePublishedModelWithLinks(o, xml, false)
             }
             writer.end()
             context.writer.flush()
@@ -173,16 +161,27 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
      * with minor changes.
      */
     @Override
-    void writeLink(Link link, Locale locale, writerObject) {
+    void writeLink(Link link, Locale locale,writerObject) {
         XMLStreamWriter writer = ((XML) writerObject).getWriter()
         writer.startNode(LINK_TAG)
-            .attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
-            .attribute(HREF_ATTRIBUTE, link.href)
-            .attribute(HREFLANG_ATTRIBUTE, (link.hreflang ?: locale).language)
 
-        final title = link.title
-        if (title) {
-            writer.attribute(TITLE_ATTRIBUTE, title)
+        if (link.rel) {
+            writer.attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
+        }
+
+        if (link.contentType) {
+            writer.attribute(TYPE_ATTRIBUTE, link.contentType)
+        }
+
+        writer.attribute(HREF_ATTRIBUTE, link.href)
+
+        if (link.title) {
+            writer.attribute(TITLE_ATTRIBUTE, link.title)
+        }
+
+        Locale linkLocale = link.hreflang ?: locale
+        if (linkLocale) {
+            writer.attribute(HREFLANG_ATTRIBUTE, linkLocale.language)
         }
 
         if (link.templated) {
@@ -192,16 +191,6 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             writer.attribute(DEPRECATED_ATTRIBUTE, 'true')
         }
         writer.end()
-    }
-
-    /**
-     * Override the base method so that we have more flexibility to use the properties we want
-     *
-     */
-    @Override
-    void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects,
-                                         boolean isFirst = true) {
-        writeModelWithEmbeddedAndLinks(entity, object as Model, context, xml, writtenObjects, isFirst)
     }
 
     /**
@@ -261,55 +250,41 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         }
     }
 
-    /**
-     * Write a model. Copied from {@link grails.rest.render.atom.AtomRenderer#writeDomainWithEmbeddedAndLinks} with minor tweaks.
-     *
-     */
-    void writeModelWithEmbeddedAndLinks(PersistentEntity entity, Model object, RenderContext context, XML xml, Set writtenObjects,
-                                        boolean isFirst = true) {
-        if (!entity.getPropertyByName('lastUpdated')) {
-            throw new IllegalArgumentException(
-                "Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and " +
-                "'lastUpdated' properties")
-        }
-        final locale = context.locale
-        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: true)
-        final title = getLinkTitle(entity, locale)
+    void writePublishedModelWithLinks(PublishedModel publishedModel, XML xml, boolean isFirst = true) {
         XMLStreamWriter writer = xml.getWriter()
         writer.startNode(isFirst ? FEED_TAG : ENTRY_TAG)
         if (isFirst) {
             writer.attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
         }
-
         /*
          Required Fields
          */
         writer.startNode(ID_TAG)
-            .characters(getModelUrn(object))
+            .characters(getPublishedModelUrn(publishedModel))
             .end()
 
         //Use model label as the title
         writer.startNode(TITLE_ATTRIBUTE)
-            .characters(object.label + ' ' + object.modelVersion.toString())
+            .characters(publishedModel.modelLabel + " " + publishedModel.modelVersion.toString())
             .end()
 
         writer.startNode(UPDATED_TAG)
-            .characters(formatLastUpdated(object))
+            .characters(formatLastUpdated(publishedModel))
             .end()
 
         /*
         Recommended fields
          */
-        if (object.author) {
+        if (publishedModel.author) {
             writer.startNode(AUTHOR_TAG)
                 .startNode(AUTHOR_NAME_TAG)
-                .characters(object.author)
+                .characters(publishedModel.author)
                 .end()
                 .end()
         }
-        if (object.description) {
+        if (publishedModel.description) {
             writer.startNode(SUMMARY_TAG)
-                .characters(object.description)
+                .characters(publishedModel.description)
                 .end()
         }
 
@@ -317,35 +292,24 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         Optional fields
          */
         writer.startNode(PUBLISHED_TAG)
-            .characters(formatAtomDate(object.dateFinalised))
+            .characters(formatAtomDate(publishedModel.datePublished))
             .end()
 
         writer.startNode(CATEGORY_TAG)
-            .attribute(CATEGORY_TERM_ATTRIBUTE, object.domainType)
+            .attribute(CATEGORY_TERM_ATTRIBUTE, publishedModel.modelType)
             .end()
 
-        /*
-        Links are recommended
-         */
-        def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
-        linkSelf.title = title
-        linkSelf.contentType = mimeTypes[0].name
-        linkSelf.hreflang = locale
-        writeLink(linkSelf, locale, xml)
-        def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
-        linkAlt.title = title
-        linkAlt.hreflang = locale
+        publishedModel.links.each {writeLink(it, null, xml)}
 
-        writeLink(linkAlt, locale, xml)
         writer.end()
     }
 
     /**
-     * Generate the value of an ID tag that looks like urn:uuid:{model.id}* @param model
-     * @return A string like urn:uuid:{model.id}
+     * Generate the value of an ID tag that looks like urn:uuid:{publishedModel.modelId}* @param model
+     * @return A string like urn:uuid:{publishedModel.modelId}
      */
-    String getModelUrn(Model model) {
-        return "urn:uuid:${model.id}"
+    String getPublishedModelUrn(PublishedModel publishedModel) {
+        "urn:uuid:${publishedModel.modelId}"
     }
 
     Date getMintedDate() {

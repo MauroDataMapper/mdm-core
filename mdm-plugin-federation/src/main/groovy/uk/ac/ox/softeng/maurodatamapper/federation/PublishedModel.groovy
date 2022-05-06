@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.rest.Link
 import java.time.OffsetDateTime
 import java.util.regex.Pattern
 
@@ -35,6 +36,7 @@ class PublishedModel implements Comparable<PublishedModel> {
     OffsetDateTime datePublished
     String author
     UUID previousModelId
+    List<Link> links
 
     PublishedModel() {
     }

@@ -56,6 +56,16 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+json'
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
+    }
+
+    @Override
     Boolean canExportMultipleDomains() {
         false
     }

@@ -43,8 +43,27 @@ abstract class ExporterProviderService extends MauroDataMapperService {
 
     abstract String getFileType()
 
+    /**
+     * MIME type produced by ExporterProviderService
+     * @return MIME type
+     */
+    String getProducesContentType() {
+        null
+    }
+
     @Override
     String getProviderType() {
         ProviderType.EXPORTER.name
+    }
+
+    @Override
+    int compareTo(MauroDataMapperService that) {
+        if (that instanceof ExporterProviderService) {
+            int result = this.order <=> that.order
+            if (result == 0) result = super.compareTo(that)
+            return result
+        } else {
+            return super.compareTo(that)
+        }
     }
 }

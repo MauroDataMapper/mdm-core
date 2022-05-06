@@ -169,6 +169,8 @@ abstract class ModelService<K extends Model>
                          boolean throwErrors,
                          UserSecurityPolicyManager userSecurityPolicyManager)
 
+    abstract Set<ExporterProviderService> getExporterProviderServices()
+
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
     abstract ExporterProviderService getJsonModelExporterProviderService()

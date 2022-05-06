@@ -26,57 +26,78 @@ import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
+import grails.rest.Link
+import grails.web.mapping.LinkGenerator
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod
 
 @Transactional
 @Slf4j
 class PublishService {
 
+    public static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
+
     AuthorityService authorityService
+
+    @Autowired
+    LinkGenerator linkGenerator
 
     @Autowired(required = false)
     List<ModelService> modelServices
 
-    List<Model> findAllReadableModelsToPublish(UserSecurityPolicyManager userSecurityPolicyManager) {
-        List<Model> models = []
-        modelServices.each {
-            List<Model> readableModels = it.findAllReadableModels(userSecurityPolicyManager, false, true, false)
-            // Only publish finalised models which belong to this instance of MDM
-            List<Model> publishableModels = readableModels.findAll {Model model ->
-                model.finalised && model.authority.id == authorityService.getDefaultAuthority().id
-            } as List<Model>
-            models.addAll(publishableModels)
+    PublishedModel getPublishedModel(Model model, ModelService modelService) {
+        String modelUrl = linkGenerator.link(resource: model, method: HttpMethod.GET, absolute: true)
+        new PublishedModel(model).tap {
+            links = modelService.getExporterProviderServices().sort().collect {exporterProviderService ->
+                new Link(LINK_RELATIONSHIP_ALTERNATE,
+                         modelUrl + '/export/' + exporterProviderService.namespace + '/' + exporterProviderService.name + '/' + exporterProviderService.version).tap {
+                    contentType = exporterProviderService.producesContentType
+                }
+            }
         }
-        models
     }
 
     List<PublishedModel> findAllPublishedReadableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
-        findAllReadableModelsToPublish(userSecurityPolicyManager).collect {new PublishedModel(it)}.sort()
+        List<PublishedModel> publishedModels = []
+        UUID defaultAuthorityId = authorityService.getDefaultAuthority().id
+        modelServices.each {modelService ->
+            List<Model> readableModels = modelService.findAllReadableModels(userSecurityPolicyManager, false, true, false)
+            // Only publish finalised models which belong to this instance of MDM
+            List<Model> publishableModels = readableModels.findAll {Model model ->
+                model.finalised && model.authority.id == defaultAuthorityId
+            }
+
+            publishableModels.each {model ->
+                publishedModels << getPublishedModel(model, modelService)
+            }
+        }
+        publishedModels
     }
 
     List<PublishedModel> findPublishedSupersedingModels(List<PublishedModel> publishedModels, String modelType, UUID modelId,
                                                         UserSecurityPolicyManager userSecurityPolicyManager) {
+        ModelService modelService = findServiceForModelDomainType(modelType)
         List<VersionTreeModel> newerVersionTree =
-            findServiceForModelDomainType(modelType).buildModelVersionTree(findModelByDomainTypeAndId(modelType, modelId), null, null,
-                                                                           false, false, userSecurityPolicyManager)
+            modelService.buildModelVersionTree(findModelByDomainTypeAndId(modelType, modelId), null, null,
+                                               false, false, userSecurityPolicyManager)
         List<PublishedModel> newerPublishedModels = []
         newerVersionTree.findAll {it ->
             Model model = it.versionAware
             model.id != modelId && publishedModels.find {pm -> pm.modelId == model.id}
         }.each {vtm ->
-            newerPublishedModels << new PublishedModel(vtm.versionAware).tap {previousModelId = vtm.parentVersionTreeModel.versionAware.id}
+            newerPublishedModels << getPublishedModel(vtm.versionAware, modelService).tap {previousModelId = vtm.parentVersionTreeModel.versionAware.id}
         }
         return newerPublishedModels
     }
 
-    ModelService findServiceForModelDomainType(String domainType) {
+    private ModelService findServiceForModelDomainType(String domainType) {
         ModelService modelService = modelServices.find {it.handles(domainType)}
         if (!modelService) throw new ApiInternalException('MS01', "No model service to handle model [${domainType}]")
         return modelService
     }
 
-    Model findModelByDomainTypeAndId(String domainType, UUID modelId) {
+    private Model findModelByDomainTypeAndId(String domainType, UUID modelId) {
         return findServiceForModelDomainType(domainType).get(modelId)
     }
 }

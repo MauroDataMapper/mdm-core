@@ -26,8 +26,13 @@ import groovy.util.logging.Slf4j
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.http.HttpResponse
+import org.grails.web.mapping.DefaultLinkGenerator
+
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -42,20 +47,22 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
 
+    DefaultLinkGenerator grailsLinkGenerator
+
     @Override
     String getResourcePath() {
         ''
     }
 
-    void 'Get Atom feed when not logged in'() {
+    void 'F01 : Get Atom feed when not logged in'() {
         when:
         HttpResponse<String> xmlResponse = GET('feeds/all', STRING_ARG)
 
-        then: 'The response is OK with no entries'
-        verifyBaseAtomResponse(xmlResponse, false, 'localhost')
+        then: "The response is OK with no entries"
+        verifyBaseAtomResponse(xmlResponse, false, 'localhost', "http://localhost:$serverPort")
     }
 
-    void 'Get Atom feed when logged in as reader'() {
+    void 'F02 : Get Atom feed when logged in as reader'() {
         given:
         loginReader()
 
@@ -63,14 +70,14 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         HttpResponse<String> xmlResponse = GET('feeds/all', STRING_ARG)
 
         then:
-        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost')
+        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost', "http://localhost:$serverPort")
         feed.entry.size() == 3
-        verifyEntry(feed.entry.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet', "http://localhost:$serverPort", 'codeSets')
-        verifyEntry(feed.entry.find { it.title == 'Complex Test CodeSet 1.0.0' }, 'CodeSet', "http://localhost:$serverPort", 'codeSets')
-        verifyEntry(feed.entry.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel', "http://localhost:$serverPort", 'dataModels')
+        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', "http://localhost:$serverPort", 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', "http://localhost:$serverPort", 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
     }
 
-    void 'test links render when site url property set'() {
+    void 'F03 : Test links render when site url property set'() {
         given:
         loginAdmin()
         POST('admin/properties', [
@@ -78,34 +85,41 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
             value: 'https://www.mauro-data-mapper.com/cdw'
         ])
         verifyResponse CREATED, response
+        String sitePropertyId = responseBody().id
 
         when:
         HttpResponse<String> xmlResponse = GET('feeds/all', STRING_ARG)
 
         then:
-        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'www.mauro-data-mapper.com', '/cdw')
+        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'www.mauro-data-mapper.com', 'https://www.mauro-data-mapper.com/cdw', '/cdw')
 
         when:
-        def selfLink = feed.link.find { it.@rel == 'self' }
+        def selfLink = feed.link.find {it.@rel == 'self'}
 
         then:
         selfLink
         selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
 
         and:
-        verifyEntry(feed.entry.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets')
-        verifyEntry(feed.entry.find { it.title == 'Complex Test CodeSet 1.0.0' }, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets')
-        verifyEntry(feed.entry.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels')
+        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
+                    getDataModelExporters())
+
+        cleanup:
+        DELETE("admin/properties/$sitePropertyId", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        grailsLinkGenerator.setConfiguredServerBaseURL(null)
     }
 
     /**
      * Check that the response - which is expected to be XML as Atom, looks OK.
      */
-    private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String contextPath = '') {
+    private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String linkBaseUrl, String contextPath = '') {
         log.warn('XML \n{}', prettyPrintXml(xmlResponse.body()))
 
         //Use the jsonCapableResponse even though it is a string of XML
-        xmlResponse.status() == OK
+        assert xmlResponse.status() == OK
 
         //Slurp the response
         GPathResult result = new XmlSlurper().parseText(xmlResponse.body())
@@ -115,8 +129,13 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         assert result.id == "tag:$host,2021-01-27:$contextPath/api/feeds/all"
         assert result.author.name == 'Mauro Data Mapper'
         assert result.author.uri == 'http://localhost'
+        assert OffsetDateTime.parse(result.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
-        assert result.link.size() == 2
+        assert result.link.size() == 1
+        assert result.link.@rel == 'self'
+        assert result.link.@type == 'application/atom+xml'
+        assert result.link.@href == "$linkBaseUrl/api/feeds/all"
+        assert result.link.@title == 'Mauro Data Mapper - All Models'
 
         if (expectEntries) {
             assert result.entry.size() > 0
@@ -126,17 +145,32 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         result
     }
 
-    private void verifyEntry(def entry, String category, String linkBaseUrl, String modelEndpoint) {
+    private void verifyEntry(def entry, String category, String linkBaseUrl, String modelEndpoint, Map<String, String> exporters) {
         assert entry.id.text() ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-        assert entry.updated.text()
-        assert entry.published.text()
+        assert OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        assert OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert entry.category.@term == category
+
         assert entry.link.size() == 2
+        entry.link.each {it ->
+            assert it.@rel == 'alternate'
+            String contentType = it.@type
+            String exporterUrl = exporters.get(contentType)
+            assert it.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\/${exporterUrl}/
+        }
+    }
 
-        def selfLink = entry.link.find { it.@rel == 'self' }
-        assert selfLink.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+    private static Map<String, String> getDataModelExporters() {
+        [
+            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+        ]
+    }
 
-        def altLink = entry.link.find { it.@rel == 'alternate' }
-        assert altLink.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+    private static Map<String, String> getCodeSetExporters() {
+        [
+            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0'
+        ]
     }
 }

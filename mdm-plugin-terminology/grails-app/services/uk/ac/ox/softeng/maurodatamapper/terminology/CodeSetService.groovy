@@ -41,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -50,6 +51,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
@@ -58,6 +60,9 @@ class CodeSetService extends ModelService<CodeSet> {
     TermService termService
     CodeSetJsonImporterService codeSetJsonImporterService
     CodeSetJsonExporterService codeSetJsonExporterService
+
+    @Autowired(required = false)
+    Set<CodeSetExporterProviderService> exporterProviderServices
 
     @Override
     CodeSet get(Serializable id) {

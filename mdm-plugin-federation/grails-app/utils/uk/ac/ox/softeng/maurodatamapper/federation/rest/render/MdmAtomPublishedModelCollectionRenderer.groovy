@@ -24,11 +24,11 @@ import grails.rest.render.ContainerRenderer
  * @since 04/01/2021
  * @see grails.rest.render.atom.AtomCollectionRenderer
  */
-class MdmAtomModelCollectionRenderer extends MdmAtomModelRenderer implements ContainerRenderer {
+class MdmAtomPublishedModelCollectionRenderer extends MdmAtomPublishedModelRenderer implements ContainerRenderer {
 
     final Class componentType
 
-    MdmAtomModelCollectionRenderer(Class componentType) {
+    MdmAtomPublishedModelCollectionRenderer(Class componentType) {
         super(Collection)
         this.componentType = componentType
     }

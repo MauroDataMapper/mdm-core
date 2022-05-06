@@ -56,6 +56,16 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+xml'
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE + 1
+    }
+
+    @Override
     Boolean canExportMultipleDomains() {
         true
     }

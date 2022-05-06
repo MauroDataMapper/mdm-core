@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
+import grails.rest.Link
 import grails.util.Environment
 import groovy.util.logging.Slf4j
 import io.micronaut.http.client.HttpClientConfiguration
@@ -43,6 +44,8 @@ import java.time.format.DateTimeFormatter
 @Transactional
 @Slf4j
 class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
+
+    public static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
 
     @Autowired
     HttpClientConfiguration httpClientConfiguration
@@ -126,7 +129,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
         }
         if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
 
-        (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
+        (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
             new PublishedModel().tap {
                 modelId = Utils.toUuid(pm.modelId)
                 title = pm.title // for compatibility with remote catalogue versions prior to 4.12
@@ -138,6 +141,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
                 datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 author = pm.author
                 description = pm.description
+                if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
             }
         }.sort()
     }
