@@ -37,7 +37,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @Autowired
     PathService pathService
 
-    @Autowired
+    @Autowired(required = false)
     Set<SearchParamFilter> searchParamFilters
 
     abstract Set<Class<K>> getDomainsToSearch()
@@ -59,13 +59,15 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Closure additional = null
 
         int addtlClauseCount = 0
-        searchParamFilters.each { filter ->
-            if (filter.doesApply(searchParams)) {
-                addtlClauseCount++
-                if (additional) {
-                    additional <<= filter.getClosure(searchParams)
-                } else {
-                    additional = filter.getClosure(searchParams)
+        if (searchParamFilters) {
+            searchParamFilters.each {filter ->
+                if (filter.doesApply(searchParams)) {
+                    addtlClauseCount++
+                    if (additional) {
+                        additional <<= filter.getClosure(searchParams)
+                    } else {
+                        additional = filter.getClosure(searchParams)
+                    }
                 }
             }
         }

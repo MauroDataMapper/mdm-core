@@ -64,7 +64,9 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                    SearchParams searchParams, Map pagination = [:]) {
 
-        List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Model)
+        if (!modelServices) return new PaginatedHibernateSearchResult([], 0)
+        Class<Model>[] classes = modelServices.collect {it.domainClass as Class<SecurableResource>}.toArray() as Class<Model>[]
+        List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(classes)
         findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(readableModelIds, searchParams, false, pagination)
     }
 

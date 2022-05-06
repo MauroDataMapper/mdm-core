@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.term
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.HibernateSearchIndexParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
@@ -62,6 +64,7 @@ import static io.micronaut.http.HttpStatus.OK
 class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
 
     TerminologyService terminologyService
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     @Shared
     UUID terminologyId
@@ -89,6 +92,8 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
         simpleTerminologyId = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, testAuthority).id
 
         sessionFactory.currentSession.flush()
+
+        hibernateSearchIndexingService.rebuildHibernateSearchIndexes(new HibernateSearchIndexParameters())
     }
 
     @Transactional
@@ -356,7 +361,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     }
 
     void 'S01 : Test searching terms'() {
-
         when:
         GET("terminologies/${complexTerminologyId}/terms/search?searchTerm=1*", STRING_ARG, true)
 
