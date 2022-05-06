@@ -5,7 +5,7 @@ model {
 }
 json {
     sections tmpl.'/profileSection/profileSection'(profile.sections)
-    id profile.id
-    label profile.label
-    domainType profile.domainType
+    if (profile.id) id profile.id
+    if (profile.label) label profile.label
+    if (profile.domainType) domainType profile.domainType
 }

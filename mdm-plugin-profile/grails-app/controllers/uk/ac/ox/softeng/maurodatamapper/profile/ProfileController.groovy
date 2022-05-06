@@ -127,6 +127,17 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         respond profile: profileService.createProfile(profileProviderService, multiFacetAware), format: params.format
     }
 
+    def emptyProfile() {
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
+                                                                                                  params.profileVersion)
+        if (!profileProviderService) {
+            return notFound(ProfileProviderService, getProfileProviderServiceId(params))
+        }
+
+        respond profile: profileProviderService.getNewProfile(), format: params.format
+    }
+
+
     /**
      * The request must contain a collection of IDs of items which belong to the multi facet aware item, and a collection
      * of profile namespaces/names/version. The response returns all matching profiles for the requested items and profiles.

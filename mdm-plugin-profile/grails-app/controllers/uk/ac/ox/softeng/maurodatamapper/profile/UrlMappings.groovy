@@ -28,6 +28,8 @@ class UrlMappings {
 
                 group "/$profileNamespace/$profileName", {
 
+                    get '/'(controller: 'profile', action: 'emptyProfile')
+
                     // New URL replaces /api/profiles/namespace/name/customSearch
                     post '/search'(controller: 'profile', action: 'search')
                     // New URL replaces /api/dataModels/profile/namespace/name/version
