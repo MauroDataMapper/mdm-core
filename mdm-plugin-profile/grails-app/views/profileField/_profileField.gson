@@ -7,16 +7,7 @@ model {
 json {
     fieldName profileField.fieldName
     metadataPropertyName profileField.metadataPropertyName
-    description profileField.description
-    maxMultiplicity profileField.maxMultiplicity
-    minMultiplicity profileField.minMultiplicity
-    allowedValues profileField.allowedValues
-    regularExpression profileField.regularExpression
-    dataType profileField.dataType.label
-    derived profileField.derived
-    derivedFrom profileField.derivedFrom
-    uneditable profileField.uneditable
-    defaultValue profileField.defaultValue
-    editableAfterFinalisation profileField.editableAfterFinalisation
     currentValue profileField.currentValue ?: ''
+    dataType profileField.dataType.label
+    if (profileField.allowedValues) allowedValues profileField.allowedValues
 }

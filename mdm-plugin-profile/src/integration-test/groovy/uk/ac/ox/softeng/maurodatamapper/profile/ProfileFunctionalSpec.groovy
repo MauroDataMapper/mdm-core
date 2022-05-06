@@ -834,50 +834,35 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Dynamic Profile Elem (Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "description": null,
+          "currentValue": "abc",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": "abc"
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Mandatory)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "description": null,
+          "currentValue": "def",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": "def"
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Default Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "description": null,
+          "currentValue": "",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": ""
+          "derived": false
         }
       ]
     }
@@ -1160,50 +1145,35 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Dynamic Profile Elem (Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "description": null,
+          "currentValue": "abc",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": "abc"
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Mandatory)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "description": null,
+          "currentValue": "def",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": "def"
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Default Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "description": null,
+          "currentValue": "",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": ""
+          "derived": false
         }
       ]
     }
@@ -1909,51 +1879,39 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Metadata namespace",
           "metadataPropertyName": "metadataNamespace",
-          "description": "The namespace under which properties of this profile will be stored",
+          "currentValue": "functional.test.profile",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": "functional.test.profile"
+          "derived": false,
+          "description": "The namespace under which properties of this profile will be stored"
         },
         {
           "fieldName": "Applicable for domains",
           "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
-        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "currentValue": "DataModel",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": "DataModel"
+          "derived": false,
+           "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
+        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item."
         },
         {
           "fieldName": "Can be edited after finalisation",
           "metadataPropertyName": "editableAfterFinalisation",
-          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
+          "currentValue": "",
+          "dataType": "boolean",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "boolean",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
           "editableAfterFinalisation": true,
-          "currentValue": ""
+          "derived": false,
+          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false."
         }
       ]
     }

@@ -79,7 +79,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
 
     static search = {
         name searchable: 'yes'
-        path valueBinder: new PathBinder()
+        path binder: PathBinder
     }
 
     GroupRole() {
@@ -177,7 +177,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
         HibernateSearch.paginatedList(GroupRole, pagination) {
             should {
                 keyword 'id', groupRole.id.toString()
-                keyword 'path', groupRole.path.last()
+                keyword 'path', Path.from(groupRole.path.last())
             }
         }
     }
@@ -187,7 +187,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
             should {
                 keyword 'name', 'container_group_admin'
                 keyword 'id', topLevelFolderRole.id.toString()
-                keyword 'path', groupRole.path.last()
+                keyword 'path', Path.from(topLevelFolderRole.path.last())
 
             }
         }

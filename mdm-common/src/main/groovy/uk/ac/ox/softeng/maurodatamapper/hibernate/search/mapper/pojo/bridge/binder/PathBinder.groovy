@@ -17,25 +17,55 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder
 
-import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.PathBridge
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.PathPropertyBridge
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
+import org.hibernate.search.engine.backend.document.IndexFieldReference
+import org.hibernate.search.engine.backend.types.IndexFieldType
 import org.hibernate.search.engine.backend.types.Searchable
-import org.hibernate.search.mapper.pojo.bridge.binding.ValueBindingContext
-import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ValueBinder
+import org.hibernate.search.engine.backend.types.Sortable
+import org.hibernate.search.engine.backend.types.converter.ToDocumentFieldValueConverter
+import org.hibernate.search.engine.backend.types.converter.runtime.ToDocumentFieldValueConvertContext
+import org.hibernate.search.engine.spatial.GeoPoint
+import org.hibernate.search.mapper.pojo.bridge.binding.PropertyBindingContext
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.PropertyBinder
 
 /**
  * @since 06/01/2022
  */
-class PathBinder implements ValueBinder {
+class PathBinder implements PropertyBinder {
 
     @Override
-    void bind(ValueBindingContext<?> context) {
-        context.bridge(Path, PathBridge.instance,
-                       context.typeFactory()
-                           .asString()
-                           .searchable(Searchable.YES)
-                           .analyzer('pipe')
-        )
+    void bind(PropertyBindingContext context) {
+        context.dependencies()
+            .use('pathNodes')
+            .use('latitude')
+            .use('longitude')
+            .use('pathString')
+
+        IndexFieldType<String> mainFieldType = context.typeFactory()
+            .asString()
+            .searchable(Searchable.YES)
+            .analyzer('pipe')
+            .dslConverter(Path, PathToStringDocumentFieldValueConverter.instance)
+            .toIndexFieldType()
+        IndexFieldType<GeoPoint> sortFieldType = context.typeFactory()
+            .asGeoPoint()
+            .searchable(Searchable.YES)
+            .sortable(Sortable.YES)
+            .toIndexFieldType()
+
+        IndexFieldReference<String> mainField = context.indexSchemaElement().field('path', mainFieldType).toReference()
+        IndexFieldReference<GeoPoint> sortField = context.indexSchemaElement().field('path_geopoint', sortFieldType).toReference()
+
+        context.bridge(Path, new PathPropertyBridge(mainField, sortField))
+    }
+
+    @Singleton
+    static class PathToStringDocumentFieldValueConverter implements ToDocumentFieldValueConverter<Path, String> {
+        @Override
+        String convert(Path value, ToDocumentFieldValueConvertContext convertContext) {
+            value.toString()
+        }
     }
 }

@@ -28,26 +28,37 @@ class SearchController implements ResourcelessMdmController {
 
     SearchService mdmCoreSearchService
 
-    def search(SearchParams searchParams) {
+    def search() {
+
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors
             return
         }
 
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
-        params.sort = params.sort ?: searchParams.sort ?: 'label'
-        if (searchParams.order) {
-            params.order = searchParams.order
+        searchParams.crossValuesIntoParametersMap(params, 'label')
+
+        PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
+        respond results
+    }
+
+    def prefixLabelSearch() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
+
+        if (searchParams.hasErrors()) {
+            respond searchParams.errors
+            return
         }
 
-        PaginatedHibernateSearchResult<CatalogueItem> results =
-            mdmCoreSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager,
-                                                                  searchParams,
-                                                                  params)
+        searchParams.crossValuesIntoParametersMap(params, null)
 
+        CatalogueItem catalogueItem = mdmCoreSearchService.findCatalogueItem(params.catalogueItemDomainType, params.catalogueItemId)
+        if (!catalogueItem) return notFound(params.catalogueItemClass, params.catalogueItemId)
+
+        PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByHibernateSearchSortedByProximityToCatalogueItem(
+            catalogueItem,
+            currentUserSecurityPolicyManager, searchParams, params)
         respond results
     }
 }

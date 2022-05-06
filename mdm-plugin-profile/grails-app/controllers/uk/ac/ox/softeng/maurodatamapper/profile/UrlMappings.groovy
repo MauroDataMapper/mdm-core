@@ -28,6 +28,8 @@ class UrlMappings {
 
                 group "/$profileNamespace/$profileName", {
 
+                    get '/'(controller: 'profile', action: 'emptyProfile')
+
                     // New URL replaces /api/profiles/namespace/name/customSearch
                     post '/search'(controller: 'profile', action: 'search')
                     // New URL replaces /api/dataModels/profile/namespace/name/version
@@ -36,25 +38,37 @@ class UrlMappings {
                     // New URL replaces /api/dataModels/profile/values/namespace/name/version
                     get "/${multiFacetAwareItemDomainType}/values"(controller: 'profile', action: 'listValuesInProfile')
 
-                    // Provide multiple ways to obtain profile of a multiFacetAware
-                    get "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}"(controller: 'profile', action: 'show')
-                    post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'save')
-                    post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId/validate"(controller: 'profile', action: 'validate')
-                    delete "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'delete')
+                    group "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}", {
+                        // Provide multiple ways to obtain profile of a multiFacetAware
+                        get '/'(controller: 'profile', action: 'show')
+                        post '/'(controller: 'profile', action: 'save')
+                        post '/validate'(controller: 'profile', action: 'validate')
+                        delete '/'(controller: 'profile', action: 'delete')
+                        post '/search'(controller: 'profile', action: 'search')
+                    }
                 }
             }
 
             // Provide multiple ways to obtain profile of a multiFacetAware
             group "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}", {
-                get '/profiles/used'(controller: 'profile', action: 'usedProfiles')
-                get '/profiles/unused'(controller: 'profile', action: 'unusedProfiles')
-                get '/profiles/otherMetadata'(controller: 'profile', action: 'nonProfileMetadata')
-                get '/profiles/nonProfileMetadata'(controller: 'profile', action: 'nonProfileMetadata')
-                get "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'show')
-                delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'delete')
-                post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')
-                post "/profile/$profileNamespace/$profileName/validate"(controller: 'profile', action: 'validate')
-                post "/profile/$profileNamespace/$profileName/$profileVersion/validate"(controller: 'profile', action: 'validate')
+                group '/profiles', {
+                    get '/used'(controller: 'profile', action: 'usedProfiles')
+                    get '/unused'(controller: 'profile', action: 'unusedProfiles')
+                    get '/otherMetadata'(controller: 'profile', action: 'nonProfileMetadata')
+                    get '/nonProfileMetadata'(controller: 'profile', action: 'nonProfileMetadata')
+                    post "/$profileNamespace/$profileName/search"(controller: 'profile', action: 'search')
+                }
+
+                group '/profile', {
+                    group "/$profileNamespace/$profileName/$profileVersion?", {
+                        get '/'(controller: 'profile', action: 'show')
+                        delete '/'(controller: 'profile', action: 'delete')
+                        post '/'(controller: 'profile', action: 'save')
+                    }
+
+                    post "/$profileNamespace/$profileName/$profileVersion/validate"(controller: 'profile', action: 'validate')
+                    post "/$profileNamespace/$profileName/validate"(controller: 'profile', action: 'validate')
+                }
             }
 
             // Methods to retrieve and save many profiles for many multiFacetAware items belonging to a Model

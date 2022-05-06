@@ -20,24 +20,29 @@ package uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import groovy.util.logging.Slf4j
-import org.hibernate.search.mapper.pojo.bridge.ValueBridge
-import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeFromIndexedValueContext
-import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeToIndexedValueContext
+import org.hibernate.search.engine.backend.document.DocumentElement
+import org.hibernate.search.engine.backend.document.IndexFieldReference
+import org.hibernate.search.engine.spatial.GeoPoint
+import org.hibernate.search.mapper.pojo.bridge.PropertyBridge
+import org.hibernate.search.mapper.pojo.bridge.runtime.PropertyBridgeWriteContext
 
 /**
  * @since 13/09/2021
  */
 @Slf4j
-@Singleton
-class PathBridge implements ValueBridge<Path, String> {
+class PathPropertyBridge implements PropertyBridge<Path> {
 
-    @Override
-    String toIndexedValue(Path value, ValueBridgeToIndexedValueContext context) {
-        value.toString()
+    IndexFieldReference<String> mainField
+    IndexFieldReference<GeoPoint> sortField
+
+    PathPropertyBridge(IndexFieldReference<String> mainField, IndexFieldReference<GeoPoint> sortField) {
+        this.mainField = mainField
+        this.sortField = sortField
     }
 
     @Override
-    Path fromIndexedValue(String value, ValueBridgeFromIndexedValueContext context) {
-        Path.from(value)
+    void write(DocumentElement target, Path bridgedElement, PropertyBridgeWriteContext context) {
+        target.addValue(mainField, bridgedElement.toString())
+        target.addValue(sortField, bridgedElement.geoPoint)
     }
 }

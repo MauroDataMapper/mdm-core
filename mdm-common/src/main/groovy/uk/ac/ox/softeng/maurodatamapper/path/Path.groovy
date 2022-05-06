@@ -23,6 +23,10 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
+import org.hibernate.search.engine.spatial.GeoPoint
+
+import static org.apache.lucene.geo.GeoUtils.MAX_LAT_INCL
+import static org.apache.lucene.geo.GeoUtils.MAX_LON_INCL
 
 /**
  * @since 28/08/2020
@@ -133,7 +137,7 @@ class Path implements Serializable, Cloneable {
     }
 
     String toString(String modelIdentifierOverride = null) {
-        pathNodes.collect {it.toString(modelIdentifierOverride)}.join('|')
+        getPathString(modelIdentifierOverride)
     }
 
     Path clone() {
@@ -166,6 +170,31 @@ class Path implements Serializable, Cloneable {
 
     int hashCode() {
         (pathNodes != null ? pathNodes.hashCode() : 0)
+    }
+
+    double getLatitude() {
+        double lat = 0d
+        Path parent = getParent()
+        if (parent.isEmpty()) lat = last().getLatitudeValue()
+        else parent.pathNodes.eachWithIndex {pn, i ->
+            lat += pn.getLatitudeValue() * (i + 1)
+        }
+        convertToDegrees(lat, Integer.MAX_VALUE, MAX_LAT_INCL)
+    }
+
+    double getLongitude() {
+        double lon = 0d
+        Path parent = getParent()
+        if (!parent.isEmpty()) parent.pathNodes.eachWithIndex {pn, i -> lon += pn.getLongitudeValue() * (i + 1)}
+        convertToDegrees(lon, Integer.MAX_VALUE, MAX_LON_INCL)
+    }
+
+    GeoPoint getGeoPoint() {
+        GeoPoint.of(getLatitude(), getLongitude())
+    }
+
+    String getPathString(String modelIdentifierOverride = null) {
+        pathNodes.collect {it.toString(modelIdentifierOverride)}.join('|')
     }
 
     static Path from(String path) {
@@ -278,5 +307,9 @@ class Path implements Serializable, Cloneable {
         }
 
         Path.from(objectsInPath)
+    }
+
+    static double convertToDegrees(double val, double scale, double max) {
+        -max + ((val / scale) * (max * 2))
     }
 }

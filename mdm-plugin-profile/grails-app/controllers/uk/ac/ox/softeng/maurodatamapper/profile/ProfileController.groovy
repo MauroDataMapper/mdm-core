@@ -19,11 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
@@ -124,6 +126,17 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
         respond profile: profileService.createProfile(profileProviderService, multiFacetAware), format: params.format
     }
+
+    def emptyProfile() {
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
+                                                                                                  params.profileVersion)
+        if (!profileProviderService) {
+            return notFound(ProfileProviderService, getProfileProviderServiceId(params))
+        }
+
+        respond profile: profileProviderService.getNewProfile(), format: params.format
+    }
+
 
     /**
      * The request must contain a collection of IDs of items which belong to the multi facet aware item, and a collection
@@ -251,36 +264,34 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         respond allValuesMap
     }
 
-    def search(SearchParams searchParams) {
+    def search() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors
             return
         }
+        searchParams.crossValuesIntoParametersMap(params, 'label')
 
-        ProfileProviderService profileProviderService =
-            profileService.findProfileProviderService(params.profileNamespace, params.profileName,
-                                                      params.profileVersion) as ProfileProviderService
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
 
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        /*        if (!(profileProviderService instanceof DataModelProfileProviderService)) {
-                    throw new ApiNotYetImplementedException('PCXX', 'Non-DataModel Based searching in profiles')
-                }
-        */
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        searchParams.offset = 0
-        searchParams.max = null
-        params.offset = 0
-        params.max = null
+        PaginatedHibernateSearchResult<CatalogueItem> results
+        if (params.multiFacetAwareItemDomainType) {
 
-        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(
-            currentUserSecurityPolicyManager, profileProviderService, searchParams, params
-        )
+            MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
-        respond profileList: profileObjects
+            if (!multiFacetAware) {
+                return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+            }
+            results = mdmPluginProfileSearchService.findAllModelItemsByMultifacetAwareItemByHibernateSearch(multiFacetAware, searchParams, params)
+        } else {
+            results = mdmPluginProfileSearchService.findAllReadableCatalogueItemsByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
+        }
+        respond profileService.loadProfilesIntoCatalogueItems(profileProviderService, results)
     }
 
     protected String getProfileProviderServiceId(Map params) {

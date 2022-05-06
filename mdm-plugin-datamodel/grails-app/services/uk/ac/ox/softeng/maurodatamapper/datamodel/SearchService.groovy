@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
 import uk.ac.ox.softeng.maurodatamapper.core.search.CatalogueItemSearchDomainProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -29,7 +28,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
-import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
@@ -47,11 +45,6 @@ class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implem
     @Override
     Set<Class<ModelItem>> getDomainsToSearch() {
         (getSearchableCatalogueItemDomains() - [DataModel]) as HashSet<Class<ModelItem>>
-    }
-
-    @Override
-    Set<Class<SearchParamFilter>> getSearchParamFilters() {
-        super.getSearchParamFilters() + [DataModelTypeFilter] as HashSet<Class<SearchParamFilter>>
     }
 
     @Override

@@ -336,7 +336,9 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
                     @Override
                     SimilarityPair<ReferenceDataElement> apply(ReferenceDataElement dataElement, Float score) {
-                        dataElement.referenceDataType = proxyHandler.unwrapIfProxy(dataElement.referenceDataType)
+                        if (dataElement) {
+                            dataElement.referenceDataType = proxyHandler.unwrapIfProxy(dataElement.referenceDataType) as ReferenceDataType
+                        }
                         new SimilarityPair<ReferenceDataElement>(dataElement, score)
                     }
                 }, pf.entity(), pf.score())

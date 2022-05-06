@@ -35,7 +35,8 @@ class ProfileInterceptor extends FacetInterceptor {
 
     boolean before() {
         // Public or secured at controller as using listAll
-        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
+        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'listModelsInProfile', 'listValuesInProfile', 'emptyProfile']) return true
+        if (!params.containsKey('multiFacetAwareItemDomainType') && actionName == 'search') return true
         facetResourceChecks()
         checkActionAllowedOnFacet()
     }
@@ -58,7 +59,7 @@ class ProfileInterceptor extends FacetInterceptor {
         // Read only actions
         // ProfileController.getMany and ProfileController.validateMany must check that items requested
         // in the body of the request belong to the model that was requested
-        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'getMany', 'validateMany']) {
+        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'getMany', 'validateMany', 'search']) {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 

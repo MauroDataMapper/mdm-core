@@ -41,7 +41,7 @@ class ProfileField implements Validateable {
 
     static constraints = {
         fieldName blank: false
-        metadataPropertyName nullable: true, blank: false
+        metadataPropertyName blank: false
         description nullable: true, blank: false
         regularExpression nullable: true, blank: false
         derivedFrom nullable: true, blank: false
@@ -56,6 +56,7 @@ class ProfileField implements Validateable {
                 if (typeError) return ['typeMismatch', typeError, obj.fieldName, obj.metadataPropertyName]
             }
         }
+        allowedValues nullable: true
     }
 
     // Empty constructor used for deserialization from Json

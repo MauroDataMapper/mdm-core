@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfiledCatalogueItem
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: profiledCatalogueItem.catalogueItem]
+
+model {
+    ProfiledCatalogueItem profiledCatalogueItem
+}
+
+json {
+    profileFields tmpl.'/profileField/profileField'(profiledCatalogueItem.profile.getAllFields())
+
+}

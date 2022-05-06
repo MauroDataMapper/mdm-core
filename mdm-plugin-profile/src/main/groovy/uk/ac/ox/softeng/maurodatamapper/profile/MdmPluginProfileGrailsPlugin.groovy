@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileSpecificationDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.search.searchparamfilter.ProfileFilter
 
 import grails.plugins.Plugin
 
@@ -63,6 +64,7 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
     Closure doWithSpring() {
         { ->
             profileSpecificationDataTypeProvider ProfileSpecificationDataTypeProvider
+            profileFilter ProfileFilter
         }
     }
 }

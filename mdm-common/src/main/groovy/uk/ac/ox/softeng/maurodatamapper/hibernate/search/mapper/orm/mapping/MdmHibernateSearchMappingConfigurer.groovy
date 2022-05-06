@@ -19,8 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.orm.mapping
 
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.DomainClassBridge
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.OffsetDateTimeBridge
-import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.PathBridge
-import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.plugins.hibernate.search.mapper.orm.mapping.GrailsHibernateSearchMappingConfigurer
 import groovy.util.logging.Slf4j
@@ -39,7 +37,6 @@ class MdmHibernateSearchMappingConfigurer extends GrailsHibernateSearchMappingCo
         super.configure(context)
 
         log.info('Configuring Mauro HibernateSearch Mapping')
-        context.bridges().exactType(Path).valueBridge(PathBridge.instance)
         context.bridges().exactType(GormEntity).valueBridge(new DomainClassBridge())
         context.bridges().exactType(OffsetDateTime).valueBridge(new OffsetDateTimeBridge())
     }

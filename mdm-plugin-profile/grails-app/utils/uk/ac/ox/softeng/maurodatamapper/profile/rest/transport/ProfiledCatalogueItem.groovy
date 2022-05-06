@@ -15,21 +15,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
+package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
 
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 
-import grails.plugins.hibernate.search.HibernateSearchApi
+/**
+ * @since 19/04/2022
+ */
+class ProfiledCatalogueItem {
 
-class DomainTypeFilter implements SearchParamFilter {
-
-    boolean doesApply(SearchParams searchParams) {
-        searchParams.domainType
-    }
-
-    Closure getClosure(SearchParams searchParams) {
-        HibernateSearchApi.defineSearchQuery {
-            keyword 'domainType', searchParams.domainType
-        }
-    }
+    CatalogueItem catalogueItem
+    Profile profile
 }

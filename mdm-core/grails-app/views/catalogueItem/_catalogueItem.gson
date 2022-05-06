@@ -11,10 +11,11 @@ inherits template: '/catalogueItem/baseCatalogueItem', model: [catalogueItem: ca
 
 model {
     CatalogueItem catalogueItem
+    boolean includeDescription = true
 }
 
 json {
-    if (catalogueItem.description) description catalogueItem.description
+    if (includeDescription && catalogueItem.description) description catalogueItem.description
     if (catalogueItem.aliasesString) aliases catalogueItem.aliases
     //    if (catalogueItem.semanticLinks) {
     //        semanticLinks tmpl.'/semanticLink/semanticLink'('semanticLink', catalogueItem.semanticLinks)

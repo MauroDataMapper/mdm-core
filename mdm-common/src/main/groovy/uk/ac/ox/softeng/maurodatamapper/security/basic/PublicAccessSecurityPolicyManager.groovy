@@ -36,8 +36,8 @@ class PublicAccessSecurityPolicyManager extends AbstractBasicSecurityPolicyManag
     }
 
     @Override
-    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
-        new DetachedCriteria(securableResourceClass).id().list()
+    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource>... securableResourceClasses) {
+        securableResourceClasses.collectMany {securableResourceClass -> new DetachedCriteria(securableResourceClass).id().list()} as List<UUID>
     }
 
     @Override

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
 
-
 import java.time.OffsetDateTime
 import java.time.ZoneId
 

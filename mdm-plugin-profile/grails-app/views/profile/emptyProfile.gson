@@ -1,0 +1,24 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+
+import grails.plugin.json.view.template.JsonViewTemplate
+
+import java.beans.Introspector
+
+model {
+    Profile profile
+    String format = ''
+}
+
+def template = (JsonViewTemplate) templateEngine.resolveTemplate(profile.class, locale, format)
+
+// If we find a "full" template then use that otherwise use the standard grails template resolution whcih should find the "basic" template we've defined
+if (template) {
+    String modelName = Introspector.decapitalize(profile.class.simpleName)
+    Map<String, Object> modelMap = new HashMap<>()
+    modelMap[modelName] = profile
+
+    String templatePath = template.templatePath.find(/(.+?\/)_(.+?).gson/) {match, pp, tp -> "$pp$tp"}
+    json g.render(template: templatePath, model: modelMap)
+} else {
+    json g.render(profile)
+}

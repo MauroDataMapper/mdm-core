@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -28,12 +29,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareServi
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfiledCatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -349,5 +352,14 @@ class ProfileService implements DataBinder {
         }
 
         handledInstances
+    }
+
+    PaginatedHibernateSearchResult<ProfiledCatalogueItem> loadProfilesIntoCatalogueItems(ProfileProviderService profileProviderService,
+                                                                                         PaginatedHibernateSearchResult<CatalogueItem> paginatedHibernateSearchResult) {
+        List<CatalogueItem> catalogueItems = paginatedHibernateSearchResult.results
+        List<ProfiledCatalogueItem> profiledCatalogueItems = catalogueItems.collect {ci ->
+            new ProfiledCatalogueItem(catalogueItem: ci, profile: createProfile(profileProviderService, ci))
+        } as List<ProfiledCatalogueItem>
+        new PaginatedHibernateSearchResult<ProfiledCatalogueItem>(profiledCatalogueItems, paginatedHibernateSearchResult.count)
     }
 }

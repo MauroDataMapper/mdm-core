@@ -63,18 +63,22 @@ class HibernateSearch {
         String sortKey = pagination.sort
         String order = pagination.order ?: 'asc'
 
+        boolean distanceSort = sortKey && sortKey == 'distance'
+
         Closure paginatedClosure = HibernateSearchApi.defineSearchQuery {
             closure.setResolveStrategy(Closure.DELEGATE_FIRST)
             closure.setDelegate(delegate)
             closure.call()
 
-            if (max != null) maxResults max
-            if (offsetAmount != null) offset offsetAmount
-
-            if (sortKey) sort "${sortKey}_sort", order
+            if (!distanceSort && max != null) maxResults max
+            if (!distanceSort && offsetAmount != null) offset offsetAmount
+            if (!distanceSort && sortKey) sort "${sortKey}_sort", order
         }
 
         try {
+            if (distanceSort) {
+                return PaginatedHibernateSearchResult.paginateFullResultSet(clazz.search().list(paginatedClosure), pagination)
+            }
             return new PaginatedHibernateSearchResult<>(clazz.search().list(paginatedClosure), clazz.search().count(paginatedClosure))
         } catch (RuntimeException ex) {
             handleSearchException(clazz, closure, ex)

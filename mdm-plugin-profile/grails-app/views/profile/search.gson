@@ -1,12 +1,10 @@
-import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
-import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfiledCatalogueItem
 
 model {
-    Iterable<Profile> profileList
+    PaginatedHibernateSearchResult<ProfiledCatalogueItem> paginatedHibernateSearchResult
 }
-
 json {
-    count profileList instanceof InMemoryPagedResultList ? ((InMemoryPagedResultList) profileList).getTotalCount() : profileList?.size() ?: 0
-    items g.render(profileList ?: [])
+    count paginatedHibernateSearchResult.count
+    items tmpl.'/profiledCatalogueItem/profiledCatalogueItem'(paginatedHibernateSearchResult.results)
 }
-

@@ -15,23 +15,34 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
+package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.search.searchparamfilter
 
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.mapper.pojo.bridge.MetadataBridge
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 
 import grails.plugins.hibernate.search.HibernateSearchApi
 
-class DomainTypesFilter implements SearchParamFilter {
+/**
+ * @since 13/04/2022
+ */
+class ProfileFilter implements SearchParamFilter {
 
+    @Override
     boolean doesApply(SearchParams searchParams) {
-        searchParams.domainTypes
+        searchParams.containsKey('profileFields')
     }
 
+    @Override
     Closure getClosure(SearchParams searchParams) {
+        List<Map<String, String>> profileFields = searchParams.getValue('profileFields')
         HibernateSearchApi.defineSearchQuery {
-            should {
-                searchParams.domainTypes.each { dt ->
-                    keyword 'domainType', dt
+            must {
+                profileFields.each {field ->
+                    String namespace = field.metadataNamespace
+                    String key = field.metadataPropertyName
+                    String value = field.filterTerm
+                    phrase(MetadataBridge.makeSafeFieldName("${namespace}|${key}"), value)
                 }
             }
         }
