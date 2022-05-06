@@ -2299,6 +2299,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     void 'SUBSET01 : test subsetting of Complex Data Model'() {
         def source = [:]
         def target = [:]
+        def target2 = [:]
 
         given:
         source.dataModelId = getComplexDataModelId()
@@ -2308,6 +2309,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         POST(getSavePath(), ['label': 'Target of Subset'], MAP_ARG, true)
         verifyResponse CREATED, response
         target.dataModelId = response.body().id
+        POST(getSavePath(), ['label': 'Second Target of Subset'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        target2.dataModelId = response.body().id
 
         and:
         loginAdmin()
@@ -2414,6 +2418,30 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         response.body().intersects.size() == 1
         response.body().intersects.contains(source.contentClass.ele1.id)
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains one intersection'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 1
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+
+
         /**
          * Subset delete DataElement 'ele1' which belongs to the 'content' Data Class. This should:
          * 1. Remove ele1 Data Element from targetDataModel
@@ -2445,6 +2473,30 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then: 'The response is OK with no results'
         verifyResponse OK, response
         response.body().intersects.size() == 0
+
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 0
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+
 
         /**
          * Subset delete DataElement 'ele1' (again) and also 'element2', and 'childde' which belongs to the parent | child Data Class.
@@ -2512,6 +2564,59 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         response.body().intersects.contains(source.contentClass.element2.id)
         response.body().intersects.contains(source.parentClass.childClass.grandchild.id)
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains three intersections'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 3
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+
+        when: 'subset ele1, element2 and child onto target2'
+        PUT("/${source.dataModelId}/subset/${target2.dataModelId}", [
+            'additions': [
+                source.contentClass.ele1.id,
+                source.contentClass.element2.id,
+                source.parentClass.childClass.grandchild.id
+            ],
+            'deletions': []
+        ])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains three intersections'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 3
+
+        and: 'The result for target2 now has intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 3
+
+
         when: 'Delete the grandchild from the subset'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
             'additions': [],
@@ -2531,6 +2636,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanup:
         loginAdmin()
         DELETE("/${target.dataModelId}?permanent=true")
+        verifyResponse NO_CONTENT, response
+        DELETE("/${target2.dataModelId}?permanent=true")
         verifyResponse NO_CONTENT, response
         DELETE("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements/${source.parentClass.childClass.grandchild.id}")
         verifyResponse NO_CONTENT, response

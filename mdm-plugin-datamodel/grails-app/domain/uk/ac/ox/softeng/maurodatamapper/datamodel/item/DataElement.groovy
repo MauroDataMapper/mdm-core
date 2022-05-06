@@ -254,6 +254,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         new DetachedCriteria<DataElement>(DataElement).in('dataClass', DataClass.byDataModelId(dataModelId).id())
     }
 
+    static DetachedCriteria<DataElement> byDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        byDataModelId(dataModelId).eq('id', id)
+    }
+
     static DetachedCriteria<DataElement> byDataModelIdAndLabelIlike(Serializable dataModelId, String labelSearch) {
         byDataModelId(dataModelId).ilike('label', "%${labelSearch}%")
     }

@@ -59,6 +59,7 @@ class UrlMappings {
 
                 put "/subset/$otherDataModelId"(controller: 'dataModel', action: 'subset')
                 get "/intersects/$otherDataModelId"(controller: 'dataModel', action: 'intersects')
+                post '/intersectsMany'(controller: 'dataModel', action: 'intersectsMany')
 
                 get '/hierarchy'(controller: 'dataModel', action: 'hierarchy')
 

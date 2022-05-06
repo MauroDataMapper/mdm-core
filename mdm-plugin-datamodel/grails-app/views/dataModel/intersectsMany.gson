@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.SourceTargetIntersects
+
+model {
+    Collection<SourceTargetIntersects> intersectionMany
+}
+
+json {
+    count intersectionMany ? intersectionMany.size() : 0
+    items tmpl.sourceTargetIntersects(intersectionMany ?: [])
+}

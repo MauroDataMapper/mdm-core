@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Intersects
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
@@ -219,5 +220,11 @@ class DataModelController extends ModelController<DataModel> {
         respond(intersection: dataModelService.intersects(sourceModel, targetModel))
     }
 
+    def intersectsMany(Intersects intersects) {
 
+        DataModel sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
+
+        respond(intersectionMany: dataModelService.intersectsMany(currentUserSecurityPolicyManager, sourceModel, intersects))
+    }
 }
