@@ -124,6 +124,7 @@
 | DELETE | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id} | delete |
 | PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id} | update |
 | GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id} | show |
+| POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/search | prefixLabelSearch |
 | GET    | /api/catalogueItems/search | search |
 | POST   | /api/catalogueItems/search | search |
 | PUT    | /api/${containerDomainType}/${containerId}/semanticLinks/${semanticLinkId}/confirm | confirm |

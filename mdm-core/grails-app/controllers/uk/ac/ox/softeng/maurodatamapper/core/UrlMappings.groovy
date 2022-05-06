@@ -176,7 +176,7 @@ class UrlMappings {
                     '/representations'(resources: 'ruleRepresentation', excludes: DEFAULT_EXCLUDES)
                 }
 
-                '/search'(controller: 'search', action: 'prefixLabelSearch')
+                post '/search'(controller: 'search', action: 'prefixLabelSearch')
             }
 
             /*

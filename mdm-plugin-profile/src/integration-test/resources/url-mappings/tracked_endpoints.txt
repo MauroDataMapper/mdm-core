@@ -1,5 +1,6 @@
 | GET    | /api/profiles/providers/dynamic | dynamicProfileProviders |
 | GET    | /api/profiles/providers | profileProviders |
+| GET    | /api/profiles/${profileNamespace}/${profileName} | emptyProfile |
 | POST   | /api/profiles/${profileNamespace}/${profileName}/search | search |
 | GET    | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/values | listValuesInProfile |
 | POST   | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/validate | validate |
@@ -7,6 +8,7 @@
 | DELETE | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId} | delete |
 | POST   | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId} | save |
 | GET    | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId} | show |
+| POST   | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/search | search |
 | POST   | /api/${modelDomainType}/${modelId}/profile/saveMany | saveMany |
 | POST   | /api/${modelDomainType}/${modelId}/profile/validateMany | validateMany |
 | POST   | /api/${modelDomainType}/${modelId}/profile/getMany | getMany |
@@ -19,3 +21,4 @@
 | GET    | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/${profileVersion}? | show |
 | POST   | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/validate | validate |
 | POST   | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/${profileVersion}/validate | validate |
+| POST   | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profiles/${profileNamespace}/${profileName}/search | search |

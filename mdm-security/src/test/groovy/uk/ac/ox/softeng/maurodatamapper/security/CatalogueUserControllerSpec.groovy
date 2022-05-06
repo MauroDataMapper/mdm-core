@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.ChangePassword
@@ -522,66 +521,6 @@ json {
                            '{"total":1, "errors": [{"message": "Property [emailAddress] of class ' +
                            '[class uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser] with value [reader@test.com] must be unique"}]}'
     }
-
-    void 'test search with invalid instance'() {
-        given:
-        request.method = 'POST'
-        SearchParams search = new SearchParams(limit: 10, offset: 10, searchTerm: '')
-        controller.catalogueUserService = Mock(CatalogueUserService) {
-            0 * findAllWhereAnyMatchToTerm(_, _)
-        }
-
-        when:
-        controller.search(search)
-
-        then:
-        verifyJsonResponse UNPROCESSABLE_ENTITY, '{"total": 1,' +
-                                                 '"errors": [{"message": "Property [searchTerm] of class [class ' +
-                                                 'uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams] cannot be blank"}]}'
-    }
-
-    void 'test search with valid instance'() {
-        given:
-        controller.catalogueUserService = Mock(CatalogueUserService) {
-            1 * findAllWhereAnyMatchToTerm(_, _) >> [reader]
-        }
-
-        when:
-        request.method = 'POST'
-        controller.search(new SearchParams(searchTerm: 'reader'))
-
-        then:
-        verifyJsonResponse OK, '''{
-  "count": 1,
-  "items": [
-    {
-      "firstName": "reader",
-      "lastName": "User",
-      "emailAddress": "reader@test.com",
-      "needsToResetPassword": true,
-      "createdBy": "unit-test@test.com",
-      "pending": false,
-      "disabled": false,
-      "id": "${json-unit.matches:id}"
-    }
-  ]
-}'''
-    }
-
-    void 'test search with valid instance but no results'() {
-        given:
-        controller.catalogueUserService = Mock(CatalogueUserService) {
-            1 * findAllWhereAnyMatchToTerm(_, _) >> []
-        }
-
-        when:
-        request.method = 'POST'
-        controller.search(new SearchParams(searchTerm: 'editor'))
-
-        then:
-        verifyJsonResponse OK, '{"count":0, "items": []}'
-    }
-
 
     void 'test pending returns the correct response'() {
 
