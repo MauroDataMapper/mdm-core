@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamf
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 
 /**
- * Implementing classes should also use the {@link org.springframework.stereotype.Component} annotation to ensure the filter is wired into the search service.
+ * Implementing classes should be declared in the GrailsPlugin doWithSpring to ensure they are wired into the context
  */
 interface SearchParamFilter {
 

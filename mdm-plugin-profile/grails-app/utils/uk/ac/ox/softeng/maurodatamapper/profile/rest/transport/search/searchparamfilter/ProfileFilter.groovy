@@ -22,12 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 
 import grails.plugins.hibernate.search.HibernateSearchApi
-import org.springframework.stereotype.Component
 
 /**
  * @since 13/04/2022
  */
-@Component
 class ProfileFilter implements SearchParamFilter {
 
     @Override

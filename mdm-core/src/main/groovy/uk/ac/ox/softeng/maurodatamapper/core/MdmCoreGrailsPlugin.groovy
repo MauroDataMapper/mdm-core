@@ -38,6 +38,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngin
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyRenderer
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifierFilterFilter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifiersFilter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.CreatedAfterFilter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.CreatedBeforeFilter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedAfterFilter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedBeforeFilter
 import uk.ac.ox.softeng.maurodatamapper.core.security.basic.DelegatingSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.orm.mapping.MdmHibernateSearchMappingConfigurer
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
@@ -193,6 +199,16 @@ This is basically the backend API.
             semanticLinkAwareMappingContext SemanticLinkAwareMappingContext
             versionLinkAwareMappingContext VersionLinkAwareMappingContext
             catalogueItemMappingContext CatalogueItemMappingContext
+
+            /*
+             * Define the SearchParamFilter beans
+             */
+            classifierFilterFilter ClassifierFilterFilter
+            classifiersFilter ClassifiersFilter
+            createdAfterFilter CreatedAfterFilter
+            createdBeforeFilter CreatedBeforeFilter
+            updatedAfterFilter UpdatedAfterFilter
+            updatedBeforeFilter UpdatedBeforeFilter
 
             /*
              * Define custom data binding beans

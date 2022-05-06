@@ -20,9 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamf
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 
 import grails.plugins.hibernate.search.HibernateSearchApi
-import org.springframework.stereotype.Component
 
-@Component
 class ClassifierFilterFilter implements SearchParamFilter {
 
     boolean doesApply(SearchParams searchParams) {
