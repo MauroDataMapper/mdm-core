@@ -45,7 +45,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
 
     @Override
     String getProducesContentType() {
-        'application/mdm+xml'
+        'application/mauro.referencedatamodel+xml'
     }
 
     @Override

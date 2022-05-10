@@ -101,14 +101,14 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())
 
-        subscribedModelVersion1 = new SubscribedModel(subscribedModelId: Utils.toUuid('c8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
+        subscribedModelVersion1 = new SubscribedModel(subscribedModelId: 'c8023de6-5329-4b8b-8a1b-27c2abeaffcd',
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
                                                       createdBy: StandardEmailAddress.ADMIN,
                                                       subscribedModelType: getModelType())
         checkAndSave(subscribedModelVersion1)
 
-        subscribedModelVersion2 = new SubscribedModel(subscribedModelId: Utils.toUuid('d8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
+        subscribedModelVersion2 = new SubscribedModel(subscribedModelId: 'd8023de6-5329-4b8b-8a1b-27c2abeaffcd',
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
                                                       createdBy: editor.emailAddress,

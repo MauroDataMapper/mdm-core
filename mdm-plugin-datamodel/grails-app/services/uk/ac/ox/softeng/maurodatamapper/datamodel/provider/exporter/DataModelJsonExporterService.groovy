@@ -54,7 +54,7 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
 
     @Override
     String getProducesContentType() {
-        'application/mdm+json'
+        'application/mauro.datamodel+json'
     }
 
     @Override

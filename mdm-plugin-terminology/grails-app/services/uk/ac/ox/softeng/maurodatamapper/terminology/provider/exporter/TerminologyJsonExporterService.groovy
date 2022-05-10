@@ -54,7 +54,7 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
 
     @Override
     String getProducesContentType() {
-        'application/mdm+json'
+        'application/mauro.terminology+json'
     }
 
     @Override

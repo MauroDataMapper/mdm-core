@@ -57,7 +57,7 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
 
     @Override
     String getProducesContentType() {
-        'application/mdm+json'
+        'application/mauro.folder+json'
     }
 
     @Override

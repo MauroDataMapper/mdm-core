@@ -41,6 +41,11 @@ class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderServic
     }
 
     @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.toLowerCase() == 'application/mauro.dataflow+json'
+    }
+
+    @Override
     DataFlow importDataFlow(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')

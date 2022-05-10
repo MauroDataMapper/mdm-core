@@ -57,7 +57,7 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
 
     @Override
     String getProducesContentType() {
-        'application/mdm+xml'
+        'application/mauro.terminology+xml'
     }
 
     @Override

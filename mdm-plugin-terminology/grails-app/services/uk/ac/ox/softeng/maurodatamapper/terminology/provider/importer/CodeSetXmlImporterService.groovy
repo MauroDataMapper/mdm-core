@@ -50,6 +50,11 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
     }
 
     @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.toLowerCase() == 'application/mauro.codeset+xml'
+    }
+
+    @Override
     CodeSet importCodeSet(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')

@@ -38,13 +38,9 @@ import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.lang3.reflect.FieldUtils
-<<<<<<< HEAD
 import org.grails.datastore.gorm.GormValidateable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
-=======
-import org.springframework.beans.factory.annotation.Autowired
->>>>>>> 859a0d39e (Add SubscribedCatalogueConverters for JSON and Atom subscribed catalogue WIP)
 import org.springframework.validation.Errors
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
@@ -220,4 +216,11 @@ class ImporterService implements DataBinder {
         importerProviderServiceParameters
     }
 
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServicesByContentType(String contentType) {
+        importerProviderServices.findAll {it.handlesContentType(contentType)}.sort()
+    }
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(String contentType) {
+        importerProviderServices.findAll {it.handlesContentType(contentType)}.sort().first()
+    }
 }

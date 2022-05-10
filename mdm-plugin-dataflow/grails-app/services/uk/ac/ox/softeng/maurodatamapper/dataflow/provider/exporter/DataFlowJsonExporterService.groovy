@@ -48,7 +48,7 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
 
     @Override
     String getProducesContentType() {
-        'application/mdm+json'
+        'application/mauro.dataflow+json'
     }
 
     @Override

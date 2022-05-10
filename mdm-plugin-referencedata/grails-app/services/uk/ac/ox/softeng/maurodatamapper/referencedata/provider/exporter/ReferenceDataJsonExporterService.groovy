@@ -45,7 +45,7 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
 
     @Override
     String getProducesContentType() {
-        'application/mdm+json'
+        'application/mauro.referencedatamodel+json'
     }
 
     @Override

@@ -45,7 +45,7 @@ import java.time.format.DateTimeFormatter
 
 @Transactional
 @Slf4j
-class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
+class SubscribedCatalogueService implements AnonymisableService {
 
     @Autowired
     Set<SubscribedCatalogueConverter> subscribedCatalogueConverters
@@ -82,7 +82,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
-            def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModels(subscribedCatalogue, true)
+            def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModelsWithAuthority(subscribedCatalogue)
 
             if (!subscribedAuthority.label || publishedModels == null) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
@@ -127,12 +127,22 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      * @return List<PublishedModel> The list of published models returned by the catalogue
      *
      */
-    List listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
-        FederationClient federationClient = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
+    List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getPublishedModels(client, subscribedCatalogue)
+        }
+    }
 
-        SubscribedCatalogueConverter subscribedCatalogueConverter = getConverterForSubscribedCatalogue(subscribedCatalogue)
+    Tuple2<Authority, List<PublishedModel>> listPublishedModelsWithAuthority(SubscribedCatalogue subscribedCatalogue) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getAuthorityAndPublishedModels(client, subscribedCatalogue)
+        }
+    }
 
-        subscribedCatalogueConverter.getPublishedModels(federationClient, subscribedCatalogue)
+    List<PublishedModel> getAuthority(SubscribedCatalogue subscribedCatalogue) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getAuthority(client, subscribedCatalogue)
+        }
     }
 
     /*List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
@@ -157,10 +167,16 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
         }
     }
 
-    String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
+    /*String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
             client.getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
                                            resourceId, exporterInfo)
+        }
+    }*/
+
+    byte[] getBytesResourceExport(SubscribedCatalogue subscribedCatalogue, String resourceUrl) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getBytesResourceExport(subscribedCatalogue.apiKey, resourceUrl)
         }
     }
 

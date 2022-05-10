@@ -57,7 +57,7 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
 
     @Override
     String getProducesContentType() {
-        'application/mdm+xml'
+        'application/mauro.codeset+xml'
     }
 
     @Override

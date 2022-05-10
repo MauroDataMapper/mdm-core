@@ -21,20 +21,16 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
 
     @Override
     Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
-        GPathResult subscribedCatalogueModelsFeed = federationClient.withCloseable {client ->
-            client.getSubscribedCatalogueModelsFromAtomFeed(subscribedCatalogue.apiKey)
-        }
+        GPathResult subscribedCatalogueModelsFeed = federationClient.getSubscribedCatalogueModelsFromAtomFeed(subscribedCatalogue.apiKey)
 
         Authority subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name, url: subscribedCatalogueModelsFeed.author.uri)
 
         List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {entry ->
             new PublishedModel().tap {
-                modelId = Utils.toUuid(extractUuidFromUrn(entry.id.text()))
                 title = entry.title
-                // modelType = entry.category.@term
-                lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                author = entry.author.name
+                if (entry.updated.text()) lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                if (entry.published.text()) datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                author = entry.author.name ?: subscribedCatalogueModelsFeed.author.name
                 description = entry.summary
                 links = entry.link.collect {link ->
                     new Link(LINK_RELATIONSHIP_ALTERNATE, link.@href.text()).tap {contentType = link.@type}
@@ -43,12 +39,5 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
         }
 
         return new Tuple2(subscribedAuthority, publishedModels)
-    }
-
-    private static String extractUuidFromUrn(String url) {
-        final String separator = ':'
-        int lastPos = url.lastIndexOf(separator)
-
-        return url.substring(lastPos + 1)
     }
 }

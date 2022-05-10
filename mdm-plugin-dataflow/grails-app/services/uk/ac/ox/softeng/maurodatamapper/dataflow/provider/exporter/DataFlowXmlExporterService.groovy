@@ -48,7 +48,7 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
 
     @Override
     String getProducesContentType() {
-        'application/mdm+xml'
+        'application/mauro.dataflow+xml'
     }
 
     @Override

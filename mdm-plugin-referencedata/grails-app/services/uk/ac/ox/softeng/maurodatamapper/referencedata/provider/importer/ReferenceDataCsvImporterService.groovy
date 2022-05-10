@@ -61,6 +61,11 @@ class ReferenceDataCsvImporterService extends ReferenceDataModelImporterProvider
     }
 
     @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.toLowerCase() == 'application/mauro.referencedatamodel+csv'
+    }
+
+    @Override
     List<ReferenceDataModel> importModels(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params) {
         throw new ApiBadRequestException('FBIP04', "${getName()} cannot import multiple Reference Data Models")
     }

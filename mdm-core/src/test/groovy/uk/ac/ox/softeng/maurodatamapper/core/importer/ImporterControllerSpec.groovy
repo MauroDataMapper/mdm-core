@@ -230,5 +230,10 @@ otherwise you could get an error.''',
         String getVersion() {
             '1.0'
         }
+
+        @Override
+        Boolean handlesContentType(String contentType) {
+            contentType.toLowerCase() == 'application/mauro.test'
+        }
     }
 }

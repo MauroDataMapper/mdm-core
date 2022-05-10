@@ -54,7 +54,7 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
 
     @Override
     String getProducesContentType() {
-        'application/mdm+json'
+        'application/mauro.codeset+json'
     }
 
     @Override

@@ -104,7 +104,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(
                 subscribedModel,
                 currentUser,
-                subscribedModel.subscribedModelId.toString())
+                subscribedModel.subscribedModelId)
         }
         subscribedModel
     }

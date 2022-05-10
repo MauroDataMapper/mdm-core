@@ -60,6 +60,9 @@ class FederationClient implements Closeable, XmlImportMapping {
     private HttpClient client
     private String hostUrl
     private String contextPath
+    private HttpClientConfiguration httpClientConfiguration
+    private NettyClientSslBuilder nettyClientSslBuilder
+    private MediaTypeCodecRegistry mediaTypeCodecRegistry
 
     FederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
         this(subscribedCatalogue,
@@ -86,20 +89,22 @@ class FederationClient implements Closeable, XmlImportMapping {
                              ThreadFactory threadFactory,
                              NettyClientSslBuilder nettyClientSslBuilder,
                              MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+        this.httpClientConfiguration = httpClientConfiguration
+        this.nettyClientSslBuilder = nettyClientSslBuilder
+        this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
+
         hostUrl = subscribedCatalogue.url
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
         if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
-            if (hostUri.path && !hostUri.path.endsWith('api')) {
-                String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
-                this.contextPath = "${path}api"
-            } else {
-                this.contextPath = 'api'
-            }
+            String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
+            if (!path.endsWith('/api/')) path = path + '/api/'
+            this.contextPath = path
         } else {
             this.contextPath = hostUri.path
         }
+
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL().toURI()),
                                        httpClientConfiguration,
                                        this.contextPath,
@@ -148,6 +153,10 @@ class FederationClient implements Closeable, XmlImportMapping {
         )
     }
 
+    byte[] getBytesResourceExport(UUID apiKey, String resourceUrl) {
+        retrieveBytesFromClient(UriBuilder.of(resourceUrl), apiKey)
+    }
+
     private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         String body = retrieveStringFromClient(uriBuilder, apiKey, params)
         try {
@@ -194,6 +203,17 @@ class FederationClient implements Closeable, XmlImportMapping {
         }
     }
 
+    private byte[] retrieveBytesFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+        try {
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.of(byte[])) as byte[]
+        }
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
+        }
+    }
+
     private static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
         if (ex instanceof HttpClientResponseException) {
             if (ex.status == HttpStatus.NOT_FOUND) {
@@ -210,7 +230,7 @@ class FederationClient implements Closeable, XmlImportMapping {
     }
 
     private String getFullUrl(UriBuilder uriBuilder, Map params) {
-        String path = uriBuilder.build().toString()
-        UriBuilder.of(hostUrl).path(contextPath).path(path).expand(params).toString()
+        String path = uriBuilder.expand(params).toString()
+        hostUrl.toURI().resolve(UriBuilder.of(contextPath).path(path).build()).toString()
     }
 }

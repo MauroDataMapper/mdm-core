@@ -45,6 +45,11 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
     }
 
     @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.toLowerCase() == 'application/mauro.datamodel+json'
+    }
+
+    @Override
     DataModel importDataModel(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')

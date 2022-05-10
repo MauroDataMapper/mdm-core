@@ -50,6 +50,11 @@ class ReferenceDataXmlImporterService
     }
 
     @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.toLowerCase() == 'application/mauro.referencedatamodel+xml'
+    }
+
+    @Override
     ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
