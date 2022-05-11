@@ -39,22 +39,22 @@ abstract class DataFlowExporterProviderService extends ExporterProviderService {
     @Autowired
     DataFlowService dataFlowService
 
-    abstract ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow) throws ApiException
+    abstract ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow, Map<String, Object> parameters) throws ApiException
 
-    abstract ByteArrayOutputStream exportDataFlows(User currentUser, List<DataFlow> dataFlows) throws ApiException
+    abstract ByteArrayOutputStream exportDataFlows(User currentUser, List<DataFlow> dataFlows, Map<String, Object> parameters) throws ApiException
 
     @Override
-    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
         DataFlow dataFlow = dataFlowService.get(domainId)
         if (!dataFlow) {
             log.error('Cannot find model id [{}] to export', domainId)
             throw new ApiInternalException('DFEP01', "Cannot find model id [${domainId}] to export")
         }
-        exportDataFlow(currentUser, dataFlow)
+        exportDataFlow(currentUser, dataFlow, parameters)
     }
 
     @Override
-    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
         List<DataFlow> dataFlows = []
         List<UUID> cannotExport = []
         domainIds.each {
@@ -64,7 +64,7 @@ abstract class DataFlowExporterProviderService extends ExporterProviderService {
             } else dataFlows.add dataFlow
         }
         log.warn('Cannot find model ids [{}] to export', cannotExport)
-        exportDataFlows(currentUser, dataFlows)
+        exportDataFlows(currentUser, dataFlows, parameters)
     }
 
     @Override

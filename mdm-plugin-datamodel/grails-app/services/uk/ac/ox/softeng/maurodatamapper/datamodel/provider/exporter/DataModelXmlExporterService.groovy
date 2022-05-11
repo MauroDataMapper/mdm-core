@@ -71,13 +71,13 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
-    ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
+    ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
         exportModel(new ExportModel(dataModel, 'dataModel', version, '4.1', 'gml', exportMetadata), fileType)
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
+    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
         exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.1', 'gml', exportMetadata), fileType)
     }

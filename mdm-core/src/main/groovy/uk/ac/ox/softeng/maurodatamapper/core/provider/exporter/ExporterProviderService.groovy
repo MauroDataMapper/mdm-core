@@ -32,10 +32,19 @@ import groovy.util.logging.Slf4j
 @CompileStatic
 abstract class ExporterProviderService extends MauroDataMapperService {
 
-    abstract ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException
+    @Deprecated
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
+        exportDomain(currentUser, domainId, [:])
+    }
 
-    abstract ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds)
-        throws ApiException
+    @Deprecated
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
+        exportDomains(currentUser, domainIds, [:])
+    }
+
+    abstract ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException
+
+    abstract ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException
 
     abstract Boolean canExportMultipleDomains()
 

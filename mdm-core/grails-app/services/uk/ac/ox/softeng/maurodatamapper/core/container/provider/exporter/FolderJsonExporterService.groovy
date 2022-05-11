@@ -71,13 +71,13 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
-    ByteArrayOutputStream exportFolder(User currentUser, Folder folder) throws ApiException {
+    ByteArrayOutputStream exportFolder(User currentUser, Folder folder, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
         exportModel(new ExportModel(folder, 'folder', version, exportMetadata), fileType)
     }
 
     @Override
-    ByteArrayOutputStream exportFolders(User currentUser, List<Folder> folders) throws ApiException {
+    ByteArrayOutputStream exportFolders(User currentUser, List<Folder> folders, Map<String, Object> parameters) throws ApiException {
         throw new ApiBadRequestException('FBIP04', "${name} cannot export multiple Folders")
     }
 }

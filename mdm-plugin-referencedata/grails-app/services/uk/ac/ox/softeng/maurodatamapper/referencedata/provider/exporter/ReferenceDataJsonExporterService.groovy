@@ -64,13 +64,13 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     }
 
     @Override
-    ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException {
+    ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
         exportModel new ExportModel(referenceDataModel, 'referenceDataModel', version, exportMetadata), fileType
     }
 
     @Override
-    ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels) throws ApiException {
+    ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels, Map<String, Object> parameters) throws ApiException {
         throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple ReferenceDataModels")
     }
 }

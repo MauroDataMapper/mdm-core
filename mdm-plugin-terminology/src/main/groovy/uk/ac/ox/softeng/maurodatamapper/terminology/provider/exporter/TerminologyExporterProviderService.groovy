@@ -38,22 +38,22 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
     @Autowired
     TerminologyService terminologyService
 
-    abstract ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException
+    abstract ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology, Map<String, Object> parameters) throws ApiException
 
-    abstract ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException
+    abstract ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies, Map<String, Object> parameters) throws ApiException
 
     @Override
-    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
         Terminology terminology = terminologyService.get(domainId)
         if (!terminology) {
             log.error('Cannot find terminology id [{}] to export', domainId)
             throw new ApiInternalException('TEEP01', "Cannot find terminology id [${domainId}] to export")
         }
-        exportTerminology(currentUser, terminology)
+        exportTerminology(currentUser, terminology, parameters)
     }
 
     @Override
-    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
         List<Terminology> terminologies = []
         List<UUID> cannotExport = []
         domainIds?.unique()?.each {
@@ -63,7 +63,7 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
         }
         if (!terminologies) throw new ApiBadRequestException('TEEP01', "Cannot find Terminology IDs [${cannotExport}] to export")
         if (cannotExport) log.warn('Cannot find Terminology IDs [{}] to export', cannotExport)
-        exportTerminologies(currentUser, terminologies)
+        exportTerminologies(currentUser, terminologies, parameters)
     }
 
     @Override

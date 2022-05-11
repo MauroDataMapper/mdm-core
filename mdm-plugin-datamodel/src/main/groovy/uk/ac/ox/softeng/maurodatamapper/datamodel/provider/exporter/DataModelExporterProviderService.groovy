@@ -40,22 +40,22 @@ abstract class DataModelExporterProviderService extends ExporterProviderService 
     @Autowired
     DataModelService dataModelService
 
-    abstract ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException
+    abstract ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException
 
-    abstract ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException
+    abstract ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException
 
     @Override
-    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
         DataModel dataModel = dataModelService.get(domainId)
         if (!dataModel) {
             log.error('Cannot find model id [{}] to export', domainId)
             throw new ApiInternalException('DMEP01', "Cannot find model id [${domainId}] to export")
         }
-        exportDataModel(currentUser, dataModel)
+        exportDataModel(currentUser, dataModel, parameters)
     }
 
     @Override
-    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
         List<DataModel> dataModels = []
         List<UUID> cannotExport = []
         domainIds?.unique()?.each {
@@ -65,7 +65,7 @@ abstract class DataModelExporterProviderService extends ExporterProviderService 
         }
         if (!dataModels) throw new ApiBadRequestException('DMEP01', "Cannot find DataModel IDs [${cannotExport}] to export")
         if (cannotExport) log.warn('Cannot find DataModel IDs [{}] to export', cannotExport)
-        exportDataModels(currentUser, dataModels)
+        exportDataModels(currentUser, dataModels, parameters)
     }
 
     @Override

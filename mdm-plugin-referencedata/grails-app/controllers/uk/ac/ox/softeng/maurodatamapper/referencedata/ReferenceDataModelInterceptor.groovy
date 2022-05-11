@@ -61,6 +61,7 @@ class ReferenceDataModelInterceptor extends ModelInterceptor {
     @Override
     boolean checkExportModelAction() {
         def json = request.getJSON()
+        request.setAttribute('cached_body', json)
         params.referenceDataModelIds = []
         if (json) {
             if (json instanceof JSONObject) {

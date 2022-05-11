@@ -27,13 +27,10 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowExpor
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.DataFlowImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
-import org.grails.web.json.JSONArray
-import org.grails.web.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
@@ -90,8 +87,13 @@ class DataFlowController extends EditLoggingController<DataFlow> {
         DataFlow instance = queryForResource params.dataFlowId
 
         if (!instance) return notFound(params.dataFlowId)
+
+        // Extract body to map and add the params from the url
+        Map exporterParameters = extractRequestBodyToMap()
+        exporterParameters.putAll(params)
+
         log.info("Exporting DataFlow using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params.dataFlowId as String)
+        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params.dataFlowId as String, params)
         log.info('Export complete')
         if (!outputStream) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'DataFlow could not be exported')
@@ -102,31 +104,24 @@ class DataFlowController extends EditLoggingController<DataFlow> {
 
     def exportDataFlows() {
         DataFlowExporterProviderService exporter = mauroDataMapperServiceProviderService.findExporterProvider(params.exporterNamespace, params.exporterName,
-                                                                                                      params.exporterVersion)
+                                                                                                              params.exporterVersion)
         if (!exporter) {
             return notFound(DataFlowExporterProviderService, "${params.exporterNamespace}:${params.exporterName}:${params.exporterVersion}")
         }
 
-        def json = request.getJSON()
-        params.dataFlowIds = []
-        if (json) {
-            if (json instanceof JSONObject) {
-                params.dataFlowIds = json.dataFlowIds.collect {Utils.toUuid(it)}
-            }
-            if (json instanceof JSONArray) {
-                params.dataFlowIds = json.collect {Utils.toUuid(it)}
-            }
-        }
+        // Extract body to map and add the params from the url
+        Map exporterParameters = extractRequestBodyToMap()
+        exporterParameters.putAll(params)
 
-        if (!params.dataFlowIds) throw new ApiBadRequestException('DMIXX', 'DataFlowIds must be supplied in the request body')
+        if (!exporterParameters.dataFlowIds) throw new ApiBadRequestException('DMIXX', 'DataFlowIds must be supplied in the request body')
 
         if (!exporter.canExportMultipleDomains()) {
-            params.dataFlowId = params.dataFlowIds.first()
+            params.dataFlowId = exporterParameters.dataFlowIds.first()
             return exportDataFlow()
         }
 
         log.info("Exporting DataFlows using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, params.dataFlowIds)
+        ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, exporterParameters.dataFlowIds, exporterParameters)
         log.info('Export complete')
 
         if (!outputStream) {

@@ -64,6 +64,7 @@ class DataModelInterceptor extends ModelInterceptor {
     @Override
     boolean checkExportModelAction() {
         def json = request.getJSON()
+        request.setAttribute('cached_body', json)
         params.dataModelIds = []
         if (json) {
             if (json instanceof JSONObject) {

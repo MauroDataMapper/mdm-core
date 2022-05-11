@@ -67,13 +67,13 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     }
 
     @Override
-    ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow) throws ApiException {
+    ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
         exportModel new ExportModel(dataFlow, 'dataFlow', version, 'gml', exportMetadata), fileType
     }
 
     @Override
-    ByteArrayOutputStream exportDataFlows(User currentUser, List<DataFlow> dataFlow) throws ApiException {
+    ByteArrayOutputStream exportDataFlows(User currentUser, List<DataFlow> dataFlow, Map<String, Object> parameters) throws ApiException {
         throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple DataFlows")
     }
 

@@ -32,9 +32,9 @@ abstract class FolderExporterProviderService extends ContainerExporterProviderSe
     @Autowired
     FolderService folderService
 
-    abstract ByteArrayOutputStream exportFolder(User currentUser, Folder folder) throws ApiException
+    abstract ByteArrayOutputStream exportFolder(User currentUser, Folder folder, Map<String, Object> parameters) throws ApiException
 
-    abstract ByteArrayOutputStream exportFolders(User currentUser, List<Folder> folders) throws ApiException
+    abstract ByteArrayOutputStream exportFolders(User currentUser, List<Folder> folders, Map<String, Object> parameters) throws ApiException
 
     @Override
     FolderService getContainerService() {
@@ -52,12 +52,12 @@ abstract class FolderExporterProviderService extends ContainerExporterProviderSe
     }
 
     @Override
-    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
-        exportFolder(currentUser, retrieveExportableContainers([domainId]).pop())
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
+        exportFolder(currentUser, retrieveExportableContainers([domainId]).pop(), parameters)
     }
 
     @Override
-    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
-        exportFolders(currentUser, retrieveExportableContainers(domainIds))
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
+        exportFolders(currentUser, retrieveExportableContainers(domainIds), parameters)
     }
 }

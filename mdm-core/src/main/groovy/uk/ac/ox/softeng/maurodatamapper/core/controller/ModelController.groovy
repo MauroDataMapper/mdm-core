@@ -475,8 +475,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params.dataModelId)
+
+        // Extract body to map and add the params from the url
+        Map exporterParameters = extractRequestBodyToMap()
+        exporterParameters.putAll(params)
+
         log.info("Exporting Model using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params[alternateParamsIdKey] as String)
+        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params[alternateParamsIdKey] as String, exporterParameters)
         log.info('Export complete')
         if (!outputStream) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Model could not be exported')
@@ -499,8 +504,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return exportModel()
         }
 
+        // Extract body to map and add the params from the url
+        Map exporterParameters = extractRequestBodyToMap()
+        exporterParameters.putAll(params)
+
         log.info("Exporting DataModel using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, params[multipleModelsParamsIdKey])
+        ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, exporterParameters[multipleModelsParamsIdKey], exporterParameters)
         log.info('Export complete')
 
         if (!outputStream) {

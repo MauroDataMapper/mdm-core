@@ -36,22 +36,23 @@ abstract class ReferenceDataModelExporterProviderService extends ExporterProvide
     @Autowired
     ReferenceDataModelService referenceDataModelService
 
-    abstract ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException
+    abstract ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel, Map<String, Object> parameters) throws ApiException
 
-    abstract ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels) throws ApiException
+    abstract ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels, Map<String, Object> parameters)
+        throws ApiException
 
     @Override
-    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(domainId)
         if (!referenceDataModel) {
             log.error('Cannot find model id [{}] to export', domainId)
             throw new ApiInternalException('RDMEP01', "Cannot find model id [${domainId}] to export")
         }
-        exportReferenceDataModel(currentUser, referenceDataModel)
+        exportReferenceDataModel(currentUser, referenceDataModel, parameters)
     }
 
     @Override
-    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
         List<ReferenceDataModel> referenceDataModels = []
         List<UUID> cannotExport = []
         domainIds.each {
@@ -61,7 +62,7 @@ abstract class ReferenceDataModelExporterProviderService extends ExporterProvide
             } else referenceDataModels.add referenceDataModel
         }
         log.warn('Cannot find model ids [{}] to export', cannotExport)
-        exportReferenceDataModels(currentUser, referenceDataModels)
+        exportReferenceDataModels(currentUser, referenceDataModels, parameters)
     }
 
     @Override

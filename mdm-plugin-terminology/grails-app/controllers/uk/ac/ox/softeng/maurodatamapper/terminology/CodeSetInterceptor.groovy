@@ -49,6 +49,7 @@ class CodeSetInterceptor extends ModelInterceptor {
     @Override
     boolean checkExportModelAction() {
         def json = request.getJSON()
+        request.setAttribute('cached_body', json)
         params.codeSetIds = []
         if (json) {
             if (json instanceof JSONObject) {
