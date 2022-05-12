@@ -23,10 +23,11 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
     Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
         GPathResult subscribedCatalogueModelsFeed = federationClient.getSubscribedCatalogueModelsFromAtomFeed(subscribedCatalogue.apiKey)
 
-        Authority subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name, url: subscribedCatalogueModelsFeed.author.uri)
+        Authority subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name.text(), url: subscribedCatalogueModelsFeed.author.uri.text())
 
         List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {entry ->
             new PublishedModel().tap {
+                modelId = entry.id
                 title = entry.title
                 if (entry.updated.text()) lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 if (entry.published.text()) datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)

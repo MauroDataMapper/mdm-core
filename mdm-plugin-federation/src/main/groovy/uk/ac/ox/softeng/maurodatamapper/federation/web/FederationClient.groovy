@@ -134,12 +134,12 @@ class FederationClient implements Closeable, XmlImportMapping {
         retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), apiKey)
     }
 
-    Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, UUID modelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()).path('versionLinks'), apiKey)
+    Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, String publishedModelId) {
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), apiKey)
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, UUID modelId) {
-        retrieveMapFromClient(UriBuilder.of('published/models').path(modelId.toString()).path('newerVersions'), apiKey)
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, String publishedModelId) {
+        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), apiKey)
     }
 
     String getStringResourceExport(UUID apiKey, String urlResourceType, UUID resourceId, Map exporterInfo) {
@@ -159,6 +159,7 @@ class FederationClient implements Closeable, XmlImportMapping {
 
     private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         String body = retrieveStringFromClient(uriBuilder, apiKey, params)
+        log.debug('!!FederationClient body = {}', body)
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {

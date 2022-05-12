@@ -33,11 +33,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FilePar
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.transactions.Transactional
 import grails.rest.Link
@@ -51,7 +53,7 @@ import java.time.OffsetDateTime
 class SubscribedModelService implements SecurableResourceService<SubscribedModel>, AnonymisableService {
 
     @Autowired(required = false)
-    List<ModelService> modelServices
+    List<MdmDomainService> domainServices
 
     SubscribedCatalogueService subscribedCatalogueService
     FolderService folderService
@@ -146,13 +148,72 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             ModelImporterProviderServiceParameters parameters = importerService.createNewImporterProviderServiceParameters(importerProviderService)
 
             if (parameters.hasProperty('importFile')?.type != FileParameter) {
-                throw new ApiInternalException('MSXX', "Importer ${importerProviderService.class.simpleName} " +
-                                                       'for model cannot import file content')
+                throw new ApiInternalException('SMS01', "Importer ${importerProviderService.class.simpleName} " +
+                                                        'for model cannot import file content')
             }
 
             byte[] resourceBytes = exportSubscribedModelFromSubscribedCatalogueLink(subscribedModel, exportLink)
 
+            parameters.importFile = new FileParameter(fileContents: resourceBytes)
+            parameters.folderId = folder.id
+            parameters.finalised = true
+            parameters.useDefaultAuthority = false
 
+            MdmDomain model = importerService.importDomain(userSecurityPolicyManager.user, importerProviderService, parameters)
+
+            if (!model) {
+                subscribedModel.errors.reject('invalid.subscribedmodel.import',
+                                              'Could not import SubscribedModel into local Catalogue')
+                return subscribedModel.errors
+            }
+
+            log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
+            MdmDomainService domainService = domainServices.find {it.handles(model.domainType)}
+            if (domainService.respondsTo('countByAuthorityAndLabelAndVersion') && domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
+                subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
+                                              [model.authority, model.label, model.modelVersion].toArray(),
+                                              'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')
+                return subscribedModel.errors
+            }
+
+            if (!model.hasProperty('folder')) {
+                throw new ApiInternalException('SMS02', "Domain type ${model.domainType} " + 'cannot be imported into a Folder')
+            }
+            model.folder = folder
+
+            domainService.validate(model)
+
+            if (model.hasErrors()) {
+                return model.errors
+            }
+
+            MdmDomain savedModel
+            if (domainService.respondsTo('saveModelWithContent')) {
+                savedModel = domainService.saveModelWithContent(model)
+            } else {
+                savedModel = domainService.save(model)
+            }
+            log.debug('Saved domain')
+
+            if (securityPolicyManagerService) {
+                log.debug('add security to saved model')
+                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel,
+                                                                                                         userSecurityPolicyManager.user,
+                                                                                                         savedModel.label)
+            }
+
+            //Record the ID of the imported model against the subscription makes it easier to track version links later.
+            subscribedModel.lastRead = OffsetDateTime.now()
+            subscribedModel.localModelId = savedModel.id
+
+            //Handle version linking
+            if (domainService.respondsTo('getUrlResourceName')) {
+                Map versionLinks = getVersionLinks(domainService.getUrlResourceName(), subscribedModel)
+                if (versionLinks) {
+                    log.debug('add version links')
+                    addVersionLinksToImportedModel(userSecurityPolicyManager.user, versionLinks, domainService, subscribedModel)
+                }
+            }
 
         } catch (ApiException exception) {
             log.warn("Failed to federate subscribedModel due to [${exception.message}]")
@@ -165,7 +226,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         subscribedModel
     }
 
-    def federateSubscribedModel(SubscribedModel subscribedModel, UserSecurityPolicyManager userSecurityPolicyManager) {
+    /*def federateSubscribedModel(SubscribedModel subscribedModel, UserSecurityPolicyManager userSecurityPolicyManager) {
 
         Folder folder = folderService.get(subscribedModel.folderId)
 
@@ -257,7 +318,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         }
 
         subscribedModel
-    }
+    }*/
 
     /**
      * Get version links from the subscribed catalogue for the specified subscribed model

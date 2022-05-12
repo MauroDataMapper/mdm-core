@@ -26,7 +26,7 @@ import java.util.regex.Pattern
 
 class PublishedModel implements Comparable<PublishedModel> {
 
-    UUID modelId
+    String modelId
     String modelLabel
     Version modelVersion
     String description

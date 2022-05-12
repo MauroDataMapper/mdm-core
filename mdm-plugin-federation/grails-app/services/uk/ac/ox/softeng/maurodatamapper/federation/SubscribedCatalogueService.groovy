@@ -151,18 +151,18 @@ class SubscribedCatalogueService implements AnonymisableService {
         }
     }*/
 
-    Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
+    Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, String publishedModelId) {
         if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+                client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, publishedModelId)
             }
         }
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, UUID modelId) {
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
         if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
+                client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, publishedModelId)
             }
         }
     }

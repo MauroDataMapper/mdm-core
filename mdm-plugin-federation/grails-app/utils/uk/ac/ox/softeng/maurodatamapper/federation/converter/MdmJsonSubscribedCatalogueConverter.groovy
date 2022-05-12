@@ -27,7 +27,7 @@ class MdmJsonSubscribedCatalogueConverter implements SubscribedCatalogueConverte
 
         List<PublishedModel> publishedModels = (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
             new PublishedModel().tap {
-                modelId = Utils.toUuid(pm.modelId)
+                modelId = pm.modelId
                 title = pm.title // for compatibility with remote catalogue versions prior to 4.12
                 if (pm.label) modelLabel = pm.label
                 if (pm.version) modelVersion = Version.from(pm.version)
