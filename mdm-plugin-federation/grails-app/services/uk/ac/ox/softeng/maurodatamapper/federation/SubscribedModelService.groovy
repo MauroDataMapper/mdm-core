@@ -28,12 +28,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -80,10 +79,6 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         SubscribedModel.bySubscribedCatalogueIdAndId(subscribedCatalogueId, id).get()
     }
 
-    SubscribedModel findBySubscribedModelId(String subscribedModelId) { // TODO remove as SM ID may no longer be unique
-        SubscribedModel.bySubscribedModelId(subscribedModelId).get()
-    }
-
     List<SubscribedModel> list(Map pagination = [:]) {
         SubscribedModel.list(pagination)
     }
@@ -128,20 +123,47 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         subscribedModel.save(failOnError: true, validate: false)
     }
 
-    def federateSubscribedModel(SubscribedModel subscribedModel, UserSecurityPolicyManager userSecurityPolicyManager) {
+    def federateSubscribedModel(SubscribedModelFederationParams subscribedModelFederationParams, UserSecurityPolicyManager userSecurityPolicyManager) {
+        SubscribedModel subscribedModel = subscribedModelFederationParams.subscribedModel
         Folder folder = folderService.get(subscribedModel.folderId)
 
         log.debug('Exporting SubscribedModel')
         try {
             List<Link> exportLinks = getExportLinksForSubscribedModel(subscribedModel)
 
-            ImporterProviderService importerProviderService
+            if (!exportLinks.find {link ->
+                (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
+                (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType)
+            }) {
+                log.debug('No published link found for specified URL and/or Content Type')
+                subscribedModel.errors.reject('invalid.subscribedmodel.import.link.notfound',
+                                              'Could not import SubscribedModel into local Catalogue, no published link found for content type [{0}] and/or URL [{1}]')
+                return subscribedModel.errors
+            }
 
-            Link exportLink = exportLinks.find {link -> importerProviderService = importerService.findImporterProviderServiceByContentType(link.contentType)}
+            ImporterProviderService importerProviderService
+            Link exportLink
+            if (subscribedModelFederationParams.importerProviderService.namespace && subscribedModelFederationParams.importerProviderService.name) {
+                exportLink = exportLinks.find {link ->
+                    (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
+                    (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType) &&
+                    (importerProviderService =
+                        importerService.findImporterProviderServiceByContentType(subscribedModelFederationParams.importerProviderService.namespace,
+                                                                                 subscribedModelFederationParams.importerProviderService.name,
+                                                                                 subscribedModelFederationParams.importerProviderService.version, link.contentType))
+                }
+            } else {
+                exportLink = exportLinks.find {link ->
+                    (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
+                    (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType) &&
+                    (importerProviderService = importerService.findImporterProviderServiceByContentType(link.contentType))
+                }
+            }
+
             if (!importerProviderService) {
                 log.debug('No ImporterProviderService found for any published content type')
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.format.unsupported',
-                                              'Could not export SubscribedModel from SubscribedCatalogue')
+                                              'Could not import SubscribedModel into local Catalogue, no importer found for content type [{0}] with given parameters')
                 return subscribedModel.errors
             }
 
@@ -152,7 +174,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                                                         'for model cannot import file content')
             }
 
-            byte[] resourceBytes = exportSubscribedModelFromSubscribedCatalogueLink(subscribedModel, exportLink)
+            byte[] resourceBytes = exportSubscribedModelFromLink(subscribedModel, exportLink)
 
             parameters.importFile = new FileParameter(fileContents: resourceBytes)
             parameters.folderId = folder.id
@@ -360,7 +382,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         // new String(subscribedCatalogueService.getBytesResourceExport(subscribedModel.subscribedCatalogue, getExportLinksForSubscribedModel(subscribedModel).first().href))
     }
 
-    byte[] exportSubscribedModelFromSubscribedCatalogueLink(SubscribedModel subscribedModel, Link link) {
+    byte[] exportSubscribedModelFromLink(SubscribedModel subscribedModel, Link link) {
         subscribedCatalogueService.getBytesResourceExport(subscribedModel.subscribedCatalogue, link.href)
     }
 
@@ -382,7 +404,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 log.debug('matched')
                 //Get Subscribed models for the new (source) and old (target) versions of the model
                 SubscribedModel sourceSubscribedModel = subscribedModel
-                SubscribedModel targetSubscribedModel = findBySubscribedModelId(vl.targetModel.id)
+                SubscribedModel targetSubscribedModel = findBySubscribedCatalogueIdAndSubscribedModelId(subscribedModel.subscribedCatalogueId, vl.targetModel.id)
 
                 if (sourceSubscribedModel && targetSubscribedModel) {
                     Model localSourceModel

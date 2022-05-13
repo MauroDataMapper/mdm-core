@@ -47,6 +47,7 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
             return actionName == 'index' ||
                    actionName == 'show' ||
                    actionName == 'save' ||
+                   actionName == 'federate' ||
                    actionName == 'newerVersions' ||
                    currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }

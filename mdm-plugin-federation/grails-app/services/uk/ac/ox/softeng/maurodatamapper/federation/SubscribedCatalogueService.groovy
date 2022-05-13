@@ -139,7 +139,7 @@ class SubscribedCatalogueService implements AnonymisableService {
         }
     }
 
-    List<PublishedModel> getAuthority(SubscribedCatalogue subscribedCatalogue) {
+    Authority getAuthority(SubscribedCatalogue subscribedCatalogue) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
             getConverterForSubscribedCatalogue(subscribedCatalogue).getAuthority(client, subscribedCatalogue)
         }
@@ -156,6 +156,8 @@ class SubscribedCatalogueService implements AnonymisableService {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
                 client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, publishedModelId)
             }
+        } else {
+            [:]
         }
     }
 
@@ -164,6 +166,8 @@ class SubscribedCatalogueService implements AnonymisableService {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
                 client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, publishedModelId)
             }
+        } else {
+            [:]
         }
     }
 

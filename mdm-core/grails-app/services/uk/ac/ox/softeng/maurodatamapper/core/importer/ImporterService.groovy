@@ -223,4 +223,23 @@ class ImporterService implements DataBinder {
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(String contentType) {
         importerProviderServices.findAll {it.handlesContentType(contentType)}.sort().first()
     }
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace, String name, String version) {
+        if (version) {
+            importerProviderServices.find {
+                it.namespace.equalsIgnoreCase(namespace) &&
+                it.name.equalsIgnoreCase(name) &&
+                it.version.equalsIgnoreCase(version)
+            }
+        } else {
+            importerProviderServices.findAll {
+                it.namespace.equalsIgnoreCase(namespace) &&
+                it.name.equalsIgnoreCase(name)
+            }.sort().last()
+        }
+    }
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(String namespace, String name, String version, String contentType) {
+        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType)}.sort().first()
+    }
 }

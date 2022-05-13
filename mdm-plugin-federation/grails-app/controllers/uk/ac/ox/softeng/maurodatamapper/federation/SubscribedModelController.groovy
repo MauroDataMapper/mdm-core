@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
@@ -61,6 +62,30 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         if (!validateResource(instance, 'create')) return
 
         def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
+        if (federationResult instanceof Errors) {
+            transactionStatus.setRollbackOnly()
+            respond federationResult, view: 'create' // STATUS CODE 422
+            return
+        }
+
+        saveResource instance
+
+        saveResponse instance
+    }
+
+    @Transactional
+    def federate(SubscribedModelFederationParams subscribedModelFederationParams) {
+        if (handleReadOnly()) return
+
+        SubscribedModel instance = subscribedModelFederationParams.subscribedModel
+
+        instance.subscribedCatalogue = subscribedCatalogueService.get(params.subscribedCatalogueId)
+
+        if (response.isCommitted()) return
+
+        if (!validateResource(instance, 'create')) return
+
+        def federationResult = subscribedModelService.federateSubscribedModel(subscribedModelFederationParams, currentUserSecurityPolicyManager)
         if (federationResult instanceof Errors) {
             transactionStatus.setRollbackOnly()
             respond federationResult, view: 'create' // STATUS CODE 422
