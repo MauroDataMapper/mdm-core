@@ -26,7 +26,7 @@ import groovy.transform.CompileStatic
  * @since 06/03/2018
  */
 @CompileStatic
-interface ImporterProviderServiceParameters {
+abstract class ImporterProviderServiceParameters {
 
     @ImportParameterConfig(
         displayName = 'Import Asynchronously',

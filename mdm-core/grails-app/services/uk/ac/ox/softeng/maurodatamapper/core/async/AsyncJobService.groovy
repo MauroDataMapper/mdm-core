@@ -29,9 +29,9 @@ import org.grails.plugin.cache.GrailsCacheManager
 import org.hibernate.SessionFactory
 
 import java.time.OffsetDateTime
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 @Slf4j
@@ -41,16 +41,15 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
     public static final String ASYNC_JOB_CACHE_KEY = 'asyncJobCache'
 
     GrailsCacheManager grailsCacheManager
-    ExecutorService executorService
+    ScheduledExecutorService executorService
 
     SessionFactory sessionFactory
 
     AsyncJobService() {
-        executorService = Executors.newFixedThreadPool(5)
+        executorService = Executors.newScheduledThreadPool(5)
     }
 
     AsyncJob save(Map args, AsyncJob domain) {
-        log.info('Saving {}', domain.id ?: 'unsaved')
         domain.save(args)
     }
 
@@ -100,7 +99,13 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
                                               status: 'CREATED'), flush: true)
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
-        Future future = executorService.submit(new AsyncJobTask(this, asyncJob, taskToExecute))
+        log.info('Creating job [{}]:{}', asyncJob.jobName, asyncJob.id)
+        // We need to delay the start of the task long enough to ensure the current transaction creating the task has been completed
+        // Otherwise the first step in the task will attempt to update a non-existent object
+        long delay = 5
+        TimeUnit timeUnit = TimeUnit.SECONDS
+        log.debug('Submitting task with a {} {} delay', delay, timeUnit)
+        Future future = executorService.schedule(new AsyncJobTask(this, asyncJob, taskToExecute), delay, timeUnit)
         getAsyncJobCache().put(asyncJob.id, future)
         asyncJob
     }
@@ -126,7 +131,7 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
     }
 
     void cleanupJob(AsyncJob asyncJob, String cleanupStatus, String cleanupMessage) {
-        log.info('Cleanup job {}:{} as {}', asyncJob.jobName, asyncJob.id, cleanupStatus)
+        log.info('Cleanup job [{}]:{} as {}', asyncJob.jobName, asyncJob.id, cleanupStatus)
         getAsyncJobCache().evict(asyncJob.id)
         save(asyncJob.tap {
             it.status = cleanupStatus
@@ -142,7 +147,7 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
 
     void cancelRunningJob(AsyncJob asyncJob) {
         if (!asyncJob) return
-        log.info('Cancelling running job {}:{}', asyncJob.jobName, asyncJob.id)
+        log.info('Cancelling running job [{}]:{}', asyncJob.jobName, asyncJob.id)
         Future future = getAsyncJobFuture(asyncJob.id)
         if (future) {
             if (!future.isDone()) future.cancel(true)

@@ -130,7 +130,7 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
         verifyJsonResponse HttpStatus.OK, expectedJson
     }
 
-    class TestFileImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+    class TestFileImporterProviderServiceParameters extends ImporterProviderServiceParameters {
 
         @ImportParameterConfig(
             displayName = 'File',

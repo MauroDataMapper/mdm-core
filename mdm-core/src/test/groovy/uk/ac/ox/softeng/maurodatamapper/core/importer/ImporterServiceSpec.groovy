@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.importer
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
@@ -123,7 +122,7 @@ otherwise you could get an error.'''
         !result.hasErrors()
     }
 
-    class TestFileImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+    class TestFileImporterProviderServiceParameters extends ImporterProviderServiceParameters {
 
         @ImportParameterConfig(
             displayName = 'File',

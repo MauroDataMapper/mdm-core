@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
-import grails.async.Promise
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
@@ -45,8 +44,11 @@ import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
 
+import java.util.concurrent.Future
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
+import static io.micronaut.http.HttpStatus.ACCEPTED
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -1234,13 +1236,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void waitForAysncToComplete(String id) {
         log.debug('Waiting to complete {}', id)
-        Promise p = asyncJobService.getAsyncJobFuture(id)
+        Future p = asyncJobService.getAsyncJobFuture(id)
         p?.get()
         log.debug('Completed')
     }
 
 
-    void 'VB08 : test async creating a new main branch model version of a DataModel'() {
+    void 'VB09 : test async creating a new main branch model version of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -1318,7 +1320,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData()
     }
 
-    void 'VB09 : test async creating a main branch model version when one already exists'() {
+    void 'VB10 : test async creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -1334,18 +1336,206 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
 
         then:
-        verifyResponse(HttpStatus.ACCEPTED, response)
+        verifyResponse(ACCEPTED, response)
+
 
         when:
-        def jobId = responseBody().id
+        String jobId = responseBody().id
         waitForAysncToComplete(jobId)
         GET("asyncJobs/$jobId", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
         responseBody().status == 'FAILED'
-        responseBody().message == '''Invalid branching model
+        responseBody().message == '''Invalid model
   Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] with value [main] already exists for label [Functional Test Model]'''
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB11 : test async creating a main branch model version and cancelling it'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'another main branch created'
+        PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+
+        when:
+        String jobId = responseBody().id
+        DELETE("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'CANCELLED'
+
+        when:
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'CANCELLED'
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": [ ]
+}'''
+
+        when:
+        GET("$id/availableBranches", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": [
+    
+  ]
+}'''
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB12 : test async creating a new non-main branch model version of a DataModel'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'async-test', performAsyncCreation: true])
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+        responseBody().id
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        log.debug('Getting completed job')
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("$id/semanticLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "Refines",
+      "domainType": "SemanticLink",
+      "unconfirmed": false,
+      "sourceMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "Refines",
+      "domainType": "SemanticLink",
+      "unconfirmed": false,
+      "sourceMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "New Model Version Of",
+      "domainType": "VersionLink",
+      "sourceModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "New Model Version Of",
+      "domainType": "VersionLink",
+      "sourceModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/availableBranches", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Functional Test Model",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Functional Test Model",
+      "type": "Data Standard",
+      "branchName": "async-test",
+      "documentationVersion": "1.0.0"
+    }
+  ]
+}'''
 
         cleanup:
         cleanUpData()
@@ -3047,6 +3237,43 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanup:
         cleanUpData(id)
         cleanUpData(id2)
+    }
+
+    void 'I09 : test import complex DataModel async'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ],
+            performAsynchronously          : true
+        ])
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        log.debug('Getting completed job')
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("dataModels/path/${Utils.safeUrlEncode('dm:Complex Test DataModel$main')}")
+
+        then:
+        verifyResponse(OK, response)
+
+        cleanup:
+        cleanUpData()
     }
 
     void 'DA : test delete multiple models'() {

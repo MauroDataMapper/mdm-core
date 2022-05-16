@@ -49,37 +49,46 @@ class AsyncJobTask implements Callable<AsyncJob> {
         // Set the job as "running"
         performStep {
             log.info('Starting async task {}:{}', asyncJob.jobName, asyncJob.id)
+            asyncJob.merge()
             asyncJob.status = 'RUNNING'
-            asyncJobService.save(asyncJob, flush: true)
+            asyncJobService.save(asyncJob)
         }
 
         // Perform the required task
-        performTask()
+        boolean completed = performTask()
 
-        // Set the job as completed (interrupted thread will call this but not run it due to the check in performStep
-        performStep {
-            asyncJobService.completedJob(asyncJob)
-            log.info('Async task {}:{} completed in {}', asyncJob.jobName, asyncJob.id, Utils.timeTaken(st))
+        if (completed) {
+            log.debug('Task completed successfully')
+            // Set the job as completed (interrupted thread will call this but not run it due to the check in performStep
+            performStep {
+                asyncJobService.completedJob(asyncJob)
+                log.info('Async task {}:{} completed in {}', asyncJob.jobName, asyncJob.id, Utils.timeTaken(st))
+            }
         }
         asyncJob
     }
 
-    void performTask() {
+    boolean performTask() {
         try {
+            log.debug('Performing async task')
             performStep taskToExecute
+            true
         } catch (ApiException apiException) {
             // Handle known exceptions
             log.error("Failed to complete async job ${asyncJob.jobName} because ${apiException.message}")
             performStep {asyncJobService.failedJob(asyncJob, apiException.message)}
+            false
         } catch (Exception ex) {
             log.error("Unhandled failure to complete async job ${asyncJob.jobName} because ${ex.message}", ex)
             performStep {asyncJobService.failedJob(asyncJob, ex.message)}
+            false
         }
     }
 
     void performStep(Closure closure) {
         // Don't perform the step if the thread has been interrupted
         if (Thread.currentThread().interrupted) return
+
 
         // Perform each step in its own session and transaction to ensure thread interruption doesnt effect earlier steps
         AsyncJob.withNewSession {session ->
@@ -97,5 +106,6 @@ class AsyncJobTask implements Callable<AsyncJob> {
                 }
             }
         }
+
     }
 }

@@ -392,6 +392,9 @@ abstract class ModelService<K extends Model>
                                                 UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         asyncJobService.createAndSaveAsyncJob("Create new documentation model ${model.label}",
                                               userSecurityPolicyManager.user.emailAddress) {
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
             K doc = createNewDocumentationVersion(model, user, copyPermissions,
                                                   userSecurityPolicyManager, additionalArguments) as K
             fullValidateAndSaveOfModel(doc, user)
@@ -422,6 +425,9 @@ abstract class ModelService<K extends Model>
                                      UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         asyncJobService.createAndSaveAsyncJob("Create new documentation model ${model.label}",
                                               userSecurityPolicyManager.user.emailAddress) {
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
             K fork = createNewForkModel(label, model, user, copyPermissions,
                                         userSecurityPolicyManager, additionalArguments) as K
             fullValidateAndSaveOfModel(fork, user)
@@ -447,8 +453,12 @@ abstract class ModelService<K extends Model>
                                               UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         asyncJobService.createAndSaveAsyncJob("Branch model ${model.label} as ${branchName}",
                                               userSecurityPolicyManager.user.emailAddress) {
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
             K copy = createNewBranchModelVersion(branchName, model, user, copyPermissions,
                                                  userSecurityPolicyManager, additionalArguments) as K
+
             fullValidateAndSaveOfModel(copy, user)
         }
     }
@@ -1162,6 +1172,7 @@ abstract class ModelService<K extends Model>
     }
 
     K fullValidateAndSaveOfModel(K model, User user) {
+        log.debug('Full validate and save of model')
         if (model.hasErrors()) {
             throw new ApiInvalidModelException('MSXX', 'Invalid model', model.errors, messageSource)
         }
@@ -1173,6 +1184,7 @@ abstract class ModelService<K extends Model>
     }
 
     K saveAndAddSecurity(K model, User user) {
+        log.debug('Saving and adding security')
         K savedCopy = saveModelWithContent(model) as K
         savedCopy.addCreatedEdit(user)
         if (securityPolicyManagerService) {
