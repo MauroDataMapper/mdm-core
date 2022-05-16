@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.versionedfolder.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -50,12 +51,14 @@ import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.concurrent.Future
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
@@ -84,6 +87,8 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Slf4j
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+
+    AsyncJobService asyncJobService
 
     @Shared
     VersionedFolderMergeBuilder builder
@@ -1475,6 +1480,58 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         cleanupIds(id, branchId)
+    }
+
+
+    void waitForAysncToComplete(String id) {
+        log.debug('Waiting to complete {}', id)
+        Future p = asyncJobService.getAsyncJobFuture(id)
+        p?.get()
+        log.debug('Completed')
+    }
+
+
+    void 'BMV11 : test creating a new branch model version of a VersionedFolder asynchronously'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion', performAsyncCreation: true])
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+        responseBody().id
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        log.debug('Getting completed job')
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("$id/availableBranches")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+
+        when:
+        String branchId = responseBody().items.find {it.branchName == 'main'}.id
+        String mainBranchId = responseBody().items.find {it.branchName == 'newBranchModelVersion'}.id
+
+        then:
+        branchId
+        mainBranchId
+
+        cleanup:
+        cleanupIds(id, branchId, mainBranchId)
     }
 
     void 'FMV01 : test creating a new fork model of an unfinalised VersionedFolder (as reader)'() {
