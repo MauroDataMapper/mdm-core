@@ -362,7 +362,6 @@ class FolderService extends ContainerService<Folder> {
                     throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
                 }
                 log.warn('Permission copying is not yet implemented')
-
             }
             log.debug('Validating and saving copy')
             setFolderRefinesFolder(copiedFolder, original, copier)
@@ -644,5 +643,14 @@ class FolderService extends ContainerService<Folder> {
         addFacetDataToDiffCache(fDiffCache, facetData, folder.id)
         if (parentCache) parentCache.addDiffCache(folder.path, fDiffCache)
         fDiffCache
+    }
+
+    void checkImportedFolderAssociations(User importingUser, Folder folder) {
+        folder.checkPath()
+        folder.createdBy = importingUser.emailAddress
+        folder.validate()
+        checkFacetsAfterImportingMultiFacetAware(folder)
+        folder.childFolders?.each { checkImportedFolderAssociations(importingUser, it) }
+        log.debug('Folder associations checked')
     }
 }

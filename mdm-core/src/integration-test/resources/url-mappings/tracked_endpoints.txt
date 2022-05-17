@@ -68,6 +68,7 @@
 | PUT    | /api/folders/${folderId}/folders/${id} | update |
 | GET    | /api/folders/${folderId}/folders/${id} | show |
 | GET    | /api/folders/${folderId}/export/${exporterNamespace}/${exporterName}/${exporterVersion} | exportFolder |
+| GET    | /api/folders/${folderId}/import/${exporterNamespace}/${exporterName}/${exporterVersion} | importFolder |
 | PUT    | /api/folders/${folderId}/folder/${destinationFolderId} | changeFolder |
 | POST   | /api/folders | save |
 | GET    | /api/folders | index |

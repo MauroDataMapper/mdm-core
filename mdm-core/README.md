@@ -72,6 +72,7 @@ Controller: folder
  |   PUT    | /api/folders/${id}                                                                                    | Action: update
  |   GET    | /api/folders/${id}                                                                                    | Action: show
  |   GET    | /api/folders/${id}/export                                                                             | Action: export
+ |   POST   | /api/folders/${id}/import                                                                             | Action: import
 
 Controller: importer
  |   GET    | /api/importer/parameters/${ns}?/${name}?/${version}?                                                  | Action: parameters

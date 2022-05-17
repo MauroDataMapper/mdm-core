@@ -87,6 +87,10 @@ class UrlMappings {
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'folder', action: 'exportFolder')
             }
 
+            group '/folders', {
+                post "/import/$importerNamespace/$importerName/$importerVersion"(controller: 'folder', action: 'importFolder')
+            }
+
             '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
 
