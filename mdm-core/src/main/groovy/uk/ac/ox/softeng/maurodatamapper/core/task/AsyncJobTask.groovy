@@ -25,33 +25,40 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import groovy.util.logging.Slf4j
 
 import java.util.concurrent.Callable
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @since 28/03/2022
  */
 @Slf4j
-class AsyncJobTask implements Callable<AsyncJob> {
+class AsyncJobTask implements Callable<Boolean> {
 
     AsyncJobService asyncJobService
-    AsyncJob asyncJob
+    String asyncJobName
+    UUID asyncJobId
     Closure taskToExecute
+    AtomicBoolean fullyCompleted
+    AtomicBoolean hasStarted
+    AtomicBoolean mainTaskCompleted
 
     AsyncJobTask(AsyncJobService asyncJobService, AsyncJob asyncJob, Closure taskToExecute) {
         this.asyncJobService = asyncJobService
-        this.asyncJob = asyncJob
+        this.asyncJobId = asyncJob.id
+        this.asyncJobName = asyncJob.jobName
         this.taskToExecute = taskToExecute
+        this.fullyCompleted = new AtomicBoolean(false)
+        this.hasStarted = new AtomicBoolean(false)
+        this.mainTaskCompleted = new AtomicBoolean(false)
     }
 
     @Override
-    AsyncJob call() {
+    Boolean call() {
         long st = System.currentTimeMillis()
-
+        hasStarted.set true
         // Set the job as "running"
         performStep {
-            log.info('Starting async task {}:{}', asyncJob.jobName, asyncJob.id)
-            asyncJob.merge()
-            asyncJob.status = 'RUNNING'
-            asyncJobService.save(asyncJob)
+            log.info('Starting async task [{}]:{}', asyncJobName, asyncJobId)
+            asyncJobService.runningJob(asyncJobId)
         }
 
         // Perform the required task
@@ -59,37 +66,43 @@ class AsyncJobTask implements Callable<AsyncJob> {
 
         if (completed) {
             log.debug('Task completed successfully')
+            mainTaskCompleted.set(true)
             // Set the job as completed (interrupted thread will call this but not run it due to the check in performStep
             performStep {
-                asyncJobService.completedJob(asyncJob)
-                log.info('Async task {}:{} completed in {}', asyncJob.jobName, asyncJob.id, Utils.timeTaken(st))
+                asyncJobService.completedJob(asyncJobId)
+                log.info('Async task [{}]:{} completed in {}', asyncJobName, asyncJobId, Utils.timeTaken(st))
+            }
+        } else if (isInterrupted(false)) {
+            performStep(true) {
+                asyncJobService.cancelledJob(asyncJobId)
+                log.info('Async task [{}]:{} cancelled in {}', asyncJobName, asyncJobId, Utils.timeTaken(st))
             }
         }
-        asyncJob
+        fullyCompleted.set true
+        true
     }
 
     boolean performTask() {
         try {
             log.debug('Performing async task')
-            performStep taskToExecute
-            true
+            performStep(taskToExecute)
         } catch (ApiException apiException) {
             // Handle known exceptions
-            log.error("Failed to complete async job ${asyncJob.jobName} because ${apiException.message}")
-            performStep {asyncJobService.failedJob(asyncJob, apiException.message)}
+            log.error("Failed to complete async job ${asyncJobName} because ${apiException.message}")
+            performStep {asyncJobService.failedJob(asyncJobId, apiException.message)}
             false
         } catch (Exception ex) {
-            log.error("Unhandled failure to complete async job ${asyncJob.jobName} because ${ex.message}", ex)
-            performStep {asyncJobService.failedJob(asyncJob, ex.message)}
+            log.error("Unhandled failure to complete async job ${asyncJobName} because ${ex.message}", ex)
+            performStep {asyncJobService.failedJob(asyncJobId, ex.message)}
             false
         }
     }
 
-    void performStep(Closure closure) {
+    boolean performStep(boolean ignoreInterrupt = false, Closure closure) {
         // Don't perform the step if the thread has been interrupted
-        if (Thread.currentThread().interrupted) return
+        if (isInterrupted(ignoreInterrupt)) return false
 
-
+        boolean stepFlushed = false
         // Perform each step in its own session and transaction to ensure thread interruption doesnt effect earlier steps
         AsyncJob.withNewSession {session ->
             AsyncJob.withNewTransaction {transactionStatus ->
@@ -97,15 +110,22 @@ class AsyncJobTask implements Callable<AsyncJob> {
                 closure.call()
 
                 // If the thread was interrupted then rollback the transaction
-                if (Thread.currentThread().interrupted) {
+                if (isInterrupted(ignoreInterrupt)) {
+                    log.warn('Interrupted step so transaction will be rolled back')
                     transactionStatus.setRollbackOnly()
+                    stepFlushed = false
                 } else {
                     // Otherwise make sure the session is flushed and cleared
                     session.flush()
                     session.clear()
+                    stepFlushed = true
                 }
             }
         }
+        stepFlushed
+    }
 
+    boolean isInterrupted(boolean ignoreInterrupt) {
+        !ignoreInterrupt && Thread.currentThread().interrupted
     }
 }

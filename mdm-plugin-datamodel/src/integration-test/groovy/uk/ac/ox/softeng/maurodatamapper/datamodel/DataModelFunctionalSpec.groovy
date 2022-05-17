@@ -39,11 +39,11 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
 
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Future
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -1237,7 +1237,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     void waitForAysncToComplete(String id) {
         log.debug('Waiting to complete {}', id)
         Future p = asyncJobService.getAsyncJobFuture(id)
-        p?.get()
+        try {
+            p.get()
+        } catch (CancellationException ignored) {
+        }
         log.debug('Completed')
     }
 
@@ -1252,7 +1255,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
 
         then:
-        verifyResponse(HttpStatus.ACCEPTED, response)
+        verifyResponse(ACCEPTED, response)
         responseBody().id
 
         when:
@@ -1364,7 +1367,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
 
         then:
-        verifyResponse(HttpStatus.ACCEPTED, response)
+        verifyResponse(ACCEPTED, response)
 
         when:
         String jobId = responseBody().id
@@ -1375,6 +1378,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().status == 'CANCELLED'
 
         when:
+        waitForAysncToComplete(jobId)
         GET("asyncJobs/$jobId", MAP_ARG, true)
 
         then:
@@ -1415,7 +1419,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         PUT("$id/newBranchModelVersion", [branchName: 'async-test', performAsyncCreation: true])
 
         then:
-        verifyResponse(HttpStatus.ACCEPTED, response)
+        verifyResponse(ACCEPTED, response)
         responseBody().id
 
         when:

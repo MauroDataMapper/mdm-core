@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.async
 
+import uk.ac.ox.softeng.maurodatamapper.core.task.AsyncJobFuture
 import uk.ac.ox.softeng.maurodatamapper.core.task.AsyncJobTask
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -105,8 +106,9 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         long delay = 5
         TimeUnit timeUnit = TimeUnit.SECONDS
         log.debug('Submitting task with a {} {} delay', delay, timeUnit)
-        Future future = executorService.schedule(new AsyncJobTask(this, asyncJob, taskToExecute), delay, timeUnit)
-        getAsyncJobCache().put(asyncJob.id, future)
+        AsyncJobTask task = new AsyncJobTask(this, asyncJob, taskToExecute)
+        Future<Boolean> future = executorService.schedule(task, delay, timeUnit)
+        getAsyncJobCache().put(asyncJob.id, new AsyncJobFuture(task, future))
         asyncJob
     }
 
@@ -118,22 +120,30 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         AsyncJob.findByStartedByUserAndId(emailAddress, id)
     }
 
-    void completedJob(AsyncJob asyncJob) {
-        cleanupJob(asyncJob, 'COMPLETED', null)
+    void runningJob(UUID id) {
+        setJobStatus(id, 'RUNNING', null)
     }
 
-    void failedJob(AsyncJob asyncJob, String errorMessage) {
-        cleanupJob(asyncJob, 'FAILED', errorMessage)
+    void completedJob(UUID id) {
+        setJobStatus(id, 'COMPLETED', null)
     }
 
-    void cancelledJob(AsyncJob asyncJob) {
-        cleanupJob(asyncJob, 'CANCELLED', null)
+    void failedJob(UUID id, String errorMessage) {
+        setJobStatus(id, 'FAILED', errorMessage)
     }
 
-    void cleanupJob(AsyncJob asyncJob, String cleanupStatus, String cleanupMessage) {
-        log.info('Cleanup job [{}]:{} as {}', asyncJob.jobName, asyncJob.id, cleanupStatus)
-        getAsyncJobCache().evict(asyncJob.id)
-        save(asyncJob.tap {
+    void cancelledJob(UUID id) {
+        setJobStatus(id, 'CANCELLED', null)
+    }
+
+    void cancellingJob(UUID id) {
+        setJobStatus(id, 'CANCELLING', null)
+    }
+
+    void setJobStatus(UUID id, String cleanupStatus, String cleanupMessage) {
+        AsyncJob status = get(id)
+        log.info('Set job [{}]:{} as {}', status.jobName, status.id, cleanupStatus)
+        save(status.tap {
             it.status = cleanupStatus
             it.message = cleanupMessage
         }, flush: true, validate: false)
@@ -148,62 +158,57 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
     void cancelRunningJob(AsyncJob asyncJob) {
         if (!asyncJob) return
         log.info('Cancelling running job [{}]:{}', asyncJob.jobName, asyncJob.id)
-        Future future = getAsyncJobFuture(asyncJob.id)
-        if (future) {
-            if (!future.isDone()) future.cancel(true)
-            // Wait for cancellation to go through
-            while (!future.isDone()) {/* wait*/}
+        AsyncJobFuture asyncJobFuture = getAsyncJobFuture(asyncJob.id)
+        if (asyncJobFuture) {
+            if (asyncJobFuture.hasMainTaskCompleted()) {
+                log.error('Cannot cancel task as it has already completed')
+                return
+            }
+            if (asyncJobFuture.hasTaskStarted()) cancellingJob(asyncJob.id)
+            else cancelledJob(asyncJob.id)
+            asyncJobFuture.cancelIfRunning()
         }
-        // Update database
-        cancelledJob(asyncJob)
     }
 
     void cancelAllRunningJobs() {
-        GrailsCache jobCache = getAsyncJobCache()
-        Collection<String> jobIds = jobCache.getAllKeys() as Collection<String>
+        Collection<String> jobIds = getAllRunningJobs()
         if (jobIds) {
             log.info('Cancelling all {} running jobs {}', jobIds.size(), jobIds)
-            List<AsyncJob> runningJobs = getAll(jobIds.collect {Utils.toUuid(it)}).findAll()
+            List<UUID> runningJobIds = jobIds.collect {Utils.toUuid(it)}
             // Call cancel on each job and wait for them to complete
-            List<Future> futures = runningJobs.collect {
-                Future future = getAsyncJobFuture(it.id)
-                if (future && !future.isDone()) future.cancel(true)
-                future
+            List<AsyncJobFuture> futures = runningJobIds.collect {asyncJobId ->
+                cancellingJob(asyncJobId)
+                getAsyncJobFuture(asyncJobId).cancelIfRunning()
             }
-            while (futures.every() {Future p -> !p.isDone()}) {/* wait*/}
+            futures.every {ajf -> ajf.awaitCompletion()}
             // Update the database
-            runningJobs.each {cancelledJob(it)}
+            runningJobIds.each {cancelledJob(it)}
         }
     }
 
-    Future getAsyncJobFuture(String id) {
+    Collection<String> getAllRunningJobs() {
+        GrailsCache jobCache = getAsyncJobCache()
+        Collection<String> jobIds = jobCache.getAllKeys() as Collection<String>
+        if (!jobIds) return []
+        jobIds.findAll {id ->
+            !jobCache.get(id, AsyncJobFuture).isDone()
+        }
+    }
+
+    AsyncJobFuture getAsyncJobFuture(String id) {
         getAsyncJobFuture(Utils.toUuid(id))
     }
 
-    Future getAsyncJobFuture(UUID id) {
-        getAsyncJobCache().get(id, Future)
+    AsyncJobFuture getAsyncJobFuture(UUID id) {
+        getAsyncJobCache().get(id, AsyncJobFuture)
     }
 
-    Future getAsyncJobFuture(AsyncJob asyncJob) {
+    AsyncJobFuture getAsyncJobFuture(AsyncJob asyncJob) {
         getAsyncJobFuture(asyncJob.id)
     }
 
     void shutdownAndAwaitTermination() {
-        executorService.shutdown() // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-                executorService.shutdownNow() // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!executorService.awaitTermination(60, TimeUnit.SECONDS))
-                    log.error("Pool did not terminate")
-            }
-        } catch (InterruptedException ex) {
-            // (Re-)Cancel if current thread also interrupted
-            executorService.shutdownNow()
-            // Preserve interrupt status
-            Thread.currentThread().interrupt()
-        }
+        Utils.shutdownAndAwaitTermination(executorService)
     }
 
     private GrailsCache getAsyncJobCache() {

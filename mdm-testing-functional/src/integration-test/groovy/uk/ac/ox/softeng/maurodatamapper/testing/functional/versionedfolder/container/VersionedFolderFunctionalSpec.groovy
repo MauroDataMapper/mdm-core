@@ -58,6 +58,7 @@ import spock.lang.Shared
 
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Future
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -1176,8 +1177,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then: 'the branched model data type points to the branched terminology'
         verifyResponse(OK, response)
         responseBody().count == 4
-        def mdt = responseBody().items.find{it.label == 'Functional Test Model Data Type'}
-        def mdt2 = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}
+        def mdt = responseBody().items.find {it.label == 'Functional Test Model Data Type'}
+        def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally'}
         mdt.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
         mdt.domainType == 'ModelDataType'
         mdt.modelResourceDomainType == 'Terminology'
@@ -1482,14 +1483,15 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, branchId)
     }
 
-
     void waitForAysncToComplete(String id) {
         log.debug('Waiting to complete {}', id)
         Future p = asyncJobService.getAsyncJobFuture(id)
-        p?.get()
+        try {
+            p.get()
+        } catch (CancellationException ignored) {
+        }
         log.debug('Completed')
     }
-
 
     void 'BMV11 : test creating a new branch model version of a VersionedFolder asynchronously'() {
         given:
@@ -1532,6 +1534,48 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         cleanupIds(id, branchId, mainBranchId)
+    }
+
+    void 'BMV12 : test creating a new branch model version of a VersionedFolder asynchronously and cancelling in mid-process'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion', performAsyncCreation: true])
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+        responseBody().id
+
+        when:
+        String jobId = responseBody().id
+        // Task doesnt start for 5s, and then takes ~2s to complete
+        sleep(5500)
+        DELETE("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'CANCELLING'
+
+        when:
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'CANCELLED'
+
+        when:
+        GET("$id/availableBranches")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 0
+
+        cleanup:
+        cleanupIds(id)
     }
 
     void 'FMV01 : test creating a new fork model of an unfinalised VersionedFolder (as reader)'() {
@@ -2564,10 +2608,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         responseBody().items.label as Set == [
-                'addLeftOnly',
-                'Functional Test Data Element with Model Data Type',
-                'Functional Test Data Element with Model Data Type Pointing Externally',
-                'existingDataElement'] as Set
+            'addLeftOnly',
+            'Functional Test Data Element with Model Data Type',
+            'Functional Test Data Element with Model Data Type Pointing Externally',
+            'existingDataElement'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
@@ -2580,8 +2624,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                               'Functional Test Model Data Type Pointing Externally',
                                               'existingDataType1',
                                               'existingDataType2'] as Set
-        def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
-        def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+        def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type'}
+        def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally'}
 
         and: 'the Functional Test Model Data Type points to the CodeSet in the target VF'
         mdt1.modelResourceDomainType == 'CodeSet'
@@ -2717,10 +2761,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+        responseBody().items.find {rde -> rde.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {rde -> rde.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {rde -> rde.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {rde -> rde.label == 'modifyLeftOnly'}.description == 'Description'
 
         when:
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
@@ -2732,10 +2776,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
-        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
@@ -2939,10 +2983,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+        responseBody().items.find {rde -> rde.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {rde -> rde.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {rde -> rde.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {rde -> rde.label == 'modifyLeftOnly'}.description == 'Description'
 
         when:
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
@@ -2954,10 +2998,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
-        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
@@ -3199,7 +3243,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             cleanUpRoles(externalFolder.id)
         }
     }
-
 
 
     String getExpectedModelTreeVersionString(Map data) {
@@ -3494,12 +3537,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     @Transactional
-    void verifyBreadcrumbTreesAndPaths(){
+    void verifyBreadcrumbTreesAndPaths() {
         sessionFactory.currentSession.clear()
         BreadcrumbTree.list().each {
             String uncheckedTreeString = it.treeString
             it.checkTree()
-            if(it.isDirty('treeString')) log.warn('\nSaved     [{}]\nGenerated [{}]', uncheckedTreeString, it.treeString)
+            if (it.isDirty('treeString')) log.warn('\nSaved     [{}]\nGenerated [{}]', uncheckedTreeString, it.treeString)
         }
         assertTrue 'All BT have correct treestring', BreadcrumbTree.list().every {
             !it.isDirty('treeString')
@@ -3517,7 +3560,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         checkPaths(TermRelationship.list())
     }
 
-    void checkPaths(List<MdmDomain> mdmDomains){
+    void checkPaths(List<MdmDomain> mdmDomains) {
         log.debug('Checking {}', mdmDomains.first().domainType)
         mdmDomains.each {
             Path uncheckedPath = it.getUncheckedPath()

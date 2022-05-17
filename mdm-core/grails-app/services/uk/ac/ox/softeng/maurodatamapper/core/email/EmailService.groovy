@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.transactions.Transactional
@@ -33,7 +34,6 @@ import org.apache.commons.text.StringSubstitutor
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 @Slf4j
 @SuppressFBWarnings('LI_LAZY_INIT_STATIC')
@@ -214,21 +214,6 @@ class EmailService implements AnonymisableService {
     }
 
     void shutdownAndAwaitTermination() {
-        executorService.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-                executorService.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!executorService.awaitTermination(60, TimeUnit.SECONDS))
-                    log.error("Pool did not terminate");
-            }
-        } catch (InterruptedException ex) {
-            // (Re-)Cancel if current thread also interrupted
-            executorService.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
+        Utils.shutdownAndAwaitTermination(executorService)
     }
-
 }
