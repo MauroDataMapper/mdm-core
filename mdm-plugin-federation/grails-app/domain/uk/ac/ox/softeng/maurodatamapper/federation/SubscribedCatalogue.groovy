@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
 import org.apache.commons.validator.routines.UrlValidator
 
@@ -49,6 +50,7 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
     Integer connectionTimeout
 
     // Connection type to remote catalogue
+    @BindUsing({obj, source -> SubscribedCatalogueType.findFromMap(source)})
     SubscribedCatalogueType subscribedCatalogueType
 
     static hasMany = [

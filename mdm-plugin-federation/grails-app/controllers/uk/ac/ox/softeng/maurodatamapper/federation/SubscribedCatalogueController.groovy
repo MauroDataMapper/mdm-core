@@ -79,7 +79,7 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
 
-        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, Utils.toUuid(params.publishedModelId))
+        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, params.publishedModelId)
     }
 
     def testConnection() {

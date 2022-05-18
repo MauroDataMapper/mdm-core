@@ -8,6 +8,7 @@ json {
     id subscribedCatalogue.id
     url subscribedCatalogue.url
     label subscribedCatalogue.label
+    subscribedCatalogueType subscribedCatalogue.subscribedCatalogueType.label
 
     if (subscribedCatalogue.description) {
         description subscribedCatalogue.description

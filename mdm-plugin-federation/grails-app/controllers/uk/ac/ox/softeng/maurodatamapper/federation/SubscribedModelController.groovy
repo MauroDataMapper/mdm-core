@@ -30,6 +30,8 @@ import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
 
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
+
 @Slf4j
 class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
@@ -79,7 +81,12 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
         SubscribedModel instance = subscribedModelFederationParams.subscribedModel
 
+        if (!instance) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Subscribed Model parameter is missing')
+        }
+
         instance.subscribedCatalogue = subscribedCatalogueService.get(params.subscribedCatalogueId)
+        instance.createdBy = currentUser.emailAddress
 
         if (response.isCommitted()) return
 

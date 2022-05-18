@@ -135,15 +135,16 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
                 (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType)
             }) {
-                log.debug('No published link found for specified URL and/or Content Type')
+                log.debug('No published link found for specified URL and/or content type')
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.link.notfound',
-                                              'Could not import SubscribedModel into local Catalogue, no published link found for content type [{0}] and/or URL [{1}]')
+                                              [subscribedModelFederationParams.url, subscribedModelFederationParams.contentType].toArray(),
+                                              'Could not import SubscribedModel into local Catalogue, no published link found for URL [{0}] and/or content type [{1}]')
                 return subscribedModel.errors
             }
 
             ImporterProviderService importerProviderService
             Link exportLink
-            if (subscribedModelFederationParams.importerProviderService.namespace && subscribedModelFederationParams.importerProviderService.name) {
+            if (subscribedModelFederationParams.importerProviderService?.namespace && subscribedModelFederationParams.importerProviderService?.name) {
                 exportLink = exportLinks.find {link ->
                     (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
                     (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType) &&
@@ -161,7 +162,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             }
 
             if (!importerProviderService) {
-                log.debug('No ImporterProviderService found for any published content type')
+                log.debug('No ImporterProviderService found for any published content type and given parameters')
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.format.unsupported',
                                               'Could not import SubscribedModel into local Catalogue, no importer found for content type [{0}] with given parameters')
                 return subscribedModel.errors
@@ -174,7 +175,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                                                         'for model cannot import file content')
             }
 
-            byte[] resourceBytes = exportSubscribedModelFromLink(subscribedModel, exportLink)
+            byte[] resourceBytes = exportSubscribedModelFromSubscribedCatalogue(subscribedModel, exportLink)
 
             parameters.importFile = new FileParameter(fileContents: resourceBytes)
             parameters.folderId = folder.id
@@ -227,6 +228,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             //Record the ID of the imported model against the subscription makes it easier to track version links later.
             subscribedModel.lastRead = OffsetDateTime.now()
             subscribedModel.localModelId = savedModel.id
+            subscribedModel.subscribedModelType = savedModel.domainType
 
             //Handle version linking
             if (domainService.respondsTo('getUrlResourceName')) {
@@ -248,100 +250,6 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         subscribedModel
     }
 
-    /*def federateSubscribedModel(SubscribedModel subscribedModel, UserSecurityPolicyManager userSecurityPolicyManager) {
-
-        Folder folder = folderService.get(subscribedModel.folderId)
-
-        //Export the requested model from the SubscribedCatalogue
-        log.debug('Exporting SubscribedModel')
-        try {
-            String exportedJson = exportSubscribedModelFromSubscribedCatalogue(subscribedModel)
-
-            if (!exportedJson) {
-                log.debug('No Json exported')
-                subscribedModel.errors.reject('invalid.subscribedmodel.export',
-                                              'Could not export SubscribedModel from SubscribedCatalogue')
-                return subscribedModel.errors
-            }
-
-            //Get a ModelService to handle the domain type we are dealing with
-            ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
-            ModelImporterProviderService modelImporterProviderService = modelService.getJsonModelImporterProviderService()
-
-            //Import the model
-            ModelImporterProviderServiceParameters parameters =
-                modelImporterProviderService.createNewImporterProviderServiceParameters() as ModelImporterProviderServiceParameters
-
-            if (parameters.hasProperty('importFile')?.type != FileParameter) {
-                throw new ApiInternalException('MSXX', "Assigned JSON importer ${modelImporterProviderService.class.simpleName} " +
-                                                       'for model cannot import file content')
-            }
-
-            parameters.importFile = new FileParameter(fileContents: exportedJson.getBytes())
-            parameters.folderId = folder.id
-            parameters.finalised = true
-            parameters.useDefaultAuthority = false
-
-            Model model = modelImporterProviderService.importDomain(userSecurityPolicyManager.user, parameters)
-
-            if (!model) {
-                subscribedModel.errors.reject('invalid.subscribedmodel.import',
-                                              'Could not import SubscribedModel into local Catalogue')
-                return subscribedModel.errors
-            }
-
-            log.debug('Importing model {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
-            if (modelService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
-                subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
-                                              [model.authority, model.label, model.modelVersion].toArray(),
-                                              'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')
-                return subscribedModel.errors
-            }
-
-
-            model.folder = folder
-
-            modelService.validate(model)
-
-            if (model.hasErrors()) {
-                return model.errors
-            }
-
-            log.debug('No errors in imported model')
-
-            Model savedModel = modelService.saveModelWithContent(model)
-            log.debug('Saved model')
-
-            if (securityPolicyManagerService) {
-                log.debug('add security to saved model')
-                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel,
-                                                                                                         userSecurityPolicyManager.user,
-                                                                                                         savedModel.label)
-            }
-
-
-            //Record the ID of the imported model against the subscription makes it easier to track version links later.
-            subscribedModel.lastRead = OffsetDateTime.now()
-            subscribedModel.localModelId = savedModel.id
-
-            //Handle version linking
-            Map versionLinks = getVersionLinks(modelService.getUrlResourceName(), subscribedModel)
-            if (versionLinks) {
-                log.debug('add version links')
-                addVersionLinksToImportedModel(userSecurityPolicyManager.user, versionLinks, modelService, subscribedModel)
-            }
-
-        } catch (ApiException exception) {
-            log.warn("Failed to federate subscribedModel due to [${exception.message}]")
-            subscribedModel.errors.reject('invalid.subscribedmodel.federate.exception',
-                                          [exception.message].toArray(),
-                                          'Could not federate SubscribedModel into local Catalogue due to [{0}]')
-            return subscribedModel.errors
-        }
-
-        subscribedModel
-    }*/
-
     /**
      * Get version links from the subscribed catalogue for the specified subscribed model
      * 1. Create a URL for {modelDomainType}/{modelId}/versionLinks
@@ -361,28 +269,12 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     }
 
     /**
-     * Export a model as Json from a remote SubscribedCatalogue
-     * 1. Find an exporter on the remote SubscribedCatalogue
-     * 2. If an exporter is found, use it to export the model
+     * Export a model as bytes from a remote link from a SubscribedCatalogue
      *
-     * @param subscribedModel
-     * @return String of the exported json
+     * @param subscribedModel, link
+     * @return Byte array of the linked resource
      */
-    String exportSubscribedModelFromSubscribedCatalogue(SubscribedModel subscribedModel) {
-
-        //Get a ModelService to handle the domain type we are dealing with
-        ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
-
-        Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService)
-
-        subscribedCatalogueService.getStringResourceExport(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName(),
-                                                           subscribedModel.subscribedModelId, exporter)
-
-        // byte[] bytesOut = subscribedCatalogueService.getBytesResourceExport(subscribedModel.subscribedCatalogue, )
-        // new String(subscribedCatalogueService.getBytesResourceExport(subscribedModel.subscribedCatalogue, getExportLinksForSubscribedModel(subscribedModel).first().href))
-    }
-
-    byte[] exportSubscribedModelFromLink(SubscribedModel subscribedModel, Link link) {
+    byte[] exportSubscribedModelFromSubscribedCatalogue(SubscribedModel subscribedModel, Link link) {
         subscribedCatalogueService.getBytesResourceExport(subscribedModel.subscribedCatalogue, link.href)
     }
 
@@ -431,31 +323,6 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             }
         }
         log.debug('exit addVersionLinksToImportedModel')
-    }
-
-    /**
-     * Find an exporter for the domain type that we want to export from the subscribed catalogue
-     * 1. Create a URL for {modelDomainType}/providers/exporters
-     * 2. Slurp the Json returned by this endpoint
-     * 3. Return an exporter from this slurped json which has a file extension of json
-     *
-     * @param subscribedCatalogue
-     * @param urlModelType
-     * @return An exporter
-     */
-    private Map getJsonExporter(SubscribedCatalogue subscribedCatalogue, ModelService modelService) {
-
-        //Make an object by slurping json
-        List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, modelService.getUrlResourceName())
-
-        //Find a json exporter
-        Map exporterMap = exporters.find {it.fileType == 'text/json' && it.name == modelService.getJsonModelExporterProviderService().name}
-
-        //Can't use DataBindingUtils because of a clash with grails 'version' property
-        if (!exporterMap) {
-            throw new ApiBadRequestException('SMSXX', 'Cannot export model from subscribed catalogue as no JSON exporter available')
-        }
-        exporterMap
     }
 
     private List<Link> getExportLinksForSubscribedModel(SubscribedModel subscribedModel) {

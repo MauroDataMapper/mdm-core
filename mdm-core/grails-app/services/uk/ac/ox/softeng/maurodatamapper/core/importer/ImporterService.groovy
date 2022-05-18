@@ -216,15 +216,19 @@ class ImporterService implements DataBinder {
         importerProviderServiceParameters
     }
 
-    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServicesByContentType(String contentType) {
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServicesByContentType(
+        String contentType) {
         importerProviderServices.findAll {it.handlesContentType(contentType)}.sort()
     }
 
-    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(String contentType) {
-        importerProviderServices.findAll {it.handlesContentType(contentType)}.sort().first()
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
+        String contentType) {
+        findImporterProviderServicesByContentType(contentType).first()
     }
 
-    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace, String name, String version) {
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace,
+                                                                                                                                                            String name,
+                                                                                                                                                            String version) {
         if (version) {
             importerProviderServices.find {
                 it.namespace.equalsIgnoreCase(namespace) &&
@@ -239,7 +243,8 @@ class ImporterService implements DataBinder {
         }
     }
 
-    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(String namespace, String name, String version, String contentType) {
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
+        String namespace, String name, String version, String contentType) {
         findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType)}.sort().first()
     }
 }

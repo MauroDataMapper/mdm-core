@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
 class MdmJsonSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
     @Override
     boolean handles(SubscribedCatalogueType type) {
-        type == SubscribedCatalogueType.MDM_JSON
+        type == SubscribedCatalogueType.MAURO_JSON
     }
 
     @Override

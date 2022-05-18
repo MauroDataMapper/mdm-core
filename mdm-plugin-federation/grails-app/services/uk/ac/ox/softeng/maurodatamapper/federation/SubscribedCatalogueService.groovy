@@ -20,28 +20,21 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
-import grails.rest.Link
 import grails.util.Environment
 import groovy.util.logging.Slf4j
-import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.Duration
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 
 @Transactional
 @Slf4j
@@ -145,14 +138,8 @@ class SubscribedCatalogueService implements AnonymisableService {
         }
     }
 
-    /*List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
-        }
-    }*/
-
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, String publishedModelId) {
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
                 client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, publishedModelId)
             }
@@ -162,7 +149,7 @@ class SubscribedCatalogueService implements AnonymisableService {
     }
 
     Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
                 client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, publishedModelId)
             }
@@ -170,13 +157,6 @@ class SubscribedCatalogueService implements AnonymisableService {
             [:]
         }
     }
-
-    /*String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
-                                           resourceId, exporterInfo)
-        }
-    }*/
 
     byte[] getBytesResourceExport(SubscribedCatalogue subscribedCatalogue, String resourceUrl) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
@@ -196,33 +176,6 @@ class SubscribedCatalogueService implements AnonymisableService {
 
     private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         subscribedCatalogueConverters.find {it.handles(subscribedCatalogue.subscribedCatalogueType)}
-    }
-
-    /**
-     * An ID in the atom feed looks like tag:host,MINTED_DATE:uuid
-     * So get everything after the last :
-     *
-     * @param url A tag ID / URL
-     * @return A UUID as a string
-     */
-    private static String extractUuidFromTagUri(String url) {
-        final String separator = ':'
-        int lastPos = url.lastIndexOf(separator)
-
-        return url.substring(lastPos + 1)
-    }
-
-    /**
-     * An ID in the atom feed looks like urn:uuid:{model.id}* So get everything after the last :
-     *
-     * @param url A urn url
-     * @return A UUID as a string
-     */
-    private static String extractUuidFromUrn(String url) {
-        final String separator = ':'
-        int lastPos = url.lastIndexOf(separator)
-
-        return url.substring(lastPos + 1)
     }
 
     void anonymise(String createdBy) {

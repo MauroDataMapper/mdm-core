@@ -7,7 +7,7 @@ import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 
 interface SubscribedCatalogueConverter {
-    String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
+    static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
 
     boolean handles(SubscribedCatalogueType type)
 

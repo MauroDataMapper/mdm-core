@@ -53,7 +53,6 @@ import java.util.concurrent.ThreadFactory
  * @since 14/04/2021
  */
 @Slf4j
-@SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Methods exist for future programming')
 class FederationClient implements Closeable, XmlImportMapping {
 
     static final String API_KEY_HEADER = 'apiKey'
@@ -97,9 +96,9 @@ class FederationClient implements Closeable, XmlImportMapping {
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
             String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
-            if (!path.endsWith('/api/')) path = path + '/api/'
+            if (!path.endsWith('/api/')) path = path + 'api/'
             this.contextPath = path
         } else {
             this.contextPath = hostUri.path
@@ -140,17 +139,6 @@ class FederationClient implements Closeable, XmlImportMapping {
 
     Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, String publishedModelId) {
         retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), apiKey)
-    }
-
-    String getStringResourceExport(UUID apiKey, String urlResourceType, UUID resourceId, Map exporterInfo) {
-        retrieveStringFromClient(UriBuilder.of(urlResourceType)
-                                     .path(resourceId.toString())
-                                     .path('export')
-                                     .path(exporterInfo.namespace)
-                                     .path(exporterInfo.name)
-                                     .path(exporterInfo.version),
-                                 apiKey
-        )
     }
 
     byte[] getBytesResourceExport(UUID apiKey, String resourceUrl) {

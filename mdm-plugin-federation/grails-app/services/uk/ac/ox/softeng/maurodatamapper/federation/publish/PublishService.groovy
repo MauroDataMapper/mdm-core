@@ -84,7 +84,7 @@ class PublishService {
         List<PublishedModel> newerPublishedModels = []
         newerVersionTree.findAll {it ->
             Model model = it.versionAware
-            model.id != modelId && publishedModels.find {pm -> pm.modelId == model.id}
+            model.id != modelId && publishedModels.find {pm -> pm.modelId == model.id.toString()}
         }.each {vtm ->
             newerPublishedModels << getPublishedModel(vtm.versionAware, modelService).tap {previousModelId = vtm.parentVersionTreeModel.versionAware.id}
         }
