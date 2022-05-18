@@ -386,7 +386,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new branch model version of a model inside a VersionedFolder')
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (createNewVersionData.performAsyncCreation) {
+        if (createNewVersionData.asynchronous) {
 
             AsyncJob asyncJob = getModelService().asyncCreateNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
                                                                                    createNewVersionData.copyPermissions,
@@ -428,7 +428,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new documentation version of a model inside a VersionedFolder')
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (createNewVersionData.performAsyncCreation) {
+        if (createNewVersionData.asynchronous) {
             AsyncJob asyncJob = getModelService().asyncCreateNewDocumentationVersion(instance,
                                                                                      currentUser,
                                                                                      createNewVersionData.copyPermissions,
@@ -470,7 +470,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (createNewVersionData.performAsyncCreation) {
+        if (createNewVersionData.asynchronous) {
             AsyncJob asyncJob = getModelService().asyncCreateNewForkModel(createNewVersionData.label,
                                                                           instance,
                                                                           currentUser,
@@ -589,7 +589,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (importerProviderServiceParameters.performAsynchronously) {
+        if (importerProviderServiceParameters.asynchronous) {
             AsyncJob asyncJob = importerService.asyncImportDomain(currentUser, importer, importerProviderServiceParameters, getModelService(),
                                                                   folder)
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
@@ -674,7 +674,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (importerProviderServiceParameters.performAsynchronously) {
+        if (importerProviderServiceParameters.asynchronous) {
             AsyncJob asyncJob = importerService.asyncImportDomains(currentUser, importer, importerProviderServiceParameters, getModelService(),
                                                                    folder)
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)

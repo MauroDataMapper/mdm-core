@@ -181,7 +181,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (createNewVersionData.performAsyncCreation) {
+        if (createNewVersionData.asynchronous) {
 
             AsyncJob asyncJob = versionedFolderService.asyncCreateNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
                                                                                         createNewVersionData.copyPermissions,
@@ -219,7 +219,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (createNewVersionData.performAsyncCreation) {
+        if (createNewVersionData.asynchronous) {
             AsyncJob asyncJob = versionedFolderService.asyncCreateNewForkModel(createNewVersionData.label,
                                                                                instance,
                                                                                currentUser,
@@ -259,7 +259,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
 
         // Run as async job returns ACCEPTED and the async job which was created
-        if (createNewVersionData.performAsyncCreation) {
+        if (createNewVersionData.asynchronous) {
             AsyncJob asyncJob = versionedFolderService.asyncCreateNewDocumentationVersion(instance,
                                                                                           currentUser,
                                                                                           createNewVersionData.copyPermissions,

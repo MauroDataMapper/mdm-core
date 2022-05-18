@@ -1500,7 +1500,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when: 'logged in as editor'
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion', performAsyncCreation: true])
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion', asynchronous: true])
 
         then:
         verifyResponse(HttpStatus.ACCEPTED, response)
@@ -1543,7 +1543,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when: 'logged in as editor'
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion', performAsyncCreation: true])
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion', asynchronous: true])
 
         then:
         verifyResponse(HttpStatus.ACCEPTED, response)

@@ -40,5 +40,5 @@ abstract class ImporterProviderServiceParameters {
             name = 'Import Process',
             order = Integer.MAX_VALUE
         ))
-    Boolean performAsynchronously = false
+    Boolean asynchronous = false
 }

@@ -1252,7 +1252,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
 
         when:
-        PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
+        PUT("$id/newBranchModelVersion", [asynchronous: true])
 
         then:
         verifyResponse(ACCEPTED, response)
@@ -1336,7 +1336,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse CREATED, response
 
         when: 'another main branch created'
-        PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
+        PUT("$id/newBranchModelVersion", [asynchronous: true])
 
         then:
         verifyResponse(ACCEPTED, response)
@@ -1364,7 +1364,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
 
         when: 'another main branch created'
-        PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
+        PUT("$id/newBranchModelVersion", [asynchronous: true])
 
         then:
         verifyResponse(ACCEPTED, response)
@@ -1416,7 +1416,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
 
         when:
-        PUT("$id/newBranchModelVersion", [branchName: 'async-test', performAsyncCreation: true])
+        PUT("$id/newBranchModelVersion", [branchName: 'async-test', asynchronous: true])
 
         then:
         verifyResponse(ACCEPTED, response)
@@ -3253,7 +3253,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                 fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('complexDataModel').toList()
             ],
-            performAsynchronously          : true
+            asynchronous: true
         ])
 
         then:
