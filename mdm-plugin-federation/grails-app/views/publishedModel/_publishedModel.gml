@@ -9,13 +9,12 @@ PublishedModel pm = publishedModel as PublishedModel
 
 publishedModel {
     modelId pm.modelId
-    title pm.title
     label pm.modelLabel
     version pm.modelVersion
-    modelType pm.modelType
+    if (pm.modelType) modelType pm.modelType
     lastUpdated OffsetDateTimeConverter.toString(pm.lastUpdated)
-    dateCreated OffsetDateTimeConverter.toString(pm.dateCreated)
-    datePublished OffsetDateTimeConverter.toString(pm.datePublished)
+    if (pm.dateCreated) dateCreated OffsetDateTimeConverter.toString(pm.dateCreated)
+    if (pm.datePublished) datePublished OffsetDateTimeConverter.toString(pm.datePublished)
     if (pm.author) author pm.author
     if (pm.description) description pm.description
     if (pm.previousModelId) previousModelId pm.previousModelId

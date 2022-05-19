@@ -119,17 +119,18 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void cleanUpRoles(String... ids) {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
-        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
+        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect {Utils.toUuid(it)}).deleteAll()
         safeSessionFlush()
     }
 
     Map getValidJson() {
         [
-            url          : "http://localhost:$serverPort".toString(),
-            apiKey       : UUID.randomUUID().toString(),
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort".toString(),
+            apiKey                 : UUID.randomUUID().toString(),
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
     }
 
@@ -152,6 +153,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     "description": "Functional Test Description",
     "id": "\${json-unit.matches:id}",
     "label": "Functional Test Label",
+    "subscribedCatalogueType": 'Mauro JSON',
     "refreshPeriod": 7,
     "url": "http://localhost:$serverPort"
 }"""
@@ -162,6 +164,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     "description": "Functional Test Description",
     "id": "\${json-unit.matches:id}",
     "label": "Functional Test Label",
+    "subscribedCatalogueType": 'Mauro JSON',
     "refreshPeriod": 7,
     "url": "http://localhost:$serverPort"
 }"""
@@ -175,6 +178,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
             "id": "\${json-unit.matches:id}",
             "url": "http://localhost:$serverPort",
             "label": "Functional Test Label",
+            "subscribedCatalogueType": 'Mauro JSON',
             "description": "Functional Test Description",
             "refreshPeriod": 7
         }
@@ -776,11 +780,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         when:
         //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : apiKey,
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : apiKey,
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
 
@@ -789,7 +794,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", MAP_ARG,true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
@@ -797,10 +802,10 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         responseBody().items.size() == 3
 
         and:
-        verifyJsonPublishedModel(responseBody().items.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'dataModels',
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels',
                                  getDataModelExporters())
-        verifyJsonPublishedModel(responseBody().items.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
-        verifyJsonPublishedModel(responseBody().items.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Simple Test CodeSet' && it.version == '1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Complex Test CodeSet' && it.version == '1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
 
         cleanup:
         DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
@@ -814,11 +819,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : '',
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : '',
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
 
@@ -849,11 +855,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String apiKey = responseBody().apiKey
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : apiKey,
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : apiKey,
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -889,11 +896,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String apiKey = responseBody().apiKey
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : apiKey,
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : apiKey,
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -908,9 +916,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         responseBody().newerPublishedModels.size() == 2
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 2.0.0'}, 'DataModel', 'dataModels',
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
                                  getDataModelExporters(), true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 3.0.0'}, 'DataModel', 'dataModels',
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
                                  getDataModelExporters(), true)
 
         cleanup:
@@ -932,11 +940,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String newerId = tuple.v2
         loginAdmin()
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : '',
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : '',
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -953,7 +962,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         responseBody().newerPublishedModels.size() == 1
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 2.0.0'}, 'DataModel', 'dataModels',
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
                                  getDataModelExporters(), true)
 
         cleanup:
@@ -984,11 +993,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : apiKey,
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : apiKey,
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
 
@@ -1021,11 +1031,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         Map subscriptionJson = [
-            url          : "http://localhost:$serverPort/".toString(),
-            apiKey       : '',
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort/".toString(),
+            apiKey                 : '',
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
         POST('', subscriptionJson)
 
@@ -1055,7 +1066,6 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label
         assert Version.from(publishedModel.version)
-        assert publishedModel.title == publishedModel.label + ' ' + publishedModel.version
         assert publishedModel.modelType == modelType
         assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -1090,15 +1100,15 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
     private static Map<String, String> getDataModelExporters() {
         [
-            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
-            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+            'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
         ]
     }
 
     private static Map<String, String> getCodeSetExporters() {
         [
-            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
-            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0'
+            'application/mauro.codeset+json': 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+            'application/mauro.codeset+xml' : 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0'
         ]
     }
 }

@@ -6,13 +6,12 @@ model {
 
 json {
     modelId publishedModel.modelId
-    title publishedModel.title
     label publishedModel.modelLabel
     version publishedModel.modelVersion
-    modelType publishedModel.modelType
+    if (publishedModel.modelType) modelType publishedModel.modelType
     lastUpdated publishedModel.lastUpdated
-    dateCreated publishedModel.dateCreated
-    datePublished publishedModel.datePublished
+    if (publishedModel.dateCreated) dateCreated publishedModel.dateCreated
+    if (publishedModel.datePublished) datePublished publishedModel.datePublished
     if (publishedModel.author) author publishedModel.author
     if (publishedModel.description) description publishedModel.description
     if (publishedModel.previousModelId) previousModelId publishedModel.previousModelId

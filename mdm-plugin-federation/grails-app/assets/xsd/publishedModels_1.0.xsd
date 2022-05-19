@@ -34,7 +34,6 @@
     <xs:complexType name="publishedModelType">
         <xs:sequence>
             <xs:element name="modelId" type="uuid" />
-            <xs:element name="title" type="mandatoryString" />
             <xs:element name="label" type="mandatoryString" />
             <xs:element name="version" type="mandatoryString" />
             <xs:element name="modelType" type="mandatoryString" />

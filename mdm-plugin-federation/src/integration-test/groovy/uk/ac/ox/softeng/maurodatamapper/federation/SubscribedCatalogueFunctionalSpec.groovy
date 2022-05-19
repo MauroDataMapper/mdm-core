@@ -104,11 +104,12 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
     //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
     Map getValidJson() {
         [
-            url          : "http://localhost:$serverPort".toString(),
-            apiKey       : '67421316-66a5-4830-9156-b1ba77bba5d1',
-            label        : 'Functional Test Label',
-            description  : 'Functional Test Description',
-            refreshPeriod: 7
+            url                    : "http://localhost:$serverPort".toString(),
+            apiKey                 : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            label                  : 'Functional Test Label',
+            subscribedCatalogueType: 'Mauro JSON',
+            description            : 'Functional Test Description',
+            refreshPeriod          : 7
         ]
     }
 
@@ -126,6 +127,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
   "id": "${json-unit.matches:id}",
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
+  "subscribedCatalogueType": 'Mauro JSON',
   "description": 'Functional Test Description',
   "refreshPeriod": 7,
   "apiKey": "67421316-66a5-4830-9156-b1ba77bba5d1"
@@ -137,6 +139,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
   "id": "${json-unit.matches:id}",
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
+  "subscribedCatalogueType": 'Mauro JSON',
   "description": 'Functional Test Description',
   "refreshPeriod": 7
 }'''
@@ -150,6 +153,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
       "id": "${json-unit.matches:id}",
       "url": "${json-unit.any-string}",
       "label": "Functional Test Label",
+      "subscribedCatalogueType": 'Mauro JSON',
       "description": "Functional Test Description",
       "refreshPeriod": 7
     }
@@ -235,7 +239,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         responseBody().items.size() == 1
 
         and:
-        verifyJsonPublishedModel(responseBody().items.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
 
         cleanup:
         DELETE(subscribedCatalogueId)
@@ -276,9 +280,9 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         responseBody().newerPublishedModels.size() == 2
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
                                  true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
                                  true)
 
         cleanup:
@@ -295,7 +299,6 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label
         assert Version.from(publishedModel.version)
-        assert publishedModel.title == publishedModel.label + ' ' + publishedModel.version
         assert publishedModel.modelType == modelType
         assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -330,8 +333,8 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
 
     private static Map<String, String> getDataModelExporters() {
         [
-            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
-            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+            'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
         ]
     }
 }

@@ -28,7 +28,7 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
         List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {entry ->
             new PublishedModel().tap {
                 modelId = entry.id
-                title = entry.title
+                modelLabel = entry.title
                 if (entry.updated.text()) lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 if (entry.published.text()) datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 author = entry.author.name ?: subscribedCatalogueModelsFeed.author.name

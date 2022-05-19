@@ -20,10 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Requires
@@ -43,11 +45,14 @@ import spock.lang.Shared
 @Slf4j
 // Requires a connection to the CD environment, if this connection is not available
 @Requires({
-    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
-    HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
+    //    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
+    String url = 'http://localhost:8090'
+    HttpURLConnection connection = (url + '/api/admin/status').toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
+    connection.setRequestProperty('apiKey', '9eb21e4c-8a61-4f32-91ea-f4563792b08c') // TODO @josephcr change this
     connection.connect()
-    connection.getResponseCode() == 200
+    connection.getResponseCode() == 200 &&
+    Version.from(new JsonSlurper().parseText(connection.content.text)['Mauro Data Mapper Version']) >= Version.from('5.2.0-SNAPSHOT')
 })
 class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
@@ -65,9 +70,12 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
-                                                        apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
+        subscribedCatalogueId = new SubscribedCatalogue(//url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
+                                                        //apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
+                                                        url: 'http://localhost:8090',
+                                                        apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
                                                         label: 'Functional Test Label',
+                                                        subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
@@ -97,16 +105,20 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
     Map getValidJson() {
         [
-            subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-            folderId           : getFolderId(),
-            subscribedModelType: 'DataModel'
+            subscribedModel: [
+                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
+                subscribedModelId: 'a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                folderId         : getFolderId()
+            ]
         ]
     }
 
     Map getInvalidJson() {
         [
-            subscribedModelId: null,
-            folderId: getFolderId()
+            subscribedModel: [
+                subscribedModelId: null,
+                folderId         : getFolderId()
+            ]
         ]
     }
 
@@ -140,8 +152,7 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'The response is correct'
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
-        response.body().total >= 1
-        response.body().errors.size() == response.body().total
+        response.body().message == 'Subscribed Model parameter is missing'
 
         when: 'The save action is executed with invalid data'
         log.debug('Invalid content save')

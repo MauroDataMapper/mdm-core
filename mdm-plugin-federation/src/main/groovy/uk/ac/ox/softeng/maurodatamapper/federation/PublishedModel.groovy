@@ -57,17 +57,6 @@ class PublishedModel implements Comparable<PublishedModel> {
         "${modelLabel} ${modelVersion}"
     }
 
-    void setTitle(String label) {
-        Pattern titleVersionPattern = ~/ $Version.VERSION_PATTERN$/
-        String version = label.find(titleVersionPattern)
-        if (version) {
-            modelVersion = Version.from(version.trim())
-            modelLabel = (label - version).trim()
-        } else {
-            modelLabel = label
-        }
-    }
-
     String getDescription() {
         description == title ? null : description
     }

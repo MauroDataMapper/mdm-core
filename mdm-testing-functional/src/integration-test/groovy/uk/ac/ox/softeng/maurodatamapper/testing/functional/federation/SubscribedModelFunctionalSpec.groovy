@@ -21,14 +21,17 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Shared
@@ -60,11 +63,14 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 // Requires a connection to the CD environment, if this connection is not available
 @Requires({
-    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
-    HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
+    //    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
+    String url = 'http://localhost:8090'
+    HttpURLConnection connection = (url + '/api/admin/status').toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
+    connection.setRequestProperty('apiKey', '9eb21e4c-8a61-4f32-91ea-f4563792b08c') // TODO @josephcr change this
     connection.connect()
-    connection.getResponseCode() == 200
+    connection.getResponseCode() == 200 &&
+    Version.from(new JsonSlurper().parseText(connection.content.text)['Mauro Data Mapper Version']) >= Version.from('5.2.0-SNAPSHOT')
 })
 class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
@@ -86,9 +92,12 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                  createdBy: FUNCTIONAL_TEST).save(flush: true).id
 
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
-                                                        apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
+        subscribedCatalogueId = new SubscribedCatalogue(//url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
+                                                        //apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
+                                                        url: 'http://localhost:8090',
+                                                        apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
                                                         label: 'Functional Test Label',
+                                                        subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: FUNCTIONAL_TEST).save(flush: true).id
@@ -154,16 +163,20 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     Map getValidJson() {
         [
-            subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-            folderId           : getFolderId(),
-            subscribedModelType: 'DataModel'
+            subscribedModel: [
+                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
+                subscribedModelId: 'a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                folderId         : getFolderId()
+            ]
         ]
     }
 
     Map getInvalidJson() {
         [
-            subscribedModelId: null,
-            folderId         : getFolderId()
+            subscribedModel: [
+                subscribedModelId: null,
+                folderId         : getFolderId()
+            ]
         ]
     }
 
@@ -547,7 +560,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse UNPROCESSABLE_ENTITY, response
         log.debug('responseBody().errors.first().message={}', responseBody().errors.first().message)
         responseBody().errors.first().message == 'Property [subscribedModelId] of class [class uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel] with value [' +
-        getValidJson().subscribedModelId + '] must be unique'
+        getValidJson().subscribedModel.subscribedModelId + '] must be unique'
 
         cleanup:
         removeValidIdObjects(id, localModelId)

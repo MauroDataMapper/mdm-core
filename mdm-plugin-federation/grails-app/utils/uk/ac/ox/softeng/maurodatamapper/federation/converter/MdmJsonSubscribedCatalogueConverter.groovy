@@ -28,9 +28,8 @@ class MdmJsonSubscribedCatalogueConverter implements SubscribedCatalogueConverte
         List<PublishedModel> publishedModels = (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
             new PublishedModel().tap {
                 modelId = pm.modelId
-                title = pm.title // for compatibility with remote catalogue versions prior to 4.12
-                if (pm.label) modelLabel = pm.label
-                if (pm.version) modelVersion = Version.from(pm.version)
+                modelLabel = pm.label
+                modelVersion = Version.from(pm.version)
                 modelType = pm.modelType
                 lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)

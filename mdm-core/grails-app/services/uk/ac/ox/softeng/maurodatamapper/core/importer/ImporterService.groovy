@@ -58,7 +58,7 @@ class ImporterService implements DataBinder {
     @Autowired
     MessageSource messageSource
 
-    @Autowired
+    @Autowired(required = false)
     Set<ImporterProviderService> importerProviderServices
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
