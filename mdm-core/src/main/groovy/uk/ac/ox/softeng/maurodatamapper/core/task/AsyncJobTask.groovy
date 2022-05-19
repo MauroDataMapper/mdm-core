@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
 
 import java.util.concurrent.Callable
@@ -41,7 +43,7 @@ class AsyncJobTask implements Callable<Boolean> {
     AtomicBoolean hasStarted
     AtomicBoolean mainTaskCompleted
 
-    AsyncJobTask(AsyncJobService asyncJobService, AsyncJob asyncJob, Closure taskToExecute) {
+    AsyncJobTask(AsyncJobService asyncJobService, AsyncJob asyncJob, @ClosureParams(value = SimpleType, options = 'java.util.UUID') Closure taskToExecute) {
         this.asyncJobService = asyncJobService
         this.asyncJobId = asyncJob.id
         this.asyncJobName = asyncJob.jobName
@@ -98,7 +100,7 @@ class AsyncJobTask implements Callable<Boolean> {
         }
     }
 
-    boolean performStep(boolean ignoreInterrupt = false, Closure closure) {
+    boolean performStep(boolean ignoreInterrupt = false, @ClosureParams(value = SimpleType, options = 'java.util.UUID') Closure closure) {
         // Don't perform the step if the thread has been interrupted
         if (isInterrupted(ignoreInterrupt)) return false
 
@@ -107,7 +109,7 @@ class AsyncJobTask implements Callable<Boolean> {
         AsyncJob.withNewSession {session ->
             AsyncJob.withNewTransaction {transactionStatus ->
 
-                closure.call()
+                closure.call(asyncJobId)
 
                 // If the thread was interrupted then rollback the transaction
                 if (isInterrupted(ignoreInterrupt)) {

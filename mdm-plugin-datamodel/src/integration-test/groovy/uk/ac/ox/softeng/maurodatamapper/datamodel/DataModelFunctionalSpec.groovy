@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
@@ -969,7 +970,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 5
-        responseBody().items.eachWithIndex{dc, i ->
+        responseBody().items.eachWithIndex {dc, i ->
             assert dc.domainType == 'DataClass'
             assert dc.label.startsWith('Root Data Class') && dc.label.endsWith((i + 1).toString())
         }
@@ -1021,7 +1022,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 5
-        responseBody().items.eachWithIndex{dc, i ->
+        responseBody().items.eachWithIndex {dc, i ->
             assert dc.domainType == 'DataClass'
             assert dc.label.startsWith('Root Data Class') && dc.label.endsWith((i + 1).toString())
         }
@@ -1261,7 +1262,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when:
         String jobId = responseBody().id
         waitForAysncToComplete(jobId)
-        log.debug('Getting completed job')
         GET("asyncJobs/$jobId", MAP_ARG, true)
 
         then:
@@ -1425,7 +1425,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when:
         String jobId = responseBody().id
         waitForAysncToComplete(jobId)
-        log.debug('Getting completed job')
         GET("asyncJobs/$jobId", MAP_ARG, true)
 
         then:
@@ -1815,8 +1814,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         GET("$source/metadata")
         verifyResponse OK, response
-        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
-        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+        String deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
+        String modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
 
         then:
         //dataModel description
@@ -2124,10 +2123,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
@@ -2151,10 +2150,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("${mergeData.target}/metadata")
 
         then:
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
-        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -2225,7 +2224,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("${target}/metadata")
 
         then:
-        responseBody().items.find { it.namespace == 'test.com' && it.key == 'testProperty' }
+        responseBody().items.find {it.namespace == 'test.com' && it.key == 'testProperty'}
 
         cleanup:
         cleanUpData(source)
@@ -2268,8 +2267,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
         responseBody().id == target
         responseBody().aliases.size() == 2
-        responseBody().aliases.any { it == 'mergeInto' }
-        responseBody().aliases.any { it == 'not main branch' }
+        responseBody().aliases.any {it == 'mergeInto'}
+        responseBody().aliases.any {it == 'not main branch'}
 
         cleanup:
         cleanUpData(source)
@@ -2337,13 +2336,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse(OK, response)
 
         when:
-        String addLeftOnly = responseBody().items.find { it.label == 'addLeftOnly' }.id
+        String addLeftOnly = responseBody().items.find {it.label == 'addLeftOnly'}.id
         GET("$mergeData.targetMap.dataModelId/dataClasses/$addLeftOnly/dataClasses")
 
         then:
         verifyResponse(OK, response)
         responseBody().count == 1
-        responseBody().items.any { it.label == 'addAnotherLeftToAddLeftOnly' }
+        responseBody().items.any {it.label == 'addAnotherLeftToAddLeftOnly'}
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -2506,8 +2505,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         //Change child DC label
         GET("$testId/dataClasses")
         verifyResponse(OK, response)
-        parentId = responseBody().items.find { it.label == 'parent' }.id
-        String contentId = responseBody().items.find { it.label == 'content' }.id
+        parentId = responseBody().items.find {it.label == 'parent'}.id
+        String contentId = responseBody().items.find {it.label == 'content'}.id
         GET("$testId/dataClasses/${parentId}/dataClasses")
         verifyResponse(OK, response)
         assert responseBody().items.first().id
@@ -2538,13 +2537,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         dataClassesDiffs.modified.size() == 2
 
         and:
-        Map contentDiff = dataClassesDiffs.modified.find { it.label == 'content' }
+        Map contentDiff = dataClassesDiffs.modified.find {it.label == 'content'}
         contentDiff.diffs.size() == 1
         contentDiff.diffs.first().description.left == 'a change to the description'
         contentDiff.diffs.first().description.right == 'some interesting content'
 
         and:
-        Map parentDiff = dataClassesDiffs.modified.find { it.label == 'parent' }
+        Map parentDiff = dataClassesDiffs.modified.find {it.label == 'parent'}
         parentDiff.diffs.size() == 1
         parentDiff.diffs.first().dataClasses.deleted.size() == 1
         parentDiff.diffs.first().dataClasses.created.size() == 1
@@ -2838,6 +2837,238 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         compareXml(expected, xmlResponse.body())
 
         cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    @Transactional
+    void cleanupDomainExport(String id) {
+        DomainExport.get(id).delete(flush: true)
+    }
+
+
+    void 'E05 : test export complex DataModel JSON async'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('complexDataModel')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download at ${baseUrl}domainExport\/.+?\/download/
+
+        when:
+        GET('domainExport', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse(OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "exported": {
+        "domainType": "DataModel",
+        "domainId": "${json-unit.matches:id}"
+      },
+      "exporter": {
+        "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+        "name": "DataModelJsonExporterService",
+        "nersion": "${json-unit.matches:version}"
+      },
+      "export": {
+        "fileName": "Complex Test DataModel.json",
+        "fileType": "text/json",
+        "contentType": "application/mdm+json",
+        "fileSize": "${json-unit.any-number}"
+      },
+      "exportedOn": "${json-unit.matches:offsetDateTime}",
+      "exportedBy": "unlogged_user@mdm-core.com",
+      "links": {
+        "relative": "${json-unit.regex}/api/domainExport/[\\\\w-]+?/download",
+        "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExport/.+?/download"
+      }
+    }
+  ]
+}''')
+
+        when:
+        GET('domainExport', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        String deId = responseBody().items.first().id
+        GET(responseBody().items.first().links.absolute, STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanupDomainExport(deId)
+        cleanUpData(id)
+    }
+
+    void 'E06 : test export complex DataModel JSON async twice'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download at ${baseUrl}domainExport\/.+?\/download/
+
+        when:
+        GET('domainExport', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+
+        when: 'export again'
+        String deId = responseBody().items.first().id
+        String firstExportDateTime = responseBody().items.first().exportedOn
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+
+        then:
+        verifyResponse ACCEPTED, response
+        responseBody().id != jobId
+
+        when:
+        jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download at ${baseUrl}domainExport\/.+?\/download/
+
+        when:
+        GET('domainExport', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.id == deId && it.exportedOn == firstExportDateTime}
+        responseBody().items.any {it.id != deId && it.exportedOn != firstExportDateTime}
+
+        cleanup:
+        cleanupDomainExport(deId)
+        cleanUpData(id)
+    }
+
+
+    void 'E07 : test export multiple DataModels JSON async'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexDataModels').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexDataModels', 'json')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+             [
+                 dataModelIds: [id, id2],
+                 asynchronous: true])
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download \[.+?, .+?\] at ${baseUrl}domainExport\/.+?\/download/
+
+        when:
+        GET('domainExport', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().items.first().exported.domainIds == [id, id2]
+
+        when:
+        String deId = responseBody().items.first().id
+        GET(responseBody().items.first().links.absolute, STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanupDomainExport(deId)
         cleanUpData(id)
         cleanUpData(id2)
     }
@@ -3262,7 +3493,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when:
         String jobId = responseBody().id
         waitForAysncToComplete(jobId)
-        log.debug('Getting completed job')
         GET("asyncJobs/$jobId", MAP_ARG, true)
 
         then:
@@ -4288,8 +4518,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any { it.id == internalId && !it.imported }
-        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
 
         cleanup:
         cleanUpData(id)
@@ -4352,7 +4582,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any { it.id == internalId }
+        responseBody().items.any {it.id == internalId}
 
         cleanup:
         cleanUpData(id)
@@ -4436,8 +4666,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any { it.id == internalId && !it.imported }
-        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
 
         cleanup:
         cleanUpData(id)
@@ -4792,20 +5022,20 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         and:
         GET("/${source.dataModelId}/dataClasses")
         verifyResponse OK, response
-        source.emptyClass = response.body().items.find { it.label == 'empty' }
-        source.contentClass = response.body().items.find { it.label == 'content' }
-        source.parentClass = response.body().items.find { it.label == 'parent' }
+        source.emptyClass = response.body().items.find {it.label == 'empty'}
+        source.contentClass = response.body().items.find {it.label == 'content'}
+        source.parentClass = response.body().items.find {it.label == 'parent'}
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find { it.label == 'child' }
+        source.parentClass.childClass = response.body().items.find {it.label == 'child'}
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.contentClass.id}/dataElements")
         verifyResponse OK, response
-        source.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
-        source.contentClass.element2 = response.body().items.find { it.label == 'element2' }
+        source.contentClass.ele1 = response.body().items.find {it.label == 'ele1'}
+        source.contentClass.element2 = response.body().items.find {it.label == 'element2'}
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
@@ -4883,10 +5113,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().items.size() == 2
 
         and: 'The result for target contains one intersection'
-        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 1
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 1
 
         and: 'The result for target2 contains no intersections'
-        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 0
 
         /**
          * Subset delete DataElement 'ele1' which belongs to the 'content' Data Class. This should:
@@ -4938,10 +5168,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().items.size() == 2
 
         and: 'The result for target contains no intersections'
-        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 0
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 0
 
         and: 'The result for target2 contains no intersections'
-        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 0
 
         /**
          * Subset delete DataElement 'ele1' (again) and also 'element2', and 'childde' which belongs to the parent | child Data Class.
@@ -4965,8 +5195,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get Data Classes on targetDataModel'
         GET("/${target.dataModelId}/dataClasses")
-        target.contentClass = response.body().items.find { it.label == 'content' }
-        target.parentClass = response.body().items.find { it.label == 'parent' }
+        target.contentClass = response.body().items.find {it.label == 'content'}
+        target.parentClass = response.body().items.find {it.label == 'parent'}
 
         then: 'There is the content Data Class and parent Data Class and child Data Class'
         verifyResponse OK, response
@@ -4976,7 +5206,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get the Data Classes of the parent Data Class'
         GET("/${target.dataModelId}/dataClasses/${target.parentClass.id}/dataClasses")
-        target.parentClass.childClass = response.body().items.find { it.label == 'child' }
+        target.parentClass.childClass = response.body().items.find {it.label == 'child'}
 
         then: 'The response is OK and includes the child Data Class'
         verifyResponse OK, response
@@ -4985,9 +5215,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get Data Elements on targetDataModel'
         GET("/${target.dataModelId}/dataElements")
-        target.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
-        target.contentClass.element2 = response.body().items.find { it.label == 'element2' }
-        target.parentClass.childClass.grandchild = response.body().items.find { it.label == 'grandchild' }
+        target.contentClass.ele1 = response.body().items.find {it.label == 'ele1'}
+        target.contentClass.element2 = response.body().items.find {it.label == 'element2'}
+        target.parentClass.childClass.grandchild = response.body().items.find {it.label == 'grandchild'}
 
         then: 'There are the ele1 and element2 Data Elements in the content Data Class'
         verifyResponse OK, response
@@ -5027,10 +5257,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().items.size() == 2
 
         and: 'The result for target contains three intersections'
-        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 3
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 3
 
         and: 'The result for target2 contains no intersections'
-        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 0
 
         when: 'subset ele1, element2 and child onto target2'
         PUT("/${source.dataModelId}/subset/${target2.dataModelId}", [
@@ -5056,10 +5286,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().items.size() == 2
 
         and: 'The result for target contains three intersections'
-        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 3
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 3
 
         and: 'The result for target2 now has intersections'
-        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 3
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 3
 
         when: 'Delete the grandchild from the subset'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
@@ -5074,8 +5304,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("/${target.dataModelId}/dataClasses")
 
         then: 'The parent Data Classes has been deleted from the targetDataModel'
-        response.body().items.find { it.label == 'content' }
-        !response.body().items.find { it.label == 'parent' }
+        response.body().items.find {it.label == 'content'}
+        !response.body().items.find {it.label == 'parent'}
 
         cleanup:
         cleanUpData(source.dataModelId)

@@ -20,11 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -74,5 +76,10 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
     @Override
     String getProviderType() {
         "Terminology${ProviderType.EXPORTER.name}"
+    }
+
+    @Override
+    String getFileName(MdmDomain domain) {
+        "${(domain as Model).label}.${getFileExtension()}"
     }
 }

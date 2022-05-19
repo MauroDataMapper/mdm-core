@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -30,6 +32,7 @@ class ExporterService {
         exporterProviderService.exportDomain(currentUser, domainId, parameters)
     }
 
+    @Deprecated
     ByteArrayOutputStream exportDomain(User currentUser, ExporterProviderService exporterProviderService, String domainId, Map<String, Object> parameters) {
         exportDomain(currentUser, exporterProviderService, Utils.toUuid(domainId), parameters)
     }
@@ -37,5 +40,13 @@ class ExporterService {
     ByteArrayOutputStream exportDomains(User currentUser, ExporterProviderService exporterProviderService, List<Serializable> domainIds,
                                         Map<String, Object> parameters = [:]) {
         exporterProviderService.exportDomains(currentUser, domainIds.collect {Utils.toUuid(it)}, parameters)
+    }
+
+    AsyncJob asyncExportDomain(User currentUser, ExporterProviderService exporterProviderService, MdmDomain domain, Map<String, Object> parameters) {
+        exporterProviderService.asyncExportDomain(currentUser, domain, parameters)
+    }
+
+    AsyncJob asyncExportDomains(User currentUser, ExporterProviderService exporterProviderService, List<MdmDomain> domains, Map<String, Object> parameters) {
+        exporterProviderService.asyncExportDomains(currentUser, domains, parameters)
     }
 }

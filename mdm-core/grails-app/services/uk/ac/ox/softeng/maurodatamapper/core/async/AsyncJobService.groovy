@@ -25,6 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.plugin.cache.GrailsCache
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
 import org.hibernate.SessionFactory
@@ -88,11 +90,11 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         return null
     }
 
-    AsyncJob createAndSaveAsyncJob(String jobName, User startedByUser, Closure taskToExecute) {
+    AsyncJob createAndSaveAsyncJob(String jobName, User startedByUser, @ClosureParams(value = SimpleType, options = 'java.util.UUID') Closure taskToExecute) {
         createAndSaveAsyncJob(jobName, startedByUser.emailAddress, taskToExecute)
     }
 
-    AsyncJob createAndSaveAsyncJob(String jobName, String startedByUserEmailAddress, Closure taskToExecute) {
+    AsyncJob createAndSaveAsyncJob(String jobName, String startedByUserEmailAddress, @ClosureParams(value = SimpleType, options = 'java.util.UUID') Closure taskToExecute) {
         AsyncJob asyncJob = save(new AsyncJob(jobName: jobName,
                                               startedByUser: startedByUserEmailAddress,
                                               dateTimeStarted: OffsetDateTime.now(),
@@ -140,12 +142,16 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         setJobStatus(id, 'CANCELLING', null)
     }
 
-    void setJobStatus(UUID id, String cleanupStatus, String cleanupMessage) {
-        AsyncJob status = get(id)
-        log.info('Set job [{}]:{} as {}', status.jobName, status.id, cleanupStatus)
-        save(status.tap {
-            it.status = cleanupStatus
-            it.message = cleanupMessage
+    void setJobStatus(UUID id, String status, String statusMessage) {
+        AsyncJob job = get(id)
+        if (!job) {
+            log.warn('Attempting to set status {} on non-existent job {} with message [{}]', status, id, statusMessage)
+            return
+        }
+        log.info('Set job [{}]:{} as {}', job.jobName, job.id, status)
+        save(job.tap {
+            it.status = status
+            if (statusMessage) it.message = statusMessage
         }, flush: true, validate: false)
     }
 

@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+
+model {
+    DomainExport domainExport
+}
+
+json tmpl.domainExport(domainExport: domainExport)

@@ -237,10 +237,17 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
 
     Map<String, Object> extractRequestBodyToMap() {
         Object body = getObjectToBind()
-        if (body instanceof Map<String, Object>) return body
+        if (body instanceof Map<String, Object>) {
+            return cacheBodyIntoRequest(body)
+        }
         DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, Map, getObjectToBind())
         Map<String, Object> requestBody = dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
-        if (!request.getAttribute('cached_body')) request.setAttribute('cached_body', requestBody)
+        cacheBodyIntoRequest(requestBody)
+    }
+
+    Map<String, Object> cacheBodyIntoRequest(Map<String, Object> requestBody) {
+        requestBody.baseUrl = getWebRequest().baseUrl
+        request.setAttribute('cached_body', requestBody)
         requestBody
     }
 }

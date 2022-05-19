@@ -505,20 +505,26 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         T instance = queryForResource params[alternateParamsIdKey]
 
-        if (!instance) return notFound(params.dataModelId)
+        if (!instance) return notFound(params[alternateParamsIdKey])
 
         // Extract body to map and add the params from the url
         Map exporterParameters = extractRequestBodyToMap()
         exporterParameters.putAll(params)
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (exporterParameters.asynchronous) {
+            AsyncJob asyncJob = exporterService.asyncExportDomain(currentUser, exporter, instance, exporterParameters)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         log.info("Exporting Model using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params[alternateParamsIdKey] as String, exporterParameters)
+        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params[alternateParamsIdKey], exporterParameters)
         log.info('Export complete')
         if (!outputStream) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Model could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
+        render(file: outputStream.toByteArray(), fileName: exporter.getFileName(instance), contentType: exporter.fileType)
     }
 
     def exportModels() {
@@ -538,6 +544,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         // Extract body to map and add the params from the url
         Map exporterParameters = extractRequestBodyToMap()
         exporterParameters.putAll(params)
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (exporterParameters.asynchronous) {
+
+            List<T> domains = getModelService().getAll(exporterParameters[multipleModelsParamsIdKey])
+
+            AsyncJob asyncJob = exporterService.asyncExportDomains(currentUser, exporter, domains, exporterParameters)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
 
         log.info("Exporting DataModel using ${exporter.displayName}")
         ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, exporterParameters[multipleModelsParamsIdKey], exporterParameters)
