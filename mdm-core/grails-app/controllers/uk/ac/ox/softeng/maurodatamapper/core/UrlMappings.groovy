@@ -73,7 +73,7 @@ class UrlMappings {
             get '/path/prefixMappings'(controller: 'path', action: 'listAllPrefixMappings')
 
             '/asyncJobs'(resources: 'asyncJob', includes: [ACTION_INDEX, ACTION_SHOW, ACTION_DELETE])
-            '/domainExport'(resources: 'domainExport', includes: [ACTION_INDEX, ACTION_SHOW, ACTION_DELETE]) {
+            '/domainExports'(resources: 'domainExport', includes: [ACTION_INDEX, ACTION_SHOW, ACTION_DELETE]) {
                 get '/download'(controller: 'domainExport', action: 'download')
             }
 

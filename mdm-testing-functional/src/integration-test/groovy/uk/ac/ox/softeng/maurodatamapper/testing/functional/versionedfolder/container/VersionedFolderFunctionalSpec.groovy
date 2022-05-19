@@ -1484,13 +1484,14 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     void waitForAysncToComplete(String id) {
-        log.debug('Waiting to complete {}', id)
+        log.debug('Waiting to complete Async Job {}', id)
         Future p = asyncJobService.getAsyncJobFuture(id)
         try {
             p.get()
+            sleep(1000)
         } catch (CancellationException ignored) {
         }
-        log.debug('Completed')
+        log.debug('Async job Completed')
     }
 
     void 'BMV11 : test creating a new branch model version of a VersionedFolder asynchronously'() {
@@ -1509,7 +1510,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         when:
         String jobId = responseBody().id
         waitForAysncToComplete(jobId)
-        log.debug('Getting completed job')
         GET("asyncJobs/$jobId", MAP_ARG, true)
 
         then:
@@ -1551,8 +1551,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         String jobId = responseBody().id
-        // Task doesnt start for 5s, and then takes ~2s to complete
-        sleep(5500)
+        // Task doesnt start for 5s, and then takes ~1s to complete
+        sleep(5100)
         DELETE("asyncJobs/$jobId", MAP_ARG, true)
 
         then:

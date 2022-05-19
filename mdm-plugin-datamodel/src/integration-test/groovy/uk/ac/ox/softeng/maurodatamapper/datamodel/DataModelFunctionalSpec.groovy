@@ -2881,10 +2881,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse(OK, response)
         responseBody().status == 'COMPLETED'
-        responseBody().message ==~ /Download at ${baseUrl}domainExport\/.+?\/download/
+        responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
 
         when:
-        GET('domainExport', STRING_ARG, true)
+        GET('domainExports', STRING_ARG, true)
 
         then:
         verifyJsonResponse(OK, '''{
@@ -2910,15 +2910,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "exportedOn": "${json-unit.matches:offsetDateTime}",
       "exportedBy": "unlogged_user@mdm-core.com",
       "links": {
-        "relative": "${json-unit.regex}/api/domainExport/[\\\\w-]+?/download",
-        "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExport/.+?/download"
+        "relative": "${json-unit.regex}/api/domainExports/[\\\\w-]+?/download",
+        "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExports/.+?/download"
       }
     }
   ]
 }''')
 
         when:
-        GET('domainExport', MAP_ARG, true)
+        GET('domainExports', MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
@@ -2968,10 +2968,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse(OK, response)
         responseBody().status == 'COMPLETED'
-        responseBody().message ==~ /Download at ${baseUrl}domainExport\/.+?\/download/
+        responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
 
         when:
-        GET('domainExport', MAP_ARG, true)
+        GET('domainExports', MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
@@ -2995,10 +2995,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse(OK, response)
         responseBody().status == 'COMPLETED'
-        responseBody().message ==~ /Download at ${baseUrl}domainExport\/.+?\/download/
+        responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
 
         when:
-        GET('domainExport', MAP_ARG, true)
+        GET('domainExports', MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
@@ -3007,7 +3007,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().items.any {it.id != deId && it.exportedOn != firstExportDateTime}
 
         cleanup:
-        cleanupDomainExport(deId)
+        responseBody().items.each {
+            cleanupDomainExport(it.id)
+        }
         cleanUpData(id)
     }
 
@@ -3051,13 +3053,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse(OK, response)
         responseBody().status == 'COMPLETED'
-        responseBody().message ==~ /Download \[.+?, .+?\] at ${baseUrl}domainExport\/.+?\/download/
+        responseBody().message ==~ /Download \[.+?, .+?\] at ${baseUrl}domainExports\/.+?\/download/
 
         when:
-        GET('domainExport', MAP_ARG, true)
+        GET('domainExports', MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
+        responseBody().count == 1
         responseBody().items.first().exported.domainIds == [id, id2]
 
         when:

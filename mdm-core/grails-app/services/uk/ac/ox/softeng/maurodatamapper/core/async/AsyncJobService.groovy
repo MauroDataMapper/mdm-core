@@ -100,8 +100,8 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
                                               dateTimeStarted: OffsetDateTime.now(),
                                               createdBy: startedByUserEmailAddress,
                                               status: 'CREATED'), flush: true)
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
+        sessionFactory?.currentSession?.flush()
+        sessionFactory?.currentSession?.clear()
         log.info('Creating job [{}]:{}', asyncJob.jobName, asyncJob.id)
         // We need to delay the start of the task long enough to ensure the current transaction creating the task has been completed
         // Otherwise the first step in the task will attempt to update a non-existent object

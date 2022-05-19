@@ -39,7 +39,7 @@ class ImporterServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Import
         def groups = service.describeImporterParams(importer)
 
         then:
-        groups.size() == 2
+        groups.size() == 3
 
         when:
         ImportParameterGroup dmGroup = groups[0]

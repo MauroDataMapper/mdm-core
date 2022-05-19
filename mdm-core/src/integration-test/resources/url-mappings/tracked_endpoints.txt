@@ -26,7 +26,6 @@
 | DELETE | /api/asyncJobs/${id} | delete |
 | GET    | /api/asyncJobs/${id} | show |
 | GET    | /api/properties | index |
-| POST   | /api/authorities | save |A
 | GET    | /api/authorities | index |
 | DELETE | /api/authorities/${id} | delete |
 | PUT    | /api/authorities/${id} | update |
@@ -190,3 +189,8 @@
 | DELETE | /api/versionedFolders/${id} | delete |
 | PUT    | /api/versionedFolders/${id} | update |
 | GET    | /api/versionedFolders/${id} | show |
+| POST   | /api/authorities | save |
+| GET    | /api/domainExports/${domainExportId}/download | download |
+| GET    | /api/domainExports | index |
+| DELETE | /api/domainExports/${id} | delete |
+| GET    | /api/domainExports/${id} | show |

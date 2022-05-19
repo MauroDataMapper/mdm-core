@@ -39,7 +39,7 @@ class AsyncJobServiceSpec extends BaseUnitSpec implements ServiceUnitTest<AsyncJ
     void 'test job creation'() {
         when:
         AsyncJob asyncJob = service.createAndSaveAsyncJob('test', AnonymousUser.instance) {
-            sleep(3000)
+            sleep(1000)
         }
 
         then:
@@ -55,8 +55,9 @@ class AsyncJobServiceSpec extends BaseUnitSpec implements ServiceUnitTest<AsyncJ
         then:
         log.warn('Checking clean up has happened to async job record')
         service.count() == 1
+        currentSession.flush()
+        currentSession.clear()
         service.get(asyncJob.id).status == 'COMPLETED'
-        (service.grailsCacheManager.getCache(AsyncJobService.ASYNC_JOB_CACHE_KEY) as GrailsCache).getAllKeys().isEmpty()
     }
 
     void 'test job cancellation'() {
@@ -102,6 +103,5 @@ class AsyncJobServiceSpec extends BaseUnitSpec implements ServiceUnitTest<AsyncJ
         log.warn('Checking clean up has happened to async job record')
         service.count() == 100
         service.list().every {it.status == 'CANCELLED'}
-        (service.grailsCacheManager.getCache(AsyncJobService.ASYNC_JOB_CACHE_KEY) as GrailsCache).getAllKeys().isEmpty()
     }
 }

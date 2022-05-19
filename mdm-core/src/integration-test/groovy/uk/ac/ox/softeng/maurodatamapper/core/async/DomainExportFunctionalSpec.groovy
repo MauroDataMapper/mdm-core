@@ -17,8 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.async
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -26,42 +31,83 @@ import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.spockframework.util.Assert
+import spock.lang.Shared
 
 /**
  * @since 15/03/2022
  */
 @Slf4j
 @Integration
-class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
+class DomainExportFunctionalSpec extends BaseFunctionalSpec {
 
-    AsyncJobService asyncJobService
+    @Shared
+    Folder folder
+
+    DomainExportService domainExportService
 
     @Override
     String getResourcePath() {
-        'asyncJobs'
+        'domainExports'
     }
 
     @RunOnce
     @Transactional
     def setup() {
         log.debug('Check resource count is {}', 0)
+        folder = new Folder(label: 'testing', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+        GormUtils.checkAndSave(messageSource, folder)
         sessionFactory.currentSession.flush()
-        if (AsyncJob.count() != 0) {
-            log.error('{} {} resources left over from previous test', [AsyncJob.count(), AsyncJob.simpleName].toArray())
+        if (DomainExport.count() != 0) {
+            log.error('{} {} resources left over from previous test', [DomainExport.count(), DomainExport.simpleName].toArray())
             Assert.fail('Resources left over')
         }
     }
 
     @Transactional
-    String createNewItem(long time = 20000) {
-        asyncJobService.createAndSaveAsyncJob('Functional Test', StandardEmailAddress.FUNCTIONAL_TEST) {
-            sleep(time) {e ->
-                assert e in InterruptedException
-                log.info('Sleep interrupted')
+    String createNewItem() {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()
+        byteArrayOutputStream.write('{"label": "testing"}'.bytes)
+        domainExportService.createAndSaveNewDomainExport(new ExporterProviderService() {
+            @Override
+            ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
+                return null
+            }
+
+            @Override
+            ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
+                return null
+            }
+
+            @Override
+            Boolean canExportMultipleDomains() {
                 true
             }
 
-        }.id.toString()
+            @Override
+            String getFileExtension() {
+                'json'
+            }
+
+            @Override
+            String getFileType() {
+                grails.web.mime.MimeType.JSON.name
+            }
+
+            @Override
+            String getDisplayName() {
+                'Testing Exporter'
+            }
+
+            @Override
+            String getVersion() {
+                '1.0.0'
+            }
+
+            @Override
+            String getName() {
+                'DomainExportTestExporter'
+            }
+        }, folder, 'test.json', byteArrayOutputStream, admin).id.toString()
     }
 
     void 'R1 : Test the empty index action'() {
@@ -87,68 +133,45 @@ class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
         assert response.body().items[0].id == id
 
         cleanup:
-        asyncJobService.cancelRunningJob(id)
-        deleteAsyncJob(id)
+        deleteDomainExport(id)
     }
 
-    void 'R5a : Test the show action correctly renders an instance'() {
+    void 'R5 : Test the show action correctly renders an instance'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem()
 
         when: 'When the show action is called to retrieve a resource'
-        sleep(1000)
         GET(id, STRING_ARG)
 
         then: 'The response is correct'
         verifyJsonResponse(HttpStatus.OK, '''{
   "id": "${json-unit.matches:id}",
-  "jobName": "Functional Test",
-  "startedByUser": "functional-test@test.com",
-  "dateTimeStarted": "${json-unit.matches:offsetDateTime}",
-  "status": "CREATED",
-  "location": "${json-unit.any-string}"
-}''')
-
-        when: 'When the show action is called to retrieve a resource'
-        sleep(4500)
-        GET(id, STRING_ARG)
-
-        then: 'The response is correct'
-        verifyJsonResponse(HttpStatus.OK, '''{
-  "id": "${json-unit.matches:id}",
-  "jobName": "Functional Test",
-  "startedByUser": "functional-test@test.com",
-  "dateTimeStarted": "${json-unit.matches:offsetDateTime}",
-  "status": "RUNNING",
-  "location": "${json-unit.any-string}"
-}''')
-
-        cleanup:
-        asyncJobService.cancelRunningJob(id)
-        deleteAsyncJob(id)
-    }
-
-    void 'R5b : Test the show action correctly renders an instance after completion'() {
-        given: 'The save action is executed with valid data'
-        String id = createNewItem(500)
-
-        when: 'When the show action is called to retrieve a resource'
-        GET(id)
-
-        then: 'The response is correct'
-        response.status == HttpStatus.OK
-        responseBody().status == 'CREATED'
-
-        when: 'When the show action is called to retrieve a resource'
-        sleep(6000)
-        GET(id)
-
-        then: 'The response is correct'
-        response.status == HttpStatus.OK
-        responseBody().status == 'COMPLETED'
+  "exported": {
+    "domainType": "Folder",
+    "domainId": "${json-unit.matches:id}"
+  },
+  "exporter": {
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.async",
+    "name": "DomainExportTestExporter",
+    "nersion": "1.0.0"
+  },
+  "export": {
+    "fileName": "test.json",
+    "fileType": "application/json",
+    "contentType": null,
+    "fileSize": 20
+  },
+  "exportedOn": "${json-unit.matches:offsetDateTime}",
+  "exportedBy": "admin@maurodatamapper.com",
+  "links": {
+     "relative": "${json-unit.regex}/api/domainExports/[\\\\w-]+?/download",
+     "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExports/.+?/download"
+  }
+}
+''')
 
         cleanup:
-        deleteAsyncJob(id)
+        deleteDomainExport(id)
     }
 
     void 'R6 : Test the delete action correctly cancels not deletes an instance'() {
@@ -165,16 +188,15 @@ class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
         DELETE(id)
 
         then: 'The response is correct'
-        response.status == HttpStatus.OK
-        responseBody().status == 'CANCELLED'
+        response.status == HttpStatus.NO_CONTENT
 
         cleanup:
-        deleteAsyncJob(id)
+        deleteDomainExport(id)
     }
 
     @Transactional
-    void deleteAsyncJob(String id) {
-        asyncJobService.delete(id)
-        assert asyncJobService.count() == 0
+    void deleteDomainExport(String id) {
+        domainExportService.delete(id)
+        assert domainExportService.count() == 0
     }
 }

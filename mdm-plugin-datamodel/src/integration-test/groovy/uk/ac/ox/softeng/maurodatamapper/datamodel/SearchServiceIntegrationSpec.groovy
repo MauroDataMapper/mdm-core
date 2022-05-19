@@ -288,7 +288,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[0].label == 'element2'
 
         when:
-        pagination = [max: 2]
+        pagination = [max: 2, sort: 'label']
         result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
@@ -297,7 +297,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[1].label == 'ele1'
 
         when:
-        pagination = [max: 2, offset: 1]
+        pagination = [max: 2, offset: 1, sort: 'label']
         result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
