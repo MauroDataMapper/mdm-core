@@ -194,3 +194,4 @@
 | GET    | /api/domainExports | index |
 | DELETE | /api/domainExports/${id} | delete |
 | GET    | /api/domainExports/${id} | show |
+| GET    | /api/${resourceDomainType}/${resourceId}/domainExports | index |

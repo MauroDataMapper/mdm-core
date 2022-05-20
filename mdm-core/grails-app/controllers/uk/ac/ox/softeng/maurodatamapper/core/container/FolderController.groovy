@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExportService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -48,6 +50,7 @@ class FolderController extends EditLoggingController<Folder> {
     SearchService mdmCoreSearchService
     VersionedFolderService versionedFolderService
     ExporterService exporterService
+    DomainExportService domainExportService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -196,7 +199,10 @@ class FolderController extends EditLoggingController<Folder> {
         if (!outputStream) return errorResponse(UNPROCESSABLE_ENTITY, 'Folder could not be exported')
         log.info('Export complete')
 
-        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
+        // Cache the export
+        DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, instance, exporter.getFileName(instance), outputStream, currentUser)
+
+        render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
     }
 
     @Override

@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
-import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
@@ -2839,11 +2838,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id2)
     }
 
-    @Transactional
-    void cleanupDomainExport(String id) {
-        DomainExport.get(id).delete(flush: true)
-    }
-
     void 'E05 : test export complex DataModel JSON async'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
@@ -2927,8 +2921,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyJsonResponse OK, expected
 
+        when:
+        GET("$id/domainExports")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.first().id == deId
+
         cleanup:
-        cleanupDomainExport(deId)
         cleanUpData(id)
     }
 
@@ -3004,9 +3005,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().items.any {it.id != deId && it.exportedOn != firstExportDateTime}
 
         cleanup:
-        responseBody().items.each {
-            cleanupDomainExport(it.id)
-        }
         cleanUpData(id)
     }
 
@@ -3068,7 +3066,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyJsonResponse OK, expected
 
         cleanup:
-        cleanupDomainExport(deId)
         cleanUpData(id)
         cleanUpData(id2)
     }

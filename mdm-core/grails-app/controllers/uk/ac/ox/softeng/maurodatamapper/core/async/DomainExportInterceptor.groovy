@@ -17,13 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.async
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.GrailsClass
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -34,10 +33,15 @@ class DomainExportInterceptor implements MdmInterceptor {
     boolean before() {
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'domainExportId')
+        mapDomainTypeToClass('resource', false)
 
         // Anyone authenticated can index as the controller will listAllReadable
-        if (isIndex()) {
+        if (isIndex() && !params.containsKey('resourceId')) {
             return currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToPermissions()
+        }
+
+        if (params.containsKey('resourceId')) {
+            return checkActionAuthorisationOnUnsecuredResource(params.domainExportId ?: params.id, params.resourceClass, params.resourceId)
         }
 
         checkActionAuthorisationOnUnsecuredResource(params.domainExportId ?: params.id)
@@ -48,31 +52,33 @@ class DomainExportInterceptor implements MdmInterceptor {
         DomainExport domainExport = domainExportService.get(id)
         if (!domainExport) return notFound(DomainExport, id)
 
-        List<MdmDomain> exportedDomains = domainExportService.getExportedDomains(domainExport)
+        String[] exportedDomainIds = domainExport.multiDomainExport ? domainExport.exportedDomainIds.split(',') : [domainExport.exportedDomainId]
 
-        for (MdmDomain exportedDomain : exportedDomains) {
-            if (!checkActionAuthorisationOnUnsecuredResource(id, exportedDomain)) return false
+        for (String exportedDomainId : exportedDomainIds) {
+            if (!checkActionAuthorisationOnUnsecuredResource(id, domainExport.exportedDomainType, Utils.toUuid(exportedDomainId))) return false
         }
         true
     }
 
-    boolean checkActionAuthorisationOnUnsecuredResource(UUID id, MdmDomain exportedDomain) {
-        if (!exportedDomain) return notFound(DomainExport, id)
+    boolean checkActionAuthorisationOnUnsecuredResource(UUID id, String exportedDomainType, UUID exportedDomainId) {
+
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, exportedDomainType)
+        Class exportedDomainClass = grailsClass.clazz
 
         // If the exported domain is a SR then we can use that against the UserSecurityPolicyManager
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, exportedDomain.class)) {
-            return checkActionAuthorisationOnUnsecuredResource(id, exportedDomain.class as Class<SecurableResource>, exportedDomain.id)
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, exportedDomainClass)) {
+            return checkActionAuthorisationOnUnsecuredResource(id, exportedDomainClass as Class<SecurableResource>, exportedDomainId)
         }
 
         // Currently you can't export a ModelItem but that may change so lets code it in now,
         // check the MI and the Model access
-        if (Utils.parentClassIsAssignableFromChild(ModelItem, exportedDomain.class)) {
-            ModelItem modelItem = exportedDomain as ModelItem
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, exportedDomainClass)) {
+            ModelItem modelItem = domainExportService.getExportedDomain(exportedDomainType, exportedDomainId) as ModelItem
             return checkActionAuthorisationOnUnsecuredResource(id, modelItem.model.class, modelItem.model.id)
         }
 
         // Otherwise its an unknown ExportedDomain type so we just say they can't read it
-        log.warn('Could not determine if exported domain {}:{} can be acted on', exportedDomain.domainType, exportedDomain.id)
+        log.warn('Could not determine if exported domain {}:{} can be acted on', exportedDomainType, exportedDomainId)
         notFound(DomainExport, id)
     }
 

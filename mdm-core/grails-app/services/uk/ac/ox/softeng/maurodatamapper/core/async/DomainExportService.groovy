@@ -80,11 +80,15 @@ class DomainExportService implements MdmDomainService<DomainExport> {
 
     MdmDomain getExportedDomain(DomainExport domainExport) {
         if (!domainExport) return null
-        MdmDomainService domainService = mdmDomainServices.find {it.handles(domainExport.exportedDomainType)}
+        getExportedDomain(domainExport.exportedDomainType, domainExport.exportedDomainId)
+    }
+
+    MdmDomain getExportedDomain(String exportedDomainType, UUID exportedDomainId) {
+        MdmDomainService domainService = mdmDomainServices.find {it.handles(exportedDomainType)}
         if (!domainService) {
-            throw new ApiInternalException('DES', "No domain service exists to load DomainExport for exported type ${domainExport.exportedDomainType}")
+            throw new ApiInternalException('DES', "No domain service exists to load DomainExport for exported type ${exportedDomainType}")
         }
-        domainService.get(domainExport.exportedDomainId)
+        domainService.get(exportedDomainId)
     }
 
     List<MdmDomain> getExportedDomains(DomainExport domainExport) {

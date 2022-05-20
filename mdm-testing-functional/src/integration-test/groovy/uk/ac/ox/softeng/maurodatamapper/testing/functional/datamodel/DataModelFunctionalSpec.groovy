@@ -1132,6 +1132,13 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
   }
 }'''
+            when:
+            GET("$id/domainExports")
+
+            then:
+            verifyResponse(OK, response)
+            responseBody().count == 1
+            responseBody().items.first().id == deId
         }
 
         cleanup:

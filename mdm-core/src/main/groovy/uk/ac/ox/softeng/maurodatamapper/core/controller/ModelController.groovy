@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExportService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
@@ -70,6 +72,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     ImporterService importerService
     VersionedFolderService versionedFolderService
     AsyncJobService asyncJobService
+    DomainExportService domainExportService
 
     final String alternateParamsIdKey
 
@@ -152,7 +155,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -524,7 +527,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'Model could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: exporter.getFileName(instance), contentType: exporter.fileType)
+        // Cache the export
+        DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, instance, exporter.getFileName(instance), outputStream, currentUser)
+
+        render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
     }
 
     def exportModels() {
@@ -545,11 +551,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         Map exporterParameters = extractRequestBodyToMap()
         exporterParameters.putAll(params)
 
+        List<T> domains = getModelService().getAll(exporterParameters[multipleModelsParamsIdKey])
+
         // Run as async job returns ACCEPTED and the async job which was created
         if (exporterParameters.asynchronous) {
-
-            List<T> domains = getModelService().getAll(exporterParameters[multipleModelsParamsIdKey])
-
             AsyncJob asyncJob = exporterService.asyncExportDomains(currentUser, exporter, domains, exporterParameters)
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
@@ -562,7 +567,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'Models could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "${multipleModelsParamsIdKey}.${exporter.fileExtension}", contentType: exporter.fileType)
+        // Cache the export
+        DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, domains, "${UUID.randomUUID()}.${exporter.fileExtension}",
+                                                                                     outputStream, currentUser)
+
+        render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
     }
 
     @Transactional

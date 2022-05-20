@@ -233,6 +233,7 @@ class UrlMappings {
                 Edits
                 */
                 get '/edits'(controller: 'edit', action: 'index')
+                get '/domainExports'(controller: 'domainExport', action: 'index')
             }
 
             group "/$securableResourceDomainType/$securableResourceId", {
