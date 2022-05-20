@@ -132,7 +132,7 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         def id = getValidId()
         login(name)
 
-        if (showJson && name == 'reader') {
+        if (showJson && name == 'Reader') {
             when: 'When the show action is called to retrieve a resource'
             GET("$id", STRING_ARG)
 

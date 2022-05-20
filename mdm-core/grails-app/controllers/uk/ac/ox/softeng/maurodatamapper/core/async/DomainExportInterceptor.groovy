@@ -17,17 +17,73 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.async
 
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class DomainExportInterceptor implements MdmInterceptor {
+
+    DomainExportService domainExportService
 
     boolean before() {
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'domainExportId')
-        // Allow anyone authenticated to index.
-        // We'll pass addtl security onto the controller in the form of notFound when querying for resources
-        actionName != 'index' ?: currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
+
+        // Anyone authenticated can index as the controller will listAllReadable
+        if (isIndex()) {
+            return currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToPermissions()
+        }
+
+        checkActionAuthorisationOnUnsecuredResource(params.domainExportId ?: params.id)
+    }
+
+    boolean checkActionAuthorisationOnUnsecuredResource(UUID id) {
+
+        DomainExport domainExport = domainExportService.get(id)
+        if (!domainExport) return notFound(DomainExport, id)
+
+        List<MdmDomain> exportedDomains = domainExportService.getExportedDomains(domainExport)
+
+        for (MdmDomain exportedDomain : exportedDomains) {
+            if (!checkActionAuthorisationOnUnsecuredResource(id, exportedDomain)) return false
+        }
+        true
+    }
+
+    boolean checkActionAuthorisationOnUnsecuredResource(UUID id, MdmDomain exportedDomain) {
+        if (!exportedDomain) return notFound(DomainExport, id)
+
+        // If the exported domain is a SR then we can use that against the UserSecurityPolicyManager
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, exportedDomain.class)) {
+            return checkActionAuthorisationOnUnsecuredResource(id, exportedDomain.class as Class<SecurableResource>, exportedDomain.id)
+        }
+
+        // Currently you can't export a ModelItem but that may change so lets code it in now,
+        // check the MI and the Model access
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, exportedDomain.class)) {
+            ModelItem modelItem = exportedDomain as ModelItem
+            return checkActionAuthorisationOnUnsecuredResource(id, modelItem.model.class, modelItem.model.id)
+        }
+
+        // Otherwise its an unknown ExportedDomain type so we just say they can't read it
+        log.warn('Could not determine if exported domain {}:{} can be acted on', exportedDomain.domainType, exportedDomain.id)
+        notFound(DomainExport, id)
+    }
+
+    boolean checkActionAuthorisationOnUnsecuredResource(UUID id,
+                                                        Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(DomainExport, id, owningSecureResourceClass, owningSecureResourceId)
+
+        if (actionName == 'download') {
+            return canRead ?: notFound(DomainExport, id)
+        }
+        // Otherwise just fall through to the default handling
+        checkActionAuthorisationOnUnsecuredResource(DomainExport, id, owningSecureResourceClass, owningSecureResourceId)
     }
 }

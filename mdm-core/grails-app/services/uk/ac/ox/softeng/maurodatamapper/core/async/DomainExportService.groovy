@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.async
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
@@ -68,6 +69,36 @@ class DomainExportService implements MdmDomainService<DomainExport> {
     @Override
     DomainExport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         throw new ApiNotYetImplementedException('DES', 'findByParentIdAndPathIdentifier')
+    }
+
+    MdmDomain getExportedDomain(UUID domainExportId) {
+        if (!domainExportId) return null
+        DomainExport domainExport = get(domainExportId)
+        if (!domainExport) return null
+        getExportedDomain(domainExport)
+    }
+
+    MdmDomain getExportedDomain(DomainExport domainExport) {
+        if (!domainExport) return null
+        MdmDomainService domainService = mdmDomainServices.find {it.handles(domainExport.exportedDomainType)}
+        if (!domainService) {
+            throw new ApiInternalException('DES', "No domain service exists to load DomainExport for exported type ${domainExport.exportedDomainType}")
+        }
+        domainService.get(domainExport.exportedDomainId)
+    }
+
+    List<MdmDomain> getExportedDomains(DomainExport domainExport) {
+        if (!domainExport) return null
+
+        if (!domainExport.multiDomainExport) return [getExportedDomain(domainExport)]
+
+        domainExport.exportedDomainIds.split(',').collect {exportedDomainId ->
+            MdmDomainService domainService = mdmDomainServices.find {it.handles(domainExport.exportedDomainType)}
+            if (!domainService) {
+                throw new ApiInternalException('DES', "No domain service exists to load DomainExport for exported type ${domainExport.exportedDomainType}")
+            }
+            domainService.get(exportedDomainId)
+        }
     }
 
     List<DomainExport> findAllReadableByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination) {

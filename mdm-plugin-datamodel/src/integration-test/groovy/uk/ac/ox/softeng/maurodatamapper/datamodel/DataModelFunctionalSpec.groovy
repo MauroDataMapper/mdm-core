@@ -1234,7 +1234,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id)
     }
 
-
     void waitForAysncToComplete(String id) {
         log.debug('Waiting to complete {}', id)
         Future p = asyncJobService.getAsyncJobFuture(id)
@@ -1244,7 +1243,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         }
         log.debug('Completed')
     }
-
 
     void 'VB09 : test async creating a new main branch model version of a DataModel'() {
         given: 'finalised model is created'
@@ -2845,7 +2843,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     void cleanupDomainExport(String id) {
         DomainExport.get(id).delete(flush: true)
     }
-
 
     void 'E05 : test export complex DataModel JSON async'() {
         given:

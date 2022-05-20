@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
@@ -32,6 +34,10 @@ import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+import java.util.concurrent.CancellationException
+import java.util.concurrent.Future
+
+import static io.micronaut.http.HttpStatus.ACCEPTED
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -86,6 +92,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     @Shared
     DataModelPluginMergeBuilder builder
+
+    AsyncJobService asyncJobService
 
     def setupSpec() {
         builder = new DataModelPluginMergeBuilder(this)
@@ -250,6 +258,21 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   ],
   "branchName":"main"
 }'''
+    }
+
+    void waitForAysncToComplete(String id) {
+        log.debug('Waiting to complete {}', id)
+        Future p = asyncJobService.getAsyncJobFuture(id)
+        try {
+            p.get()
+        } catch (CancellationException ignored) {
+        }
+        log.debug('Async Job Completed')
+    }
+
+    @Transactional
+    void cleanupDomainExport(String id) {
+        if (id) DomainExport.get(id).delete(flush: true)
     }
 
     void 'DM01 : Test getting DataModel types'() {
@@ -964,7 +987,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
 
 
-    void 'DM-#prefix-06 : test export a single DataModel [allowed] (as #name)'() {
+    void 'DM-#prefix-06 : test export a single DataModel (as #name)'() {
         given:
         String id = getValidId()
 
@@ -1002,6 +1025,117 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         }
 
         cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
+    }
+
+    void 'DM-#prefix-06a : test async export a single DataModel (as #name)'() {
+        given:
+        String deId
+        String id = getValidId()
+
+        when:
+        login(name)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+
+        then:
+        if (!canRead) verifyNotFound response, id
+        else {
+            verifyResponse ACCEPTED, response
+
+            when:
+            String jobId = responseBody().id
+            waitForAysncToComplete(jobId)
+            GET("asyncJobs/$jobId", MAP_ARG, true)
+
+            then:
+            verifyResponse(OK, response)
+            responseBody().status == 'COMPLETED'
+            responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
+
+            when:
+            GET('domainExports', STRING_ARG, true)
+
+            then:
+            verifyJsonResponse(OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "exported": {
+        "domainType": "DataModel",
+        "domainId": "${json-unit.matches:id}"
+      },
+      "exporter": {
+        "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+        "name": "DataModelJsonExporterService",
+        "nersion": "${json-unit.matches:version}"
+      },
+      "export": {
+        "fileName": "Functional Test DataModel.json",
+        "fileType": "text/json",
+        "contentType": "application/mdm+json",
+        "fileSize": "${json-unit.any-number}"
+      },
+      "exportedOn": "${json-unit.matches:offsetDateTime}",
+      "exportedBy": "${json-unit.regex}.+?@.+?",
+      "links": {
+        "relative": "${json-unit.regex}/api/domainExports/[\\\\w-]+?/download",
+        "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExports/.+?/download"
+      }
+    }
+  ]
+}''')
+
+            when:
+            GET('domainExports', MAP_ARG, true)
+
+            then:
+            verifyResponse(OK, response)
+
+            when:
+            deId = responseBody().items.first().id
+            GET(responseBody().items.first().links.absolute, STRING_ARG, true)
+
+            then:
+            verifyJsonResponse OK, '''{
+  "dataModel": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataModel",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "${json-unit.any-string}",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.1"
+    }
+  }
+}'''
+        }
+
+        cleanup:
+        cleanupDomainExport(deId)
         removeValidIdObject(id)
 
         where:
