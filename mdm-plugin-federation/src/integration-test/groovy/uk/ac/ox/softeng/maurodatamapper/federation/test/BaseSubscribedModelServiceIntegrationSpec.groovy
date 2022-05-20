@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
@@ -27,15 +27,19 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueService
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModelService
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.nio.charset.Charset
 import java.time.OffsetDateTime
@@ -43,7 +47,10 @@ import java.time.OffsetDateTime
 @Slf4j
 @Integration
 @Rollback
-abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extends BaseIntegrationSpec {
+abstract class BaseSubscribedModelServiceIntegrationSpec<K extends MdmDomain> extends BaseIntegrationSpec {
+
+    @Autowired
+    ImporterService importerService
 
     PublishedModel availableModelVersion1
     PublishedModel availableModelVersion2
@@ -77,12 +84,14 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         subscribedCatalogue = new SubscribedCatalogue(url: 'http://remote.example.com',
                                                       apiKey: UUID.randomUUID(),
                                                       label: 'Test Remote Catalogue',
+                                                      subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                       createdBy: StandardEmailAddress.ADMIN)
         checkAndSave(subscribedCatalogue)
 
         subscribedCatalogue2 = new SubscribedCatalogue(url: 'http://remote2.example.com',
                                                        apiKey: UUID.randomUUID(),
                                                        label: 'Test Remote Catalogue 2',
+                                                       subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                        createdBy: editor.emailAddress)
         checkAndSave(subscribedCatalogue2)
 
@@ -90,13 +99,15 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         //Note: ID is hardcoded because we are mocking an external input rather than a domain created locally.
         //Don't need to save AvailableModel
         availableModelVersion1 = new PublishedModel(modelId: Utils.toUuid('c8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
-                                                    title: 'Remote Model 1.0.0',
+                                                    modelLabel: 'Remote Model',
+                                                    modelVersion: Version.from('1.0.0'),
                                                     description: 'Remote Model Description',
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())
 
         availableModelVersion2 = new PublishedModel(modelId: Utils.toUuid('d8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
-                                                    title: 'Remote Model 2.0.0',
+                                                    modelLabel: 'Remote Model',
+                                                    modelVersion: Version.from('2.0.0'),
                                                     description: 'Remote Model Description',
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())
@@ -104,15 +115,13 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         subscribedModelVersion1 = new SubscribedModel(subscribedModelId: 'c8023de6-5329-4b8b-8a1b-27c2abeaffcd',
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
-                                                      createdBy: StandardEmailAddress.ADMIN,
-                                                      subscribedModelType: getModelType())
+                                                      createdBy: StandardEmailAddress.ADMIN)
         checkAndSave(subscribedModelVersion1)
 
         subscribedModelVersion2 = new SubscribedModel(subscribedModelId: 'd8023de6-5329-4b8b-8a1b-27c2abeaffcd',
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
-                                                      createdBy: editor.emailAddress,
-                                                      subscribedModelType: getModelType())
+                                                      createdBy: editor.emailAddress)
         checkAndSave(subscribedModelVersion2)
     }
 
@@ -124,33 +133,39 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
 
         when: 'imported versions 1 a model'
         ModelImporterProviderService modelImporterProviderService = modelService.getJsonModelImporterProviderService()
-        ModelImporterProviderServiceParameters parameters1 = (modelImporterProviderService.createNewImporterProviderServiceParameters() as
+        ModelImporterProviderServiceParameters parameters1 = (importerService.createNewImporterProviderServiceParameters(modelImporterProviderService) as
             ModelImporterProviderServiceParameters).tap {
             importFile = new FileParameter(fileContents: getRemoteModelVersion1Json().getBytes())
             folderId = getFolder().id
             finalised = true
+            useDefaultAuthority = false
         }
-        K importedModelVersion1 = modelImporterProviderService.importDomain(getAdmin(), parameters1) as K
+        //K importedModelVersion1 = modelImporterProviderService.importDomain(getAdmin(), parameters1) as K
+        K importedModelVersion1 = importerService.importDomain(getAdmin(), modelImporterProviderService, parameters1) as K
         importedModelVersion1.folder = folder
         checkAndSave(importedModelVersion1)
 
         subscribedModelVersion1.lastRead = OffsetDateTime.now()
         subscribedModelVersion1.localModelId = importedModelVersion1.id
+        subscribedModelVersion1.subscribedModelType = importedModelVersion1.domainType
         checkAndSave(subscribedModelVersion1)
 
         and: 'import version 2 of a model'
-        ModelImporterProviderServiceParameters parameters2 = (modelImporterProviderService.createNewImporterProviderServiceParameters() as
+        ModelImporterProviderServiceParameters parameters2 = (importerService.createNewImporterProviderServiceParameters(modelImporterProviderService) as
             ModelImporterProviderServiceParameters).tap {
             importFile = new FileParameter(fileContents: getRemoteModelVersion2Json().getBytes())
             folderId = getFolder().id
             finalised = true
+            useDefaultAuthority = false
         }
-        K importedModelVersion2 = modelImporterProviderService.importDomain(getAdmin(), parameters2) as K
+        //K importedModelVersion2 = modelImporterProviderService.importDomain(getAdmin(), parameters2) as K
+        K importedModelVersion2 = importerService.importDomain(getAdmin(), modelImporterProviderService, parameters2) as K
         importedModelVersion2.folder = folder
         checkAndSave(importedModelVersion2)
 
         subscribedModelVersion2.lastRead = OffsetDateTime.now()
         subscribedModelVersion2.localModelId = importedModelVersion2.id
+        subscribedModelVersion2.subscribedModelType = importedModelVersion2.domainType
         checkAndSave(subscribedModelVersion2)
 
         then: 'there are no version links'

@@ -33,9 +33,13 @@ class UrlMappings {
                 '/subscribedCatalogues'(resources: 'subscribedCatalogue', excludes: DEFAULT_EXCLUDES) {
                     get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
                 }
+                group '/subscribedCatalogues', {
+                    get '/types'(controller: 'subscribedCatalogue', action: 'types')
+                }
             }
 
             group '/subscribedCatalogues', {
+                get '/types'(controller: 'subscribedCatalogue', action: 'types')
                 get '/'(controller: 'subscribedCatalogue', action: 'index') {
                     openAccess = true
                 }

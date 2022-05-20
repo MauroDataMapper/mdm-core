@@ -47,7 +47,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
 
     @Override
     String getFileType() {
-        'text/xml'
+        'application/mauro.datamodel+xml'
     }
 
     @Override

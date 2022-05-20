@@ -52,6 +52,7 @@ class SubscribedCatalogueInterceptor extends SecurableResourceInterceptor {
             actionName == 'show' && params.openAccess ||
             actionName == 'publishedModels' ||
             actionName == 'newerVersions' ||
+            actionName == 'types' ||
             currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
     }

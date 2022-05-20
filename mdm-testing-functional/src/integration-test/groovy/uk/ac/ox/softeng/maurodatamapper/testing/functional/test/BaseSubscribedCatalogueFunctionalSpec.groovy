@@ -15,10 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
+package uk.ac.ox.softeng.maurodatamapper.testing.functional.test
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -51,6 +53,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  | PUT    | /api/admin/subscribedCatalogues/${id}                                    | Action: update          |
  *  | GET    | /api/admin/subscribedCatalogues/${id}                                    | Action: show            |
  *  | GET    | /api/admin/subscribedCatalogues/${subscribedCatalogueId}/testConnection  | Action: testConnection  |
+ *  | GET    | /api/subscribedCatalogues                                                | Action: types           |
  *  | GET    | /api/subscribedCatalogues                                                | Action: index           |
  *  | GET    | /api/subscribedCatalogues/${id}                                          | Action: show            |
  *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection        | Action: testConnection  |
@@ -59,15 +62,28 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
+abstract class BaseSubscribedCatalogueFunctionalSpec extends FunctionalSpec {
+
+    abstract Map getValidJson()
+
+    abstract Map getInvalidJson()
+
+    abstract Map getValidUpdateJson()
+
+    abstract String getExpectedShowJson()
+
+    abstract String getExpectedOpenAccessShowJson()
+
+    abstract String getExpectedIndexJson()
+
+    abstract SubscribedCatalogueType getSubscribedCatalogueType()
+
+    abstract String getSubscribedCatalogueUrl()
 
     @Override
     String getResourcePath() {
         'admin/subscribedCatalogues'
     }
-
-    @Autowired
-    DataModelJsonExporterService dataModelJsonExporterService
 
     String getValidId() {
         loginAdmin()
@@ -123,74 +139,11 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         safeSessionFlush()
     }
 
-    Map getValidJson() {
-        [
-            url                    : "http://localhost:$serverPort".toString(),
-            apiKey                 : UUID.randomUUID().toString(),
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-    }
-
-    Map getInvalidJson() {
-        [
-            url   : 'wibble',
-            apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1'
-        ]
-    }
-
-    Map getValidUpdateJson() {
-        [
-            description: 'Functional Test Description Updated'
-        ]
-    }
-
-    String getExpectedShowJson() {
-        """{
-    "apiKey": "\${json-unit.matches:id}",
-    "description": "Functional Test Description",
-    "id": "\${json-unit.matches:id}",
-    "label": "Functional Test Label",
-    "subscribedCatalogueType": 'Mauro JSON',
-    "refreshPeriod": 7,
-    "url": "http://localhost:$serverPort"
-}"""
-    }
-
-    String getExpectedOpenAccessShowJson() {
-        """{
-    "description": "Functional Test Description",
-    "id": "\${json-unit.matches:id}",
-    "label": "Functional Test Label",
-    "subscribedCatalogueType": 'Mauro JSON',
-    "refreshPeriod": 7,
-    "url": "http://localhost:$serverPort"
-}"""
-    }
-
-    String getExpectedIndexJson() {
-        """{
-    "count": 1,
-    "items": [
-        {
-            "id": "\${json-unit.matches:id}",
-            "url": "http://localhost:$serverPort",
-            "label": "Functional Test Label",
-            "subscribedCatalogueType": 'Mauro JSON',
-            "description": "Functional Test Description",
-            "refreshPeriod": 7
-        }
-    ]
-}"""
-    }
-
     /*
       * Logged in as editor testing
       */
 
-    void 'E02 : Test the open access show and index actions render and admin actions are forbidden (as editor)'() {
+    void 'E01 : Test the open access show and index actions render and admin actions are forbidden (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -224,11 +177,25 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
+    void 'E02 : Test the types action renders (as editor)'() {
+        given:
+        loginEditor()
+
+        when:
+        GET('types', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+          "Atom",
+          "Mauro JSON"
+        ]'''
+    }
+
     /*
      * Logged out testing
      */
 
-    void 'L02 : Test the show and index actions do not render an instance for set user (not logged in)'() {
+    void 'L01 : Test the show and index actions do not render an instance for set user (not logged in)'() {
         given:
         String id = getValidId()
 
@@ -261,11 +228,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-    /*
-     * Logged out testing
-     */
-
-    void 'L02a : Test the index action for format opml responds when not logged in'() {
+    void 'L01O : Test the index action for format opml responds when not logged in'() {
         given:
         String id = getValidId()
 
@@ -282,10 +245,18 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
+    void 'L02 : Test the types action does not render (when not logged in)'() {
+        when:
+        GET('types')
+
+        then:
+        verifyResponse NOT_FOUND, response
+    }
+
     /**
      * Testing when logged in as a no access/authenticated user
      */
-    void 'N02 : Test the open access show and index actions render and admin actions are forbidden (as no access/authenticated)'() {
+    void 'N01 : Test the open access show and index actions render and admin actions are forbidden (as no access/authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
@@ -319,10 +290,24 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
+    void 'N02 : Test the types action renders (as no access/authenticated)'() {
+        given:
+        loginAuthenticated()
+
+        when:
+        GET('types', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+          "Atom",
+          "Mauro JSON"
+        ]'''
+    }
+
     /**
      * Testing when logged in as a reader only user
      */
-    void 'R02 : Test the open access show and index actions render and admin actions are forbidden (as reader)'() {
+    void 'R01 : Test the open access show and index actions render and admin actions are forbidden (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -356,11 +341,25 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
+    void 'R02 : Test the types action renders (as reader)'() {
+        given:
+        loginReader()
+
+        when:
+        GET('types', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+          "Atom",
+          "Mauro JSON"
+        ]'''
+    }
+
     /*
      * Logged in as admin testing
      */
 
-    void 'A02 : Test the show and index actions correctly render (as admin)'() {
+    void 'A01 : Test the show and index actions correctly render (as admin)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -394,6 +393,20 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
+    void 'A02 : Test the types action renders (as admin)'() {
+        given:
+        loginAdmin()
+
+        when:
+        GET('types', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+          "Atom",
+          "Mauro JSON"
+        ]'''
+    }
+
     /*
      * Logged in as editor testing
      */
@@ -421,7 +434,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-    void 'E03b : Test the save action is forbidden when using  PUT (as editor)'() {
+    void 'E04b : Test the save action is forbidden when using PUT (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -443,7 +456,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-    void 'E04 : Test the delete action is forbidden (as editor)'() {
+    void 'E05 : Test the delete action is forbidden (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -484,7 +497,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
     }
 
-    void 'L03b : Test the save action is not found when using  PUT (as not logged in)'() {
+    void 'L03b : Test the save action is not found when using PUT (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -752,17 +765,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-    /**
-     * Test the publishedModels endpoint. This would be on a remote host, but in this functional test
-     * we use the localhost. Test setup and execution is as follows:
-     * 1. Login as Admin and create an API Key for Admin
-     * 2. Subscribe to the local catalogue (in real life this would be remote), specifying the API key created above
-     * 3. Get the local /publishedModels endpoint. In real life this would connect to /api/published/models on the remote,
-     * but here we use the local.
-     * 4. Cleanup
-     */
-    void 'A05 : Test the publishedModels endpoint'() {
-
+    void 'A05 : Test the testConnection action'() {
         given:
         Map apiKeyJson = [
             name      : 'Functional Test',
@@ -771,221 +774,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         loginAdmin()
-        POST("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys", apiKeyJson, MAP_ARG, true)
-
-        then:
-        verifyResponse CREATED, response
-        String apiKey = responseBody().apiKey
-
-        when:
-        //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
-        Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-        POST('', subscriptionJson)
-
-        then:
-        verifyResponse CREATED, response
-        String subscribedCatalogueId = responseBody().id
-
-        when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", MAP_ARG, true)
-
-        then:
-        verifyResponse(OK, response)
-        verifyBaseJsonResponse(responseBody(), true)
-        responseBody().items.size() == 3
-
-        and:
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters())
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Simple Test CodeSet' && it.version == '1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Complex Test CodeSet' && it.version == '1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
-
-        cleanup:
-        DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
-        removeValidIdObject(subscribedCatalogueId)
-        cleanUpRoles(subscribedCatalogueId)
-    }
-
-    void 'A06 : Test the publishedModels endpoint (without API key)'() {
-        given:
-        loginAdmin()
-
-        when:
-        Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-        POST('', subscriptionJson)
-
-        then:
-        verifyResponse CREATED, response
-        String subscribedCatalogueId = responseBody().id
-
-        when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", MAP_ARG, true)
-
-        then:
-        verifyResponse(OK, response)
-        verifyBaseJsonResponse(responseBody(), false)
-
-        cleanup:
-        removeValidIdObject(subscribedCatalogueId)
-        cleanUpRoles(subscribedCatalogueId)
-    }
-
-    void 'A07 : Test the newerModels endpoint (with no newer models)'() {
-        given:
-        Map apiKeyJson = [
-            name      : 'Functional Test',
-            expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
-        ]
-        loginAdmin()
-        POST("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys", apiKeyJson, MAP_ARG, true)
-        verifyResponse CREATED, response
-        String apiKey = responseBody().apiKey
-        Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-        POST('', subscriptionJson)
-        verifyResponse CREATED, response
-        String subscribedCatalogueId = responseBody().id
-
-        when:
-        String finalisedDataModelId = getFinalisedDataModelId()
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-        verifyBaseNewerVersionsJsonResponse(responseBody(), false)
-
-        cleanup:
-        DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        removeValidIdObject(subscribedCatalogueId)
-        cleanUpRoles(subscribedCatalogueId)
-    }
-
-    void 'A08 : Test the newerModels endpoint (with newer models and API key)'() {
-        given:
-        String finalisedDataModelId = getFinalisedDataModelId()
-        Tuple tuple = getNewerDataModelIds()
-        String newerPublicId = tuple.v1
-        String newerId = tuple.v2
-        Map apiKeyJson = [
-            name      : 'Functional Test',
-            expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
-        ]
-        loginAdmin()
-        POST("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys", apiKeyJson, MAP_ARG, true)
-        verifyResponse CREATED, response
-        String apiKey = responseBody().apiKey
-        Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-        POST('', subscriptionJson)
-        verifyResponse CREATED, response
-        String subscribedCatalogueId = responseBody().id
-
-        when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
-        responseBody().newerPublishedModels.size() == 2
-
-        and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
-
-        cleanup:
-        DELETE("dataModels/${newerId}?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        DELETE("dataModels/${newerPublicId}?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        removeValidIdObject(subscribedCatalogueId)
-        cleanUpRoles(subscribedCatalogueId)
-    }
-
-    void 'A09 : Test the newerModels endpoint (with newer models, without API key)'() {
-        given:
-        String finalisedDataModelId = getFinalisedDataModelId()
-        Tuple tuple = getNewerDataModelIds()
-        String newerPublicId = tuple.v1
-        String newerId = tuple.v2
-        loginAdmin()
-        Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-        POST('', subscriptionJson)
-        verifyResponse CREATED, response
-        String subscribedCatalogueId = responseBody().id
-        PUT("dataModels/${finalisedDataModelId}/readByEveryone", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
-        responseBody().newerPublishedModels.size() == 1
-
-        and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
-
-        cleanup:
-        DELETE("dataModels/$newerPublicId?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        DELETE("dataModels/$newerId?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        DELETE("dataModels/$finalisedDataModelId/readByEveryone", MAP_ARG, true)
-        verifyResponse OK, response
-        removeValidIdObject(subscribedCatalogueId)
-        cleanUpRoles(subscribedCatalogueId)
-    }
-
-    void 'A10 : Test the testConnection action'() {
-        given:
-        Map apiKeyJson = [
-            name      : 'Functional Test',
-            expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
-        ]
-
-        when:
-        loginAdmin()
-        POST("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys", apiKeyJson, MAP_ARG, true)
+        POST("catalogueUsers/${getUserByEmailAddress(StandardEmailAddress.ADMIN).id}/apiKeys", apiKeyJson, MAP_ARG, true)
 
         then:
         verifyResponse CREATED, response
@@ -993,10 +782,10 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
+            url                    : subscribedCatalogueUrl,
             apiKey                 : apiKey,
             label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
+            subscribedCatalogueType: subscribedCatalogueType.label,
             description            : 'Functional Test Description',
             refreshPeriod          : 7
         ]
@@ -1019,22 +808,22 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, null
 
         cleanup:
-        DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
+        DELETE("catalogueUsers/${getUserByEmailAddress(StandardEmailAddress.ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
         verifyResponse NO_CONTENT, response
         removeValidIdObject(subscribedCatalogueId)
         cleanUpRoles(subscribedCatalogueId)
     }
 
-    void 'A11 : Test the testConnection action (without API key)'() {
+    void 'A06 : Test the testConnection action (without API key)'() {
         given:
         loginAdmin()
 
         when:
         Map subscriptionJson = [
-            url                    : "http://localhost:$serverPort/".toString(),
+            url                    : subscribedCatalogueUrl,
             apiKey                 : '',
             label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
+            subscribedCatalogueType: subscribedCatalogueType.label,
             description            : 'Functional Test Description',
             refreshPeriod          : 7
         ]
@@ -1061,24 +850,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(subscribedCatalogueId)
     }
 
-    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
-        assert publishedModel
-        assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-        assert publishedModel.label
-        assert Version.from(publishedModel.version)
-        assert publishedModel.modelType == modelType
-        assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        assert OffsetDateTime.parse(publishedModel.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        assert publishedModel.links.each {link ->
-            assert link.contentType
-            String exporterUrl = exporters.get(link.contentType)
-            assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
-        }
-        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-    }
-
-    private void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
+    protected void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
         if (expectEntries) {
             assert responseBody.items.size() > 0
             assert responseBody.items.size() == responseBody.count
@@ -1088,7 +860,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         }
     }
 
-    private void verifyBaseNewerVersionsJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
+    protected void verifyBaseNewerVersionsJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
         assert OffsetDateTime.parse(responseBody.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
         if (expectEntries) {
@@ -1098,14 +870,14 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         }
     }
 
-    private static Map<String, String> getDataModelExporters() {
+    protected static Map<String, String> getDataModelExporters() {
         [
             'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
             'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
         ]
     }
 
-    private static Map<String, String> getCodeSetExporters() {
+    protected static Map<String, String> getCodeSetExporters() {
         [
             'application/mauro.codeset+json': 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
             'application/mauro.codeset+xml' : 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0'

@@ -164,7 +164,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             if (!importerProviderService) {
                 log.debug('No ImporterProviderService found for any published content type and given parameters')
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.format.unsupported',
-                                              'Could not import SubscribedModel into local Catalogue, no importer found for content type [{0}] with given parameters')
+                                              'Could not import SubscribedModel into local Catalogue, no importer and available content type found with given parameters')
                 return subscribedModel.errors
             }
 
@@ -326,10 +326,15 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     }
 
     private List<Link> getExportLinksForSubscribedModel(SubscribedModel subscribedModel) {
-        subscribedCatalogueService.listPublishedModels(subscribedModel.subscribedCatalogue)
+        List<PublishedModel> sourcePublishedModels = subscribedCatalogueService.listPublishedModels(subscribedModel.subscribedCatalogue)
             .findAll {pm -> pm.modelId == subscribedModel.subscribedModelId}
-            .sort {pm -> pm.lastUpdated}
-            .last().links
+            .sort {pm -> pm.lastUpdated} // Atom feeds may allow multiple versions of an entry with the same ID
+
+        if (sourcePublishedModels) {
+            sourcePublishedModels.last().links
+        } else {
+            null
+        }
     }
 
     void anonymise(String createdBy) {

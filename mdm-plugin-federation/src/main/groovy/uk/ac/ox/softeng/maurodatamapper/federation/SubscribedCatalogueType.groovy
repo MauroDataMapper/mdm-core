@@ -10,6 +10,10 @@ enum SubscribedCatalogueType {
         this.label = label
     }
 
+    static List<String> labels() {
+        values().collect { it.label }.sort()
+    }
+
     static SubscribedCatalogueType findForLabel(String label) {
         String convert = label?.toUpperCase()?.replaceAll(/ /, '_')
         try {

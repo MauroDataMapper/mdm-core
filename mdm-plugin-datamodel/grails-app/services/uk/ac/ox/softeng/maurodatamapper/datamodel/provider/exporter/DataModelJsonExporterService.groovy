@@ -44,7 +44,7 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
 
     @Override
     String getFileType() {
-        'text/json'
+        'application/mauro.datamodel+json'
     }
 
     @Override

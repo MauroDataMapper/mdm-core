@@ -60,6 +60,10 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
         subscribedCatalogueService.delete(resource)
     }
 
+    List<String> types() {
+        respond SubscribedCatalogueType.labels()
+    }
+
     /**
      * Read available models from the subscribed catalogue and return as json.
      *

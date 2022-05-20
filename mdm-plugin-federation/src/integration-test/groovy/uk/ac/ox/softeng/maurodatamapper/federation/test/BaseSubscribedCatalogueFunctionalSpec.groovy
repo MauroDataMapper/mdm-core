@@ -15,13 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.federation
+package uk.ac.ox.softeng.maurodatamapper.federation.test
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -31,8 +32,6 @@ import spock.lang.Shared
 
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -46,6 +45,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  | PUT    | /api/admin/subscribedCatalogues/${id}                                    | Action: update          |
  *  | GET    | /api/admin/subscribedCatalogues/${id}                                    | Action: show            |
  *  | GET    | /api/admin/subscribedCatalogues/${subscribedCatalogueId}/testConnection  | Action: testConnection  |
+ *  | GET    | /api/subscribedCatalogues                                                | Action: types           |
  *  | GET    | /api/subscribedCatalogues                                                | Action: index           |
  *  | GET    | /api/subscribedCatalogues/${id}                                          | Action: show            |
  *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection        | Action: testConnection  |
@@ -54,7 +54,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<SubscribedCatalogue> {
+abstract class BaseSubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<SubscribedCatalogue> {
 
     @Shared
     UUID finalisedSimpleDataModelId
@@ -68,7 +68,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
     @Transactional
     def setup() {
         log.debug('Check and setup test data')
-        Folder folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        Folder folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
         checkAndSave(folder)
 
         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
@@ -101,65 +101,13 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         new Tuple(newerId1, newerId2)
     }
 
-    //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
-    Map getValidJson() {
-        [
-            url                    : "http://localhost:$serverPort".toString(),
-            apiKey                 : '67421316-66a5-4830-9156-b1ba77bba5d1',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
-        ]
-    }
+    abstract Map getValidJson()
 
-    Map getInvalidJson() {
-        [
-            url   : 'wibble',
-            apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1'
-        ]
-    }
+    abstract Map getInvalidJson()
 
-    //note: any-string on the Url is a workaround after the previous note
-    @Override
-    String getExpectedShowJson() {
-        '''{
-  "id": "${json-unit.matches:id}",
-  "url": "${json-unit.any-string}",
-  "label": 'Functional Test Label',
-  "subscribedCatalogueType": 'Mauro JSON',
-  "description": 'Functional Test Description',
-  "refreshPeriod": 7,
-  "apiKey": "67421316-66a5-4830-9156-b1ba77bba5d1"
-}'''
-    }
+    abstract String getExpectedOpenAccessShowJson()
 
-    String getExpectedOpenAccessShowJson() {
-        '''{
-  "id": "${json-unit.matches:id}",
-  "url": "${json-unit.any-string}",
-  "label": 'Functional Test Label',
-  "subscribedCatalogueType": 'Mauro JSON',
-  "description": 'Functional Test Description',
-  "refreshPeriod": 7
-}'''
-    }
-
-    String getExpectedOpenAccessIndexJson() {
-        '''{
-  "count": 1,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "url": "${json-unit.any-string}",
-      "label": "Functional Test Label",
-      "subscribedCatalogueType": 'Mauro JSON',
-      "description": "Functional Test Description",
-      "refreshPeriod": 7
-    }
-  ]
-}'''
-    }
+    abstract String getExpectedOpenAccessIndexJson()
 
     void 'O01 : Test the open access index action'() {
         when:
@@ -224,94 +172,18 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         verifyResponse NO_CONTENT, response
     }
 
-    void 'P01 : Test the publishedModels endpoint'() {
-        given:
-        POST('', getValidJson())
-        verifyResponse(CREATED, response)
-        String subscribedCatalogueId = responseBody().id
-
+    void 'T02 : Test getting SubscribedCatalogue types'() {
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", MAP_ARG, true)
+        GET('types', STRING_ARG)
 
         then:
-        verifyResponse OK, response
-        verifyBaseJsonResponse(responseBody(), true)
-        responseBody().items.size() == 1
-
-        and:
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
-
-        cleanup:
-        DELETE(subscribedCatalogueId)
-        verifyResponse NO_CONTENT, response
+        verifyJsonResponse OK, '''[
+          "Atom",
+          "Mauro JSON"
+        ]'''
     }
 
-    void 'N01 : Test the newerVersions endpoint (with no newer versions)'() {
-        given:
-        POST('', getValidJson())
-        verifyResponse(CREATED, response)
-        String subscribedCatalogueId = responseBody().id
-
-        when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-        verifyBaseNewerVersionsJsonResponse(responseBody(), false)
-
-        cleanup:
-        DELETE(subscribedCatalogueId)
-        verifyResponse NO_CONTENT, response
-    }
-
-    void 'N02 : Test the newerVersions endpoint (with newer versions)'() {
-        given:
-        Tuple tuple = getNewerDataModelIds()
-        POST('', getValidJson())
-        verifyResponse(CREATED, response)
-        String subscribedCatalogueId = responseBody().id
-
-        when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
-        responseBody().newerPublishedModels.size() == 2
-
-        and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
-                                 true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
-                                 true)
-
-        cleanup:
-        DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        DELETE("dataModels/${tuple.v2}?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-        DELETE(subscribedCatalogueId)
-        verifyResponse NO_CONTENT, response
-    }
-
-    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
-        assert publishedModel
-        assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-        assert publishedModel.label
-        assert Version.from(publishedModel.version)
-        assert publishedModel.modelType == modelType
-        assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        assert OffsetDateTime.parse(publishedModel.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        assert publishedModel.links.each {link ->
-            assert link.contentType
-            String exporterUrl = exporters.get(link.contentType)
-            assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
-        }
-        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-    }
-
-    private void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
+    protected void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
         if (expectEntries) {
             assert responseBody.items.size() > 0
             assert responseBody.items.size() == responseBody.count
@@ -321,7 +193,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         }
     }
 
-    private void verifyBaseNewerVersionsJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
+    protected void verifyBaseNewerVersionsJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
         assert OffsetDateTime.parse(responseBody.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
         if (expectEntries) {
@@ -331,7 +203,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         }
     }
 
-    private static Map<String, String> getDataModelExporters() {
+    protected static Map<String, String> getDataModelExporters() {
         [
             'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
             'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'

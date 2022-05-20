@@ -52,12 +52,15 @@ import spock.lang.Shared
     connection.setRequestProperty('apiKey', '9eb21e4c-8a61-4f32-91ea-f4563792b08c') // TODO @josephcr change this
     connection.connect()
     connection.getResponseCode() == 200 &&
-    Version.from(new JsonSlurper().parseText(connection.content.text)['Mauro Data Mapper Version']) >= Version.from('5.2.0-SNAPSHOT')
+    Version.from(new JsonSlurper().parseText(connection.content.text)['Mauro Data Mapper Version']) >= Version.from('5.2.0-SNAPSHOT') // change to >
 })
 class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
     UUID subscribedCatalogueId
+
+    @Shared
+    UUID atomSubscribedCatalogueId
 
     @Shared
     UUID folderId
@@ -74,12 +77,21 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
                                                         //apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                         url: 'http://localhost:8090',
                                                         apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
-                                                        label: 'Functional Test Label',
+                                                        label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
+
+        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'http://localhost:8090/api/feeds/all',
+                                                            apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
+                                                            label: 'Functional Test Subscribed Catalogue (Atom)',
+                                                            subscribedCatalogueType: SubscribedCatalogueType.ATOM,
+                                                            description: 'Functional Test Description',
+                                                            refreshPeriod: 7,
+                                                            createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
+        assert atomSubscribedCatalogueId
     }
 
     @Transactional
@@ -97,8 +109,12 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
         "${getResourcePath()}"
     }
 
-    String createNewItem(Map model) {
-        POST(getSavePath(), model, MAP_ARG, true)
+    String getSavePathForAtom() {
+        "subscribedCatalogues/${getAtomSubscribedCatalogueId()}/subscribedModels"
+    }
+
+    String createNewItem(Map model, String savePath = null) {
+        POST(savePath ?: getSavePath(), model, MAP_ARG, true)
         verifyResponse(HttpStatus.CREATED, response)
         response.body().id
     }
@@ -108,6 +124,16 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
             subscribedModel: [
                 //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
                 subscribedModelId: 'a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                folderId         : getFolderId()
+            ]
+        ]
+    }
+
+    Map getValidJsonForAtom() {
+        [
+            subscribedModel: [
+                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
+                subscribedModelId: 'urn:uuid:a9685867-8f59-4f8d-ae70-93b789a82ad7',
                 folderId         : getFolderId()
             ]
         ]
@@ -145,10 +171,21 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
     }
 
     @Transactional
-    void 'R2 : Test the save action correctly persists an instance'() {
+    void 'R2 : Test the save action correctly persists an instance (for #catalogueType)'() {
+        given:
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getSavePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getSavePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
+
         when: 'The save action is executed with no content'
         log.debug('No content save')
-        POST(getSavePath(), [:], MAP_ARG, true)
+        POST(savePath, [:], MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
@@ -156,7 +193,7 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
         when: 'The save action is executed with invalid data'
         log.debug('Invalid content save')
-        POST(getSavePath(), invalidJson, MAP_ARG, true)
+        POST(savePath, invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
@@ -165,7 +202,7 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
         when: 'The save action is executed with valid data'
         log.debug('Valid content save')
-        createNewItem(validJson)
+        createNewItem(validJson, savePath)
 
         then: 'The response is correct'
         verifyResponse HttpStatus.CREATED, response
@@ -173,10 +210,13 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
         String localModelId = response.body().localModelId
 
         cleanup:
-        DELETE(id)
+        DELETE(savePath + '/' + id, MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE("dataModels/${localModelId}?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
     void 'R3 : Test the index action with content'() {
