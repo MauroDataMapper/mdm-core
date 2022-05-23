@@ -234,6 +234,26 @@ class ProfileService implements DataBinder {
             .collect {new DynamicJsonProfileProviderService(metadataService, it)}
     }
 
+    List<ProfileProviderService> getAllDynamicImportProfileProviderServicesForMultiFacetAwareItem(MultiFacetAware multiFacetAware) {
+        List<Metadata> importMetadata = metadataService.findAllByMultiFacetAwareItemIdAndNamespaceLike(multiFacetAware.id,
+                                                                                                       "${DynamicImportJsonProfileProviderService.IMPORT_NAMESPACE_PREFIX}.%",
+                                                                                                       [:])
+        Set<String> distinctNamespaces = importMetadata.collect {it.namespace}.toSet()
+        List<DynamicImportJsonProfileProviderService> allImportJsonProfileProviderServices = profileProviderServices
+            .findAll {it instanceof DynamicImportJsonProfileProviderService} as List<DynamicImportJsonProfileProviderService>
+
+        distinctNamespaces.collect {ns ->
+            // Find the profile service that should be used for the namespace
+            DynamicImportJsonProfileProviderService rootService = allImportJsonProfileProviderServices.find {it.matchesMetadataNamespace(ns)}
+            // If none exists then the MD has been added erroneously or the PPS has been removed
+            if (!rootService) return null
+
+            // Identify the import Id and create a new PPS using the id
+            UUID extractImportingId = rootService.extractImportingId(ns)
+            rootService.generateDynamicProfileForId(extractImportingId)
+        }.findAll().sort()
+    }
+
     def getMany(UUID modelId, ItemsProfilesDataBinding itemsProfiles) {
         List<ProfileProvided> profiles = []
 
