@@ -140,7 +140,6 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends MdmDomain> ex
             finalised = true
             useDefaultAuthority = false
         }
-        //K importedModelVersion1 = modelImporterProviderService.importDomain(getAdmin(), parameters1) as K
         K importedModelVersion1 = importerService.importDomain(getAdmin(), modelImporterProviderService, parameters1) as K
         importedModelVersion1.folder = folder
         checkAndSave(importedModelVersion1)
@@ -158,7 +157,6 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends MdmDomain> ex
             finalised = true
             useDefaultAuthority = false
         }
-        //K importedModelVersion2 = modelImporterProviderService.importDomain(getAdmin(), parameters2) as K
         K importedModelVersion2 = importerService.importDomain(getAdmin(), modelImporterProviderService, parameters2) as K
         importedModelVersion2.folder = folder
         checkAndSave(importedModelVersion2)

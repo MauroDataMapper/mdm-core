@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.federation.gorm.mapping.MdmPluginFederationSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmAtomPublishedModelCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmOpmlSubscribedCatalogueCollectionRenderer
-import uk.ac.ox.softeng.maurodatamapper.federation.converter.MdmJsonSubscribedCatalogueConverter
+import uk.ac.ox.softeng.maurodatamapper.federation.converter.MauroJsonSubscribedCatalogueConverter
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.AtomSubscribedCatalogueConverter
 
 import grails.plugins.Plugin
@@ -90,7 +90,7 @@ The federation domain, services and controllers for the Mauro Data Mapper backen
             /*
              * Define converters for JSON and Atom Subscribed Catalogues
              */
-            mdmJsonSubscribedCatalogueConverter MdmJsonSubscribedCatalogueConverter
+            mauroJsonSubscribedCatalogueConverter MauroJsonSubscribedCatalogueConverter
             atomSubscribedCatalogueConverter AtomSubscribedCatalogueConverter
         }
     }

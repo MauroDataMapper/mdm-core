@@ -20,12 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Requires
@@ -43,13 +41,12 @@ import spock.lang.Shared
  */
 @Integration
 @Slf4j
-// Requires a connection to the CD environment, if this connection is not available
+// Requires a connection to the CD environment, running a version providing the /types endpoint
 @Requires({
-    //    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
-    String url = 'http://localhost:8090'
-    HttpURLConnection connection = (url + '/api/admin/subscribedCatalogues/types').toURL().openConnection() as HttpURLConnection
+    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/admin/subscribedCatalogues/types'
+    HttpURLConnection connection = (url).toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
-    connection.setRequestProperty('apiKey', '9eb21e4c-8a61-4f32-91ea-f4563792b08c') // TODO @josephcr change this
+    connection.setRequestProperty('apiKey', '720e60bc-3993-48d4-a17e-c3a13f037c7e')
     connection.connect()
     connection.getResponseCode() == 200
 })
@@ -72,10 +69,8 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
 
-        subscribedCatalogueId = new SubscribedCatalogue(//url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
-                                                        //apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
-                                                        url: 'http://localhost:8090',
-                                                        apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
+        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
+                                                        apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                         label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         description: 'Functional Test Description',
@@ -83,8 +78,8 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
                                                         createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
 
-        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'http://localhost:8090/api/feeds/all',
-                                                            apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
+        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/feeds/all',
+                                                            apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                             label: 'Functional Test Subscribed Catalogue (Atom)',
                                                             subscribedCatalogueType: SubscribedCatalogueType.ATOM,
                                                             description: 'Functional Test Description',

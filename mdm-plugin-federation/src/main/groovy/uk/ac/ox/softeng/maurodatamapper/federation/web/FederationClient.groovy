@@ -53,7 +53,8 @@ import java.util.concurrent.ThreadFactory
  * @since 14/04/2021
  */
 @Slf4j
-class FederationClient implements Closeable, XmlImportMapping {
+@SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
+class FederationClient implements Closeable {
 
     static final String API_KEY_HEADER = 'apiKey'
     private HttpClient client
@@ -147,7 +148,6 @@ class FederationClient implements Closeable, XmlImportMapping {
 
     private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         String body = retrieveStringFromClient(uriBuilder, apiKey, params)
-        log.debug('!!FederationClient body = {}', body)
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {

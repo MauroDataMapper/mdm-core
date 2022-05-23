@@ -61,13 +61,12 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-// Requires a connection to the CD environment, if this connection is not available
+// Requires a connection to the CD environment, running a version providing the /types endpoint
 @Requires({
-    //    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
-    String url = 'http://localhost:8090'
-    HttpURLConnection connection = (url + '/api/admin/subscribedCatalogues/types').toURL().openConnection() as HttpURLConnection
+    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/admin/subscribedCatalogues/types'
+    HttpURLConnection connection = (url).toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
-    connection.setRequestProperty('apiKey', '9eb21e4c-8a61-4f32-91ea-f4563792b08c') // TODO @josephcr change this
+    connection.setRequestProperty('apiKey', '720e60bc-3993-48d4-a17e-c3a13f037c7e')
     connection.connect()
     connection.getResponseCode() == 200
 })
@@ -94,10 +93,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                  createdBy: FUNCTIONAL_TEST).save(flush: true).id
 
 
-        subscribedCatalogueId = new SubscribedCatalogue(//url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
-                                                        //apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
-                                                        url: 'http://localhost:8090',
-                                                        apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
+        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
+                                                        apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                         label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         description: 'Functional Test Description',
@@ -105,15 +102,13 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                                         createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
 
-        atomSubscribedCatalogueId = new SubscribedCatalogue(//url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/feeds/all',
-                                                        //apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
-                                                        url: 'http://localhost:8090/api/feeds/all',
-                                                        apiKey: '9eb21e4c-8a61-4f32-91ea-f4563792b08c',
-                                                        label: 'Functional Test Subscribed Catalogue (Atom)',
-                                                        subscribedCatalogueType: SubscribedCatalogueType.ATOM,
-                                                        description: 'Functional Test Description',
-                                                        refreshPeriod: 7,
-                                                        createdBy: FUNCTIONAL_TEST).save(flush: true).id
+        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/feeds/all',
+                                                            apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
+                                                            label: 'Functional Test Subscribed Catalogue (Atom)',
+                                                            subscribedCatalogueType: SubscribedCatalogueType.ATOM,
+                                                            description: 'Functional Test Description',
+                                                            refreshPeriod: 7,
+                                                            createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert atomSubscribedCatalogueId
 
     }
