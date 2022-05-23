@@ -94,8 +94,11 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
-                                                                                                  params.profileVersion)
+        ProfileProviderService profileProviderService = profileService.findProfileProviderServiceForMultiFacetAwareItem(
+            multiFacetAware,
+            params.profileNamespace,
+            params.profileName,
+            params.profileVersion)
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
@@ -115,8 +118,11 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
-                                                                                                  params.profileVersion)
+        ProfileProviderService profileProviderService = profileService.findProfileProviderServiceForMultiFacetAwareItem(
+            multiFacetAware,
+            params.profileNamespace,
+            params.profileName,
+            params.profileVersion)
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
@@ -163,8 +169,12 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
-                                                                                                  params.profileVersion)
+        ProfileProviderService profileProviderService = profileService.findProfileProviderServiceForMultiFacetAwareItem(
+            multiFacetAware,
+            params.profileNamespace,
+            params.profileName,
+            params.profileVersion
+        )
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
@@ -191,7 +201,12 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
+        ProfileProviderService profileProviderService = profileService.profileService.findProfileProviderServiceForMultiFacetAwareItem(
+            multiFacetAware,
+            params.profileNamespace,
+            params.profileName,
+            params.profileVersion
+        )
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }

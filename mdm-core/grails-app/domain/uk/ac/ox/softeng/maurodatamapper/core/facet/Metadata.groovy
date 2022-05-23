@@ -209,19 +209,24 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces, Map filters = [:]) {
-        byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
+        byMultiFacetAwareItemId(multiFacetAwareItemId, filters).not {inList('namespace', namespaces)}
     }
 
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNamespaceNotLike(Serializable multiFacetAwareItemId,
                                                                                  String notLikeNamespace, Map filters = [:]) {
-        byMultiFacetAwareItemId(multiFacetAwareItemId).not {
+        byMultiFacetAwareItemId(multiFacetAwareItemId, filters).not {
             like 'namespace', notLikeNamespace
         }
     }
 
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNamespaceLike(Serializable multiFacetAwareItemId,
+                                                                              String likeNamespace, Map filters = [:]) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId, filters).like('namespace', likeNamespace)
+    }
+
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(Serializable multiFacetAwareItemId, List<String> namespaces,
                                                                                                  String notLikeNamespace, Map filters = [:]) {
-        byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces).not {
+        byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, filters).not {
             like 'namespace', notLikeNamespace
         }
     }

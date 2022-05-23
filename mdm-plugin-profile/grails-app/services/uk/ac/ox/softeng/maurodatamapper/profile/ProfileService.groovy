@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
-//@GrailsCompileStatic
 class ProfileService implements DataBinder {
 
     @Autowired
@@ -72,15 +71,26 @@ class ProfileService implements DataBinder {
     }
 
     ProfileProviderService findProfileProviderService(String profileNamespace, String profileName, String profileVersion = null) {
+        findProfileProviderService(getAllProfileProviderServices(true), profileNamespace, profileName, profileVersion)
 
+    }
+
+    ProfileProviderService findProfileProviderServiceForMultiFacetAwareItem(MultiFacetAware multiFacetAware, String profileNamespace, String profileName,
+                                                                            String profileVersion = null) {
+        List<ProfileProviderService> allAvailableProfileProvideServices = getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAware)
+        findProfileProviderService(allAvailableProfileProvideServices, profileNamespace, profileName, profileVersion)
+    }
+
+    ProfileProviderService findProfileProviderService(List<ProfileProviderService> allAvailableProfileProvideServices,
+                                                      String profileNamespace, String profileName, String profileVersion = null) {
         if (profileVersion) {
-            return getAllProfileProviderServices(true).find {
+            return allAvailableProfileProvideServices.find {
                 it.namespace == profileNamespace &&
                 it.getName() in [profileName, Utils.safeUrlEncode(profileName)] &&
                 it.version == profileVersion
             }
         }
-        getAllProfileProviderServices(true).findAll {
+        allAvailableProfileProvideServices.findAll {
             it.namespace == profileNamespace &&
             it.getName() in [profileName, Utils.safeUrlEncode(profileName)]
         }.max()
@@ -164,23 +174,35 @@ class ProfileService implements DataBinder {
         metadataList.collect {it.namespace} as Set
     }
 
+    List<ProfileProviderService> getAllAvailableProfileProviderServicesForMultiFacetAwareItem(MultiFacetAware multiFacetAwareItem,
+                                                                                              boolean finalisedOnly = true,
+                                                                                              boolean latestVersionByMetadataNamespace = false) {
+        List<ProfileProviderService> allProfileServices = getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
+            it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType) || it.profileApplicableForDomains().size() == 0
+        }
+        allProfileServices.addAll(getAllDynamicImportProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem))
+        allProfileServices.sort()
+    }
+
     List<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
-
-        getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
-            (usedNamespaces.contains(it.getMetadataNamespace()) &&
-             (it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType) || it.profileApplicableForDomains().size() == 0))
-        }
+        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem, finalisedOnly,
+                                                                     latestVersionByMetadataNamespace)
+            .findAll {
+                usedNamespaces.contains(it.getMetadataNamespace()) ||
+                (it instanceof DynamicImportJsonProfileProviderService && it.importingId)
+            }
     }
 
     List<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true,
                                                           boolean latestVersionByMetadataNamespace = false) {
-        List<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem, finalisedOnly, latestVersionByMetadataNamespace)
-        getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
-            (it.profileApplicableForDomains().size() == 0 ||
-             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType)) &&
-            !usedProfiles.contains(it)
-        }
+        Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
+        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem, finalisedOnly,
+                                                                     latestVersionByMetadataNamespace)
+            .findAll {
+                !usedNamespaces.contains(it.getMetadataNamespace()) ||
+                (it instanceof DynamicImportJsonProfileProviderService && !it.importingId)
+            }
     }
 
     /**
@@ -334,8 +356,8 @@ class ProfileService implements DataBinder {
     }
 
     List<Metadata> findAllNonProfileMetadata(MultiFacetAware multiFacetAware, Map pagination) {
-        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAware)
-        Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
+        List<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAware)
+        List<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
         metadataService.findAllByMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(multiFacetAware.id,
                                                                                           profileNamespaces.asList(),
                                                                                           "${DynamicImportJsonProfileProviderService.IMPORT_NAMESPACE_PREFIX}.%",
