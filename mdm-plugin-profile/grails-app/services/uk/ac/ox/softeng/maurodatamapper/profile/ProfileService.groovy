@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
+//@GrailsCompileStatic
 class ProfileService implements DataBinder {
 
     @Autowired
@@ -87,7 +88,7 @@ class ProfileService implements DataBinder {
     MultiFacetAware storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
         MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(multiFacetAwareItem.domainType)
         profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user.emailAddress, service.isMultiFacetAwareFinalised(multiFacetAwareItem))
-        service.save(flush: true, validate: false, multiFacetAwareItem)
+        service.save(flush: true, validate: false, multiFacetAwareItem) as MultiFacetAware
     }
 
     Profile validateProfile(ProfileProviderService profileProviderService, Profile submittedProfile) {
@@ -104,7 +105,7 @@ class ProfileService implements DataBinder {
 
     void deleteProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, User currentUser) {
 
-        Set<Metadata> mds = profileProviderService.getAllProfileMetadataByMultiFacetAwareItemId(multiFacetAwareItem.id)
+        Collection<Metadata> mds = profileProviderService.getAllProfileMetadataByMultiFacetAwareItemId(multiFacetAwareItem.id)
 
         mds.each {md ->
             metadataService.delete(md)
@@ -149,7 +150,7 @@ class ProfileService implements DataBinder {
     }
 
     MultiFacetAware findMultiFacetAwareItemByDomainTypeAndId(String domainType, UUID multiFacetAwareItemId) {
-        findServiceForMultiFacetAwareDomainType(domainType).get(multiFacetAwareItemId)
+        findServiceForMultiFacetAwareDomainType(domainType).get(multiFacetAwareItemId) as MultiFacetAware
     }
 
     boolean isMultiFacetAwareFinalised(MultiFacetAware multiFacetAwareItem) {
@@ -162,7 +163,7 @@ class ProfileService implements DataBinder {
         metadataList.collect {it.namespace} as Set
     }
 
-    Set<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
+    List<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
 
         getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
@@ -171,75 +172,43 @@ class ProfileService implements DataBinder {
         }
     }
 
-    Set<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
-        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem, finalisedOnly, latestVersionByMetadataNamespace)
-        Set<ProfileProviderService> allProfiles = getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
-            it.profileApplicableForDomains().size() == 0 ||
-            it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType)
+    List<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true,
+                                                          boolean latestVersionByMetadataNamespace = false) {
+        List<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem, finalisedOnly, latestVersionByMetadataNamespace)
+        getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
+            (it.profileApplicableForDomains().size() == 0 ||
+             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType)) &&
+            !usedProfiles.contains(it)
         }
-        allProfiles.findAll {!usedProfiles.contains(it)}
-    }
-
-    ProfileProviderService createDynamicProfileServiceFromModel(DataModel dataModel) {
-
-        return new DynamicJsonProfileProviderService(metadataService, dataModel)
-
     }
 
     /**
      * @param finalisedOnly If true then exclude dynamic profiles which are not finalised
      * @return
      */
-    Set<ProfileProviderService> getAllProfileProviderServices(boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
-        // First we'll get the ones we already know about...
-        // (Except those that we've already disabled)
-        Set<ProfileProviderService> allProfileServices = []
-        allProfileServices.addAll(profileProviderServices.findAll {!it.disabled})
+    List<ProfileProviderService> getAllProfileProviderServices(boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
 
-        // Now we get all the dynamic models
-        List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(
-            profileSpecificationProfileService.metadataNamespace)
-
-        List<UUID> dynamicModelIds = dynamicModels.collect {it.id}
-
-
-        // Now we do a quick check to make sure that none of those are dynamic, and refer to a model that has since been deleted
-        allProfileServices.removeAll {profileProviderService ->
-            if (profileProviderService.getDefiningDataModel() != null &&
-                !dynamicModelIds.contains(profileProviderService.getDefiningDataModel())) {
-                // Disable it for next time
-                profileProviderService.disabled = true
-                return true
-            }
-            return false
-        }
-
-        Set<UUID> alreadyKnownServiceDataModels = allProfileServices.findAll {
-            it.getDefiningDataModel() != null
-        }.collect {
-            it.getDefiningDataModel()
-        }
-
-        // Now find any new profile models and create a service for them:
-        List<DataModel> newDynamicModels = dynamicModels.findAll {dataModel ->
-            (!alreadyKnownServiceDataModels.contains(dataModel.id)) &&
-            !(finalisedOnly && !dataModel.finalised)
-        }
-
-        allProfileServices.addAll(
-            newDynamicModels.collect {dataModel -> createDynamicProfileServiceFromModel(dataModel)}
-        )
+        // Create a new set with the non-disabled autowired services added
+        Set<ProfileProviderService> allProfileProviderServices = new HashSet<>(profileProviderServices.size())
+        allProfileProviderServices.addAll(profileProviderServices.findAll {!it.disabled})
+        // Get all the dynamic datamodel PPSs and add them
+        allProfileProviderServices.addAll(getAllDynamicProfileProviderServices(finalisedOnly))
 
         if (latestVersionByMetadataNamespace) {
-            return allProfileServices.groupBy {new Tuple(it.namespace, it.name, it.metadataNamespace)}.collect {it.value.max()}.sort()
+            return allProfileProviderServices
+                .groupBy {new Tuple(it.namespace, it.name, it.metadataNamespace)}
+                .collect {it.value.max()}
+                .sort()
         }
-        return allProfileServices.sort()
+        return allProfileProviderServices.sort()
     }
 
-    Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
-        getAllProfileProviderServices(true).findAll {
-            it.definingDataModel != null
-        }
+    List<ProfileProviderService> getAllDynamicProfileProviderServices(boolean finalisedOnly = true) {
+        // Now we get all the dynamic models
+        List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(profileSpecificationProfileService.metadataNamespace)
+        dynamicModels
+            .findAll {finalisedOnly ? it.finalised : true}
+            .collect {new DynamicJsonProfileProviderService(metadataService, it)}
     }
 
     def getMany(UUID modelId, ItemsProfilesDataBinding itemsProfiles) {
