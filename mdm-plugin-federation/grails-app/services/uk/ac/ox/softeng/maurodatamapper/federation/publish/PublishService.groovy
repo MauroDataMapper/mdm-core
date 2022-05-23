@@ -52,7 +52,7 @@ class PublishService {
             links = modelService.getExporterProviderServices().sort().collect {exporterProviderService ->
                 new Link(LINK_RELATIONSHIP_ALTERNATE,
                          modelUrl + '/export/' + exporterProviderService.namespace + '/' + exporterProviderService.name + '/' + exporterProviderService.version).tap {
-                    contentType = exporterProviderService.producesContentType
+                    contentType = exporterProviderService.contentType
                 }
             }
         }

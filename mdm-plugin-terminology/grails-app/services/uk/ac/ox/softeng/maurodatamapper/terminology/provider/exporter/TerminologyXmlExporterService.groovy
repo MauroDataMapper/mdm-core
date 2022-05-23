@@ -46,17 +46,12 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     }
 
     @Override
-    String getFileType() {
-        'text/xml'
-    }
-
-    @Override
     String getFileExtension() {
         'xml'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.terminology+xml'
     }
 
@@ -78,12 +73,12 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminology, 'terminology', version, '4.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(terminology, 'terminology', version, '4.0', 'gml', exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, '4.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, '4.0', 'gml', exportMetadata), contentType)
     }
 }

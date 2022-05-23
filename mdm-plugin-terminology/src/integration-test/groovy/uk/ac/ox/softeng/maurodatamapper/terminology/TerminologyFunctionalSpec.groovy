@@ -1366,7 +1366,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "knownMetadataKeys": [],
                 "providerType": "TerminologyExporter",
                 "fileExtension": "json",
-                "fileType": "text/json",
+                "contentType": "application/mauro.terminology+json",
                 "canExportMultipleDomains": true
             },
             {
@@ -1378,7 +1378,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "knownMetadataKeys": [],
                 "providerType": "TerminologyExporter",
                 "fileExtension": "xml",
-                "fileType": "text/xml",
+                "contentType": "application/mauro.terminology+xml",
                 "canExportMultipleDomains": true
             }
         ]'''

@@ -215,7 +215,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
       * Logged in as editor testing
       */
 
-    void 'E02 : Test the show and index action correctly renders an instance for set user (as editor)'() {
+    void 'E01 : Test the show and index action correctly renders an instance for set user (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -242,7 +242,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged out testing
      */
 
-    void 'L02 : Test the show and index action does not render an instance for set user (not logged in)'() {
+    void 'L01 : Test the show and index action does not render an instance for set user (not logged in)'() {
         given:
         String id = getValidId()
 
@@ -267,7 +267,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a no access/authenticated user
      */
-    void 'N02 : Test the show and index action correctly renders an instance for set user (as no access/authenticated)'() {
+    void 'N01 : Test the show and index action correctly renders an instance for set user (as no access/authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
@@ -293,7 +293,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a reader only user
      */
-    void 'R02 : Test the show and index action correctly renders an instance for set user (as reader)'() {
+    void 'R01 : Test the show and index action correctly renders an instance for set user (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -320,7 +320,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged in as admin testing
      */
 
-    void 'A02 : Test the show action correctly renders an instance for set user (as admin)'() {
+    void 'A01 : Test the show action correctly renders an instance for set user (as admin)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -341,7 +341,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged in as editor testing
      */
 
-    void 'E03 : Test the save action is ok (as editor) (for #catalogueType)'() {
+    void 'E02 : Test the save action is ok (as editor) (for #catalogueType)'() {
         given:
         loginContainerAdmin()
 
@@ -383,7 +383,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'E04 : Test the delete action is forbidden (as editor)'() {
+    void 'E03 : Test the delete action is forbidden (as editor)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -404,7 +404,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged out testing
      */
 
-    void 'L03 : Test the save action is not found (as not logged in) (for #catalogueType)'() {
+    void 'L02 : Test the save action is not found (as not logged in) (for #catalogueType)'() {
         given:
         String savePath
         Map validJson
@@ -438,7 +438,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'L04 : Test the delete action is not found (as not logged in)'() {
+    void 'L03 : Test the delete action is not found (as not logged in)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -458,7 +458,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Testing when logged in as a no access/authenticated user
      */
 
-    void 'N03 : Test the save action is ok (as authenticated) (for #catalogueType)'() {
+    void 'N02 : Test the save action is ok (as authenticated) (for #catalogueType)'() {
         given:
         loginAuthenticated()
 
@@ -496,7 +496,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'N04 : Test the delete action is forbidden (as authenticated)'() {
+    void 'N03 : Test the delete action is forbidden (as authenticated)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -517,7 +517,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Testing when logged in as a reader only user
      */
 
-    void 'R03a : Test the save action is forbidden (as reader) (for #catalogueType)'() {
+    void 'R02 : Test the save action is forbidden (as reader) (for #catalogueType)'() {
         given:
         loginReader()
 
@@ -555,7 +555,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'R04 : Test the delete action is forbidden (as reader)'() {
+    void 'R03 : Test the delete action is forbidden (as reader)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -577,7 +577,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     * This proves that admin users can mess with items created by other users
     */
 
-    void 'A03 : Test the save action is ok (as admin) (for #catalogueType)'() {
+    void 'A02 : Test the save action is ok (as admin) (for #catalogueType)'() {
         given:
         loginAdmin()
 
@@ -619,7 +619,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'A04 : Test the delete action is ok (as admin)'() {
+    void 'A03 : Test the delete action is ok (as admin)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -636,7 +636,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-    void 'A05 : Test the save action with attempted federation (as admin) (for #catalogueType)'() {
+    void 'A04 : Test the save action with attempted federation (as admin) (for #catalogueType)'() {
         given:
         loginAdmin()
 

@@ -43,17 +43,12 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
     String getFileExtension() {
         'json'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.terminology+json'
     }
 
@@ -70,12 +65,12 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminology, 'terminology', version, exportMetadata), fileType)
+        exportModel(new ExportModel(terminology, 'terminology', version, exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, exportMetadata), fileType)
+        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, exportMetadata), contentType)
     }
 }

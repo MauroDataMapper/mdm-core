@@ -46,17 +46,12 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
     String getFileExtension() {
         'json'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.folder+json'
     }
 
@@ -73,7 +68,7 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     @Override
     ByteArrayOutputStream exportFolder(User currentUser, Folder folder, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(folder, 'folder', version, exportMetadata), fileType)
+        exportModel(new ExportModel(folder, 'folder', version, exportMetadata), contentType)
     }
 
     @Override

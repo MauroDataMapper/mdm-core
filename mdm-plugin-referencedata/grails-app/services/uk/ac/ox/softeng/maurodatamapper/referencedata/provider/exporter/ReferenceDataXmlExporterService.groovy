@@ -39,12 +39,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
     }
 
     @Override
-    String getFileType() {
-        'text/xml'
-    }
-
-    @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.referencedatamodel+xml'
     }
 
@@ -66,7 +61,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
     @Override
     ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(referenceDataModel, 'referenceDataModel', version, 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(referenceDataModel, 'referenceDataModel', version, 'gml', exportMetadata), contentType)
     }
 
     @Override

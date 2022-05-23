@@ -209,7 +209,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": true,
     "version": "${json-unit.matches:version}",
-    "fileType": "text/xml"
+    "contentType": "application/mauro.datamodel+xml",
   },
   {
     "providerType": "DataModelExporter",
@@ -223,7 +223,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": true,
     "version": "${json-unit.matches:version}",
-    "fileType": "text/json"
+    "contentType": "application/mauro.datamodel+json",
   }
 ]'''
     }

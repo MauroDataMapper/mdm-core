@@ -47,12 +47,11 @@ import spock.lang.Shared
 @Requires({
     //    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
     String url = 'http://localhost:8090'
-    HttpURLConnection connection = (url + '/api/admin/status').toURL().openConnection() as HttpURLConnection
+    HttpURLConnection connection = (url + '/api/admin/subscribedCatalogues/types').toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
     connection.setRequestProperty('apiKey', '9eb21e4c-8a61-4f32-91ea-f4563792b08c') // TODO @josephcr change this
     connection.connect()
-    connection.getResponseCode() == 200 &&
-    Version.from(new JsonSlurper().parseText(connection.content.text)['Mauro Data Mapper Version']) >= Version.from('5.2.0-SNAPSHOT') // change to >
+    connection.getResponseCode() == 200
 })
 class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 

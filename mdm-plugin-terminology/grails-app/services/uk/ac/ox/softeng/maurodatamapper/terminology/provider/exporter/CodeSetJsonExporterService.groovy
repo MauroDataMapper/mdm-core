@@ -43,17 +43,12 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
     String getFileExtension() {
         'json'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.codeset+json'
     }
 
@@ -70,12 +65,12 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSet, 'codeSet', version, exportMetadata), fileType)
+        exportModel(new ExportModel(codeSet, 'codeSet', version, exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, exportMetadata), contentType)
     }
 }

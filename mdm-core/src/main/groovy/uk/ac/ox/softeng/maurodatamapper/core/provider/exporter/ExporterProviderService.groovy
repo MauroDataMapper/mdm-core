@@ -66,15 +66,11 @@ abstract class ExporterProviderService extends MauroDataMapperService {
 
     abstract String getFileExtension()
 
-    abstract String getFileType()
-
     /**
      * MIME type produced by ExporterProviderService
      * @return MIME type
      */
-    String getProducesContentType() {
-        null
-    }
+    abstract String getContentType()
 
     @Override
     String getProviderType() {

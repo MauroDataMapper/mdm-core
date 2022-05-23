@@ -88,7 +88,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.codeset+xml",
     "canExportMultipleDomains": true
   },
   {
@@ -102,7 +102,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.referencedatamodel+json",
     "canExportMultipleDomains": false
   },
   {
@@ -116,7 +116,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.datamodel+xml",
     "canExportMultipleDomains": true
   },
   {
@@ -130,7 +130,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.referencedatamodel+xml",
     "canExportMultipleDomains": false
   },
   {
@@ -144,7 +144,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.codeset+json",
     "canExportMultipleDomains": true
   },
   {
@@ -158,7 +158,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "DataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.datamodel+json",
     "canExportMultipleDomains": true
   },
   {
@@ -172,7 +172,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "TerminologyExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.terminology+json",
     "canExportMultipleDomains": true
   },
   {
@@ -186,7 +186,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "TerminologyExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.terminology+xml",
     "canExportMultipleDomains": true
   },
   {
@@ -200,7 +200,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.dataflow+json",
     "canExportMultipleDomains": false
   },
   {
@@ -214,7 +214,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+   "contentType": "application/mauro.dataflow+xml",
     "canExportMultipleDomains": false
   },
   {
@@ -228,7 +228,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "FolderExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.folder+json",
     "canExportMultipleDomains": false
   }
 ]''')

@@ -42,12 +42,7 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     }
 
     @Override
-    String getFileType() {
-        'text/xml'
-    }
-
-    @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.dataflow+xml'
     }
 
@@ -69,7 +64,7 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     @Override
     ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataFlow, 'dataFlow', version, 'gml', exportMetadata), fileType
+        exportModel new ExportModel(dataFlow, 'dataFlow', version, 'gml', exportMetadata), contentType
     }
 
     @Override

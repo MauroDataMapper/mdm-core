@@ -46,17 +46,12 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
-    String getFileType() {
-        'application/mauro.datamodel+xml'
-    }
-
-    @Override
     String getFileExtension() {
         'xml'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.datamodel+xml'
     }
 
@@ -73,12 +68,12 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.1', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.1', 'gml', exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.1', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.1', 'gml', exportMetadata), contentType)
     }
 }

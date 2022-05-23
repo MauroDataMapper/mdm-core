@@ -42,12 +42,7 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.dataflow+json'
     }
 
@@ -69,7 +64,7 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     @Override
     ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataFlow, 'dataFlow', version, exportMetadata), fileType
+        exportModel new ExportModel(dataFlow, 'dataFlow', version, exportMetadata), contentType
     }
 
     @Override

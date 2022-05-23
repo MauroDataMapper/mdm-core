@@ -46,17 +46,12 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     }
 
     @Override
-    String getFileType() {
-        'text/xml'
-    }
-
-    @Override
     String getFileExtension() {
         'xml'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.codeset+xml'
     }
 
@@ -78,12 +73,12 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSet, 'codeSet', version, '4.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSet, 'codeSet', version, '4.0', 'gml', exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '4.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '4.0', 'gml', exportMetadata), contentType)
     }
 }

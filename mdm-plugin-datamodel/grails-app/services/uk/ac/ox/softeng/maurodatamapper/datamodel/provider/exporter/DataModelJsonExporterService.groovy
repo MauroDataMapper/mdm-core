@@ -43,17 +43,12 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     }
 
     @Override
-    String getFileType() {
-        'application/mauro.datamodel+json'
-    }
-
-    @Override
     String getFileExtension() {
         'json'
     }
 
     @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.datamodel+json'
     }
 
@@ -70,12 +65,12 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, exportMetadata), fileType)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, exportMetadata), contentType)
     }
 }

@@ -99,7 +99,7 @@ class DataFlowController extends EditLoggingController<DataFlow> {
             return errorResponse(UNPROCESSABLE_ENTITY, 'DataFlow could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
+        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.contentType)
     }
 
     def exportDataFlows() {
@@ -128,7 +128,7 @@ class DataFlowController extends EditLoggingController<DataFlow> {
             return errorResponse(UNPROCESSABLE_ENTITY, 'DataFlows could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "DataFlows.${exporter.fileExtension}", contentType: exporter.fileType)
+        render(file: outputStream.toByteArray(), fileName: "DataFlows.${exporter.fileExtension}", contentType: exporter.contentType)
     }
 
     private DataFlowImporterProviderService findImporter() {

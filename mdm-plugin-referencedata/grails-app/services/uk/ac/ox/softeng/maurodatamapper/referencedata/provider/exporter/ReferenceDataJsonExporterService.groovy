@@ -39,12 +39,7 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
-    String getProducesContentType() {
+    String getContentType() {
         'application/mauro.referencedatamodel+json'
     }
 
@@ -66,7 +61,7 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     @Override
     ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(referenceDataModel, 'referenceDataModel', version, exportMetadata), fileType
+        exportModel new ExportModel(referenceDataModel, 'referenceDataModel', version, exportMetadata), contentType
     }
 
     @Override

@@ -245,7 +245,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.referencedatamodel+json",
     "canExportMultipleDomains": false
   },
   {
@@ -259,7 +259,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.referencedatamodel+xml",
     "canExportMultipleDomains": false
   }
 ]'''
