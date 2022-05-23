@@ -42,7 +42,11 @@ class EmptyJsonProfileFactory {
             sectionMap.fields = []
             ProfileSection profileSection = new ProfileSection(sectionMap)
             profileSection.fields = fields.collect {Map field ->
-                new ProfileField(field)
+                new ProfileField(field).tap {
+                    // If the profile cannot be editted after finalisation then none of its fields should be
+                    // however if the profile can be then by default all the fields will be set to true unless this imported json changes this
+                    if (!jsonProfileProviderService.canBeEditedAfterFinalisation()) editableAfterFinalisation = false
+                }
             }
             profileSection
         }

@@ -21,13 +21,15 @@ import grails.validation.Validateable
 import groovy.transform.AutoClone
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
+import org.springframework.core.Ordered
 
 @AutoClone
-class ProfileSection implements Validateable {
+class ProfileSection implements Validateable, Ordered, Comparable<ProfileSection> {
 
     String name
     String description
     List<ProfileField> fields = []
+    int order = 0
 
     static constraints = {
         name blank: false
@@ -80,5 +82,15 @@ class ProfileSection implements Validateable {
 
     Map<String, String> getFlatFieldMap() {
         fields.findAll {it.currentValue}.collectEntries {[it.fieldName, it.currentValue]}
+    }
+
+    ProfileSection addToFields(@DelegatesTo(value = ProfileField, strategy = Closure.DELEGATE_FIRST) Closure closure) {
+        fields.add(new ProfileField().tap(closure))
+        this
+    }
+
+    @Override
+    int compareTo(ProfileSection that) {
+        this.order <=> that.order
     }
 }

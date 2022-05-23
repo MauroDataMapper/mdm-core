@@ -35,6 +35,14 @@ abstract class Profile implements Comparable<Profile>, Validateable {
 
     abstract Set<String> getKnownFields()
 
+    List<ProfileSection> getSections() {
+        // Maintain original order the sections were added in
+        sections.eachWithIndex {entry, i ->
+            if (!entry.order) entry.order = i
+        }
+        sections.sort()
+    }
+
     @Override
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         if (!params?.currentValuesOnly) {
@@ -58,5 +66,10 @@ abstract class Profile implements Comparable<Profile>, Validateable {
 
     List<ProfileField> getAllFields() {
         sections.collectMany {it.fields}
+    }
+
+    Profile addToSections(@DelegatesTo(value = ProfileSection, strategy = Closure.DELEGATE_FIRST) Closure closure) {
+        sections.add(new ProfileSection().tap(closure))
+        this
     }
 }

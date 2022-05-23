@@ -199,7 +199,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                                 it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
                                 it.key == 'editableAfterFinalisation'
                             }
-                            md ? md.value.toBoolean() : true
+                            md ? md.value.toBoolean() : this.canBeEditedAfterFinalisation()
                         }()
                     )
                     if (!profileField.metadataPropertyName) profileField.metadataPropertyName = profileField.getUniqueKey(dataClass.label)
