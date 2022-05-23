@@ -113,12 +113,17 @@ class DomainExport implements MdmDomain {
         }
     }
 
-    static DetachedCriteria<DomainExport> byExportedDomainAndExporterProviderService(MdmDomain domain, ExporterProviderService exporterProviderService) {
+    static DetachedCriteria<DomainExport> byExportedDomain(UUID domainId, String domainType) {
         new DetachedCriteria<DomainExport>(DomainExport)
-            .eq('exportedDomainId', domain.id)
-            .eq('exportedDomainType', domain.domainType)
-            .eq('exporterNamespace', exporterProviderService.namespace)
-            .eq('exporterName', exporterProviderService.name)
-            .eq('exporterVersion', exporterProviderService.sortableVersion())
+            .eq('exportedDomainId', domainId)
+            .eq('exportedDomainType', domainType)
+    }
+
+    static DetachedCriteria<DomainExport> byExportedDomainAndExporterProviderService(UUID domainId, String domainType, String namespace, String name, Version version) {
+        DetachedCriteria<DomainExport> criteria = byExportedDomain(domainId, domainType)
+            .eq('exporterNamespace', namespace)
+            .eq('exporterName', name)
+        if (version) criteria.eq('exporterVersion', version)
+        criteria
     }
 }

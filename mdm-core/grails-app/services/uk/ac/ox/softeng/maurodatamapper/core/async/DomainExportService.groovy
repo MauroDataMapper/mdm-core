@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -116,8 +117,12 @@ class DomainExportService implements MdmDomainService<DomainExport> {
         DomainExport.findAllByExportedDomainIdInList(readableModelIds, pagination)
     }
 
-    DomainExport findByDomainAndExporterProviderService(MdmDomain domain, ExporterProviderService exporterProviderService) {
-        DomainExport.byExportedDomainAndExporterProviderService(domain, exporterProviderService).get()
+    List<DomainExport> findAllByExportedDomainAndExporterProviderService(UUID domainId, String domainType, String namespace, String name, Version version, Map pagination) {
+        DomainExport.byExportedDomainAndExporterProviderService(domainId, domainType, namespace, name, version).list()
+    }
+
+    List<DomainExport> findAllByExportedDomain(UUID domainId, String domainType, Map pagination) {
+        DomainExport.byExportedDomain(domainId, domainType).list(pagination)
     }
 
     DomainExport createAndSaveNewDomainExport(ExporterProviderService exporterProviderService, MdmDomain domain, String filename, ByteArrayOutputStream exportByteArray,

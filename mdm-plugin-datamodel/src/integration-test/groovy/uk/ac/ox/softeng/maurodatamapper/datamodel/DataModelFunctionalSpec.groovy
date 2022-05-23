@@ -3070,6 +3070,102 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id2)
     }
 
+    void 'E08 : test export DataModels JSON and check domain export listings'() {
+        given: '2 models available'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexDataModels').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexDataModels', 'json')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when: 'export both models separately'
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET("${id2}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1")
+
+        then:
+        verifyResponse OK, response
+
+        when: 'export both models separately'
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET("${id2}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET('domainExports', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 4
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelXmlExporterService'}
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelXmlExporterService'}
+
+        when:
+        GET("${id}/domainExports", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelXmlExporterService'}
+
+        when:
+        GET("${id2}/domainExports", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelXmlExporterService'}
+
+        when:
+        GET("${id}/domainExports/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelJsonExporterService'}
+
+        when:
+        GET("${id2}/domainExports/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelJsonExporterService'}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
     void 'I01 : test import basic DataModel'() {
         given:
         String id = createNewItem(validJson)

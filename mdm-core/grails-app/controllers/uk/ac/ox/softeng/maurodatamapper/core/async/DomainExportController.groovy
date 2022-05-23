@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.async
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.rest.RestfulController
 
@@ -63,6 +64,17 @@ class DomainExportController extends RestfulController<DomainExport> implements 
 
     @Override
     protected List<DomainExport> listAllResources(Map params) {
+        if (params.resourceId) {
+            if (params.exporterNamespace) {
+                Version version = params.exporterVersion ? Version.from(params.exporterVersion) : null
+                return domainExportService.findAllByExportedDomainAndExporterProviderService(
+                    params.resourceId, params.resourceDomainType, params.exporterNamespace, params.exporterName, version, params
+                )
+            }
+            return domainExportService.findAllByExportedDomain(params.resourceId, params.resourceDomainType, params)
+        }
+
+
         currentUserSecurityPolicyManager.isApplicationAdministrator() ?
         domainExportService.list(params) :
         domainExportService.findAllReadableByUser(currentUserSecurityPolicyManager, params)
