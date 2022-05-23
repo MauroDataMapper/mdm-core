@@ -208,10 +208,21 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
     }
 
     List<Metadata> findAllByMultiFacetAwareItemIdAndNotNamespaces(UUID multiFacetAwareItemId, List<String> namespaces, Map pagination = [:]) {
-        if (!namespaces || namespaces.size() == 0) {
+        findAllByMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(multiFacetAwareItemId, namespaces, null, pagination)
+    }
+
+    List<Metadata> findAllByMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(UUID multiFacetAwareItemId, List<String> namespaces, String notLikeNamespace,
+                                                                                     Map pagination = [:]) {
+        if (!namespaces && !notLikeNamespace) {
             return Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId, pagination).list(pagination)
         }
-        Metadata.byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, pagination).list(pagination)
+        if (!namespaces && notLikeNamespace) {
+            Metadata.byMultiFacetAwareItemIdAndNamespaceNotLike(multiFacetAwareItemId, notLikeNamespace, pagination).list(pagination)
+        }
+        if (namespaces && !notLikeNamespace) {
+            return Metadata.byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, pagination).list(pagination)
+        }
+        Metadata.byMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(multiFacetAwareItemId, namespaces, notLikeNamespace, pagination).list(pagination)
     }
 
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {

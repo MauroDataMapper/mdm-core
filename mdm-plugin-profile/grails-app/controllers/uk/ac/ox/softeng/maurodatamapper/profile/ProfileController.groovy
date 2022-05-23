@@ -83,10 +83,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
-        Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
-        respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(), params),
-                view: '/metadata/index'
+        respond profileService.findAllNonProfileMetadata(multiFacetAware, params), view: '/metadata/index'
     }
 
     @Transactional

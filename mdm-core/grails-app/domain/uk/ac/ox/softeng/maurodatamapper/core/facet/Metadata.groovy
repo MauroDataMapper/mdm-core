@@ -89,7 +89,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
     def beforeValidate() {
         value = value ?: 'N/A'
-//        beforeValidateCheck()
+        //        beforeValidateCheck()
     }
 
     @Override
@@ -209,12 +209,21 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces, Map filters = [:]) {
-        DetachedCriteria criteria = byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
-        if (filters) {
-            criteria = withFilter(criteria, filters)
-        }
+        byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
+    }
 
-        criteria
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNamespaceNotLike(Serializable multiFacetAwareItemId,
+                                                                                 String notLikeNamespace, Map filters = [:]) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).not {
+            like 'namespace', notLikeNamespace
+        }
+    }
+
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(Serializable multiFacetAwareItemId, List<String> namespaces,
+                                                                                                 String notLikeNamespace, Map filters = [:]) {
+        byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces).not {
+            like 'namespace', notLikeNamespace
+        }
     }
 
 

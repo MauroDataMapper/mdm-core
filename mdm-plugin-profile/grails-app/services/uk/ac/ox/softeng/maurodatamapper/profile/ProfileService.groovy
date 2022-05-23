@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicImportJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
@@ -330,5 +331,14 @@ class ProfileService implements DataBinder {
             new ProfiledCatalogueItem(catalogueItem: ci, profile: createProfile(profileProviderService, ci))
         } as List<ProfiledCatalogueItem>
         new PaginatedHibernateSearchResult<ProfiledCatalogueItem>(profiledCatalogueItems, paginatedHibernateSearchResult.count)
+    }
+
+    List<Metadata> findAllNonProfileMetadata(MultiFacetAware multiFacetAware, Map pagination) {
+        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAware)
+        Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
+        metadataService.findAllByMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(multiFacetAware.id,
+                                                                                          profileNamespaces.asList(),
+                                                                                          "${DynamicImportJsonProfileProviderService.IMPORT_NAMESPACE_PREFIX}.%",
+                                                                                          pagination)
     }
 }
