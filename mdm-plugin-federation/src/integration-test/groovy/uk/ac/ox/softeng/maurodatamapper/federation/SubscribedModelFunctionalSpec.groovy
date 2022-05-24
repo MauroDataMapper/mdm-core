@@ -116,9 +116,22 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
     Map getValidJson() {
         [
             subscribedModel: [
-                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-                subscribedModelId: 'a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                subscribedModelId: '427d1243-4f89-46e8-8f8f-8424890b5083',
                 folderId         : getFolderId()
+            ]
+        ]
+    }
+
+    Map getValidJsonWithParams() {
+        [
+            subscribedModel        : [
+                subscribedModelId: '427d1243-4f89-46e8-8f8f-8424890b5083',
+                folderId         : getFolderId()
+            ],
+            contentType            : 'application/mauro.datamodel+xml',
+            importerProviderService: [
+                name     : 'DataModelXmlImporterService',
+                namespace: 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer'
             ]
         ]
     }
@@ -126,9 +139,22 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
     Map getValidJsonForAtom() {
         [
             subscribedModel: [
-                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-                subscribedModelId: 'urn:uuid:a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                subscribedModelId: 'urn:uuid:427d1243-4f89-46e8-8f8f-8424890b5083',
                 folderId         : getFolderId()
+            ]
+        ]
+    }
+
+    Map getValidJsonForAtomWithParams() {
+        [
+            subscribedModel        : [
+                subscribedModelId: 'urn:uuid:427d1243-4f89-46e8-8f8f-8424890b5083',
+                folderId         : getFolderId()
+            ],
+            contentType            : 'application/mauro.datamodel+xml',
+            importerProviderService: [
+                name     : 'DataModelXmlImporterService',
+                namespace: 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer'
             ]
         ]
     }
@@ -165,7 +191,7 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
     }
 
     @Transactional
-    void 'R2 : Test the save action correctly persists an instance (for #catalogueType)'() {
+    void 'R2a : Test the save action correctly persists an instance (for #catalogueType)'() {
         given:
         String savePath
         Map validJson
@@ -196,6 +222,37 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
         when: 'The save action is executed with valid data'
         log.debug('Valid content save')
+        createNewItem(validJson, savePath)
+
+        then: 'The response is correct'
+        verifyResponse HttpStatus.CREATED, response
+        String id = response.body().id
+        String localModelId = response.body().localModelId
+
+        cleanup:
+        DELETE(savePath + '/' + id, MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("dataModels/${localModelId}?permanent=true", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
+    }
+
+    @Transactional
+    void 'R2b : Test the save action with parameters correctly persists an instance (for #catalogueType)'() {
+        given:
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getSavePath()
+            validJson = getValidJsonWithParams()
+        } else {
+            savePath = getSavePathForAtom()
+            validJson = getValidJsonForAtomWithParams()
+        }
+
+        when: 'The save action is executed with valid data with parameters'
         createNewItem(validJson, savePath)
 
         then: 'The response is correct'

@@ -235,16 +235,16 @@ class ImporterService implements DataBinder {
                                                                                                                                                             String name,
                                                                                                                                                             String version) {
         if (version) {
-            importerProviderServices.find {
+            importerProviderServices.findAll {
                 it.namespace.equalsIgnoreCase(namespace) &&
                 it.name.equalsIgnoreCase(name) &&
                 it.version.equalsIgnoreCase(version)
-            }
+            }.sort()
         } else {
             importerProviderServices.findAll {
                 it.namespace.equalsIgnoreCase(namespace) &&
                 it.name.equalsIgnoreCase(name)
-            }.sort().last()
+            }.sort()
         }
     }
 }

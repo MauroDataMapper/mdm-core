@@ -180,8 +180,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     Map getValidJson() {
         [
             subscribedModel: [
-                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-                subscribedModelId: 'a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                subscribedModelId: '427d1243-4f89-46e8-8f8f-8424890b5083',
                 folderId         : getFolderId()
             ]
         ]
@@ -190,8 +189,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     Map getValidJsonForAtom() {
         [
             subscribedModel: [
-                //subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-                subscribedModelId: 'urn:uuid:a9685867-8f59-4f8d-ae70-93b789a82ad7',
+                subscribedModelId: 'urn:uuid:427d1243-4f89-46e8-8f8f-8424890b5083',
                 folderId         : getFolderId()
             ]
         ]
