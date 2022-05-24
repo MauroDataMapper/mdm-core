@@ -201,7 +201,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfileProviderService profileProviderService = profileService.profileService.findProfileProviderServiceForMultiFacetAwareItem(
+        ProfileProviderService profileProviderService = profileService.findProfileProviderServiceForMultiFacetAwareItem(
             multiFacetAware,
             params.profileNamespace,
             params.profileName,
