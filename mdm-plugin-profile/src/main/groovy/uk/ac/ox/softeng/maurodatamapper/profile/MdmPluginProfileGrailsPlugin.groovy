@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileSpecificationDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.search.searchparamfilter.ProfileFilter
 
@@ -62,9 +63,25 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
     ]
 
     Closure doWithSpring() {
-        { ->
+        {->
             profileSpecificationDataTypeProvider ProfileSpecificationDataTypeProvider
             profileFilter ProfileFilter
+
+            profileSpecificationProfileService(DefaultJsonProfileProviderService) {
+                serviceName = 'ProfileSpecificationProfileService'
+                displayName = 'Profile Specification Profile (Data Model)'
+                metadataNamespace = 'uk.ac.ox.softeng.maurodatamapper.profile'
+                jsonResourceFile = 'ProfileSpecificationProfile.json'
+                profileApplicableForDomains = ['DataModel']
+            }
+
+            profileSpecificationFieldProfileService(DefaultJsonProfileProviderService) {
+                serviceName = 'ProfileSpecificationFieldProfileService'
+                displayName = 'Profile Specification Profile (Data Element)'
+                metadataNamespace = 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement'
+                jsonResourceFile = 'ProfileSpecificationFieldProfile.json'
+                profileApplicableForDomains = ['DataElement']
+            }
         }
     }
 }

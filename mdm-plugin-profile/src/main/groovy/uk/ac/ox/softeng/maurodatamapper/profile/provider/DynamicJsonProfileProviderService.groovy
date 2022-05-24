@@ -151,17 +151,14 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         DataModel.findById(dataModelId)
     }
 
-    @Override
     UUID getDefiningDataModel() {
         dataModelId
     }
 
-    @Override
     String getDefiningDataModelLabel() {
         dataModelLabel
     }
 
-    @Override
     String getDefiningDataModelDescription() {
         dataModelDescription
     }

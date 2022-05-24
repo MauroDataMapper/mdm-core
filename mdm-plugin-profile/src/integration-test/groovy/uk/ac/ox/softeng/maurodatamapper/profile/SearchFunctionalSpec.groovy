@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -63,7 +64,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
 
     DataModelService dataModelService
 
-    ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
+    DefaultJsonProfileProviderService profileSpecificationFieldProfileService
 
     @Transactional
     Authority getTestAuthority() {

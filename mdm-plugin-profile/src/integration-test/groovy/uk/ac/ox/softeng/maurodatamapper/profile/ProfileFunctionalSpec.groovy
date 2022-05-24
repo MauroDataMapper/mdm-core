@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -55,7 +56,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     UUID simpleDataModelId
 
-    ProfileSpecificationProfileService profileSpecificationProfileService
+    DefaultJsonProfileProviderService profileSpecificationProfileService
 
     @Transactional
     Authority getTestAuthority() {

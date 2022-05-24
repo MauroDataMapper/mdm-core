@@ -111,18 +111,6 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         metadataService.findAllByMultiFacetAwareItemIdAndNamespace(multiFacetAwareItemId, this.getMetadataNamespace())
     }
 
-    UUID getDefiningDataModel() {
-        return null
-    }
-
-    String getDefiningDataModelLabel() {
-        return null
-    }
-
-    String getDefiningDataModelDescription() {
-        return null
-    }
-
     P createCleanProfileFromProfile(P submittedProfile) {
         P cleanProfile = getNewProfile()
         cleanProfile.sections.each {section ->

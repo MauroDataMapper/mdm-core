@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicImportJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -63,7 +64,7 @@ class ProfileService implements DataBinder {
 
     DataModelService dataModelService
     MetadataService metadataService
-    ProfileSpecificationProfileService profileSpecificationProfileService
+    DefaultJsonProfileProviderService profileSpecificationProfileService
     SessionFactory sessionFactory
 
     Profile createProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem) {
@@ -250,6 +251,7 @@ class ProfileService implements DataBinder {
 
             // Identify the import Id and create a new PPS using the id
             UUID extractImportingId = rootService.extractImportingId(ns)
+
             rootService.generateDynamicProfileForId(extractImportingId)
         }.findAll().sort()
     }

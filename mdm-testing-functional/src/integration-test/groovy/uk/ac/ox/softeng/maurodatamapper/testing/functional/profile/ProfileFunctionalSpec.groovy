@@ -21,8 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.profile.DerivedFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.InvalidProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.PostFinalisedEditableProfileService
-import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationFieldProfileService
-import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationProfileService
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -50,10 +49,10 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Integration
 class ProfileFunctionalSpec extends FunctionalSpec {
 
-    ProfileSpecificationProfileService profileSpecificationProfileService
+    DefaultJsonProfileProviderService profileSpecificationProfileService
     PostFinalisedEditableProfileService postFinalisedEditableProfileService
     DerivedFieldProfileService derivedFieldProfileService
-    ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
+    DefaultJsonProfileProviderService profileSpecificationFieldProfileService
     InvalidProfileService invalidProfileService
 
     @Transactional
