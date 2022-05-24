@@ -37,20 +37,20 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
 @CompileStatic
 class IdPathSecureFilterFactory extends FilterFactory {
 
-    static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<PathNode> allowedPathNodes) {
+    static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<Path> allowedPaths) {
 
         BooleanPredicateClausesStep step = startFilter(factory)
 
         allowedIds.each {id ->
             step = step.should(factory.id().matching(id))
         }
-        allowedPathNodes?.each {pn ->
-            step = step.should(factory.match().field('path').matching(Path.from(pn)))
+        allowedPaths?.each {p ->
+            step = step.should(factory.phrase().field('path').matching(p.toString()))
         }
         step
     }
 
-    static SearchPredicate createFilterPredicate(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<PathNode> allowedPathNodes) {
-        createFilter(factory, allowedIds, allowedPathNodes).toPredicate()
+    static SearchPredicate createFilterPredicate(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<Path> allowedPaths) {
+        createFilter(factory, allowedIds, allowedPaths).toPredicate()
     }
 }
