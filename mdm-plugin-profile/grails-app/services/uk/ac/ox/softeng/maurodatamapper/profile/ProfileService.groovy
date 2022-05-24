@@ -51,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
+//@GrailsCompileStatic
 class ProfileService implements DataBinder {
 
     @Autowired
@@ -97,10 +98,13 @@ class ProfileService implements DataBinder {
         }.max()
     }
 
-    MultiFacetAware storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
+    Profile storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
         MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(multiFacetAwareItem.domainType)
-        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user.emailAddress, service.isMultiFacetAwareFinalised(multiFacetAwareItem))
+        // Store profile should return the WHOLE profile after storing
+        Profile fullProfile = profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user.emailAddress,
+                                                                          service.isMultiFacetAwareFinalised(multiFacetAwareItem))
         service.save(flush: true, validate: false, multiFacetAwareItem) as MultiFacetAware
+        fullProfile
     }
 
     Profile validateProfile(ProfileProviderService profileProviderService, Profile submittedProfile) {
@@ -248,11 +252,7 @@ class ProfileService implements DataBinder {
             DynamicImportJsonProfileProviderService rootService = allImportJsonProfileProviderServices.find {it.matchesMetadataNamespace(ns)}
             // If none exists then the MD has been added erroneously or the PPS has been removed
             if (!rootService) return null
-
-            // Identify the import Id and create a new PPS using the id
-            UUID extractImportingId = rootService.extractImportingId(ns)
-
-            rootService.generateDynamicProfileForId(extractImportingId)
+            rootService.generateDynamicProfileForImportingOwner(ns, importMetadata.findAll {it.namespace == ns})
         }.findAll().sort()
     }
 

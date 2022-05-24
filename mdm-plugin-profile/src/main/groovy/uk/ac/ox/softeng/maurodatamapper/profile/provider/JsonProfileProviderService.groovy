@@ -60,7 +60,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     }
 
     @Override
-    void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress, boolean isEntityFinalised) {
+    JsonProfile storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress, boolean isEntityFinalised) {
         JsonProfile emptyJsonProfile = getNewProfile()
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}
@@ -84,6 +84,9 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         entity.findMetadataByNamespace(metadataNamespace).each {md ->
             metadataService.save(md)
         }
+
+        // Once its stored then create the full and clean profile from the entity
+        createProfileFromEntity(entity)
     }
 
     ProfileField findFieldInSubmittedSection(ProfileSection submittedSection, String sectionNameToSearch, String profileFieldNameToFind) {
@@ -133,12 +136,5 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
      */
     JsonProfile updateUneditableFields(JsonProfile jsonProfile) {
         jsonProfile
-    }
-
-    void findAndSetProfileField(ProfileSection profileSection, String metadataPropertyName, String value, boolean replaceExistingValue = false) {
-        ProfileField fieldToUpdate = profileSection.find {it.metadataPropertyName == metadataPropertyName}
-        if (!fieldToUpdate.currentValue || replaceExistingValue) {
-            fieldToUpdate.currentValue = value
-        }
     }
 }

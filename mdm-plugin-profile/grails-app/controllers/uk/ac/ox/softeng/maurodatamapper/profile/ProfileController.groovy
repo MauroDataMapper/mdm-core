@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCo
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
+import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -46,6 +47,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     ProfileService profileService
 
     MetadataService metadataService
+    SessionFactory sessionFactory
 
     @Autowired
     SearchService mdmPluginProfileSearchService
@@ -182,10 +184,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         Profile instance = profileProviderService.getNewProfile()
         bindData(instance, request)
 
-        MultiFacetAware profiled = profileService.storeProfile(profileProviderService, multiFacetAware, instance, currentUser)
-
-        // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-        respond profileService.createProfile(profileProviderService, profiled)
+        // Store profile should return the WHOLE profile after storing
+        respond profileService.storeProfile(profileProviderService, multiFacetAware, instance, currentUser)
     }
 
     @Transactional

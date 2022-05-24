@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.ParameterizedType
 
 @CompileStatic
-abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAware> extends MauroDataMapperService {
+abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAware> extends MauroDataMapperService implements Cloneable {
 
     @Autowired
     ProxyHandler proxyHandler
@@ -45,7 +45,7 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
     @Autowired
     MetadataService metadataService
 
-    abstract void storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised)
+    abstract P storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised)
 
     abstract P createProfileFromEntity(D entity)
 
@@ -151,5 +151,13 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
                     profile.getAllFields().find {it.metadataPropertyName == key}.currentValue
                 }.toSet()]
             }
+    }
+
+    @Override
+    ProfileProviderService clone() throws CloneNotSupportedException {
+        (getClass().getDeclaredConstructor().newInstance() as ProfileProviderService).tap {
+            metadataService = owner.metadataService
+            proxyHandler = owner.proxyHandler
+        }
     }
 }
