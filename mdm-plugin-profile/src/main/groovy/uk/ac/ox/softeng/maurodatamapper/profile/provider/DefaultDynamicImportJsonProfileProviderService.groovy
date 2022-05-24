@@ -27,12 +27,10 @@ class DefaultDynamicImportJsonProfileProviderService extends DynamicImportJsonPr
     String displayName
     String profileNamespace
     String jsonResourceFile
-    boolean canBeEditedAfterFinalisation
     List<String> profileApplicableForDomains
 
     DefaultDynamicImportJsonProfileProviderService() {
         super()
-        canBeEditedAfterFinalisation = false
         profileApplicableForDomains = []
         serviceVersion = getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
@@ -47,11 +45,19 @@ class DefaultDynamicImportJsonProfileProviderService extends DynamicImportJsonPr
         serviceVersion
     }
 
-    Boolean canBeEditedAfterFinalisation() {
-        canBeEditedAfterFinalisation
-    }
-
     List<String> profileApplicableForDomains() {
         profileApplicableForDomains
+    }
+
+    @Override
+    DefaultDynamicImportJsonProfileProviderService clone() throws CloneNotSupportedException {
+        (super.clone() as DefaultDynamicImportJsonProfileProviderService).tap {
+            serviceName = owner.serviceName
+            serviceVersion = owner.serviceVersion
+            displayName = owner.displayName
+            profileNamespace = owner.profileNamespace
+            jsonResourceFile = owner.jsonResourceFile
+            profileApplicableForDomains = owner.profileApplicableForDomains
+        }
     }
 }

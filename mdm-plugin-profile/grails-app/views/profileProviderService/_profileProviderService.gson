@@ -21,4 +21,13 @@ json {
             description djpps.definingDataModelDescription
         }
     }
+
+    if (profileProviderService instanceof DynamicImportJsonProfileProviderService) {
+        DynamicImportJsonProfileProviderService dijpps = (DynamicImportJsonProfileProviderService) profileProviderService
+        importingOwner {
+            id dijpps.importingId
+            domainType dijpps.importingDomainType
+            path dijpps.importingPath
+        }
+    }
 }
