@@ -53,29 +53,6 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
     }
 
     @Transactional
-    @Override
-    def save() {
-        if (handleReadOnly()) return
-
-        def instance = createResource()
-
-        if (response.isCommitted()) return
-
-        if (!validateResource(instance, 'create')) return
-
-        def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
-        if (federationResult instanceof Errors) {
-            transactionStatus.setRollbackOnly()
-            respond federationResult, view: 'create' // STATUS CODE 422
-            return
-        }
-
-        saveResource instance
-
-        saveResponse instance
-    }
-
-    @Transactional
     def federate(SubscribedModelFederationParams subscribedModelFederationParams) {
         if (handleReadOnly()) return
 
