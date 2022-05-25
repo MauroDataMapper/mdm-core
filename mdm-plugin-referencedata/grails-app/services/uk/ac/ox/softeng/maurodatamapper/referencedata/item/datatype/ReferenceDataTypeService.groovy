@@ -140,7 +140,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
             log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
             results = ReferenceDataType.labelHibernateSearch(ReferenceDataType, searchTerm, readableIds.toList(),
-                                                             referenceDataModelService.getAllReadablePathNodes(readableIds)).results
+                                                             referenceDataModelService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results

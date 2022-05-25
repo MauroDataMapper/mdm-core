@@ -218,7 +218,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             long start = System.currentTimeMillis()
             results =
                 DataType
-                    .labelHibernateSearch(DataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+                    .labelHibernateSearch(DataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results

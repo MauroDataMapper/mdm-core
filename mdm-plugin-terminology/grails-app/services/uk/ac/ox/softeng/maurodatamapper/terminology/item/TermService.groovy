@@ -263,7 +263,7 @@ class TermService extends ModelItemService<Term> {
             log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
             results = Term.labelHibernateSearch(Term, searchTerm, readableIds.toList(),
-                                                terminologyService.getAllReadablePathNodes(readableIds)).results
+                                                terminologyService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

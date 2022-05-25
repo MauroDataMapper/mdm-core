@@ -141,7 +141,7 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
             long start = System.currentTimeMillis()
             results =
                 EnumerationType
-                    .labelHibernateSearch(EnumerationType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(EnumerationType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
