@@ -18,12 +18,23 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
+import grails.core.support.proxy.ProxyHandler
+import org.hibernate.SessionFactory
+
 abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, MultiFacetAware> {
+
+    JsonProfileProviderService() {
+    }
+
+    JsonProfileProviderService(ProxyHandler proxyHandler, MetadataService metadataService, SessionFactory sessionFactory) {
+        super(proxyHandler, metadataService, sessionFactory)
+    }
 
     abstract String getJsonResourceFile()
 
@@ -84,6 +95,8 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         entity.findMetadataByNamespace(metadataNamespace).each {md ->
             metadataService.save(md)
         }
+
+        sessionFactory.currentSession.flush()
 
         // Once its stored then create the full and clean profile from the entity
         createProfileFromEntity(entity)

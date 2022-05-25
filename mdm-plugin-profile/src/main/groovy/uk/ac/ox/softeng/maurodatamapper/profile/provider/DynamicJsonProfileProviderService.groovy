@@ -27,6 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.support.proxy.ProxyHandler
+import org.hibernate.SessionFactory
+
 /**
  * @since 28/04/2021
  */
@@ -37,8 +40,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     String dataModelDescription
     String dataModelVersion
 
-    DynamicJsonProfileProviderService(MetadataService metadataService, DataModel dataModel) {
-        this.metadataService = metadataService
+    DynamicJsonProfileProviderService(ProxyHandler proxyHandler, MetadataService metadataService, SessionFactory sessionFactory, DataModel dataModel) {
+        super(proxyHandler, metadataService, sessionFactory)
         this.dataModelId = dataModel.id
         this.dataModelLabel = dataModel.label
         this.dataModelDescription = dataModel.description

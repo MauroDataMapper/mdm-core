@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
@@ -35,7 +34,6 @@ import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCo
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -45,9 +43,6 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     static responseFormats = ['json', 'xml']
 
     ProfileService profileService
-
-    MetadataService metadataService
-    SessionFactory sessionFactory
 
     @Autowired
     SearchService mdmPluginProfileSearchService
@@ -82,6 +77,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     def nonProfileMetadata() {
         MultiFacetAware multiFacetAware =
             profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }

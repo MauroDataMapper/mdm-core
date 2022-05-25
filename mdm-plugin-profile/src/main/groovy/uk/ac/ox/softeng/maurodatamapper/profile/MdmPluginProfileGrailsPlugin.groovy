@@ -69,6 +69,7 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
 
             profileSpecificationProfileService(DefaultJsonProfileProviderService) {
                 serviceName = 'ProfileSpecificationProfileService'
+                servicePackage = 'uk.ac.ox.softeng.maurodatamapper.profile'
                 displayName = 'Profile Specification Profile (Data Model)'
                 metadataNamespace = 'uk.ac.ox.softeng.maurodatamapper.profile'
                 jsonResourceFile = 'ProfileSpecificationProfile.json'
@@ -77,6 +78,7 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
 
             profileSpecificationFieldProfileService(DefaultJsonProfileProviderService) {
                 serviceName = 'ProfileSpecificationFieldProfileService'
+                servicePackage = 'uk.ac.ox.softeng.maurodatamapper.profile'
                 displayName = 'Profile Specification Profile (Data Element)'
                 metadataNamespace = 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement'
                 jsonResourceFile = 'ProfileSpecificationFieldProfile.json'

@@ -22,12 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.validation.Validateable
-import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
 
-@CompileStatic
 @SuppressFBWarnings('NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE')
 abstract class Profile implements Comparable<Profile>, Validateable {
 
@@ -36,6 +34,13 @@ abstract class Profile implements Comparable<Profile>, Validateable {
     String label
     UUID id
     Closure customSectionsValidation
+
+    static constraints = {
+        id nullable: false
+        label nullable: false, blank: false
+        sections minSize: 1
+        customSectionsValidation nullable: true
+    }
 
     abstract Set<String> getKnownFields()
 

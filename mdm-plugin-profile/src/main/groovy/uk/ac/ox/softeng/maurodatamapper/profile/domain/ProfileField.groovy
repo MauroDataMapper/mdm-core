@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+
 import grails.validation.Validateable
 
 class ProfileField implements Validateable {

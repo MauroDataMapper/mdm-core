@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+
 import grails.validation.Validateable
-import groovy.transform.AutoClone
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
 import org.springframework.core.Ordered
 
-@AutoClone
 class ProfileSection implements Validateable, Ordered, Comparable<ProfileSection> {
 
     String name
@@ -37,6 +36,7 @@ class ProfileSection implements Validateable, Ordered, Comparable<ProfileSection
         name blank: false
         description nullable: true, blank: false
         fields minSize: 1
+        customFieldsValidation nullable: true
     }
 
     @Override

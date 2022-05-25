@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.core.support.proxy.ProxyHandler
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.lang.reflect.ParameterizedType
@@ -44,6 +45,18 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
 
     @Autowired
     MetadataService metadataService
+
+    @Autowired
+    SessionFactory sessionFactory
+
+    ProfileProviderService() {
+    }
+
+    ProfileProviderService(ProxyHandler proxyHandler, MetadataService metadataService, SessionFactory sessionFactory) {
+        this.proxyHandler = proxyHandler
+        this.metadataService = metadataService
+        this.sessionFactory = sessionFactory
+    }
 
     abstract P storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised)
 
@@ -158,6 +171,7 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         (getClass().getDeclaredConstructor().newInstance() as ProfileProviderService).tap {
             metadataService = owner.metadataService
             proxyHandler = owner.proxyHandler
+            sessionFactory = owner.sessionFactory
         }
     }
 }

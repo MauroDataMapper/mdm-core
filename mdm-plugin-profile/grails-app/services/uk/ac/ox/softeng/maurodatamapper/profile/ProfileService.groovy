@@ -43,6 +43,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.support.proxy.ProxyHandler
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
@@ -67,6 +68,7 @@ class ProfileService implements DataBinder {
     MetadataService metadataService
     DefaultJsonProfileProviderService profileSpecificationProfileService
     SessionFactory sessionFactory
+    ProxyHandler proxyHandler
 
     Profile createProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem) {
         profileProviderService.createProfileFromEntity(multiFacetAwareItem)
@@ -236,7 +238,7 @@ class ProfileService implements DataBinder {
         List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(profileSpecificationProfileService.metadataNamespace)
         dynamicModels
             .findAll {finalisedOnly ? it.finalised : true}
-            .collect {new DynamicJsonProfileProviderService(metadataService, it)}
+            .collect {new DynamicJsonProfileProviderService(proxyHandler, metadataService, sessionFactory, it)}
     }
 
     List<ProfileProviderService> getAllDynamicImportProfileProviderServicesForMultiFacetAwareItem(MultiFacetAware multiFacetAware) {
@@ -381,7 +383,7 @@ class ProfileService implements DataBinder {
         List<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAware)
         List<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
         metadataService.findAllByMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(multiFacetAware.id,
-                                                                                          profileNamespaces.asList(),
+                                                                                          profileNamespaces,
                                                                                           "${DynamicImportJsonProfileProviderService.IMPORT_NAMESPACE_PREFIX}.%",
                                                                                           pagination)
     }

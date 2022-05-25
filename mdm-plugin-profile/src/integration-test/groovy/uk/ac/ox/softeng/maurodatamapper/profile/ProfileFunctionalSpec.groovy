@@ -97,7 +97,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         getProfilePath().replace('/', ':')
     }
 
-    void 'test getting profile providers'() {
+    void '01 : test getting profile providers'() {
         when:
         GET('profiles/providers', STRING_ARG)
 
@@ -126,10 +126,10 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains":["DataElement"],
     "editableAfterFinalisation": false
-}]'''
+  }]'''
     }
 
-    void 'test get all models in profile which doesnt exist'() {
+    void '02 : test get all models in profile which doesnt exist'() {
         when:
         GET("profiles/${getProfilePath()}/DataModel")
 
@@ -139,7 +139,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test get all models values in profile which doesnt exist'() {
+    void '03 : test get all models values in profile which doesnt exist'() {
         when:
         GET("profiles/${getProfilePath()}/DataModel/values")
 
@@ -149,7 +149,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test searching in profile which doesnt exist'() {
+    void '04 : test searching in profile which doesnt exist'() {
         when:
         POST("profiles/${getProfilePath()}/search", [searchTerm: 'test'])
 
@@ -159,7 +159,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test get profile for model which doesnt exist'() {
+    void '05 : test get profile for model which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
 
@@ -172,7 +172,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == id
     }
 
-    void 'test get profile for model when profile doesnt exist'() {
+    void '06 : test get profile for model when profile doesnt exist'() {
         given:
         String id = getComplexDataModelId()
 
@@ -185,7 +185,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test get profile for folder when profile doesnt exist'() {
+    void '07 : test get profile for folder when profile doesnt exist'() {
         given:
         String id = folder.id.toString()
 
@@ -198,7 +198,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test save profile for model which doesnt exist'() {
+    void '08 : test save profile for model which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
 
@@ -212,7 +212,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == id
     }
 
-    void 'test save profile for folder which doesnt exist'() {
+    void '09 : test save profile for folder which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
 
@@ -226,7 +226,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == id
     }
 
-    void 'test save profile for model when profile doesnt exist'() {
+    void '10 : test save profile for model when profile doesnt exist'() {
         given:
         String id = getComplexDataModelId()
 
@@ -240,7 +240,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test getting unused profiles on datamodel'() {
+    void '11 : test getting unused profiles on datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -254,7 +254,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().first().displayName == 'Profile Specification Profile (Data Model)'
     }
 
-    void 'test getting unused profiles on folder'() {
+    void '12 : test getting unused profiles on folder'() {
         given:
         String id = folder.id.toString()
 
@@ -266,7 +266,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 0
     }
 
-    void 'test getting used profiles on datamodel'() {
+    void '13 : test getting used profiles on datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -278,7 +278,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 0
     }
 
-    void 'test getting used profiles on folder'() {
+    void '14 : test getting used profiles on folder'() {
         given:
         String id = folder.id.toString()
 
@@ -290,7 +290,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 0
     }
 
-    void 'test getting other properties on a datamodel'() {
+    void '15 : test getting other properties on a datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -324,7 +324,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 '''
     }
 
-    void 'test getting with filters other properties on a datamodel'() {
+    void '16 : test getting with filters other properties on a datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -426,7 +426,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 '''
     }
 
-    void 'test getting other properties on a folder'() {
+    void '17 : test getting other properties on a folder'() {
         given:
         String id = folder.id.toString()
 
@@ -840,7 +840,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -851,7 +851,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -862,7 +862,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -1151,7 +1151,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1162,7 +1162,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1173,7 +1173,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -1885,7 +1885,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "The namespace under which properties of this profile will be stored"
         },
@@ -1897,7 +1897,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
            "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
         '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item."
@@ -1910,7 +1910,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false."
         }

@@ -221,7 +221,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
             return Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId, pagination).list(pagination)
         }
         if (!namespaces && notLikeNamespace) {
-            Metadata.byMultiFacetAwareItemIdAndNamespaceNotLike(multiFacetAwareItemId, notLikeNamespace, pagination).list(pagination)
+            return Metadata.byMultiFacetAwareItemIdAndNamespaceNotLike(multiFacetAwareItemId, notLikeNamespace, pagination).list(pagination)
         }
         if (namespaces && !notLikeNamespace) {
             return Metadata.byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, pagination).list(pagination)
