@@ -46,8 +46,8 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile.label = entity.label
 
         List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
-        jsonProfile.sections.each {section ->
-            section.fields.each {field ->
+        jsonProfile.each {section ->
+            section.each {field ->
                 Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
                 // If field is derived then get the location its derived from
                 if (field.derived) {
@@ -76,7 +76,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}
             if (submittedSection) {
-                section.fields.each {field ->
+                section.each {field ->
                     ProfileField submittedField = findFieldInSubmittedSection(submittedSection, section.name, field.getUniqueKey(section.name))
                     if (submittedField) {
                         // Dont allow derived or uneditable fields to be set

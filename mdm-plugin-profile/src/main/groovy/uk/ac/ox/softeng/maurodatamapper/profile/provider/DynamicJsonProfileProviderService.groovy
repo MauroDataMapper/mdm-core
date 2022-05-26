@@ -56,8 +56,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         jsonProfile.label = entity.label
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
-        jsonProfile.sections.each {section ->
-            section.fields.each {field ->
+        jsonProfile.each {section ->
+            section.each {field ->
                 Metadata matchingField = metadataList.find {it.key == field.getUniqueKey(section.name)}
                 if (field.derived) {
                     try {
@@ -86,7 +86,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     Set<String> getKnownMetadataKeys() {
         Set<String> knownProperties = []
         getSections().each {section ->
-            section.fields.each {field ->
+            section.each {field ->
                 knownProperties.add(field.getUniqueKey(section.name))
             }
         }

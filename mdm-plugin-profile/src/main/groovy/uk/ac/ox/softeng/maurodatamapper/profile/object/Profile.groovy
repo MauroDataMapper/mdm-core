@@ -35,6 +35,15 @@ abstract class Profile implements Comparable<Profile>, Validateable {
     UUID id
     Closure customSectionsValidation
 
+    Profile() {
+        sections = []
+    }
+
+    Profile(List<ProfileSection> sections) {
+        super()
+        this.sections = sections
+    }
+
     static constraints = {
         id nullable: false
         label nullable: false, blank: false
@@ -100,5 +109,4 @@ abstract class Profile implements Comparable<Profile>, Validateable {
         options = 'uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection') Closure closure) {
         sections.each closure
     }
-
 }

@@ -88,7 +88,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         profile.clearErrors()
         profile.sections.each {
             it.clearErrors()
-            it.fields.each { it.clearErrors() }
+            it.each {it.clearErrors()}
         }
         !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)
@@ -125,7 +125,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         profile.clearErrors()
         profile.sections.each {
             it.clearErrors()
-            it.fields.each { it.clearErrors() }
+            it.each {it.clearErrors()}
         }
         !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)
@@ -165,7 +165,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         profile.clearErrors()
         profile.sections.each {
             it.clearErrors()
-            it.fields.each { it.clearErrors() }
+            it.each {it.clearErrors()}
         }
         !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)
@@ -213,7 +213,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         profile.clearErrors()
         profile.sections.each {
             it.clearErrors()
-            it.fields.each { it.clearErrors() }
+            it.each {it.clearErrors()}
         }
         !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)

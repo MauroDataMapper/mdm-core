@@ -126,14 +126,27 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
 
     P createCleanProfileFromProfile(P submittedProfile) {
         P cleanProfile = getNewProfile()
-        cleanProfile.sections.each {section ->
-            ProfileSection submittedSection = submittedProfile.sections.find {it.name == section.name}
+        cleanProfile.each {section ->
+            ProfileSection submittedSection = submittedProfile.find {it.name == section.name}
             if (submittedSection) {
-                section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.getUniqueKey(section.name) == field.getUniqueKey(section.name)}
+                section.each {field ->
+                    ProfileField submittedField = submittedSection.find {it.getUniqueKey(section.name) == field.getUniqueKey(section.name)}
                     if (submittedField) {
                         field.currentValue = submittedField.currentValue ?: ''
                     }
+                }
+            }
+        }
+        cleanProfile
+    }
+
+    P createCleanProfileFromFlatMap(Map<String, String> profileData) {
+        P cleanProfile = getNewProfile()
+        cleanProfile.each {section ->
+            section.each {field ->
+                Map.Entry<String, String> data = profileData.find {k, v -> k == field.getUniqueKey(section.name)}
+                if (data) {
+                    field.currentValue = data.value ?: ''
                 }
             }
         }
