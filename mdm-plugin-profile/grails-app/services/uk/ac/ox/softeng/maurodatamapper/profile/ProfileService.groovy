@@ -81,7 +81,7 @@ class ProfileService implements DataBinder {
 
     ProfileProviderService findProfileProviderServiceForMultiFacetAwareItem(MultiFacetAware multiFacetAware, String profileNamespace, String profileName,
                                                                             String profileVersion = null) {
-        List<ProfileProviderService> allAvailableProfileProvideServices = getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAware)
+        List<ProfileProviderService> allAvailableProfileProvideServices = getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAware, false)
         findProfileProviderService(allAvailableProfileProvideServices, profileNamespace, profileName, profileVersion)
     }
 
@@ -182,29 +182,26 @@ class ProfileService implements DataBinder {
     }
 
     List<ProfileProviderService> getAllAvailableProfileProviderServicesForMultiFacetAwareItem(MultiFacetAware multiFacetAwareItem,
-                                                                                              boolean finalisedOnly = true,
-                                                                                              boolean latestVersionByMetadataNamespace = false) {
-        List<ProfileProviderService> allProfileServices = getAllProfileProviderServices(finalisedOnly, latestVersionByMetadataNamespace).findAll {
+                                                                                              boolean latestVersionByMetadataNamespace) {
+        List<ProfileProviderService> allProfileServices = getAllProfileProviderServices(latestVersionByMetadataNamespace).findAll {
             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType) || it.profileApplicableForDomains().size() == 0
         }
         allProfileServices.addAll(getAllDynamicImportProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem))
         allProfileServices.sort()
     }
 
-    List<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
+    List<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean latestVersionByMetadataNamespace) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
-        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem, finalisedOnly,
-                                                                     latestVersionByMetadataNamespace)
+        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem, latestVersionByMetadataNamespace)
             .findAll {
                 usedNamespaces.contains(it.getMetadataNamespace()) ||
                 (it instanceof DynamicImportJsonProfileProviderService && it.importingId)
             }
     }
 
-    List<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = true,
-                                                          boolean latestVersionByMetadataNamespace = false) {
+    List<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean latestVersionByMetadataNamespace) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
-        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem, finalisedOnly,
+        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem,
                                                                      latestVersionByMetadataNamespace)
             .findAll {
                 !usedNamespaces.contains(it.getMetadataNamespace()) ||
@@ -216,13 +213,12 @@ class ProfileService implements DataBinder {
      * @param finalisedOnly If true then exclude dynamic profiles which are not finalised
      * @return
      */
-    List<ProfileProviderService> getAllProfileProviderServices(boolean finalisedOnly = true, boolean latestVersionByMetadataNamespace = false) {
-
+    List<ProfileProviderService> getAllProfileProviderServices(boolean latestVersionByMetadataNamespace) {
         // Create a new set with the non-disabled autowired services added
         Set<ProfileProviderService> allProfileProviderServices = new HashSet<>(profileProviderServices.size())
         allProfileProviderServices.addAll(profileProviderServices.findAll {!it.disabled})
         // Get all the dynamic datamodel PPSs and add them
-        allProfileProviderServices.addAll(getAllDynamicProfileProviderServices(finalisedOnly))
+        allProfileProviderServices.addAll(getAllDynamicProfileProviderServices())
 
         if (latestVersionByMetadataNamespace) {
             return allProfileProviderServices
@@ -233,11 +229,11 @@ class ProfileService implements DataBinder {
         return allProfileProviderServices.sort()
     }
 
-    List<ProfileProviderService> getAllDynamicProfileProviderServices(boolean finalisedOnly = true) {
+    List<ProfileProviderService> getAllDynamicProfileProviderServices() {
         // Now we get all the dynamic models
         List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(profileSpecificationProfileService.metadataNamespace)
         dynamicModels
-            .findAll {finalisedOnly ? it.finalised : true}
+            .findAll {it.finalised}
             .collect {new DynamicJsonProfileProviderService(proxyHandler, metadataService, sessionFactory, it)}
     }
 
@@ -380,7 +376,7 @@ class ProfileService implements DataBinder {
     }
 
     List<Metadata> findAllNonProfileMetadata(MultiFacetAware multiFacetAware, Map pagination) {
-        List<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAware)
+        List<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAware, false)
         List<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
         metadataService.findAllByMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(multiFacetAware.id,
                                                                                           profileNamespaces,

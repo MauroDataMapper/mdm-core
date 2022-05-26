@@ -49,7 +49,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
 
     def profileProviders() {
-        respond profileProviderServices: profileService.getAllProfileProviderServices()
+        respond profileProviderServices: profileService.getAllProfileProviderServices(false)
     }
 
     def dynamicProfileProviders() {
@@ -57,21 +57,19 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     }
 
     def usedProfiles() {
-        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
-            .multiFacetAwareItemId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', false))
+        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, params.boolean('latestVersionByMetadataNamespace', false))
     }
 
     def unusedProfiles() {
-        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
-            .multiFacetAwareItemId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', true))
+        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, params.boolean('latestVersionByMetadataNamespace', true))
     }
 
     def nonProfileMetadata() {
