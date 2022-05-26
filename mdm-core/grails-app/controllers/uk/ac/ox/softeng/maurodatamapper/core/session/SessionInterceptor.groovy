@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.session
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 
+import grails.util.Environment
+
 class SessionInterceptor implements MdmInterceptor {
 
     SessionService sessionService
@@ -31,7 +33,11 @@ class SessionInterceptor implements MdmInterceptor {
 
     boolean before() {
 
-        if (!params.sessionId && sessionService.isInvalidatedSession(session)) return unauthorised('Session has been invalidated')
+        if (!params.sessionId && sessionService.isInvalidatedSession(session)) {
+            if (Environment.developmentMode) {
+                sessionService.storeSession(session)
+            } else return unauthorised('Session has been invalidated')
+        }
 
         // Every session access will be added to the list by the session service as a sessionlistener
         sessionService.setLastAccessedUrl(session, request.requestURI)

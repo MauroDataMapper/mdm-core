@@ -41,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCo
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfiledCatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.support.proxy.ProxyHandler
@@ -98,6 +99,21 @@ class ProfileService implements DataBinder {
             it.namespace == profileNamespace &&
             it.getName() in [profileName, Utils.safeUrlEncode(profileName)]
         }.max()
+    }
+
+    ProfileProviderService configureProfileProviderServiceForImportingOwner(ProfileProviderService profileProviderService, String importingOwnerDomainType,
+                                                                            UUID importingOwnerId) {
+        if (profileProviderService !instanceof DynamicImportJsonProfileProviderService) {
+            throw new ApiBadRequestException('PC', 'Requesting import profile of a non-import type profile is not allowed')
+        }
+        if (!profileProviderService.importingId) {
+            MdmDomain importingOwner = metadataService.findMultiFacetAwareItemByDomainTypeAndId(importingOwnerDomainType, importingOwnerId) as MdmDomain
+            if (!importingOwner) return null
+
+            return profileProviderService.generateDynamicProfileForImportingOwner(importingOwner, false)
+        }
+        profileProviderService.includeImportOwnerSection = false
+        return profileProviderService
     }
 
     Profile storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
@@ -201,12 +217,21 @@ class ProfileService implements DataBinder {
 
     List<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean latestVersionByMetadataNamespace) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
-        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem,
-                                                                     latestVersionByMetadataNamespace)
+        getAllAvailableProfileProviderServicesForMultiFacetAwareItem(multiFacetAwareItem, latestVersionByMetadataNamespace)
             .findAll {
                 !usedNamespaces.contains(it.getMetadataNamespace()) ||
                 (it instanceof DynamicImportJsonProfileProviderService && !it.importingId)
             }
+    }
+
+    List<ProfileProviderService> getUsedImportProfileServices(MultiFacetAware multiFacetAwareItem, UUID importingOwnerId, boolean latestVersionByMetadataNamespace) {
+        getUsedProfileServices(multiFacetAwareItem, latestVersionByMetadataNamespace).findAll {pps ->
+            pps instanceof DynamicImportJsonProfileProviderService && pps.importingId == importingOwnerId
+        }
+    }
+
+    List<ProfileProviderService> getUnusedImportProfileServices(MultiFacetAware multiFacetAwareItem, boolean latestVersionByMetadataNamespace) {
+        getUnusedProfileServices(multiFacetAwareItem, latestVersionByMetadataNamespace).findAll {it instanceof DynamicImportJsonProfileProviderService}
     }
 
     /**

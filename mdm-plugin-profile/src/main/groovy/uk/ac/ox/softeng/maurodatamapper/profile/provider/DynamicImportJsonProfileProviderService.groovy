@@ -45,11 +45,13 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
     UUID importingId
     String importingDomainType
     Path importingPath
+    boolean includeImportOwnerSection
 
     @Autowired
     PathService pathService
 
     DynamicImportJsonProfileProviderService() {
+        includeImportOwnerSection = true
     }
 
     abstract String getProfileNamespace()
@@ -93,11 +95,12 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
         } as DynamicImportJsonProfileProviderService
     }
 
-    DynamicImportJsonProfileProviderService generateDynamicProfileForImportingOwner(MdmDomain importingOwner) {
+    DynamicImportJsonProfileProviderService generateDynamicProfileForImportingOwner(MdmDomain importingOwner, boolean includeImportOwnerSectionInProfile = true) {
         clone().tap {
             importingId = importingOwner.id
             importingDomainType = importingOwner.domainType
             importingPath = importingOwner.path
+            includeImportOwnerSection = includeImportOwnerSectionInProfile
         } as DynamicImportJsonProfileProviderService
     }
 
@@ -108,7 +111,8 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
 
     @Override
     JsonProfile getNewProfile() {
-        EmptyJsonProfileFactory.instance.getEmptyProfile(this).addToSections {
+        JsonProfile emptyProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+        if (includeImportOwnerSection) emptyProfile.addToSections {
             name = IMPORTING_SECTION_NAME
             description = 'Information about the domain which is importing'
             order = -1
@@ -165,7 +169,7 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
                                                    'For a new import profile [Id & Domain Type] OR [Path] must be supplied.')
             }
         }
-            as JsonProfile
+        emptyProfile
     }
 
     @Override
