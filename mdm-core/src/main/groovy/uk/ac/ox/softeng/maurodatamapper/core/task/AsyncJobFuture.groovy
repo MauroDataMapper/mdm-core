@@ -89,17 +89,20 @@ class AsyncJobFuture implements Future<AsyncJobTask> {
         this
     }
 
-    AsyncJobFuture cancelIfRunningAndAwaitCompletion() {
-        cancelIfRunning()
-        awaitCompletion()
-    }
-
-    AsyncJobFuture awaitCompletion() {
+    AsyncJobFuture awaitCompletion(long timeout, TimeUnit timeUnit) {
         // Wait for cancellation to go through
-        while (!isDone()) {
+        long duration = 0
+        while (!hasTimedOut(duration, timeout, timeUnit) && !isDone()) {
+            duration++
             sleep(1)
         }
         this
+    }
+
+    boolean hasTimedOut(long duration, long timeout, TimeUnit timeUnit) {
+        //Duration is in milliseconds
+        long milliTimeout = timeUnit.toMillis(timeout)
+        duration >= milliTimeout
     }
 
     boolean hasTaskStarted() {

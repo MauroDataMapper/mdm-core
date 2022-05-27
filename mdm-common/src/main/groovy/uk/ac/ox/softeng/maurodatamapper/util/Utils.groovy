@@ -194,14 +194,14 @@ class Utils {
         ids.collectMany {it}.findAll()
     }
 
-    static void shutdownAndAwaitTermination(ExecutorService executorService) {
+    static void shutdownAndAwaitTermination(ExecutorService executorService, long timeout, TimeUnit timeUnit) {
         executorService.shutdown() // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!executorService.awaitTermination(timeout, timeUnit)) {
                 executorService.shutdownNow() // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
-                if (!executorService.awaitTermination(60, TimeUnit.SECONDS))
+                if (!executorService.awaitTermination(timeout, timeUnit))
                     log.error("Pool did not terminate")
             }
         } catch (InterruptedException ex) {

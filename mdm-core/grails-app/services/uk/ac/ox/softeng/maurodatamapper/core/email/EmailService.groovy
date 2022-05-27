@@ -34,6 +34,7 @@ import org.apache.commons.text.StringSubstitutor
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @Slf4j
 @SuppressFBWarnings('LI_LAZY_INIT_STATIC')
@@ -141,7 +142,7 @@ class EmailService implements AnonymisableService {
      * @param subjectProperty
      * @param bodyProperty
      * @param user
-     * @param Map<string, string> propertieMap
+     * @param Map <string, string> propertieMap
      */
     void sendEmailToUser(String subjectProperty,
                          String bodyProperty,
@@ -163,7 +164,7 @@ class EmailService implements AnonymisableService {
      * @param sentTo
      */
     void anonymise(String sentTo) {
-        Email.findAllBySentToEmailAddress(sentTo).each { email ->
+        Email.findAllBySentToEmailAddress(sentTo).each {email ->
             email.delete()
         }
     }
@@ -213,7 +214,7 @@ class EmailService implements AnonymisableService {
         null
     }
 
-    void shutdownAndAwaitTermination() {
-        Utils.shutdownAndAwaitTermination(executorService)
+    void shutdownAndAwaitTermination(long timeout, TimeUnit timeUnit) {
+        Utils.shutdownAndAwaitTermination(executorService, timeout, timeUnit)
     }
 }

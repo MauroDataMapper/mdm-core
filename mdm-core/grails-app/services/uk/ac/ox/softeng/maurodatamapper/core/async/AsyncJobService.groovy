@@ -176,7 +176,7 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         }
     }
 
-    void cancelAllRunningJobs() {
+    void cancelAllRunningJobs(long timeout, TimeUnit timeUnit) {
         Collection<String> jobIds = getAllRunningJobs()
         if (jobIds) {
             log.info('Cancelling all {} running jobs {}', jobIds.size(), jobIds)
@@ -186,7 +186,7 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
                 cancellingJob(asyncJobId)
                 getAsyncJobFuture(asyncJobId).cancelIfRunning()
             }
-            futures.every {ajf -> ajf.awaitCompletion()}
+            futures.every {ajf -> ajf.awaitCompletion(timeout, timeUnit)}
             // Update the database
             runningJobIds.each {cancelledJob(it)}
         }
@@ -213,8 +213,8 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         getAsyncJobFuture(asyncJob.id)
     }
 
-    void shutdownAndAwaitTermination() {
-        Utils.shutdownAndAwaitTermination(executorService)
+    void shutdownAndAwaitTermination(long timeout, TimeUnit timeUnit) {
+        Utils.shutdownAndAwaitTermination(executorService, timeout, timeUnit)
     }
 
     private GrailsCache getAsyncJobCache() {

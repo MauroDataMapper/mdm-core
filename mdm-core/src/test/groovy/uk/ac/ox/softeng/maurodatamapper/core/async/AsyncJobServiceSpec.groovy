@@ -25,6 +25,8 @@ import grails.plugin.cache.GrailsConcurrentMapCacheManager
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
 
+import java.util.concurrent.TimeUnit
+
 @Slf4j
 class AsyncJobServiceSpec extends BaseUnitSpec implements ServiceUnitTest<AsyncJobService> {
 
@@ -97,7 +99,7 @@ class AsyncJobServiceSpec extends BaseUnitSpec implements ServiceUnitTest<AsyncJ
 
         when:
         log.warn('cancelling job')
-        service.cancelAllRunningJobs()
+        service.cancelAllRunningJobs(10, TimeUnit.SECONDS)
 
         then:
         log.warn('Checking clean up has happened to async job record')

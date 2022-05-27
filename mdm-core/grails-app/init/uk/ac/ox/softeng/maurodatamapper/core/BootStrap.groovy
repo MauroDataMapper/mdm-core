@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import java.sql.Driver
+import java.util.concurrent.TimeUnit
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -118,9 +119,11 @@ class BootStrap {
     }
 
     def destroy = {
-        asyncJobService.cancelAllRunningJobs()
-        asyncJobService.shutdownAndAwaitTermination()
-        emailService.shutdownAndAwaitTermination()
+        long timeout = 1
+        TimeUnit timeUnit = TimeUnit.MINUTES
+        asyncJobService.cancelAllRunningJobs(timeout, timeUnit)
+        asyncJobService.shutdownAndAwaitTermination(timeout, timeUnit)
+        emailService.shutdownAndAwaitTermination(timeout, timeUnit)
     }
 
     void loadApiProperties(String path) {
