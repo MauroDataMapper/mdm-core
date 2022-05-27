@@ -87,9 +87,13 @@ class NestedFolderInVersionedFolderFunctionalSpec extends UserAccessFunctionalSp
             .whereEditorsCannotChangePermissions()
             .whereEditors {
                 cannotCreate()
+                cannotDelete()
+                cannotEditDescription()
+                cannotUpdate()
             }
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
             .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'softDelete', 'update')
             .whereEditorsCanAction('show')

@@ -19,6 +19,10 @@ package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExportService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
@@ -67,6 +71,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     ExporterService exporterService
     ImporterService importerService
     VersionedFolderService versionedFolderService
+    AsyncJobService asyncJobService
+    DomainExportService domainExportService
 
     final String alternateParamsIdKey
 
@@ -149,7 +155,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -382,6 +388,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new branch model version of a model inside a VersionedFolder')
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.asynchronous) {
+
+            AsyncJob asyncJob = getModelService().asyncCreateNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
+                                                                                   createNewVersionData.copyPermissions,
+                                                                                   currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         T copy = getModelService().
             createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
                                         currentUserSecurityPolicyManager) as T
@@ -414,6 +429,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new documentation version of a model inside a VersionedFolder')
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.asynchronous) {
+            AsyncJob asyncJob = getModelService().asyncCreateNewDocumentationVersion(instance,
+                                                                                     currentUser,
+                                                                                     createNewVersionData.copyPermissions,
+                                                                                     currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
 
         T copy = getModelService().
             createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as T
@@ -448,6 +472,16 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             createNewVersionData.copyPermissions = false
         }
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.asynchronous) {
+            AsyncJob asyncJob = getModelService().asyncCreateNewForkModel(createNewVersionData.label,
+                                                                          instance,
+                                                                          currentUser,
+                                                                          createNewVersionData.copyPermissions,
+                                                                          currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         T copy = getModelService().createNewForkModel(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
                                                       currentUserSecurityPolicyManager) as T
 
@@ -474,20 +508,29 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         T instance = queryForResource params[alternateParamsIdKey]
 
-        if (!instance) return notFound(params.dataModelId)
+        if (!instance) return notFound(params[alternateParamsIdKey])
 
         // Extract body to map and add the params from the url
         Map exporterParameters = extractRequestBodyToMap()
         exporterParameters.putAll(params)
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (exporterParameters.asynchronous) {
+            AsyncJob asyncJob = exporterService.asyncExportDomain(currentUser, exporter, instance, exporterParameters)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         log.info("Exporting Model using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params[alternateParamsIdKey] as String, exporterParameters)
+        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params[alternateParamsIdKey], exporterParameters)
         log.info('Export complete')
         if (!outputStream) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Model could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
+        // Cache the export
+        DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, instance, exporter.getFileName(instance), outputStream, currentUser)
+
+        render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
     }
 
     def exportModels() {
@@ -508,6 +551,14 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         Map exporterParameters = extractRequestBodyToMap()
         exporterParameters.putAll(params)
 
+        List<T> domains = getModelService().getAll(exporterParameters[multipleModelsParamsIdKey])
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (exporterParameters.asynchronous) {
+            AsyncJob asyncJob = exporterService.asyncExportDomains(currentUser, exporter, domains, exporterParameters)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         log.info("Exporting DataModel using ${exporter.displayName}")
         ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, exporterParameters[multipleModelsParamsIdKey], exporterParameters)
         log.info('Export complete')
@@ -516,7 +567,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'Models could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "${multipleModelsParamsIdKey}.${exporter.fileExtension}", contentType: exporter.fileType)
+        // Cache the export
+        DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, domains, "${UUID.randomUUID()}.${exporter.fileExtension}",
+                                                                                     outputStream, currentUser)
+
+        render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
     }
 
     @Transactional
@@ -556,6 +611,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return forbiddenDueToPermissions()
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (importerProviderServiceParameters.asynchronous) {
+            AsyncJob asyncJob = importerService.asyncImportDomain(currentUser, importer, importerProviderServiceParameters, getModelService(),
+                                                                  folder)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
 
         T model = importerService.importDomain(currentUser, importer, importerProviderServiceParameters)
 
@@ -634,6 +696,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return forbiddenDueToPermissions()
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (importerProviderServiceParameters.asynchronous) {
+            AsyncJob asyncJob = importerService.asyncImportDomains(currentUser, importer, importerProviderServiceParameters, getModelService(),
+                                                                   folder)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
 
         List<T> result = importerService.importDomains(currentUser, importer, importerProviderServiceParameters)
 

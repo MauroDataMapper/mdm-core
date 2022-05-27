@@ -65,9 +65,13 @@ class NestedAnnotationFunctionalSpec extends UserAccessWithoutUpdatingFunctional
             .whereTestingUnsecuredResource()
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
             }
     }
 

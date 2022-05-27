@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlowService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -75,5 +76,10 @@ abstract class DataFlowExporterProviderService extends ExporterProviderService {
     @Override
     String getProviderType() {
         "DataFlow${ProviderType.EXPORTER.name}"
+    }
+
+    @Override
+    String getFileName(MdmDomain domain) {
+        "${(domain as DataFlow).label}.${getFileExtension()}"
     }
 }

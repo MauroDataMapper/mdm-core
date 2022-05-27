@@ -77,6 +77,7 @@ class EnumerationValueFunctionalSpec extends UserAccessFunctionalSpec {
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

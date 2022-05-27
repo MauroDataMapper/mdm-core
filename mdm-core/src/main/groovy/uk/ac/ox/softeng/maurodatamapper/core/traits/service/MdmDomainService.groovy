@@ -69,6 +69,11 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
         proxyHandler.unwrapIfProxy(ge) as K
     }
 
+    void delete(Serializable id) {
+        K domain = get(id)
+        if (domain) delete(domain)
+    }
+
     Class<K> getDomainClass() {
         ParameterizedType parameterizedType = this.getClass().getGenericInterfaces().find {it instanceof ParameterizedType}
         if (!parameterizedType) {

@@ -19,11 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -73,5 +75,10 @@ abstract class ReferenceDataModelExporterProviderService extends ExporterProvide
     @Override
     String getProviderType() {
         "ReferenceDataModel${ProviderType.EXPORTER.name}"
+    }
+
+    @Override
+    String getFileName(MdmDomain domain) {
+        "${(domain as Model).label}.${getFileExtension()}"
     }
 }

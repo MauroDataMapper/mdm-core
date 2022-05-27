@@ -63,6 +63,10 @@ abstract class CatalogueItemMetadataFunctionalSpec extends UserAccessFunctionalS
             .withoutAvailableActions()
             .whereAuthors {
                 canUpdate()
+                canDelete()
+                canCreate()
+                canSee()
+                canIndex()
             }
     }
 

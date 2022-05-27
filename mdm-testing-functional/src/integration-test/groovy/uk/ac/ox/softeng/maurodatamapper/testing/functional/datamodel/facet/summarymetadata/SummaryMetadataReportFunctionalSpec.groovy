@@ -99,6 +99,7 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

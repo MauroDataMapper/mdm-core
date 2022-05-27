@@ -99,16 +99,24 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
             }
             .whereReaders {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
                 cannotEditDescription()
+                cannotUpdate()
             }
             .whereEditors {
                 cannotDelete()
+                cannotEditDescription()
                 cannotUpdate()
             }
             .whereAnonymousUsers {

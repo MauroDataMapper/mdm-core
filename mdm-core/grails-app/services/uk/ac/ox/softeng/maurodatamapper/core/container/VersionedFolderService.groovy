@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
@@ -95,6 +97,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     AuthorityService authorityService
     PathService pathService
     MergeDiffService mergeDiffService
+    AsyncJobService asyncJobService
 
     @Autowired(required = false)
     Set<MdmDomainService> domainServices
@@ -417,6 +420,18 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         generateDefaultLabel(folder, Folder.DEFAULT_FOLDER_LABEL)
     }
 
+    AsyncJob asyncCreateNewForkModel(String label, VersionedFolder folder, User user, boolean copyPermissions,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${folder.label}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            folder.attach()
+            folder.authority.attach()
+            VersionedFolder fork = createNewForkModel(label, folder, user, copyPermissions,
+                                                      userSecurityPolicyManager, additionalArguments)
+            fullValidateAndSaveOfModel(fork, user)
+        }
+    }
+
     VersionedFolder createNewForkModel(String label, VersionedFolder folder, User user, boolean copyPermissions,
                                        UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(folder)) return folder
@@ -426,6 +441,19 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                                userSecurityPolicyManager)
         setFolderIsNewForkModelOfFolder(newForkModel, folder, user)
         newForkModel
+    }
+
+    AsyncJob asyncCreateNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Branch model ${folder.label} as ${branchName}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            folder.attach()
+            folder.authority.attach()
+            VersionedFolder copy = createNewBranchModelVersion(branchName, folder, user, copyPermissions,
+                                                               userSecurityPolicyManager, additionalArguments)
+
+            fullValidateAndSaveOfModel(copy, user)
+        }
     }
 
     VersionedFolder createNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
@@ -485,6 +513,18 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         setFolderIsNewBranchModelVersionOfFolder(newBranchModelVersion, folder, user)
 
         newBranchModelVersion
+    }
+
+    AsyncJob asyncCreateNewDocumentationVersion(VersionedFolder folder, User user, boolean copyPermissions,
+                                                UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${folder.label}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            folder.attach()
+            folder.authority.attach()
+            VersionedFolder doc = createNewDocumentationVersion(folder, user, copyPermissions,
+                                                                userSecurityPolicyManager, additionalArguments)
+            fullValidateAndSaveOfModel(doc, user)
+        }
     }
 
     VersionedFolder createNewDocumentationVersion(VersionedFolder folder, User user, boolean copyPermissions,
@@ -1142,10 +1182,32 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         new CachedDiffable(loadedFolder, diffCache)
     }
 
-    private List<Folder> getAllFoldersInside(Folder folder){
+    private List<Folder> getAllFoldersInside(Folder folder) {
         List<Folder> folders = []
         folders.addAll(folder.childFolders)
         folders.addAll(folder.childFolders.collectMany {getAllFoldersInside(it)})
         folders
+    }
+
+    VersionedFolder fullValidateAndSaveOfModel(VersionedFolder folder, User user) {
+        log.debug('Full validate and save of folder')
+        if (folder.hasErrors()) {
+            throw new ApiInvalidModelException('MSXX', 'Invalid model', folder.errors, messageSource)
+        }
+        validate(folder)
+        if (folder.hasErrors()) {
+            throw new ApiInvalidModelException('MSXX', 'Invalid model', folder.errors, messageSource)
+        }
+        saveAndAddSecurity(folder, user)
+    }
+
+    VersionedFolder saveAndAddSecurity(VersionedFolder folder, User user) {
+        log.debug('Saving and adding security')
+        VersionedFolder savedCopy = saveFolderHierarchy(folder)
+        savedCopy.addCreatedEdit(user)
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, user, savedCopy.label)
+        }
+        savedCopy
     }
 }

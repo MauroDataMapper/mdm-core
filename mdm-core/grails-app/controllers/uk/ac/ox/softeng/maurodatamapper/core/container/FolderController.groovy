@@ -17,7 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExportService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
@@ -30,6 +34,7 @@ import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -44,6 +49,8 @@ class FolderController extends EditLoggingController<Folder> {
     FolderService folderService
     SearchService mdmCoreSearchService
     VersionedFolderService versionedFolderService
+    ExporterService exporterService
+    DomainExportService domainExportService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -177,12 +184,25 @@ class FolderController extends EditLoggingController<Folder> {
         Folder instance = queryForResource(params.folderId)
         if (!instance) return notFound(params.folderId)
 
+        // Extract body to map and add the params from the url
+        Map exporterParameters = extractRequestBodyToMap()
+        exporterParameters.putAll(params)
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (exporterParameters.asynchronous) {
+            AsyncJob asyncJob = exporterService.asyncExportDomain(currentUser, exporter, instance, exporterParameters)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         log.info("Exporting Folder using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporter.exportDomain(currentUser, params.folderId)
+        ByteArrayOutputStream outputStream = exporterService.exportDomain(currentUser, exporter, params.folderId, exporterParameters)
         if (!outputStream) return errorResponse(UNPROCESSABLE_ENTITY, 'Folder could not be exported')
         log.info('Export complete')
 
-        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
+        // Cache the export
+        DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, instance, exporter.getFileName(instance), outputStream, currentUser)
+
+        render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
     }
 
     @Override

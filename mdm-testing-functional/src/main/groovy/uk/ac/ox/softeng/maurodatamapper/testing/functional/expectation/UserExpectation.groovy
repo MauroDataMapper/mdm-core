@@ -47,7 +47,22 @@ class UserExpectation {
 
     UserExpectation canUpdate() {
         this.canUpdate = true
-        canDelete()
+        this
+    }
+
+    UserExpectation canDelete() {
+        this.canDelete = true
+        this
+    }
+
+    UserExpectation canCreate() {
+        this.canCreate = true
+        this
+    }
+
+    UserExpectation canSee() {
+        this.canSee = true
+        this
     }
 
     UserExpectation canEditDescription() {
@@ -55,24 +70,9 @@ class UserExpectation {
         this
     }
 
-    UserExpectation canDelete() {
-        this.canDelete = true
-        canCreate()
-    }
-
     UserExpectation canSoftDelete() {
         this.canDelete = true
         this
-    }
-
-    UserExpectation canCreate() {
-        this.canCreate = true
-        canSee()
-    }
-
-    UserExpectation canSee() {
-        this.canSee = true
-        canIndex()
     }
 
     UserExpectation canIndex() {
@@ -87,20 +87,15 @@ class UserExpectation {
 
     UserExpectation cannotEditDescription() {
         this.canEditDescription = false
-        cannotUpdate()
+        this
     }
 
     UserExpectation cannotDelete() {
         this.canDelete = false
-        cannotEditDescription()
+        this
     }
 
     UserExpectation cannotCreate() {
-        this.canCreate = false
-        cannotDelete()
-    }
-
-    UserExpectation cannotCreateOnly() {
         this.canCreate = false
         this
     }

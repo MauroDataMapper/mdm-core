@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<DomainExport> domainExportList
+}
+
+json {
+    count domainExportList instanceof PagedResultList ? ((PagedResultList) domainExportList).getTotalCount() : domainExportList?.size() ?: 0
+    items tmpl.domainExport(domainExportList ?: [])
+}
+

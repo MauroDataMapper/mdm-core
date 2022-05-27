@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<AsyncJob> asyncJobList
+}
+
+json {
+    count asyncJobList instanceof PagedResultList ? ((PagedResultList) asyncJobList).getTotalCount() : asyncJobList?.size() ?: 0
+    items tmpl.asyncJob(asyncJobList ?: [])
+}
+
