@@ -135,13 +135,14 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         // Rebuild all policies which have access, this needs to be done incase we revoke access to something which provides access to something else
         keys.each {key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+            userSecurityPolicyManager.lock()
             ids.each {id ->
                 if (userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResourceDomainType, id)) {
-                    userSecurityPolicyManager.lock()
                     UserSecurityPolicy updatedPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicyManager.userPolicy)
-                    storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
+                    userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy)
                 }
             }
+            storeUserSecurityPolicyManager(userSecurityPolicyManager)
         }
 
     }
