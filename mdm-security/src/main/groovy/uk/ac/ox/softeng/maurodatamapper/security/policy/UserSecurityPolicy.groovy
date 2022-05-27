@@ -41,7 +41,7 @@ class UserSecurityPolicy {
 
     // Locked as soon as its created
     // Lock allows us to hold while we wait for access to be updated
-    final private AtomicBoolean locked = new AtomicBoolean(true)
+    final private AtomicBoolean locked = new AtomicBoolean(false)
     // Destroyed allows us to concurrently return empty lists if the policy is revoked
     final private AtomicBoolean destroyed = new AtomicBoolean(false)
 
