@@ -312,6 +312,14 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
         }
 
+        // Editors can delete ModelItems, however CAs can also delete finalised models which we cant allow the deletion of modelitems so we can't fall through
+        // to the SecuredResource check
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass)) {
+            VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
+            return role ? !role.isFinalised() : false
+        }
+
         return userCanDeleteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, false)
     }
 
