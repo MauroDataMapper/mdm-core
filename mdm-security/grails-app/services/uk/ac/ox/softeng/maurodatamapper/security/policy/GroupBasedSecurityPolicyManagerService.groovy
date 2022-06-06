@@ -135,14 +135,16 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         // Rebuild all policies which have access, this needs to be done incase we revoke access to something which provides access to something else
         keys.each {key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-            userSecurityPolicyManager.lock()
+            boolean updated = false
             ids.each {id ->
                 if (userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResourceDomainType, id)) {
+                    userSecurityPolicyManager.lock()
                     UserSecurityPolicy updatedPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicyManager.userPolicy)
                     userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy)
+                    updated = true
                 }
             }
-            storeUserSecurityPolicyManager(userSecurityPolicyManager)
+            if (updated) storeUserSecurityPolicyManager(userSecurityPolicyManager)
         }
 
     }
@@ -212,7 +214,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     GroupBasedUserSecurityPolicyManager storeUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager, boolean maintainLock = false) {
         if (!userSecurityPolicyManager.isLocked()) throw new ApiInternalException('GBSPMS',
-                                                                                  'Cannot store on an unlocked GroupBasedUserSecurityPolicyManager')
+                                                                                  'Cannot store an unlocked GroupBasedUserSecurityPolicyManager')
         GrailsCache cache = getSecurityPolicyManagerCache()
         cache.put(userSecurityPolicyManager.user.emailAddress, userSecurityPolicyManager)
         maintainLock ? userSecurityPolicyManager : userSecurityPolicyManager.unlock()
