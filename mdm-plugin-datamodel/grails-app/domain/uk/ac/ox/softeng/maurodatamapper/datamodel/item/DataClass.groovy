@@ -301,6 +301,24 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
+    static DetachedCriteria<DataClass> byImportingDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<DataClass>(DataClass).where {
+            importingDataModels {
+                eq 'id', dataModelId
+            }
+            join('importingDataModels', JoinType.LEFT)
+        }
+    }
+
+    static DetachedCriteria<DataClass> byImportingDataClassId(Serializable dataClassId) {
+        new DetachedCriteria<DataClass>(DataClass).where {
+            importingDataClasses {
+                eq 'id', dataClassId
+            }
+            join('importingDataClasses', JoinType.LEFT)
+        }
+    }
+
     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId) {
         byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
     }

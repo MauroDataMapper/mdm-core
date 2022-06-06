@@ -752,14 +752,28 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         CopyInformation dataTypeCache = cacheFacetInformationForCopy(dataTypes.collect {it.id}, new CopyInformation(copyIndex: true))
 
         // Copy all the datatypes
-        dataTypes.sort().each {dt ->
+        dataTypes.sort().each { dt ->
             dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, dataTypeCache)
         }
 
         // Copy all the dataclasses (this will also match up the reference types)
-        rootDataClasses.sort().each {dc ->
+        rootDataClasses.sort().each { dc ->
             dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
         }
+
+        List<DataType> importedDataTypes = DataType.byImportingDataModelId(original.id).list()
+        List<DataClass> importedDataClasses = DataClass.byImportingDataModelId(original.id).list()
+
+        // Copy across the imported datatypes
+        importedDataTypes.each { dt ->
+            copy.addToImportedDataTypes(dt)
+        }
+
+        // Copy across the imported dataclasses
+        importedDataClasses.each { dc ->
+            copy.addToImportedDataClasses(dc)
+        }
+
         log.debug('Copy of datamodel took {}', Utils.timeTaken(start))
         copy
     }

@@ -1541,6 +1541,254 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData()
     }
 
+    void 'VB13 : test creating new branch with imported DataTypes'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType 2',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataTypes/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of datatypes in brach'
+        log.info 'getting list of datatypes'
+        GET("$branchId/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.every { it.id != internalId }
+        responseBody().items.any { it.id == importableId && it.imported }
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB14 : test creating new branch with imported DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.every { it.id != internalId }
+        responseBody().items.any { it.id == importableId && it.imported }
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB15 : test creating new branch with DataClasses importing DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$internalId/dataClasses/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.every { it.id != internalId }
+        responseBody().items.every { it.id != importableId }
+
+        when:
+        String branchInternalId = responseBody().items.first().id
+        GET("$branchId/dataClasses/${branchInternalId}/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB16 : test creating new branch with DataClasses importing DataElements'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DC
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String finalisedDtId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String finalisedDcId = responseBody().id
+
+        POST("$finalisedId/dataClasses/$finalisedDcId/dataElements", [
+            label: 'Functional Test DataElement', dataType: finalisedDtId])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$internalId/dataElements/$finalisedId/$finalisedDcId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.every { it.id != internalId }
+        responseBody().items.every { it.id != importableId }
+
+        when:
+        String branchInternalId = responseBody().items.first().id
+        GET("$branchId/dataClasses/${branchInternalId}/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
     void 'MD01 : test finding merge difference of two datamodels'() {
         given:
         String id = createNewItem(validJson)

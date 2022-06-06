@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermis
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
@@ -95,7 +96,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     AsyncJobService asyncJobService
 
-    def setupSpec() {
+    @RunOnce
+    def setup() {
         builder = new DataModelPluginMergeBuilder(this)
     }
 

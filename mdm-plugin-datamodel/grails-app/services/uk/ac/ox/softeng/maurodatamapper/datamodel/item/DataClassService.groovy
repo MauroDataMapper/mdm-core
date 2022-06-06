@@ -824,13 +824,25 @@ WHERE
         copy.dataElements = []
 
         List<DataElement> dataElements = DataElement.byDataClassId(original.id).join('classifiers').list()
-        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect {it.id}, new CopyInformation(copyIndex: true))
-        dataElements.sort().each {element ->
+        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect { it.id }, new CopyInformation(copyIndex: true))
+        dataElements.sort().each { element ->
             copy.addToDataElements(
                 dataElementService
                     .copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata, dataElementCache))
         }
 
+        List<DataClass> importedDataClasses = DataClass.byImportingDataClassId(original.id).list()
+        List<DataElement> importedDataElements = DataElement.byImportingDataClassId(original.id).list()
+
+        // Copy across the imported dataelements
+        importedDataElements.each { dt ->
+            copy.addToImportedDataElements(dt)
+        }
+
+        // Copy across the imported dataclasses
+        importedDataClasses.each { dc ->
+            copy.addToImportedDataClasses(dc)
+        }
         copy
     }
 
