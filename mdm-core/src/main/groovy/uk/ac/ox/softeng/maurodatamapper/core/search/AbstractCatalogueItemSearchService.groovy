@@ -197,11 +197,4 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         log.debug('Domain searching {}', domainToSearch)
         domainToSearch.customHibernateSearch(domainToSearch, owningIds, pathNodes, pagination, additional, customSearch)
     }
-
-    private static Integer removePaginationInteger(Map pagination, String field) {
-        def value = pagination.remove(field)
-        if (!value) return null
-        if (value instanceof Integer) return value
-        value.toString().toInteger()
-    }
 }

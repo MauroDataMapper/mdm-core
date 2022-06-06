@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.task
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeoutException
  * We use the future to control interruption/cancellation of the task but then make sure the task is in the appropriate state before claiming its "done"
  * @since 17/05/2022
  */
+@SuppressFBWarnings('LI_LAZY_INIT_STATIC')
 class AsyncJobFuture implements Future<AsyncJobTask> {
 
     Future<Boolean> future

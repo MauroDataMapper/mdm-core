@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
@@ -38,6 +39,7 @@ import java.util.concurrent.TimeUnit
  */
 @Slf4j
 @CompileStatic
+@SuppressFBWarnings('DCN_NULLPOINTER_EXCEPTION')
 class Utils {
 
     private Utils() {

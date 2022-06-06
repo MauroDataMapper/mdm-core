@@ -483,14 +483,13 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
         v2DataModel.setOrganisation('Baal')
 
         Resource resource = assetResourceLocator.findAssetForURI('versioningModelDescription.txt')
-
-        try {v2DataModel.setDescription(resource.getInputStream().getText())}
-        catch (NullPointerException e) {
+        if (!resource || !resource.isReadable()) {
             v2DataModel.setDescription('default description due to error reading file. see log')
             log.debug(
                 'error reading the description file, please check the asset pipeline and ensure the versioningModelDescription.txt file is in the' +
                 'available assets')
         }
+        v2DataModel.setDescription(resource.getInputStream().getText())
 
         PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type')

@@ -28,6 +28,6 @@ class AsyncJobInterceptor implements MdmInterceptor {
         Utils.toUuid(params, 'asyncJobId')
         // Allow anyone authenticated to index.
         // We'll pass addtl security onto the controller in the form of notFound when querying for resource
-        actionName != 'index' ?: currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
+        actionName == 'index' ? currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated() : true
     }
 }

@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.transactions.Transactional
 import grails.plugin.cache.GrailsCache
 import groovy.transform.stc.ClosureParams
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit
 
 @Slf4j
 @Transactional
+@SuppressFBWarnings('LI_LAZY_INIT_STATIC')
 class AsyncJobService implements MdmDomainService<AsyncJob> {
 
     public static final String ASYNC_JOB_CACHE_KEY = 'asyncJobCache'

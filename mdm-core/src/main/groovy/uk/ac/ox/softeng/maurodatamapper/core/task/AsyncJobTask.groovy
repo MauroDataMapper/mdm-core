@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @since 28/03/2022
  */
 @Slf4j
+@SuppressFBWarnings('LI_LAZY_INIT_STATIC')
 class AsyncJobTask implements Callable<Boolean> {
 
     AsyncJobService asyncJobService
