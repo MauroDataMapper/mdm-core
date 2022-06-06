@@ -24,7 +24,6 @@ json {
 
     export {
         fileName domainExport.exportFileName
-        fileType domainExport.exportFileType
         contentType domainExport.exportContentType
         fileSize domainExport.exportFileSize
     }

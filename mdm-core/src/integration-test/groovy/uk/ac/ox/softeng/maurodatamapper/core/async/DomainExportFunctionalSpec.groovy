@@ -89,7 +89,7 @@ class DomainExportFunctionalSpec extends BaseFunctionalSpec {
             }
 
             @Override
-            String getFileType() {
+            String getContentType() {
                 grails.web.mime.MimeType.JSON.name
             }
 
@@ -157,8 +157,7 @@ class DomainExportFunctionalSpec extends BaseFunctionalSpec {
   },
   "export": {
     "fileName": "test.json",
-    "fileType": "application/json",
-    "contentType": null,
+    "contentType": "application/json",
     "fileSize": 20
   },
   "exportedOn": "${json-unit.matches:offsetDateTime}",
