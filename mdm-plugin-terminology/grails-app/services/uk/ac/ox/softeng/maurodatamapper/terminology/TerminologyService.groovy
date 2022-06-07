@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -83,7 +84,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> getAll(Collection<UUID> ids) {
-        Terminology.getAll(ids).findAll().collect { unwrapIfProxy(it) }
+        Terminology.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -93,7 +94,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> list() {
-        Terminology.list().collect { unwrapIfProxy(it) }
+        Terminology.list().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -179,7 +180,7 @@ class TerminologyService extends ModelService<Terminology> {
     Terminology saveModelWithContent(Terminology terminology, Integer modelItemBatchSize) {
 
 
-        if (terminology.terms.any { it.id } || terminology.termRelationshipTypes.any { it.id }) {
+        if (terminology.terms.any {it.id} || terminology.termRelationshipTypes.any {it.id}) {
             throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
                                            new IllegalStateException('Terminology has previously saved content'))
         }
@@ -245,10 +246,10 @@ class TerminologyService extends ModelService<Terminology> {
             trt.skipValidation(true)
         }
 
-        terms.each { t ->
+        terms.each {t ->
             t.skipValidation(true)
-            t.sourceTermRelationships.each { tr -> tr.skipValidation(true) }
-            t.targetTermRelationships.each { tr -> tr.skipValidation(true) }
+            t.sourceTermRelationships.each {tr -> tr.skipValidation(true)}
+            t.targetTermRelationships.each {tr -> tr.skipValidation(true)}
         }
 
         // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
@@ -410,25 +411,25 @@ class TerminologyService extends ModelService<Terminology> {
         CopyInformation termsCachedInformation = new CopyInformation()
 
         if (originalTerms) {
-            List<UUID> originalTermIds = originalTerms.collect { it.id }
+            List<UUID> originalTermIds = originalTerms.collect {it.id}
             termRelationships = TermRelationship.by().inList('sourceTerm.id', originalTermIds).join('classifiers').list()
             termsCachedInformation = cacheFacetInformationForCopy(originalTermIds)
         }
 
         // Copy all the TermRelationshipType
-        termRelationshipTypes.each { trt ->
+        termRelationshipTypes.each {trt ->
             termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
         }
 
         // Copy all the terms
-        originalTerms.each { term ->
+        originalTerms.each {term ->
             termService.copyTerm(copy, term, copier, userSecurityPolicyManager, termsCachedInformation)
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
         // Only copy source relationships as this will propagate the target relationships
-        termRelationships.each { relationship ->
+        termRelationships.each {relationship ->
             termRelationshipService.copyTermRelationship(copy, relationship, new TreeMap(copy.terms.collectEntries {[it.code, it]}), copier)
         }
         log.debug('Copy of terminology took {}', Utils.timeTaken(start))
@@ -450,14 +451,14 @@ class TerminologyService extends ModelService<Terminology> {
         // No parental or child relationships then ensure all depths are 1
         if (hasNoValidRelationships) {
             log.debug('No parent/child relationships so all terms are depth 1')
-            terminology.terms.each { it.depth = 1 }
+            terminology.terms.each {it.depth = 1}
             return terminology
         }
 
         log.debug('Updating all term depths')
         // Reset all track changes, as this whole process needs to be done AFTER insert into database
         // the only changes here should be depths
-        terminology.terms.each { it.trackChanges() }
+        terminology.terms.each {it.trackChanges()}
         terminology.terms.each {
             termService.updateDepth(it, inMemory)
         }
@@ -526,7 +527,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id)}
     }
 
     @Override
@@ -567,7 +568,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<UUID> findAllModelIdsWithTreeChildren(List<Terminology> models) {
-        models.findAll { isTreeStructureCapableTerminology(it) }.collect { it.id }
+        models.findAll {isTreeStructureCapableTerminology(it)}.collect {it.id}
     }
 
     @Override
@@ -633,12 +634,12 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.terms) {
-            terminology.terms.each { term ->
+            terminology.terms.each {term ->
                 term.createdBy = term.createdBy ?: terminology.createdBy
             }
         }
 
-        terminology.getAllTermRelationships().each { tr ->
+        terminology.getAllTermRelationships().each {tr ->
             tr.createdBy = tr.createdBy ?: terminology.createdBy
         }
 
@@ -662,15 +663,15 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void propagateContentsInformation(Terminology catalogueItem, Terminology previousVersionCatalogueItem) {
-        previousVersionCatalogueItem.terms.each { previousTerm ->
-            Term term = catalogueItem.terms.find { it.label == previousTerm.label }
+        previousVersionCatalogueItem.terms.each {previousTerm ->
+            Term term = catalogueItem.terms.find {it.label == previousTerm.label}
             if (term) {
                 termService.propagateDataFromPreviousVersion(term, previousTerm)
             }
         }
 
-        previousVersionCatalogueItem.termRelationshipTypes.each { previousTermRelationshipType ->
-            TermRelationshipType termRelationshipType = catalogueItem.termRelationshipTypes.find { it.label == previousTermRelationshipType.label }
+        previousVersionCatalogueItem.termRelationshipTypes.each {previousTermRelationshipType ->
+            TermRelationshipType termRelationshipType = catalogueItem.termRelationshipTypes.find {it.label == previousTermRelationshipType.label}
             if (termRelationshipType) {
                 termRelationshipTypeService.propagateDataFromPreviousVersion(termRelationshipType, previousTermRelationshipType)
             }
@@ -688,11 +689,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
-        if (leftPath.any { it.prefix == 'cs' }) {
-            if (rightPath.any { it.prefix == 'cs' }) return 0
+        if (leftPath.any {it.prefix == 'cs'}) {
+            if (rightPath.any {it.prefix == 'cs'}) return 0
             return 1
         }
-        if (rightPath.any { it.prefix == 'cs' }) return -1
+        if (rightPath.any {it.prefix == 'cs'}) return -1
         PathNode leftLastNode = leftPath.last()
         PathNode rightLastNode = rightPath.last()
         if (leftLastNode.prefix == 'tm') {
@@ -740,11 +741,25 @@ class TerminologyService extends ModelService<Terminology> {
         Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
 
         DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
-        createCatalogueItemDiffCaches(diffCache,'termRelationshipTypes', trts, facetData)
-        createCatalogueItemDiffCaches(diffCache, 'termRelationships',trs, facetData)
-        createCatalogueItemDiffCaches(diffCache, 'terms',terms, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'termRelationshipTypes', trts, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'termRelationships', trs, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'terms', terms, facetData)
 
         log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
         new CachedDiffable(loadedModel, diffCache)
+    }
+
+    @Override
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+        if (modelItemToCopy.domainType == TermRelationship.simpleName) {
+            TermRelationship copy = termRelationshipService.copy(targetModel, modelItemToCopy as TermRelationship, null, userSecurityPolicyManager)
+            if (!copy.validate())
+                throw new ApiInvalidModelException('MS01', 'Copied ModelItem is invalid', copy.errors, messageSource)
+
+            termRelationshipService.save(copy, flush: flush, validate: false)
+            return
+        }
+        super.processCreationPatchOfModelItem(modelItemToCopy, targetModel, pathToCopy, userSecurityPolicyManager, flush)
     }
 }

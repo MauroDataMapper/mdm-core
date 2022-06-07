@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
@@ -95,6 +96,9 @@ abstract class ModelService<K extends Model>
     Set<MdmDomainService> domainServices
 
     @Autowired
+    FolderService folderService
+
+    @Autowired
     VersionedFolderService versionedFolderService
 
     @Autowired
@@ -121,6 +125,7 @@ abstract class ModelService<K extends Model>
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
 
+    @Autowired
     AsyncJobService asyncJobService
 
     Class<K> getVersionLinkAwareClass() {

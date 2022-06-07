@@ -78,12 +78,14 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         ]
     }
 
-    Map buildComplexModelsForBranching() {
+    Map buildComplexModelsForBranching(boolean finalise = true) {
         Map data = buildComplexModelsForFinalisation()
 
         // Finalise
-        PUT("versionedFolders/$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
+        if (finalise) {
+            PUT("versionedFolders/$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
+            verifyResponse OK, response
+        }
 
         data
     }
