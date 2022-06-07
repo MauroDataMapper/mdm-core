@@ -2894,8 +2894,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       },
       "export": {
         "fileName": "Complex Test DataModel.json",
-        "fileType": "text/json",
-        "contentType": "application/mdm+json",
+        "contentType": "application/mauro.datamodel+json",
         "fileSize": "${json-unit.any-number}"
       },
       "exportedOn": "${json-unit.matches:offsetDateTime}",
