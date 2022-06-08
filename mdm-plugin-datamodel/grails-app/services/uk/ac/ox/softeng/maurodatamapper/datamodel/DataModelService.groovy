@@ -306,6 +306,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         if (dataModel.dataClasses) {
             dataClasses.addAll dataModel.dataClasses
+            // The flush below will try to save the importingDC side and as the objects havent been saved yet the flush will fail
+            dataClasses.each { dc ->
+                if (!dc.id && dc.importedDataClasses) {
+                    dc.importedDataClasses.each { idc ->
+                        idc.removeFromImportingDataClasses(dc)
+                    }
+                }
+                if (!dc.id && dc.importedDataElements) {
+                    dc.importedDataElements.each { ide ->
+                        ide.removeFromImportingDataClasses(dc)
+                    }
+                }
+            }
             dataModel.dataClasses.clear()
         }
 
@@ -413,7 +426,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (totalDts) log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        dataElements.addAll dataClassService.saveAll(dataClasses)
+        dataElements.addAll(dataClassService.saveAll(dataClasses) as Collection<DataElement>)
         if (dataClasses) log.debug('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
@@ -713,8 +726,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
         }
 
-        List<DataType> importedDataTypes = DataType.byImportingDataModelId(original.id).list()
-        List<DataClass> importedDataClasses = DataClass.byImportingDataModelId(original.id).list()
+        List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(original.id)
+        List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(original.id)
 
         // Copy across the imported datatypes
         importedDataTypes.each { dt ->
@@ -1227,6 +1240,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('Loading DataType')
         List<DataType> dataTypes = dataTypeService.findAllByDataModelId(loadedModel.id)
+        List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(loadedModel.id)
 
         log.trace('Loading EnumerationValue')
         List<EnumerationValue> enumerationValues = enumerationValueService.findAllByDataModelId(modelId)
@@ -1234,12 +1248,34 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('Loading DataClass')
         List<DataClass> dataClasses = dataClassService.findAllByDataModelId(loadedModel.id)
+        List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(loadedModel.id)
         Map<UUID, List<DataClass>> dataClassesMap = dataClasses.groupBy { it.parentDataClass?.id }
-
+        List<DataClass> importedIntoDataClassDataClasses = dataClassService.findAllByImportingDataClassIds(dataClasses.collect { it.id })
+        Map<UUID, List<DataClass>> importedDataClassesMap = [:]
+        importedIntoDataClassDataClasses.each { ide ->
+            ide.importingDataClasses.each { idc ->
+                importedDataClassesMap.compute(idc.id, { key, dataClassList ->
+                    if (!dataClassList) return [ide]
+                    dataClassList.add(ide)
+                    dataClassList
+                })
+            }
+        }
 
         log.trace('Loading DataElement')
         List<DataElement> dataElements = dataElementService.findAllByDataModelId(loadedModel.id)
         Map<UUID, List<DataElement>> dataElementsMap = dataElements.groupBy { it.dataClass.id }
+        List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassIds(dataClasses.collect { it.id })
+        Map<UUID, List<DataElement>> importedDataElementsMap = [:]
+        importedDataElements.each { ide ->
+            ide.importingDataClasses.each { idc ->
+                importedDataElementsMap.compute(idc.id, { key, dataElementList ->
+                    if (!dataElementList) return [ide]
+                    dataElementList.add(ide)
+                    dataElementList
+                })
+            }
+        }
 
         log.trace('Loading Facets')
         List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
@@ -1251,7 +1287,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
         createDataTypeDiffCaches(diffCache, dataTypes, enumerationValuesMap, facetData)
-        createDataClassDiffCaches(diffCache, dataClassesMap, dataElementsMap, facetData, null)
+        createDataClassDiffCaches(diffCache, dataClassesMap, dataElementsMap, facetData, null,
+                                  importedDataClassesMap, importedDataElementsMap)
+        diffCache.addField('importedDataTypes', importedDataTypes)
+        diffCache.addField('importedDataClasses', importedDataClasses)
 
         log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
         new CachedDiffable(loadedModel, diffCache)
@@ -1259,7 +1298,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     private void createDataClassDiffCaches(DiffCache diffCache, Map<UUID, List<DataClass>> dataClassesMap,
                                            Map<UUID, List<DataElement>> dataElementsMap,
-                                           Map<String, Map<UUID, List<Diffable>>> facetData, UUID dataClassId) {
+                                           Map<String, Map<UUID, List<Diffable>>> facetData, UUID dataClassId,
+                                           Map<UUID, List<DataClass>> importedDataClasses, Map<UUID, List<DataElement>> importedDataElements) {
 
         List<DataClass> dataClasses = dataClassesMap[dataClassId]
         diffCache.addField('dataClasses', dataClasses)
@@ -1268,11 +1308,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataClassId) {
             addFacetDataToDiffCache(diffCache, facetData, dataClassId)
             createCatalogueItemDiffCaches(diffCache, 'dataElements', dataElementsMap[dataClassId], facetData)
+            diffCache.addField('importedDataClasses', importedDataClasses[dataClassId] ?: [])
+            diffCache.addField('importedDataElements', importedDataElements[dataClassId] ?: [])
         }
 
         dataClasses.each { dc ->
             DiffCache dcDiffCache = createCatalogueItemDiffCache(diffCache, dc, facetData)
-            createDataClassDiffCaches(dcDiffCache, dataClassesMap, dataElementsMap, facetData, dc.id)
+            createDataClassDiffCaches(dcDiffCache, dataClassesMap, dataElementsMap, facetData, dc.id, importedDataClasses, importedDataElements)
         }
     }
 
@@ -1373,8 +1415,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         Path copiedDataModelPath = getFullPathForModel(copiedDataModel)
         Path originalDataModelPath = getFullPathForModel(originalDataModel)
 
-        List<DataType> importedDataTypes = DataType.byImportingDataModelId(copiedDataModel.id).list()
-        List<DataClass> importedDataClasses = DataClass.byImportingDataModelId(copiedDataModel.id).list()
+        List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(copiedDataModel.id)
+        List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(copiedDataModel.id)
 
         log.debug('Updating imported DTs')
         importedDataTypes.each { mi ->
@@ -1387,8 +1429,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         copiedDataModel.dataClasses.each { dc ->
-            importedDataClasses = DataClass.byImportingDataClassId(dc.id).list()
-            List<DataElement> importedDataElements = DataElement.byImportingDataClassId(dc.id).list()
+            importedDataClasses = dataClassService.findAllByImportingDataClassId(dc.id)
+            List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassId(dc.id)
 
             log.debug('Updating imported DCs inside DC {}', dc.path)
             importedDataClasses.each { mi ->

@@ -239,7 +239,14 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             importingDataClasses {
                 eq 'id', dataClassId
             }
-            join('importingDataClasses', JoinType.LEFT)
+        }
+    }
+
+    static DetachedCriteria<DataElement> byImportingDataClassIdInList(List<UUID> dataClassIds) {
+        new DetachedCriteria<DataElement>(DataElement).where {
+            importingDataClasses {
+                inList 'id', dataClassIds
+            }
         }
     }
 

@@ -278,6 +278,26 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         children + children.collectMany {it.getAllUnsavedChildren()}
     }
 
+    DataClass addToImportedDataClasses(DataClass dataClass) {
+        dataClass.addTo('importingDataClasses', this).save(flush: false, validate: false)
+        addTo('importedDataClasses', dataClass)
+    }
+
+    DataClass addToImportedDataElements(DataElement dataElement) {
+        dataElement.addTo('importingDataClasses', this).save(flush: false, validate: false)
+        addTo('importedDataElements', dataElement)
+    }
+
+    DataClass removeFromImportedDataClasses(DataClass dataClass) {
+        dataClass.removeFrom('importingDataClasses', this).save(flush: false, validate: false)
+        removeFrom('importedDataClasses', dataClass)
+    }
+
+    DataClass removeFromImportedDataElements(DataElement dataElement) {
+        dataElement.removeFrom('importingDataClasses', this).save(flush: false, validate: false)
+        removeFrom('importedDataElements', dataElement)
+    }
+
     static String buildLabelPath(DataClass dataClass) {
         if (!dataClass.parentDataClass) return dataClass.label
         "${buildLabelPath(dataClass.parentDataClass)}|${dataClass.label}"
@@ -306,7 +326,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             importingDataModels {
                 eq 'id', dataModelId
             }
-            join('importingDataModels', JoinType.LEFT)
         }
     }
 
@@ -315,7 +334,14 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             importingDataClasses {
                 eq 'id', dataClassId
             }
-            join('importingDataClasses', JoinType.LEFT)
+        }
+    }
+
+    static DetachedCriteria<DataClass> byImportingDataClassIdInList(List<UUID> dataClassIds) {
+        new DetachedCriteria<DataClass>(DataClass).where {
+            importingDataClasses {
+                inList 'id', dataClassIds
+            }
         }
     }
 

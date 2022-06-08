@@ -327,6 +327,10 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
     }
 
+    List<DataType> findAllByImportingDataModelId(UUID dataModelId) {
+        DataType.byImportingDataModelId(dataModelId).list()
+    }
+
     def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
         DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
