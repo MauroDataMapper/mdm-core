@@ -227,9 +227,15 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         if (!lhsDiffCache || !rhsDiffCache) {
             base.appendCollection(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
                 .appendCollection(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
+                .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses, otherDataClass.importedDataClasses
+                                  , null, false, false)
+                .appendCollection(DataElement, 'importedDataTypes', this.importedDataElements, otherDataClass.importedDataElements
+                                  , null, false, false)
         } else {
             base.appendCollection(DataClass, 'dataClasses')
                 .appendCollection(DataElement, 'dataElements')
+                .appendCollection(DataClass, 'importedDataClasses', null, false, false)
+                .appendCollection(DataElement, 'importedDataElements', null, false, false)
         }
         base
     }
@@ -270,12 +276,12 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     int countDataElementsByLabel(String label) {
-        dataElements?.count {it.label == label} ?: 0
+        dataElements?.count { it.label == label } ?: 0
     }
 
     Set<DataClass> getAllUnsavedChildren() {
-        Set<DataClass> children = dataClasses.findAll {!it.id}
-        children + children.collectMany {it.getAllUnsavedChildren()}
+        Set<DataClass> children = dataClasses.findAll { !it.id }
+        children + children.collectMany { it.getAllUnsavedChildren() }
     }
 
     DataClass addToImportedDataClasses(DataClass dataClass) {

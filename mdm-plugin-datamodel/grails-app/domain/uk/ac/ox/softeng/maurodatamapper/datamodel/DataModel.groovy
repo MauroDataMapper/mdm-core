@@ -202,9 +202,15 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         if (!lhsDiffCache || !rhsDiffCache) {
             base.appendCollection(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
                 .appendCollection(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
+                .appendCollection(DataType, 'importedDataTypes', this.importedDataTypes, otherDataModel.importedDataTypes
+                                  , null, false, false)
+                .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses, otherDataModel.importedDataClasses
+                                  , null, false, false)
         } else {
             base.appendCollection(DataType, 'dataTypes')
                 .appendCollection(DataClass, 'dataClasses')
+                .appendCollection(DataType, 'importedDataTypes', null, false, false)
+                .appendCollection(DataClass, 'importedDataClasses', null, false, false)
         }
         base
     }
