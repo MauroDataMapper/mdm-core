@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.util.logging.Slf4j
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -28,6 +30,7 @@ import static io.micronaut.http.HttpStatus.OK
 /**
  * @since 03/08/2021
  */
+@Slf4j
 class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
 
     DataModelPluginMergeBuilder(BaseFunctionalSpec functionalSpec) {
@@ -39,8 +42,42 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         buildComplexModelsForMerging(folderId, null)
     }
 
+    //    Checking method used to verify the imported elements all correctly existed inside the owning DC.
+    //    This was done to aid in the branching issue, this code could be deleted
+    //    @Transactional
+    //    void checkImporting(String dataClassId, int expectedImportedSize, int expectedImportableSize, int expectedImportableAddSize,
+    //                        int expectedImportableRemoveSize) {
+    //        def importingDc = dataClassService.get(dataClassId)
+    //        assert importingDc
+    //        assert importingDc.importedDataClasses.size() == expectedImportedSize
+    //        List imported = dataClassService.findAllByImportingDataClassId(Utils.toUuid(dataClassId))
+    //        assert imported.size() == expectedImportedSize
+    //        imported.each {
+    //            log.warn 'checking DC being imported {} by {}', it.path, importingDc.path
+    //            assert it.importingDataClasses.any { it.path == importingDc.path }
+    //        }
+    //        assert imported.find { it.label.endsWith('Importable') }.importingDataClasses.size() == expectedImportableSize
+    //        if (expectedImportableAddSize) {
+    //            assert imported.find { it.label.endsWith('Add') }
+    //            assert imported.find { it.label.endsWith('Add') }.importingDataClasses.size() == expectedImportableAddSize
+    //        } else assert !imported.find { it.label.endsWith('Add') }
+    //        if (expectedImportableRemoveSize) {
+    //            assert imported.find { it.label.endsWith('Remove') }
+    //            assert imported.find { it.label.endsWith('Remove') }.importingDataClasses.size() == expectedImportableRemoveSize
+    //        } else assert !imported.find { it.label.endsWith('Remove') }
+    //    }
+
     TestMergeData buildComplexModelsForMerging(String folderId, String terminologyId) {
         String ca = buildCommonAncestorDataModel(folderId, '1', terminologyId)
+
+        addImportableElementsToDataModel(ca, buildImportableDataModel(folderId, true))
+        Map removeImportData = buildImportableDataModel(folderId, true, 'Remove')
+        addImportableElementsToDataModel(ca, removeImportData)
+
+        GET("dataModels/$ca/path/${Utils.safeUrlEncode('dc:existingClass')}")
+        verifyResponse OK, response
+        String dataClassId = responseBody().id
+        //        checkImporting(dataClassId, 2, 1, 0, 1)
 
         PUT("dataModels/$ca/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
@@ -51,7 +88,19 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse CREATED, response
         String source = responseBody().id
 
-        Map<String, Object> sourceMap = modifySourceDataModel(source)
+        //        String sourceDc = getIdFromPath(source, "dm:Functional Test DataModel 1\$source|dc:existingClass")
+        //        String targetDc = getIdFromPath(source, "dm:Functional Test DataModel 1\$main|dc:existingClass")
+        //        checkImporting(dataClassId, 2, 3, 0, 3)
+        //        checkImporting(sourceDc, 2, 3, 0, 3)
+        //        checkImporting(targetDc, 2, 3, 0, 3)
+
+        Map<String, Object> sourceMap = modifySourceDataModel(source, '1', '', null, null,
+                                                              buildImportableDataModel(folderId, true, 'Add'),
+                                                              removeImportData)
+        //        checkImporting(dataClassId, 2, 3, 0, 2)
+        //        checkImporting(sourceDc, 2, 3, 1, 0)
+        //        checkImporting(targetDc, 2, 3, 0, 2)
+
         Map<String, Object> targetMap = modifyTargetDataModel(target)
 
         new TestMergeData(source: source,
@@ -185,8 +234,8 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataElementId
     }
 
-    Map modifySourceDataModel(String source, String suffix = '1', String pathing = '', String simpleTerminologyId = null,
-                              String complexTerminologyId = null) {
+    Map modifySourceDataModel(String source, String suffix, String pathing, String simpleTerminologyId,
+                              String complexTerminologyId, Map addImportData = [:], Map removeImportData = [:]) {
         // Modify Source
         Map sourceMap = [
             dataModelId                         : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source"),
@@ -287,6 +336,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
             verifyResponse OK, response
         }
 
+        if (addImportData) addImportableElementsToDataModel(sourceMap.dataModelId, addImportData)
+        if (removeImportData) removeImportableElementsFromDataModel(sourceMap.dataModelId, removeImportData)
+
         sourceMap
     }
 
@@ -350,40 +402,42 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         targetMap
     }
 
-    Map buildImportableDataModel(String folderId, boolean finalise) {
+    Map buildImportableDataModel(String folderId, boolean finalise, String suffix = '') {
         POST("folders/$folderId/dataModels", [
-            label: "Functional Test DataModel Importable".toString()
+            label: "Functional Test DataModel Importable ${suffix}".toString()
         ])
         verifyResponse(CREATED, response)
         String dataModelId = responseBody().id
 
+        String fullSuffix = suffix ? " ${suffix}" : ''
+
         POST("dataModels/$dataModelId/dataTypes", [
-            label     : 'Functional Test DataType Importable',
+            label     : "Functional Test DataType Importable${fullSuffix}".toString(),
             domainType: 'PrimitiveType',])
         verifyResponse CREATED, response
         String dtId = responseBody().id
         POST("dataModels/$dataModelId/dataTypes", [
-            label     : 'Functional Test DataType Importable 2',
+            label     : "Functional Test DataType Importable 2${fullSuffix}".toString(),
             domainType: 'PrimitiveType',])
         verifyResponse CREATED, response
         String dt2Id = responseBody().id
 
 
         POST("dataModels/$dataModelId/dataClasses", [
-            label: 'Functional Test DataClass Importable',
+            label: "Functional Test DataClass Importable${fullSuffix}".toString(),
         ])
         verifyResponse CREATED, response
         String dcId = responseBody().id
 
         POST("dataModels/$dataModelId/dataClasses", [
-            label: 'Functional Test DataClass Importable 2',
+            label: "Functional Test DataClass Importable 2${fullSuffix}".toString(),
         ])
         verifyResponse CREATED, response
         String dc2Id = responseBody().id
 
         POST("dataModels/$dataModelId/dataClasses/$dc2Id/dataElements", [
-            label   : 'Functional Test DataElement Importable',
-            dataType: dtId,])
+            label   : "Functional Test DataElement Importable${fullSuffix}".toString(),
+            dataType: dt2Id,])
         verifyResponse CREATED, response
         String deId = responseBody().id
 
@@ -396,7 +450,51 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
             dataClassId               : dcId,
             dataClassWithDataElementId: dc2Id,
             dataElementId             : deId,
-            dataTypeId                : dt2Id,
+            dataTypeId                : dtId,
         ]
+    }
+
+    void addImportableElementsToDataModel(String dataModelId, Map importData) {
+        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}")
+        verifyResponse OK, response
+        String dataClassId = responseBody().id
+
+        PUT("dataModels/$dataModelId/dataTypes/" +
+            "$importData.dataModelId/$importData.dataTypeId", [:])
+        verifyResponse OK, response
+
+        PUT("dataModels/$dataModelId/dataClasses/" +
+            "$importData.dataModelId/$importData.dataClassId", [:])
+        verifyResponse OK, response
+
+        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataClasses/" +
+            "$importData.dataModelId/$importData.dataClassId", [:])
+        verifyResponse OK, response
+
+        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
+            "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId", [:])
+        verifyResponse OK, response
+    }
+
+    void removeImportableElementsFromDataModel(String dataModelId, Map importData) {
+        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}")
+        verifyResponse OK, response
+        String dataClassId = responseBody().id
+
+        DELETE("dataModels/$dataModelId/dataTypes/" +
+               "$importData.dataModelId/$importData.dataTypeId")
+        verifyResponse OK, response
+
+        DELETE("dataModels/$dataModelId/dataClasses/" +
+               "$importData.dataModelId/$importData.dataClassId")
+        verifyResponse OK, response
+
+        DELETE("dataModels/$dataModelId/dataClasses/$dataClassId/dataClasses/" +
+               "$importData.dataModelId/$importData.dataClassId")
+        verifyResponse OK, response
+
+        DELETE("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
+               "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId")
+        verifyResponse OK, response
     }
 }

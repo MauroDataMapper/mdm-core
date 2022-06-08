@@ -1708,6 +1708,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().items.first().id == importableId
         responseBody().items.first().imported
 
+        when:
+        GET("$id/dataClasses/${internalId}/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
         cleanup:
         cleanUpData(id)
         cleanUpData(branchId)
@@ -1776,6 +1785,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when:
         String branchInternalId = responseBody().items.first().id
         GET("$branchId/dataClasses/${branchInternalId}/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        when:
+        GET("$id/dataClasses/${internalId}/dataElements")
 
         then:
         verifyResponse OK, response
@@ -2342,7 +2360,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.size() == 17
+        responseBody().diffs.size() == 25
 
         when:
         List<Map> patches = responseBody().diffs
@@ -5891,7 +5909,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   "targetId": "${json-unit.matches:id}",
   "path": "dm:Functional Test DataModel 1$source",
   "label": "Functional Test DataModel 1",
-  "count": 17,
+  "count": 25,
   "diffs": [
     {
       "fieldName": "description",
@@ -5963,6 +5981,30 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "type": "modification"
     },
     {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:Functional Test DataElement Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:Functional Test DataElement Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
       "fieldName": "description",
       "path": "dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
@@ -5985,6 +6027,30 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dt:Functional Test DataType Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dt:Functional Test DataType Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
     },
     {
       "path": "dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",
