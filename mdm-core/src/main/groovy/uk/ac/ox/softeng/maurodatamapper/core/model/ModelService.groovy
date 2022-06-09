@@ -289,8 +289,8 @@ abstract class ModelService<K extends Model>
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 
-    List<PathNode> getAllReadablePathNodes(Collection<UUID> readableIds) {
-        getAll(readableIds).collect {it.path.last()}
+    List<Path> getAllReadablePaths(Collection<UUID> readableIds) {
+        getAll(readableIds).collect {it.path}
     }
 
     @Override

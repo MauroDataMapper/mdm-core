@@ -154,7 +154,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             long start = System.currentTimeMillis()
             results =
                 ReferenceDataElement
-                    .labelHibernateSearch(ReferenceDataElement, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
+                    .labelHibernateSearch(ReferenceDataElement, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -346,7 +346,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id], [referenceDataModelToSearch.path.last()]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id], [referenceDataModelToSearch.path]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(referenceDataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->

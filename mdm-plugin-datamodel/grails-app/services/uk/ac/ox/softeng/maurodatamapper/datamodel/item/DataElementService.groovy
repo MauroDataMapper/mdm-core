@@ -203,7 +203,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             long start = System.currentTimeMillis()
             results =
                 DataElement
-                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
@@ -469,7 +469,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path.last()]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->

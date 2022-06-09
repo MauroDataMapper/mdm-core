@@ -124,7 +124,7 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             results =
                 ReferencePrimitiveType
-                    .labelHibernateSearch(ReferencePrimitiveType, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
+                    .labelHibernateSearch(ReferencePrimitiveType, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePaths(readableIds)).results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results

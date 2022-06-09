@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
-import uk.ac.ox.softeng.maurodatamapper.path.PathNode
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
@@ -101,11 +101,11 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
 
     static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> standardHibernateSearch(Class<T> clazz, String searchTerm,
                                                                                                List<UUID> allowedIds,
-                                                                                               List<PathNode> allowedPathNodes, Map pagination,
+                                                                                               List<Path> allowedPaths, Map pagination,
                                                                                                @DelegatesTo(HibernateSearchApi)
                                                                                                    Closure additional = null) {
 
-        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPathNodes, pagination) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPaths, pagination) {
             if (searchTerm) {
                 simpleQueryString(searchTerm, 'label', 'description', 'aliasesString', 'metadata.key', 'metadata.value')
             }
@@ -118,23 +118,23 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
     }
 
     static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> customHibernateSearch(Class<T> clazz, List<UUID> allowedIds,
-                                                                                             List<PathNode> allowedPathNodes, Map pagination,
+                                                                                             List<Path> allowedPaths, Map pagination,
                                                                                              @DelegatesTo(HibernateSearchApi)
                                                                                                  Closure... customSearches) {
-        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPathNodes, pagination, customSearches)
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPaths, pagination, customSearches)
     }
 
     static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> labelHibernateSearch(Class<T> clazz, String searchTerm,
-                                                                                            List<UUID> allowedIds, List<PathNode> allowedPathNodes,
+                                                                                            List<UUID> allowedIds, List<Path> allowedPaths,
                                                                                             @DelegatesTo(HibernateSearchApi) Closure additional) {
-        labelHibernateSearch(clazz, searchTerm, allowedIds, allowedPathNodes, [:], additional)
+        labelHibernateSearch(clazz, searchTerm, allowedIds, allowedPaths, [:], additional)
     }
 
     static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> labelHibernateSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
-                                                                                            List<PathNode> allowedPathNodes, Map pagination = [:],
+                                                                                            List<Path> allowedPaths, Map pagination = [:],
                                                                                             @DelegatesTo(HibernateSearchApi)
                                                                                                 Closure additional = null) {
-        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPathNodes, pagination, additional) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPaths, pagination, additional) {
             simpleQueryString searchTerm, 'label'
         }
     }

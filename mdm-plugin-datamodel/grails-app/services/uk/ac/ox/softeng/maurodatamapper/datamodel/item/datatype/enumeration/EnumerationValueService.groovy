@@ -147,7 +147,7 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
             long start = System.currentTimeMillis()
             results =
                 EnumerationValue
-                    .labelHibernateSearch(EnumerationValue, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(EnumerationValue, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }

@@ -21,7 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -53,7 +56,12 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
     UUID simpleDataModelId
 
     @Shared
+    UUID subsetDataModelId
+
+    @Shared
     UUID dataClassId
+
+    DataModelService dataModelService
 
     ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
 
@@ -81,6 +89,27 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
             if (de.label == 'ele1') profileSpecificationFieldProfileService.storeFieldInEntity(de, "value type $i", 'metadataPropertyName', FUNCTIONAL_TEST)
             de.save()
         }
+
+        // Create a copy of the complex data model by subsetting
+        // This gives us model which has all the same contents as the complex test data model
+        // In test S04 we expect to see search results from both models. In test S05 we expect to see only results
+        // from the complex test data model.
+        DataModel subsetDataModel = new DataModel(createdBy: FUNCTIONAL_TEST, label: 'Subset Data Model', organisation: 'brc', author: 'admin person',
+                                              folder: folder, authority: testAuthority)
+
+        checkAndSave(subsetDataModel)
+
+        Subset subset = new Subset()
+        subset.deletions = []
+        subset.additions = []
+        dataModel.allDataElements.sort().each {
+            subset.additions.push(it.id.toString())
+        }
+
+        dataModelService.subset(dataModel, subsetDataModel, subset, PublicAccessSecurityPolicyManager.instance)
+
+        subsetDataModelId = subsetDataModel.id
+
         sessionFactory.currentSession.flush()
     }
 
@@ -394,7 +423,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 4
         responseBody().items.any {it.label == 'ele1'}
         responseBody().items.any {it.label == 'element2'}
 
@@ -414,7 +443,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
+        responseBody().count == 2
         responseBody().items.any {it.label == 'ele1'}
     }
 

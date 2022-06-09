@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.hibernate.search
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
-import uk.ac.ox.softeng.maurodatamapper.path.PathNode
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.util.logging.Slf4j
@@ -35,7 +35,7 @@ class HibernateSearch {
     @SuppressWarnings('UnnecessaryQualifiedReference')
     static <T> PaginatedHibernateSearchResult<T> securedPaginatedList(Class<T> clazz,
                                                                       List<UUID> allowedIds,
-                                                                      List<PathNode> allowedPathNodes,
+                                                                      List<Path> allowedPaths,
                                                                       Map pagination,
                                                                       @DelegatesTo(HibernateSearchApi) Closure... closures) {
         if (!allowedIds) return new PaginatedHibernateSearchResult<T>([], 0)
@@ -47,7 +47,7 @@ class HibernateSearch {
                 closure.call()
             }
 
-            filter IdPathSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds, allowedPathNodes)
+            filter IdPathSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds, allowedPaths)
         }
     }
 

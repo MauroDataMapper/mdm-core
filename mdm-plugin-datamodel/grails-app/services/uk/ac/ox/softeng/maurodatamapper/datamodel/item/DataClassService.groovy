@@ -944,7 +944,7 @@ WHERE
             long start = System.currentTimeMillis()
             results =
                 DataClass
-                    .labelHibernateSearch(DataClass, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+                    .labelHibernateSearch(DataClass, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

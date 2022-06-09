@@ -109,7 +109,7 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
             long start = System.currentTimeMillis()
             results =
                 ReferenceEnumerationValue
-                    .labelHibernateSearch(ReferenceEnumerationValue, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
+                    .labelHibernateSearch(ReferenceEnumerationValue, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
