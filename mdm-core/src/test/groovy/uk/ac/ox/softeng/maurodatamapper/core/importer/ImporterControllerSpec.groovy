@@ -233,7 +233,7 @@ otherwise you could get an error.''',
 
         @Override
         Boolean handlesContentType(String contentType) {
-            contentType.toLowerCase() == 'application/mauro.test'
+            contentType.equalsIgnoreCase('application/mauro.test')
         }
     }
 }

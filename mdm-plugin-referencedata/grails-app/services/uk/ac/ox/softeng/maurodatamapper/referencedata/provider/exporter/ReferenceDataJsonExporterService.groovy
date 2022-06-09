@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.referencedatamodel+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -40,7 +42,7 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
 
     @Override
     String getContentType() {
-        'application/mauro.referencedatamodel+json'
+        CONTENT_TYPE
     }
 
     @Override

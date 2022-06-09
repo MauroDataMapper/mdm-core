@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
 @CompileStatic
 class FolderJsonExporterService extends FolderExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.folder+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -52,7 +54,7 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
 
     @Override
     String getContentType() {
-        'application/mauro.folder+json'
+        CONTENT_TYPE
     }
 
     @Override

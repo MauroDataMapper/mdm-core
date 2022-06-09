@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -42,7 +43,7 @@ class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderServic
 
     @Override
     Boolean handlesContentType(String contentType) {
-        contentType.toLowerCase() == 'application/mauro.dataflow+json'
+        contentType.equalsIgnoreCase(DataFlowJsonExporterService.CONTENT_TYPE)
     }
 
     @Override

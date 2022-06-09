@@ -47,7 +47,7 @@ class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware 
         subscribedCatalogue nullable: false
         folderId nullable: false
         subscribedModelId nullable: false, unique: 'subscribedCatalogue' // Should prevent subscribing to the same modelId from same catalogue
-        subscribedModelType nullable: true
+        subscribedModelType nullable: true, blank: false
         lastRead nullable: true
         localModelId nullable: true
         path nullable: true

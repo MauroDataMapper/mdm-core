@@ -62,7 +62,7 @@ class ReferenceDataCsvImporterService extends ReferenceDataModelImporterProvider
 
     @Override
     Boolean handlesContentType(String contentType) {
-        contentType.toLowerCase() == 'application/mauro.referencedatamodel+csv'
+        contentType.equalsIgnoreCase('application/mauro.referencedatamodel+csv')
     }
 
     @Override

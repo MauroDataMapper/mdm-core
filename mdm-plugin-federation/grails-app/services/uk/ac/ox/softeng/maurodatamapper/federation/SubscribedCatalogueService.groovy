@@ -77,6 +77,8 @@ class SubscribedCatalogueService implements AnonymisableService {
         try {
             def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModelsWithAuthority(subscribedCatalogue)
 
+            // Check that the remote catalogue has a name (Authority label), which is mandatory for both Mauro JSON and Atom XML catalogues
+            // Check that the publishedModels list exists, however this may be empty
             if (!subscribedAuthority.label || publishedModels == null) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),

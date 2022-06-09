@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class DataModelXmlExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.datamodel+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -52,7 +54,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
 
     @Override
     String getContentType() {
-        'application/mauro.datamodel+xml'
+        CONTENT_TYPE
     }
 
     @Override

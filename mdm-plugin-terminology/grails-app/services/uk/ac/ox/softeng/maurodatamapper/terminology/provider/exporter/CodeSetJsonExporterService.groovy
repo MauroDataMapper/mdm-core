@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class CodeSetJsonExporterService extends CodeSetExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.codeset+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -49,7 +51,7 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
 
     @Override
     String getContentType() {
-        'application/mauro.codeset+json'
+        CONTENT_TYPE
     }
 
     @Override

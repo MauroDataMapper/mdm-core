@@ -29,8 +29,8 @@ class SubscribedModelFederationParams implements Validateable {
     ImporterProviderServiceData importerProviderService
 
     static constraints = {
-        url nullable: true
-        contentType nullable: true
+        url nullable: true, blank: false
+        contentType nullable: true, blank: false
         importerProviderService nullable: true
     }
 }

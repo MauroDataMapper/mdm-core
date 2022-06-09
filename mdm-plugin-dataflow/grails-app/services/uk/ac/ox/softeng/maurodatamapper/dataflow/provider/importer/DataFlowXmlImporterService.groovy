@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -59,7 +60,7 @@ class DataFlowXmlImporterService extends DataBindDataFlowImporterProviderService
 
     @Override
     Boolean handlesContentType(String contentType) {
-        contentType.toLowerCase() == 'application/mauro.dataflow+xml'
+        contentType.equalsIgnoreCase(DataFlowXmlExporterService.CONTENT_TYPE)
     }
 
     @Override

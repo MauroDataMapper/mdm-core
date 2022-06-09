@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class TerminologyJsonExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.terminology+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -49,7 +51,7 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
 
     @Override
     String getContentType() {
-        'application/mauro.terminology+json'
+        CONTENT_TYPE
     }
 
     @Override

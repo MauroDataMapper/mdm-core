@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 
 import groovy.util.logging.Slf4j
@@ -46,7 +47,7 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
 
     @Override
     Boolean handlesContentType(String contentType) {
-        contentType.toLowerCase() == 'application/mauro.terminology+json'
+        contentType.equalsIgnoreCase(TerminologyJsonExporterService.CONTENT_TYPE)
     }
 
     @Override

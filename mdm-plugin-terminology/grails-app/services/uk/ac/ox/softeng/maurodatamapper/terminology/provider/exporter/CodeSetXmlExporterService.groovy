@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class CodeSetXmlExporterService extends CodeSetExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.codeset+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -52,7 +54,7 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
 
     @Override
     String getContentType() {
-        'application/mauro.codeset+xml'
+        CONTENT_TYPE
     }
 
     @Override

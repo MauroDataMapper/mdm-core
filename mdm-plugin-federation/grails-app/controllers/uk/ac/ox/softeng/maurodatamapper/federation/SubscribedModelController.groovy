@@ -56,12 +56,21 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
     def federate(SubscribedModelFederationParams subscribedModelFederationParams) {
         if (handleReadOnly()) return
 
-        SubscribedModel instance = subscribedModelFederationParams.subscribedModel
-
-        if (!instance) {
-            return errorResponse(UNPROCESSABLE_ENTITY, 'Subscribed Model parameter is missing')
+        if (subscribedModelFederationParams.hasErrors() || !subscribedModelFederationParams.validate()) {
+            transactionStatus.setRollbackOnly()
+            respond subscribedModelFederationParams.errors // STATUS CODE 422
+            return
         }
 
+        // Validate nested command object separately
+        if (subscribedModelFederationParams.importerProviderService &&
+            (subscribedModelFederationParams.importerProviderService.hasErrors() || !subscribedModelFederationParams.importerProviderService.validate())) {
+            transactionStatus.setRollbackOnly()
+            respond subscribedModelFederationParams.importerProviderService.errors // STATUS CODE 422
+            return
+        }
+
+        SubscribedModel instance = subscribedModelFederationParams.subscribedModel
         instance.subscribedCatalogue = subscribedCatalogueService.get(params.subscribedCatalogueId)
         instance.createdBy = currentUser.emailAddress
 

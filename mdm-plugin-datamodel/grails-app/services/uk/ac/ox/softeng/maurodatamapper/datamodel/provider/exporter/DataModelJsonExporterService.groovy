@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class DataModelJsonExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.datamodel+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -49,7 +51,7 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
 
     @Override
     String getContentType() {
-        'application/mauro.datamodel+json'
+        CONTENT_TYPE
     }
 
     @Override

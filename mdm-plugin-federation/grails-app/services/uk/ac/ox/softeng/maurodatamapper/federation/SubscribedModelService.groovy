@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -188,6 +189,8 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 subscribedModel.errors.reject('invalid.subscribedmodel.import',
                                               'Could not import SubscribedModel into local Catalogue')
                 return subscribedModel.errors
+            } else if (!Model.isAssignableFrom(model.class) && !VersionedFolder.isAssignableFrom(model.class)) {
+                throw new ApiInternalException('SMS02', "Domain type ${model.domainType} cannot be imported")
             }
 
             log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
@@ -200,7 +203,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             }
 
             if (!model.hasProperty('folder')) {
-                throw new ApiInternalException('SMS02', "Domain type ${model.domainType} " + 'cannot be imported into a Folder')
+                throw new ApiInternalException('SMS03', "Domain type ${model.domainType} cannot be imported into a Folder")
             }
             model.folder = folder
 

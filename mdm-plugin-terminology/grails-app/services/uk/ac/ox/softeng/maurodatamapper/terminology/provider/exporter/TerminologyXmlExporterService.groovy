@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class TerminologyXmlExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.terminology+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -52,7 +54,7 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
 
     @Override
     String getContentType() {
-        'application/mauro.terminology+xml'
+        CONTENT_TYPE
     }
 
     @Override

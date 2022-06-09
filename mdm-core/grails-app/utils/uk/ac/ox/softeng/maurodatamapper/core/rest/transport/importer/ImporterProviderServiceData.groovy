@@ -25,6 +25,6 @@ class ImporterProviderServiceData implements Validateable {
     String version
 
     static constraints = {
-        version nullable: true
+        version nullable: true, blank: false
     }
 }

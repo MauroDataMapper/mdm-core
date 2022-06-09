@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.referencedatamodel+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -40,7 +42,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
 
     @Override
     String getContentType() {
-        'application/mauro.referencedatamodel+xml'
+        CONTENT_TYPE
     }
 
     @Override

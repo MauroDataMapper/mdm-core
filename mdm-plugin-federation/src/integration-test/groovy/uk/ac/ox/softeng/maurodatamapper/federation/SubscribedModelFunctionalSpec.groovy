@@ -209,7 +209,7 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'The response is correct'
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
-        response.body().message == 'Subscribed Model parameter is missing'
+        response.body().errors.first().message == 'Property [subscribedModel] of class [class uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams] cannot be null'
 
         when: 'The save action is executed with invalid data'
         log.debug('Invalid content save')
