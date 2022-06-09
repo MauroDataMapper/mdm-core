@@ -115,9 +115,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
 
-        versionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        versionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert versionedFolderId
-        otherVersionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        otherVersionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert otherVersionedFolderId
         builder = new DataModelPluginMergeBuilder(this)
     }
@@ -1587,8 +1589,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.every { it.id != internalId }
-        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.any {it.id == importableId && it.imported}
 
         cleanup:
         cleanUpData(id)
@@ -1641,8 +1643,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.every { it.id != internalId }
-        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.any {it.id == importableId && it.imported}
 
         cleanup:
         cleanUpData(id)
@@ -1695,8 +1697,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.every { it.id != internalId }
-        responseBody().items.every { it.id != importableId }
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.every {it.id != importableId}
 
         when:
         String branchInternalId = responseBody().items.first().id
@@ -1779,8 +1781,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.every { it.id != internalId }
-        responseBody().items.every { it.id != importableId }
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.every {it.id != importableId}
 
         when:
         String branchInternalId = responseBody().items.first().id
@@ -1897,6 +1899,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MD04 : test finding merge diff with new style diff with aliases gh-112'() {
@@ -1970,6 +1975,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MI01 : test merging diff with no patch data'() {
@@ -2379,35 +2387,47 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().description == 'DescriptionLeft'
 
         when:
-        GET("$mergeData.target/dataClasses")
+        GET("$mergeData.target/dataClasses?all==true")
 
         then:
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
-                                              'addAndAddReturningNoDifference'] as Set
+                                              'addAndAddReturningNoDifference',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
         responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
         responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
         responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
         responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
 
         then:
-        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement',
+                                              'Functional Test DataElement Importable', 'Functional Test DataElement Importable Add'] as Set
+        responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable'}.imported
+        responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataTypes")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2',
+                                              'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable'}.imported
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable Add'}.imported
 
         when:
         GET("${mergeData.target}/metadata")
@@ -2422,6 +2442,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MI08 : test merging diff with metadata creation gh-111'() {
@@ -2468,7 +2491,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                     ],
                     [
 
-                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule|rr:sql',
+                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model ' +
+                                                               'Rule|rr:sql',
                         isMergeConflict                      : false,
                         isSourceModificationAndTargetDeletion: false,
                         type                                 : 'creation',
@@ -2590,7 +2614,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 4
 
         when:
         GET("$mergeData.target/dataClasses")
@@ -2611,6 +2635,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'test changing folder from DataModel context'() {
@@ -5208,7 +5235,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         String sourceId = responseBody().id
         String deleteAndDelete = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:deleteAndDelete")
         String existingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass")
-        String deleteLeftOnlyFromExistingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
+        String deleteLeftOnlyFromExistingClass =
+            builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
         DELETE("$sourceId/dataClasses/$deleteAndDelete")
 
         then:
@@ -5981,25 +6009,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "type": "modification"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:Functional Test DataClass Importable Add",
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable Add",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:Functional Test DataClass Importable Remove",
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:Functional Test DataElement Importable Add",
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable 2 ''' +
+        '''Add|de:Functional Test DataElement Importable Add",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:Functional Test DataElement Importable Remove",
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable 2 ''' +
+        '''Remove|de:Functional Test DataElement Importable Remove",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
@@ -6029,25 +6059,25 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dc:Functional Test DataClass Importable Add",
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable Add",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dc:Functional Test DataClass Importable Remove",
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dt:Functional Test DataType Importable Add",
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$1.0.0|dt:Functional Test DataType Importable Add",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test DataModel 1$source|dt:Functional Test DataType Importable Remove",
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dt:Functional Test DataType Importable Remove",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"

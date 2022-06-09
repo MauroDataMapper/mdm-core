@@ -619,11 +619,10 @@ abstract class ModelService<K extends Model>
             log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
             return
         }
-        log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
-        // Potential deletions are modelitems or facets from model or modelitem
+        log.debug('Creating [{}] into [{}]', creationPatch.path, creationPatch.relativePathToRoot.parent)
+        // Potential creations are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent,
-                                            userSecurityPolicyManager)
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot, userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
             processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent)
@@ -641,7 +640,7 @@ abstract class ModelService<K extends Model>
 
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem, targetModel)
+            processDeletionPatchOfModelItem(domain as ModelItem, targetModel, deletionPatch.relativePathToRoot)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
             processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
@@ -672,7 +671,7 @@ abstract class ModelService<K extends Model>
         domainService.save(domain, flush: false, validate: false)
     }
 
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
         log.debug('Deleting ModelItem from Model')
@@ -710,12 +709,12 @@ abstract class ModelService<K extends Model>
         catalogueItem
     }
 
-    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo,
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
                                          UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
-        log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
-        CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
+        log.debug('Creating [{}] ModelItem into Model at [{}]', pathToCopy, pathToCopy.parent)
+        CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, pathToCopy.parent) as CatalogueItem
         if (Utils.parentClassIsAssignableFromChild(Model, parentToCopyInto.class)) parentToCopyInto = null
         ModelItem copy = modelItemService.copy(targetModel, modelItemToCopy, parentToCopyInto, userSecurityPolicyManager)
 

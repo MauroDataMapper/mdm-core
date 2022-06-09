@@ -77,12 +77,20 @@ class Path implements Serializable, Cloneable {
         pathNodes[i]
     }
 
+    PathNode get(int i) {
+        pathNodes[i]
+    }
+
     PathNode last() {
         pathNodes.last()
     }
 
     PathNode first() {
         pathNodes.first()
+    }
+
+    int indexOf(PathNode pathNode) {
+        pathNodes.indexOf(pathNode)
     }
 
     Path addToPathNodes(PathNode pathNode) {
@@ -149,6 +157,50 @@ class Path implements Serializable, Cloneable {
 
     Path resolve(String prefix, String pathIdentifier) {
         from(this, prefix, pathIdentifier)
+    }
+
+    Path resolve(Path pathToResolve) {
+        Path resolved = this.clone()
+        int loc = resolved.pathNodes.findIndexOf {it.matches(pathToResolve.first(), it.modelIdentifier)}
+        if (loc >= 0) {
+            boolean pathsDiverged = false
+            for (i in 0..<pathToResolve.size()) {
+                if (!pathsDiverged && (!resolved[loc + i] || !resolved[loc + i].matches(pathToResolve[i], resolved[loc + i].modelIdentifier))) {
+                    pathsDiverged = true
+                }
+                if (pathsDiverged) {
+                    resolved.addToPathNodes(pathToResolve[i])
+                }
+            }
+        } else {
+            pathToResolve.each {node ->
+                resolved.addToPathNodes(node)
+            }
+        }
+        resolved
+    }
+
+    boolean startsWith(PathNode pathNode, String modelIdentifierOverride = null) {
+        pathNode.matches(first(), modelIdentifierOverride)
+    }
+
+    boolean endsWith(Path path, String modelIdentifierOverride = null) {
+        int loc = pathNodes.findIndexOf {path.first().matches(it, modelIdentifierOverride)}
+        if (loc == -1) return false
+
+        if (loc + path.size() != size()) return false
+
+        for (i in 0..<path.size()) {
+            if (!path[i].matches(get(i + loc), modelIdentifierOverride)) return false
+        }
+        true
+    }
+
+    Path remove(Path path, String modelIdentifierOverride = null) {
+        if (!endsWith(path, modelIdentifierOverride)) return clone()
+        Path cleaned = clone()
+        cleaned.pathNodes.removeIf {n -> path.any {it.matches(n as PathNode, modelIdentifierOverride)}}
+        cleaned
     }
 
     boolean matches(Path otherPath, String modelIdentifierOverride = null) {

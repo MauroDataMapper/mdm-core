@@ -170,6 +170,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = dataClass.dataModel
+        dataModel.merge()
         dataModel.lock()
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass

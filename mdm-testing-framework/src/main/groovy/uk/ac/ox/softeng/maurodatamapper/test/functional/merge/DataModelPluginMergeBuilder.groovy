@@ -70,13 +70,14 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
     TestMergeData buildComplexModelsForMerging(String folderId, String terminologyId) {
         String ca = buildCommonAncestorDataModel(folderId, '1', terminologyId)
 
-        addImportableElementsToDataModel(ca, buildImportableDataModel(folderId, true))
+        Map basicImportData = buildImportableDataModel(folderId, true)
+        addImportableElementsToDataModel(ca, basicImportData)
         Map removeImportData = buildImportableDataModel(folderId, true, 'Remove')
         addImportableElementsToDataModel(ca, removeImportData)
 
         GET("dataModels/$ca/path/${Utils.safeUrlEncode('dc:existingClass')}")
         verifyResponse OK, response
-        String dataClassId = responseBody().id
+        //        String dataClassId = responseBody().id
         //        checkImporting(dataClassId, 2, 1, 0, 1)
 
         PUT("dataModels/$ca/finalise", [versionChangeType: 'Major'])
@@ -94,8 +95,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         //        checkImporting(sourceDc, 2, 3, 0, 3)
         //        checkImporting(targetDc, 2, 3, 0, 3)
 
+        Map addImportData = buildImportableDataModel(folderId, true, 'Add')
         Map<String, Object> sourceMap = modifySourceDataModel(source, '1', '', null, null,
-                                                              buildImportableDataModel(folderId, true, 'Add'),
+                                                              addImportData,
                                                               removeImportData)
         //        checkImporting(dataClassId, 2, 3, 0, 2)
         //        checkImporting(sourceDc, 2, 3, 1, 0)
@@ -105,8 +107,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
 
         new TestMergeData(source: source,
                           target: target,
+                          commonAncestor: ca,
                           sourceMap: sourceMap,
-                          targetMap: targetMap
+                          targetMap: targetMap,
+                          otherMap: [importableDataModelIds: [basicImportData.dataModelId, addImportData.dataModelId, removeImportData.dataModelId]]
         )
     }
 
