@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder Complex$source",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 66,
+  "count": 79,
   "diffs": [
     {
       "fieldName": "description",
@@ -16,6 +16,12 @@
     },
     {
       "path": "vf:Functional Test VersionedFolder Complex$source|dm:Created DataModel in Source$source",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel Importable Add 2$source",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
@@ -156,6 +162,42 @@
       "type": "modification"
     },
     {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$source|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add 2$source|dc:Functional Test DataClass Importable Add 2",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add 2$source|dc:Functional Test DataClass Importable 2 Add 2|de:Functional Test DataElement Importable Add 2",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$source|dc:Functional Test DataClass Importable 2 Add|de:Functional Test DataElement Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable 2 Remove|de:Functional Test DataElement Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
       "fieldName": "description",
       "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
@@ -196,6 +238,42 @@
       "commonAncestorValue": "te:Simple Test Terminology$main",
       "isMergeConflict": false,
       "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$source|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add 2$source|dc:Functional Test DataClass Importable Add 2",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$source|dt:Functional Test DataType Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add 2$source|dt:Functional Test DataType Importable Add 2",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dt:Functional Test DataType Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
     },
     {
       "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",
@@ -393,26 +471,26 @@
       "type": "modification"
     },
     {
-      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tr:ALO.sameSourceActionType.SALO",
+      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tm:ALO|tr:ALO.sameSourceActionType.SALO",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tr:ALO.similarSourceAction.AAARD",
+      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tm:ALO|tr:ALO.similarSourceAction.AAARD",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tr:MLO.similarSourceAction.MAMRD",
+      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tm:MLO|tr:MLO.similarSourceAction.MAMRD",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tr:SMLO.sameSourceActionType.MLO@description",
+      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tm:SMLO|tr:SMLO.sameSourceActionType.MLO@description",
       "sourceValue": "NewDescription",
       "targetValue": null,
       "commonAncestorValue": null,

@@ -64,17 +64,21 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String commonAncestorId = responseBody().id
 
         String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId, '1', simpleTerminologyId)
+
+        Map importableData = dataModelPluginMergeBuilder.buildAndAddImportableDataModelInformation(commonAncestorId, dataModelCa, false)
+
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
         dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
         String referenceDataModelCa = referenceDataPluginMergeBuilder.buildCommonAncestorReferenceDataModel(commonAncestorId)
 
         [
-            commonAncestorId     : commonAncestorId,
-            dataModelCaId        : dataModelCa,
-            terminologyCaId      : terminologyCa,
-            codeSetCaId          : codeSetCa,
-            referenceDataModelCa : referenceDataModelCa
+            commonAncestorId       : commonAncestorId,
+            dataModelCaId          : dataModelCa,
+            terminologyCaId        : terminologyCa,
+            codeSetCaId            : codeSetCa,
+            referenceDataModelCa   : referenceDataModelCa,
+            importableDataModelData: importableData,
         ]
     }
 
@@ -132,13 +136,13 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse OK, response
 
         [
-            commonAncestorId: commonAncestorId,
-            dataModelCaId   : dataModelCaId,
-            terminologyCaId : terminologyCa,
-            codeSetCaId     : codeSetCa,
-            dataModel2Id    : dataModel2Id,
-            dataModel3Id    : dataModel3Id,
-            referenceDataModelCaId:     referenceDataModelCaId
+            commonAncestorId      : commonAncestorId,
+            dataModelCaId         : dataModelCaId,
+            terminologyCaId       : terminologyCa,
+            codeSetCaId           : codeSetCa,
+            dataModel2Id          : dataModel2Id,
+            dataModel3Id          : dataModel3Id,
+            referenceDataModelCaId: referenceDataModelCaId
         ]
     }
 
@@ -192,8 +196,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         sourceMap.dataModel2 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '2', 'fo:Sub Folder 2 in VersionedFolder|', simpleTerminologyId, complexTerminologyId)
         targetMap.dataModel2 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '2', 'fo:Sub Folder 2 in VersionedFolder|')
 
-        sourceMap.dataModel3 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|', simpleTerminologyId, complexTerminologyId)
-        targetMap.dataModel3 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|')
+        sourceMap.dataModel3 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '3',
+                                                                                 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|',
+                                                                                 simpleTerminologyId, complexTerminologyId)
+        targetMap.dataModel3 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '3',
+                                                                                 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|')
 
         sourceMap.terminology = terminologyPluginMergeBuilder.modifySourceTerminology(source, 'fo:Sub Folder in VersionedFolder|')
         targetMap.terminology = terminologyPluginMergeBuilder.modifyTargetTerminology(target, 'fo:Sub Folder in VersionedFolder|')
@@ -294,7 +301,17 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         logout()
         loginEditor()
 
-        sourceMap.dataModel = dataModelPluginMergeBuilder.modifySourceDataModel(source, '1', '', simpleTerminologyId, complexTerminologyId)
+        Map branchedAddImportableData = dataModelPluginMergeBuilder.getImportedBranchedIds(source, 'Add')
+        Map branchedRemoveImportableData = dataModelPluginMergeBuilder.getImportedBranchedIds(source, 'Remove')
+
+        sourceMap.dataModel = dataModelPluginMergeBuilder.modifySourceDataModel(source, '1', '', simpleTerminologyId, complexTerminologyId,
+                                                                                branchedAddImportableData,
+                                                                                branchedRemoveImportableData)
+
+        // Add a DM to the source VF and then import it into the source DM, this will cover the situation where a DM has to be created before it can be imported
+        Map addImportData = dataModelPluginMergeBuilder.buildImportableDataModel(source, false, 'Add 2')
+        dataModelPluginMergeBuilder.addImportableElementsToDataModel(sourceMap.dataModel.dataModelId, addImportData)
+
         targetMap.dataModel = dataModelPluginMergeBuilder.modifyTargetDataModel(target)
 
         sourceMap.referenceDataModel = referenceDataPluginMergeBuilder.modifySourceReferenceDataModel(source)
@@ -338,8 +355,16 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
                           source: source,
                           target: target,
                           sourceMap: sourceMap,
-                          targetMap: targetMap
-        )
+                          targetMap: targetMap,
+                          otherMap: [
+                              importableDataModelIds: [
+                                  data.importableDataModelData.basicImportableData.dataModelId,
+                                  data.importableDataModelData.addImportableData.dataModelId,
+                                  data.importableDataModelData.removeImportableData.dataModelId,
+                                  addImportData.dataModelId
+                              ],
+                          ],
+                          )
     }
 
     HttpResponse<Map> loginEditor() {

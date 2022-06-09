@@ -67,13 +67,21 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
     //        } else assert !imported.find { it.label.endsWith('Remove') }
     //    }
 
+    Map buildAndAddImportableDataModelInformation(String folderId, String commonAncestorId, boolean finalise) {
+        Map basicImportData = buildImportableDataModel(folderId, finalise)
+        addImportableElementsToDataModel(commonAncestorId, basicImportData)
+        Map removeImportData = buildImportableDataModel(folderId, finalise, 'Remove')
+        addImportableElementsToDataModel(commonAncestorId, removeImportData)
+        Map addImportData = buildImportableDataModel(folderId, finalise, 'Add')
+        [basicImportableData : basicImportData,
+         removeImportableData: removeImportData,
+         addImportableData   : addImportData]
+    }
+
     TestMergeData buildComplexModelsForMerging(String folderId, String terminologyId) {
         String ca = buildCommonAncestorDataModel(folderId, '1', terminologyId)
 
-        Map basicImportData = buildImportableDataModel(folderId, true)
-        addImportableElementsToDataModel(ca, basicImportData)
-        Map removeImportData = buildImportableDataModel(folderId, true, 'Remove')
-        addImportableElementsToDataModel(ca, removeImportData)
+        Map allImportData = buildAndAddImportableDataModelInformation(folderId, ca, true)
 
         GET("dataModels/$ca/path/${Utils.safeUrlEncode('dc:existingClass')}")
         verifyResponse OK, response
@@ -95,10 +103,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         //        checkImporting(sourceDc, 2, 3, 0, 3)
         //        checkImporting(targetDc, 2, 3, 0, 3)
 
-        Map addImportData = buildImportableDataModel(folderId, true, 'Add')
         Map<String, Object> sourceMap = modifySourceDataModel(source, '1', '', null, null,
-                                                              addImportData,
-                                                              removeImportData)
+                                                              allImportData.addImportableData,
+                                                              allImportData.removeImportableData)
         //        checkImporting(dataClassId, 2, 3, 0, 2)
         //        checkImporting(sourceDc, 2, 3, 1, 0)
         //        checkImporting(targetDc, 2, 3, 0, 2)
@@ -110,7 +117,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
                           commonAncestor: ca,
                           sourceMap: sourceMap,
                           targetMap: targetMap,
-                          otherMap: [importableDataModelIds: [basicImportData.dataModelId, addImportData.dataModelId, removeImportData.dataModelId]]
+                          otherMap: [importableDataModelIds: [allImportData.basicImportableData.dataModelId,
+                                                              allImportData.addImportableData.dataModelId,
+                                                              allImportData.removeImportableData.dataModelId]]
         )
     }
 
@@ -407,13 +416,13 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
     }
 
     Map buildImportableDataModel(String folderId, boolean finalise, String suffix = '') {
+        String fullSuffix = suffix ? " ${suffix}" : ''
+
         POST("folders/$folderId/dataModels", [
-            label: "Functional Test DataModel Importable ${suffix}".toString()
+            label: "Functional Test DataModel Importable${fullSuffix}".toString()
         ])
         verifyResponse(CREATED, response)
         String dataModelId = responseBody().id
-
-        String fullSuffix = suffix ? " ${suffix}" : ''
 
         POST("dataModels/$dataModelId/dataTypes", [
             label     : "Functional Test DataType Importable${fullSuffix}".toString(),
@@ -500,5 +509,34 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         DELETE("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
                "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId")
         verifyResponse OK, response
+    }
+
+    Map getImportedBranchedIds(String branchFolderId, String suffix) {
+        String fullSuffix = suffix ? " ${suffix}" : ''
+        GET("folders/$branchFolderId/dataModels")
+        verifyResponse(OK, response)
+        String dataModelId = responseBody().items.find {it.label == "Functional Test DataModel Importable${fullSuffix}".toString()}.id
+
+        GET("dataModels/$dataModelId/dataTypes")
+        verifyResponse(OK, response)
+        String dtId = responseBody().items.find {it.label == "Functional Test DataType Importable${fullSuffix}".toString()}.id
+
+        GET("dataModels/$dataModelId/dataClasses")
+        verifyResponse(OK, response)
+        String dcId = responseBody().items.find {it.label == "Functional Test DataClass Importable${fullSuffix}".toString()}.id
+        String dc2Id = responseBody().items.find {it.label == "Functional Test DataClass Importable 2${fullSuffix}".toString()}.id
+
+        GET("dataModels/$dataModelId/dataClasses/$dc2Id/dataElements")
+        verifyResponse(OK, response)
+        String deId = responseBody().items.find {it.label == "Functional Test DataElement Importable${fullSuffix}".toString()}.id
+
+        [
+            dataModelId               : dataModelId,
+            dataClassId               : dcId,
+            dataClassWithDataElementId: dc2Id,
+            dataElementId             : deId,
+            dataTypeId                : dtId,
+        ]
+
     }
 }

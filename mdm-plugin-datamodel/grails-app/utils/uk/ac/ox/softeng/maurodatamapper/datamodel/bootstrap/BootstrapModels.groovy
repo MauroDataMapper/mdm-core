@@ -753,7 +753,11 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
         dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteSourceOnly'))
         dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteBoth'))
         dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteSourceAndModifyTarget'))
-        metadataService.delete(metadataService.findAllByMultiFacetAwareItemId(sourceModelId).find {it.key == 'deleteSourceOnly'})
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        metadataService.delete(metadataService.findAllByMultiFacetAwareItemId(sourceModelId).find {it.key == 'deleteSourceOnly'}, true)
 
         checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(sourceModelId, 'modifySourceOnly').tap {
             description = 'Description'

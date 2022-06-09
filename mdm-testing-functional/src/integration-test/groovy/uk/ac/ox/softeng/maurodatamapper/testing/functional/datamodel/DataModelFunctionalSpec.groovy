@@ -29,11 +29,10 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermis
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import org.spockframework.util.Assert
 
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Future
@@ -91,12 +90,10 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
-    @Shared
     DataModelPluginMergeBuilder builder
 
     AsyncJobService asyncJobService
 
-    @RunOnce
     def setup() {
         builder = new DataModelPluginMergeBuilder(this)
     }
@@ -1611,6 +1608,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     void 'DM-#prefix-12 : test importing DataType [not allowed] (as #name)'() {
         given:
+        String mergeFolderId = getTestFolderId()
+        Assert.notNull mergeFolderId
         Map data = configureImportDataType()
         login(name)
 

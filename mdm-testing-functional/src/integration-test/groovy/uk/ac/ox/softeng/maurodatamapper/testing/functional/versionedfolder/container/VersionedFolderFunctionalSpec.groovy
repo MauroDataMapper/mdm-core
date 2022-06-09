@@ -55,6 +55,7 @@ import io.micronaut.http.HttpStatus
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
+import spock.lang.Stepwise
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -87,6 +88,7 @@ import static org.junit.Assert.assertTrue
  */
 @Integration
 @Slf4j
+@Stepwise
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
     AsyncJobService asyncJobService
@@ -1163,10 +1165,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
+        responseBody().count == 4 // branch + 3 importable DMs
 
         when:
-        String branchedDataModelId = responseBody().items.first().id
+        String branchedDataModelId = responseBody().items.find {it.label == 'Functional Test DataModel 1'}.id
 
         then:
         branchedDataModelId == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main')
@@ -1176,7 +1178,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then: 'the branched model data type points to the branched terminology'
         verifyResponse(OK, response)
-        responseBody().count == 4
+        responseBody().count == 6
         def mdt = responseBody().items.find { it.label == 'Functional Test Model Data Type' }
         def mdt2 = responseBody().items.find { it.label == 'Functional Test Model Data Type Pointing Externally' }
         mdt.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
@@ -1237,8 +1239,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
-        responseBody().items.first().id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$newBranchModelVersion')
+        responseBody().count == 4
+        responseBody().items.find {it.label == 'Functional Test DataModel 1'}.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$newBranchModelVersion')
 
         when: 'getting the Ts inside the branch'
         GET("folders/$branchId/terminologies", MAP_ARG, true)
@@ -1295,7 +1297,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
+        responseBody().count == 4
 
         when: 'getting the models inside the finalised folder'
         GET("folders/$id/terminologies", MAP_ARG, true)
@@ -1316,7 +1318,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
+        responseBody().count == 4
 
         when: 'getting the models inside the new branch folder'
         GET("folders/$branchId/terminologies", MAP_ARG, true)
@@ -1586,27 +1588,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         loginCreator()
         // Create a DM outside the VF
-        Map importData = builder.dataModelPluginMergeBuilder.buildImportableDataModel(getTestFolderId(), true)
-
-        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}", MAP_ARG, true)
-        verifyResponse OK, response
-        String dataClassId = responseBody().id
-
-        PUT("dataModels/$dataModelId/dataTypes/" +
-            "$importData.dataModelId/$importData.dataTypeId", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("dataModels/$dataModelId/dataClasses/" +
-            "$importData.dataModelId/$importData.dataClassId", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataClasses/" +
-            "$importData.dataModelId/$importData.dataClassId", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
-            "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId", [:], MAP_ARG, true)
-        verifyResponse OK, response
+        Map importData = builder.dataModelPluginMergeBuilder.buildImportableDataModel(getTestFolderId(), true, 'Outside')
+        builder.dataModelPluginMergeBuilder.addImportableElementsToDataModel(dataModelId, importData)
 
         // Finalise
         PUT("$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -1630,7 +1613,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
+        responseBody().count == 4
 
         when:
         String branchDmId = responseBody().items.first().id
@@ -1673,7 +1656,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         loginCreator()
         DELETE("dataModels/${importData.dataModelId}?permanent=true", MAP_ARG, true)
         verifyResponse(NO_CONTENT, response)
-        cleanupIds(id)
+        cleanupIds(branchId, id)
     }
 
     void 'BMV14 : test creating a new branch model version of the complex VersionedFolder with imported elements inside VF (as editor)'() {
@@ -1684,27 +1667,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         loginCreator()
         // Add importable DM into the VF
-        Map importData = builder.dataModelPluginMergeBuilder.buildImportableDataModel(id, false)
-
-        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}", MAP_ARG, true)
-        verifyResponse OK, response
-        String dataClassId = responseBody().id
-
-        PUT("dataModels/$dataModelId/dataTypes/" +
-            "$importData.dataModelId/$importData.dataTypeId", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("dataModels/$dataModelId/dataClasses/" +
-            "$importData.dataModelId/$importData.dataClassId", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataClasses/" +
-            "$importData.dataModelId/$importData.dataClassId", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
-            "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId", [:], MAP_ARG, true)
-        verifyResponse OK, response
+        Map importData = builder.dataModelPluginMergeBuilder.buildImportableDataModel(id, false, 'Extra')
+        builder.dataModelPluginMergeBuilder.addImportableElementsToDataModel(dataModelId, importData)
 
         // Finalise
         PUT("$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -1728,7 +1692,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 5
         String branchDmId = responseBody().items.find { it.label != 'Functional Test DataModel Importable' }.id
         String branchImportableDmId = responseBody().items.find { it.label == 'Functional Test DataModel Importable' }.id
         branchDmId
@@ -1739,7 +1703,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         when:
         GET("dataModels/$branchImportableDmId/dataTypes", MAP_ARG, true)
         verifyResponse OK, response
-        String importableDtId = responseBody().items.find { it.label == 'Functional Test DataType Importable 2' }.id
+        String importableDtId = responseBody().items.find {it.label == 'Functional Test DataType Importable'}.id
         GET("dataModels/$branchDmId/dataTypes", MAP_ARG, true)
 
         then:
@@ -1785,7 +1749,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         loginCreator()
         DELETE("dataModels/${importData.dataModelId}?permanent=true", MAP_ARG, true)
         verifyResponse(NO_CONTENT, response)
-        cleanupIds(id)
+        cleanupIds(branchId, id)
     }
 
     void 'FMV01 : test creating a new fork model of an unfinalised VersionedFolder (as reader)'() {
@@ -2795,23 +2759,30 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().description == 'DescriptionLeft'
 
         when:
-        GET("dataModels/$targetDataModelMap.dataModelId/dataClasses", MAP_ARG, true)
+        GET("dataModels/$targetDataModelMap.dataModelId/dataClasses?all=true", MAP_ARG, true)
 
         then:
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
-                                              'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
+                                              'addAndAddReturningNoDifference', 'addLeftToExistingClass', 'addRightToExistingClass',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add',
+                                              'Functional Test DataClass Importable Add 2'] as Set
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add'}.imported
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add 2'}.imported
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add',
+                                              'Functional Test DataClass Importable Add 2'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataElements", MAP_ARG, true)
@@ -2821,21 +2792,28 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             'addLeftOnly',
             'Functional Test Data Element with Model Data Type',
             'Functional Test Data Element with Model Data Type Pointing Externally',
-            'existingDataElement'] as Set
+            'existingDataElement',
+            'Functional Test DataElement Importable', 'Functional Test DataElement Importable Add', 'Functional Test DataElement Importable Add 2'] as Set
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataElement Importable'}.imported
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataElement Importable Add'}.imported
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 5
+        responseBody().count == 8
         responseBody().items.label as Set == ['addLeftOnly',
                                               'Functional Test Model Data Type',
                                               'Functional Test Model Data Type Pointing Externally',
                                               'existingDataType1',
-                                              'existingDataType2'] as Set
-        def mdt1 = responseBody().items.find { it.label == 'Functional Test Model Data Type' }
-        def mdt2 = responseBody().items.find { it.label == 'Functional Test Model Data Type Pointing Externally' }
+                                              'existingDataType2',
+                                              'Functional Test DataType Importable', 'Functional Test DataType Importable Add',
+                                              'Functional Test DataType Importable Add 2'] as Set
+        def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type'}
+        def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally'}
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable'}.imported
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable Add'}.imported
 
         and: 'the Functional Test Model Data Type points to the CodeSet in the target VF'
         mdt1.modelResourceDomainType == 'CodeSet'

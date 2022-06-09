@@ -2,7 +2,7 @@
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 88,
+  "count": 104,
   "diffs": [
     {
       "description": {
@@ -22,11 +22,814 @@
           {
             "value": {
               "id": "${json-unit.matches:id}",
+              "label": "Functional Test DataModel Importable Add 2"
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
               "label": "Created DataModel in Source"
             }
           }
         ],
         "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel 1",
+            "count": 37,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionLeft",
+                  "right": "DescriptionRight"
+                }
+              },
+              {
+                "metadata": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "deleteFromSource",
+                        "value": "some other original value"
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "namespace": "functional.test",
+                      "key": "modifyOnSource",
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "value": {
+                            "left": "source has modified this",
+                            "right": "some original value"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "branchName": {
+                  "left": "source",
+                  "right": "main"
+                }
+              },
+              {
+                "dataTypes": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "Functional Test Model Data Type Pointing Externally",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "modelResourcePath": {
+                            "left": "te:Complex Test Terminology$main",
+                            "right": "te:Simple Test Terminology$main"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "Functional Test Model Data Type",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "modelResourcePath": {
+                            "left": "cs:Functional Test CodeSet 1$source",
+                            "right": "te:Functional Test Terminology 1$main"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "dataClasses": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteRightOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "modifyAndDelete",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteAndModify",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addRightOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "modifyLeftOnly",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "Description",
+                            "right": null
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "modifyRightOnly",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": null,
+                            "right": "Description"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "modifyAndModifyReturningDifference",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "DescriptionLeft",
+                            "right": "DescriptionRight"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "existingClass",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 12,
+                      "diffs": [
+                        {
+                          "dataClasses": {
+                            "deleted": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "deleteRightOnlyFromExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "addLeftToExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "created": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "deleteLeftOnlyFromExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "addRightToExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "dataElements": {
+                            "deleted": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "addLeftOnly",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "modified": [
+                              {
+                                "leftId": "${json-unit.matches:id}",
+                                "rightId": "${json-unit.matches:id}",
+                                "label": "existingDataElement",
+                                "leftBreadcrumbs": [
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test DataModel 1",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                  },
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "existingClass",
+                                    "domainType": "DataClass"
+                                  }
+                                ],
+                                "rightBreadcrumbs": [
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test DataModel 1",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                  },
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "existingClass",
+                                    "domainType": "DataClass"
+                                  }
+                                ],
+                                "count": 1,
+                                "diffs": [
+                                  {
+                                    "dataTypePath": {
+                                      "left": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+                                      "right": "dm:Functional Test DataModel 1$main|dt:existingDataType1"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "importedDataClasses": {
+                            "deleted": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "Functional Test DataClass Importable Add",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel Importable Add",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "Functional Test DataClass Importable Add 2",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel Importable Add 2",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "created": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "Functional Test DataClass Importable Remove",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel Importable Remove",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "importedDataElements": {
+                            "deleted": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "Functional Test DataElement Importable Add",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel Importable Add",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataClass Importable 2 Add",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "Functional Test DataElement Importable Add 2",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel Importable Add 2",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataClass Importable 2 Add 2",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "created": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "Functional Test DataElement Importable Remove",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel Importable Remove",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataClass Importable 2 Remove",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "addAndAddReturningDifference",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "DescriptionLeft",
+                            "right": "DescriptionRight"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "importedDataTypes": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "Functional Test DataType Importable Add",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel Importable Add",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "Functional Test DataType Importable Add 2",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel Importable Add 2",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "Functional Test DataType Importable Remove",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel Importable Remove",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "importedDataClasses": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "Functional Test DataClass Importable Add",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel Importable Add",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "Functional Test DataClass Importable Add 2",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel Importable Add 2",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "Functional Test DataClass Importable Remove",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel Importable Remove",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel Importable",
+            "count": 1,
+            "diffs": [
+              {
+                "branchName": {
+                  "left": "source",
+                  "right": "main"
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel Importable Remove",
+            "count": 1,
+            "diffs": [
+              {
+                "branchName": {
+                  "left": "source",
+                  "right": "main"
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel Importable Add",
+            "count": 1,
+            "diffs": [
+              {
+                "branchName": {
+                  "left": "source",
+                  "right": "main"
+                }
+              }
+            ]
+          },
           {
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
@@ -614,34 +1417,6 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "DAM: deleteAndModify",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "DLO: deleteLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
                         "label": "MAMRD: modifyAndModifyReturningDifference",
                         "breadcrumbs": [
                           {
@@ -670,7 +1445,35 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
+                        "label": "DLO: deleteLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
                         "label": "MLO: modifyLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "DAM: deleteAndModify",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -694,546 +1497,6 @@
                           }
                         ]
                       }
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "Functional Test DataModel 1",
-            "count": 25,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionLeft",
-                  "right": "DescriptionRight"
-                }
-              },
-              {
-                "metadata": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test",
-                        "key": "modifyAndDelete",
-                        "value": "source has modified this also"
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test",
-                        "key": "addToSourceOnly",
-                        "value": "adding to source only"
-                      }
-                    }
-                  ],
-                  "created": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test",
-                        "key": "deleteFromSource",
-                        "value": "some other original value"
-                      }
-                    }
-                  ],
-                  "modified": [
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "namespace": "functional.test",
-                      "key": "modifyOnSource",
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "value": {
-                            "left": "source has modified this",
-                            "right": "some original value"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              },
-              {
-                "branchName": {
-                  "left": "source",
-                  "right": "main"
-                }
-              },
-              {
-                "dataTypes": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "addLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "modified": [
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "Functional Test Model Data Type Pointing Externally",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "modelResourcePath": {
-                            "left": "te:Complex Test Terminology$main",
-                            "right": "te:Simple Test Terminology$main"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "Functional Test Model Data Type",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "modelResourcePath": {
-                            "left": "cs:Functional Test CodeSet 1$source",
-                            "right": "te:Functional Test Terminology 1$main"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              },
-              {
-                "dataClasses": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "deleteRightOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "modifyAndDelete",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "addLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "created": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "deleteLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "deleteAndModify",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "addRightOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test DataModel 1",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "modified": [
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "modifyLeftOnly",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": "Description",
-                            "right": null
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "modifyRightOnly",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": null,
-                            "right": "Description"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "modifyAndModifyReturningDifference",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": "DescriptionLeft",
-                            "right": "DescriptionRight"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "existingClass",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 6,
-                      "diffs": [
-                        {
-                          "dataClasses": {
-                            "deleted": [
-                              {
-                                "value": {
-                                  "id": "${json-unit.matches:id}",
-                                  "label": "deleteRightOnlyFromExistingClass",
-                                  "breadcrumbs": [
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "Functional Test DataModel 1",
-                                      "domainType": "DataModel",
-                                      "finalised": false
-                                    },
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "existingClass",
-                                      "domainType": "DataClass"
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "value": {
-                                  "id": "${json-unit.matches:id}",
-                                  "label": "addLeftToExistingClass",
-                                  "breadcrumbs": [
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "Functional Test DataModel 1",
-                                      "domainType": "DataModel",
-                                      "finalised": false
-                                    },
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "existingClass",
-                                      "domainType": "DataClass"
-                                    }
-                                  ]
-                                }
-                              }
-                            ],
-                            "created": [
-                              {
-                                "value": {
-                                  "id": "${json-unit.matches:id}",
-                                  "label": "deleteLeftOnlyFromExistingClass",
-                                  "breadcrumbs": [
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "Functional Test DataModel 1",
-                                      "domainType": "DataModel",
-                                      "finalised": false
-                                    },
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "existingClass",
-                                      "domainType": "DataClass"
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "value": {
-                                  "id": "${json-unit.matches:id}",
-                                  "label": "addRightToExistingClass",
-                                  "breadcrumbs": [
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "Functional Test DataModel 1",
-                                      "domainType": "DataModel",
-                                      "finalised": false
-                                    },
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "existingClass",
-                                      "domainType": "DataClass"
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "dataElements": {
-                            "deleted": [
-                              {
-                                "value": {
-                                  "id": "${json-unit.matches:id}",
-                                  "label": "addLeftOnly",
-                                  "breadcrumbs": [
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "Functional Test DataModel 1",
-                                      "domainType": "DataModel",
-                                      "finalised": false
-                                    },
-                                    {
-                                      "id": "${json-unit.matches:id}",
-                                      "label": "existingClass",
-                                      "domainType": "DataClass"
-                                    }
-                                  ]
-                                }
-                              }
-                            ],
-                            "modified": [
-                              {
-                                "leftId": "${json-unit.matches:id}",
-                                "rightId": "${json-unit.matches:id}",
-                                "label": "existingDataElement",
-                                "leftBreadcrumbs": [
-                                  {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test DataModel 1",
-                                    "domainType": "DataModel",
-                                    "finalised": false
-                                  },
-                                  {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "existingClass",
-                                    "domainType": "DataClass"
-                                  }
-                                ],
-                                "rightBreadcrumbs": [
-                                  {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test DataModel 1",
-                                    "domainType": "DataModel",
-                                    "finalised": false
-                                  },
-                                  {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "existingClass",
-                                    "domainType": "DataClass"
-                                  }
-                                ],
-                                "count": 1,
-                                "diffs": [
-                                  {
-                                    "dataTypePath": {
-                                      "left": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
-                                      "right": "dm:Functional Test DataModel 1$main|dt:existingDataType1"
-                                    }
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "addAndAddReturningDifference",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test DataModel 1",
-                          "domainType": "DataModel",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": "DescriptionLeft",
-                            "right": "DescriptionRight"
-                          }
-                        }
-                      ]
                     }
                   ]
                 }
