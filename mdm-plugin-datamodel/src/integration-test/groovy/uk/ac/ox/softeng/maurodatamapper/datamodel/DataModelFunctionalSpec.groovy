@@ -2390,6 +2390,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("$mergeData.target/dataClasses?all==true")
 
         then:
+        responseBody().count == 12
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
@@ -2406,6 +2407,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
 
         then:
+        responseBody().count == 4
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass',
                                               'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
         responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable'}.imported
@@ -2415,6 +2417,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
 
         then:
+        responseBody().count == 4
         responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement',
                                               'Functional Test DataElement Importable', 'Functional Test DataElement Importable Add'] as Set
         responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable'}.imported
@@ -2424,6 +2427,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("$mergeData.target/dataTypes")
 
         then:
+        responseBody().count == 5
         responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2',
                                               'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
         responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable'}.imported

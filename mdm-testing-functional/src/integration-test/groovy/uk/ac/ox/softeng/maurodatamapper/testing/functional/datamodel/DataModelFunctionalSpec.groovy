@@ -2379,9 +2379,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse OK, response
-        responseBody().count == 4
+        responseBody().count == 6
         responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type Pointing Externally', 'existingDataType1',
-                                              'existingDataType2'] as Set
+                                              'existingDataType2', 'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
         def mdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
 
         and:
