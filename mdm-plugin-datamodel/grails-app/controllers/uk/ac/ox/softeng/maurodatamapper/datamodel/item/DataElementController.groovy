@@ -139,12 +139,19 @@ class DataElementController extends CatalogueItemController<DataElement> {
         }
 
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
-        if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
+        if (params.sort instanceof String) params.sort = [(params.sort): 'asc']
+
+        DataClass dataClass = dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)
+        if (!dataClass) {
             notFound(params.dataClassId)
             return null
         }
-        // Cannot sort DEs including imported using idx combined with any other field
-        if (params.sort instanceof Map && (params.sort as Map).size() > 1) (params.sort as Map).remove('idx')
+
+        if (dataClass.importedDataElements) {
+            // Cannot sort DEs with imported using idx
+            (params.sort as Map).remove('idx')
+        }
+
         return dataElementService.findAllByDataClassIdIncludingImported(params.dataClassId, params, params)
     }
 

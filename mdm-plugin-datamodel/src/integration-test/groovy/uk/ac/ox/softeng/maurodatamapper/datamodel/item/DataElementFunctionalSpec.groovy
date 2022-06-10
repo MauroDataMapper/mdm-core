@@ -96,6 +96,12 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     @Shared
     UUID finalisedDataTypeId
 
+    @Shared
+    UUID finalisedDataClassId
+
+    @Shared
+    UUID finalisedDataElementId
+
     @RunOnce
     @Transactional
     def setup() {
@@ -135,8 +141,17 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
                                                      folder: folder, authority: testAuthority).save(flush: true)
         finalisedDataModelId = finalisedDataModel.id
 
-        finalisedDataTypeId = new PrimitiveType(label: 'a finalised datatype', createdBy: FUNCTIONAL_TEST,
-                                                dataModel: finalisedDataModel).save(flush: true).id
+        DataType finalisedDataType = new PrimitiveType(label: 'a finalised datatype', createdBy: FUNCTIONAL_TEST,
+                                                       dataModel: finalisedDataModel).save(flush: true)
+        finalisedDataTypeId = finalisedDataType.id
+
+        DataClass finalisedDataClass = new DataClass(label: 'Functional Test DataClass 4', createdBy: FUNCTIONAL_TEST,
+                                                     dataModel: finalisedDataModel).save(flush: true)
+        finalisedDataClassId = finalisedDataClass.id
+
+        DataElement finalisedDataElement = new DataElement(label: 'Functional Test DataElement', createdBy: FUNCTIONAL_TEST,
+                                                           dataModel: finalisedDataModel, dataClass: finalisedDataClass, dataType: finalisedDataType).save(flush: true)
+        finalisedDataElementId = finalisedDataElement.id
 
 
         sessionFactory.currentSession.flush()
@@ -160,7 +175,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
             sleep(20)
             GET(getResourcePath(otherDataModelId, otherDataClassId), MAP_ARG, true)
             def items = response.body().items
-            items.each { i ->
+            items.each {i ->
                 DELETE("${getResourcePath(otherDataModelId, otherDataClassId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -813,6 +828,81 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
 
         cleanup:
         cleanUpData(responseBody().id)
+    }
+
+    void 'IMI02 : test ordering of DataElements and imported DataElement'() {
+        given: 'create dataelements with specified order different to label order'
+        String eId = createNewItem(getValidLabelJson('Functional Test DataElement E', 0))
+        String dId = createNewItem(getValidLabelJson('Functional Test DataElement D', 1))
+        String cId = createNewItem(getValidLabelJson('Functional Test DataElement C', 2))
+        String bId = createNewItem(getValidLabelJson('Functional Test DataElement B', 3))
+        String aId = createNewItem(getValidLabelJson('Functional Test DataElement A', 4))
+
+        when:
+        GET('')
+
+        then: 'index order is used'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataElement E'
+        response.body().items[1].label == 'Functional Test DataElement D'
+        response.body().items[2].label == 'Functional Test DataElement C'
+        response.body().items[3].label == 'Functional Test DataElement B'
+        response.body().items[4].label == 'Functional Test DataElement A'
+
+        when: 'add an imported dataelement'
+        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/$finalisedDataModelId/$finalisedDataClassId/$finalisedDataElementId", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        String importedId = responseBody().id
+        GET('')
+
+        then: 'label order is used'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataElement'
+        response.body().items[1].label == 'Functional Test DataElement A'
+        response.body().items[2].label == 'Functional Test DataElement B'
+        response.body().items[3].label == 'Functional Test DataElement C'
+        response.body().items[4].label == 'Functional Test DataElement D'
+        response.body().items[5].label == 'Functional Test DataElement E'
+
+        and: 'sort by idx param is discarded'
+        GET('?sort=idx')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataElement'
+        response.body().items[1].label == 'Functional Test DataElement A'
+        response.body().items[2].label == 'Functional Test DataElement B'
+        response.body().items[3].label == 'Functional Test DataElement C'
+        response.body().items[4].label == 'Functional Test DataElement D'
+        response.body().items[5].label == 'Functional Test DataElement E'
+
+        and: 'sort by date created works as expected'
+        GET('?sort=dateCreated')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataElement'
+        response.body().items[1].label == 'Functional Test DataElement E'
+        response.body().items[2].label == 'Functional Test DataElement D'
+        response.body().items[3].label == 'Functional Test DataElement C'
+        response.body().items[4].label == 'Functional Test DataElement B'
+        response.body().items[5].label == 'Functional Test DataElement A'
+
+        when: 'imported data element is removed'
+        DELETE("$finalisedDataModelId/$finalisedDataClassId/$finalisedDataElementId")
+
+        then: 'index sorting is default again'
+        verifyResponse OK, response
+        GET('')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataElement E'
+        response.body().items[1].label == 'Functional Test DataElement D'
+        response.body().items[2].label == 'Functional Test DataElement C'
+        response.body().items[3].label == 'Functional Test DataElement B'
+        response.body().items[4].label == 'Functional Test DataElement A'
+
+        cleanup:
+        cleanUpData(eId)
+        cleanUpData(dId)
+        cleanUpData(cId)
+        cleanUpData(bId)
+        cleanUpData(aId)
     }
 
     Tuple2<String, String> setupForLinkSuggestions() {
