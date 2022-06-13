@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class DataFlowXmlExporterService extends DataFlowExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.dataflow+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -42,13 +44,8 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     }
 
     @Override
-    String getFileType() {
-        'text/xml'
-    }
-
-    @Override
-    String getProducesContentType() {
-        'application/mdm+xml'
+    String getContentType() {
+        CONTENT_TYPE
     }
 
     @Override
@@ -69,7 +66,7 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
     @Override
     ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataFlow, 'dataFlow', version, 'gml', exportMetadata), fileType
+        exportModel new ExportModel(dataFlow, 'dataFlow', version, 'gml', exportMetadata), contentType
     }
 
     @Override

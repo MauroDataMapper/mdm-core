@@ -60,6 +60,10 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
         subscribedCatalogueService.delete(resource)
     }
 
+    List<String> types() {
+        respond SubscribedCatalogueType.labels()
+    }
+
     /**
      * Read available models from the subscribed catalogue and return as json.
      *
@@ -79,7 +83,7 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
 
-        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, Utils.toUuid(params.publishedModelId))
+        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, params.publishedModelId)
     }
 
     def testConnection() {

@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 
 import groovy.util.logging.Slf4j
@@ -42,6 +43,11 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
     @Override
     Boolean canImportMultipleDomains() {
         true
+    }
+
+    @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(CodeSetJsonExporterService.CONTENT_TYPE)
     }
 
     @Override

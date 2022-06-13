@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 
 import groovy.util.logging.Slf4j
@@ -47,6 +48,11 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
     @Override
     Boolean canImportMultipleDomains() {
         true
+    }
+
+    @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(CodeSetXmlExporterService.CONTENT_TYPE)
     }
 
     @Override

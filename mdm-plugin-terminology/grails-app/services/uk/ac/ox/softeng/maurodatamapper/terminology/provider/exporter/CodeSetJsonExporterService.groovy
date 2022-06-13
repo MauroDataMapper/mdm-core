@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class CodeSetJsonExporterService extends CodeSetExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.codeset+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -43,18 +45,13 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
     String getFileExtension() {
         'json'
     }
 
     @Override
-    String getProducesContentType() {
-        'application/mdm+json'
+    String getContentType() {
+        CONTENT_TYPE
     }
 
     @Override
@@ -70,12 +67,12 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSet, 'codeSet', version, exportMetadata), fileType)
+        exportModel(new ExportModel(codeSet, 'codeSet', version, exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, exportMetadata), contentType)
     }
 }

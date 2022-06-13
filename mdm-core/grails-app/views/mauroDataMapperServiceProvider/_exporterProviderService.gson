@@ -8,6 +8,6 @@ model {
 
 json {
     fileExtension exporterProviderService.fileExtension
-    fileType exporterProviderService.fileType
+    contentType exporterProviderService.contentType
     canExportMultipleDomains exporterProviderService.canExportMultipleDomains()
 }

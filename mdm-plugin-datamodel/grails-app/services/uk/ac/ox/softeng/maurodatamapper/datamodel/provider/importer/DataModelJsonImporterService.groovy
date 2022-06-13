@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -42,6 +43,11 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
     @Override
     Boolean canImportMultipleDomains() {
         true
+    }
+
+    @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(DataModelJsonExporterService.CONTENT_TYPE)
     }
 
     @Override

@@ -138,7 +138,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         responseBody().publishedModels.size() == 1
 
         and:
-        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().publishedModels.find {it.label == 'FunctionalTest DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
 
         when:
         Map<String, Object> publishedModel = responseBody().publishedModels.first()
@@ -162,7 +162,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         result.publishedModels.children().size() == 1
 
         and:
-        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.label == 'FunctionalTest DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
 
         when:
         GPathResult publishedModel = result.publishedModels.publishedModel.first()
@@ -210,9 +210,9 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         responseBody().newerPublishedModels.size() == 2
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'FunctionalTest DataModel 2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'FunctionalTest DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
                                  true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'FunctionalTest DataModel 3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'FunctionalTest DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
                                  true)
         responseBody().newerPublishedModels.each {publishedModel ->
             assert publishedModel.description == 'Some random desc'
@@ -238,9 +238,9 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         result.newerPublishedModels.children().size() == 2
 
         and:
-        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 2.0.0'}, 'DataModel', 'dataModels',
+        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.label == 'FunctionalTest DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
                                 getDataModelExporters(), true)
-        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 3.0.0'}, 'DataModel', 'dataModels',
+        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.label == 'FunctionalTest DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
                                 getDataModelExporters(), true)
         result.newerPublishedModels.publishedModel.each {publishedModel ->
             assert publishedModel.description == 'Some random desc'
@@ -261,7 +261,6 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label
         assert Version.from(publishedModel.version)
-        assert publishedModel.title == publishedModel.label + ' ' + publishedModel.version
         assert publishedModel.modelType == modelType
         assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -279,7 +278,6 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         assert publishedModel.modelId.text() ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label.text()
         assert Version.from(publishedModel.version.text())
-        assert publishedModel.title == publishedModel.label.text() + ' ' + publishedModel.version.text()
         assert publishedModel.modelType == modelType
         assert OffsetDateTime.parse(publishedModel.datePublished.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(publishedModel.lastUpdated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -352,8 +350,8 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
 
     private static Map<String, String> getDataModelExporters() {
         [
-            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
-            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+            'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
         ]
     }
 }

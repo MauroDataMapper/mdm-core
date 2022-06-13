@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class DataModelJsonExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.datamodel+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -43,18 +45,13 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     }
 
     @Override
-    String getFileType() {
-        'text/json'
-    }
-
-    @Override
     String getFileExtension() {
         'json'
     }
 
     @Override
-    String getProducesContentType() {
-        'application/mdm+json'
+    String getContentType() {
+        CONTENT_TYPE
     }
 
     @Override
@@ -70,12 +67,12 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, exportMetadata), fileType)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, exportMetadata), contentType)
     }
 }

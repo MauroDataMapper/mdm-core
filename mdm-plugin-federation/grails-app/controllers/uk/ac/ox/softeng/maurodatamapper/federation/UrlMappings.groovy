@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_SAVE
 
 class UrlMappings {
 
@@ -32,9 +33,13 @@ class UrlMappings {
                 '/subscribedCatalogues'(resources: 'subscribedCatalogue', excludes: DEFAULT_EXCLUDES) {
                     get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
                 }
+                group '/subscribedCatalogues', {
+                    get '/types'(controller: 'subscribedCatalogue', action: 'types')
+                }
             }
 
             group '/subscribedCatalogues', {
+                get '/types'(controller: 'subscribedCatalogue', action: 'types')
                 get '/'(controller: 'subscribedCatalogue', action: 'index') {
                     openAccess = true
                 }
@@ -45,7 +50,8 @@ class UrlMappings {
                     get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
                     get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
                     get "/publishedModels/$publishedModelId/newerVersions"(controller: 'subscribedCatalogue', action: 'newerVersions')
-                    '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
+                    '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE)
+                    post '/subscribedModels'(controller: 'subscribedModel', action: 'federate')
                     get "/subscribedModels/$id/newerVersions"(controller: 'subscribedModel', action: 'newerVersions')
                 }
             }

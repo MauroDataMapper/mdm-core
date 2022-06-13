@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.referencedatamodel+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -39,13 +41,8 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
     }
 
     @Override
-    String getFileType() {
-        'text/xml'
-    }
-
-    @Override
-    String getProducesContentType() {
-        'application/mdm+xml'
+    String getContentType() {
+        CONTENT_TYPE
     }
 
     @Override
@@ -66,7 +63,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
     @Override
     ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(referenceDataModel, 'referenceDataModel', version, 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(referenceDataModel, 'referenceDataModel', version, 'gml', exportMetadata), contentType)
     }
 
     @Override

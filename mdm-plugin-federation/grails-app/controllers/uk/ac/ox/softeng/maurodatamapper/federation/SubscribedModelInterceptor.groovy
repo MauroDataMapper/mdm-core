@@ -33,13 +33,12 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
     @Override
     void checkIds() {
         Utils.toUuid(params, 'id')
-        Utils.toUuid(params, 'subscribedModelId')
         Utils.toUuid(params, 'subscribedCatalogueId')
     }
 
     @Override
     UUID getId() {
-        params.subscribedModelId ?: params.id
+        params.id
     }
 
     boolean before() {
@@ -47,7 +46,7 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
         if (currentUserSecurityPolicyManager.isAuthenticated()) {
             return actionName == 'index' ||
                    actionName == 'show' ||
-                   actionName == 'save' ||
+                   actionName == 'federate' ||
                    actionName == 'newerVersions' ||
                    currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }

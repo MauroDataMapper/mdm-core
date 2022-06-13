@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.Importe
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.importer.ImportParameterGroup
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.validation.ValidationErrors
 import grails.web.databinding.DataBinder
@@ -57,12 +58,15 @@ class ImporterService implements DataBinder {
     @Autowired
     MessageSource messageSource
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
+    @Autowired(required = false)
+    Set<ImporterProviderService> importerProviderServices
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
         User currentUser, T importer, P importParams) {
         importer.importDomains(currentUser, importParams).findAll()
     }
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> M importDomain(
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> M importDomain(
         User currentUser, T importer, P importParams) {
         M model = importer.importDomain(currentUser, importParams)
 
@@ -212,4 +216,35 @@ class ImporterService implements DataBinder {
         importerProviderServiceParameters
     }
 
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServicesByContentType(
+        String contentType) {
+        importerProviderServices.findAll {it.handlesContentType(contentType)}.sort()
+    }
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
+        String contentType) {
+        findImporterProviderServicesByContentType(contentType).first()
+    }
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
+        String namespace, String name, String version, String contentType) {
+        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType)}.sort().first()
+    }
+
+    public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace,
+                                                                                                                                                            String name,
+                                                                                                                                                            String version) {
+        if (version) {
+            importerProviderServices.findAll {
+                it.namespace.equalsIgnoreCase(namespace) &&
+                it.name.equalsIgnoreCase(name) &&
+                it.version.equalsIgnoreCase(version)
+            }.sort()
+        } else {
+            importerProviderServices.findAll {
+                it.namespace.equalsIgnoreCase(namespace) &&
+                it.name.equalsIgnoreCase(name)
+            }.sort()
+        }
+    }
 }

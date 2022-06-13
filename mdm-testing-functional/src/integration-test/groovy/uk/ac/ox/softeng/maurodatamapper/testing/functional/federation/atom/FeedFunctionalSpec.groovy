@@ -162,15 +162,15 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
 
     private static Map<String, String> getDataModelExporters() {
         [
-            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
-            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+            'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
         ]
     }
 
     private static Map<String, String> getCodeSetExporters() {
         [
-            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
-            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0'
+            'application/mauro.codeset+json': 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+            'application/mauro.codeset+xml' : 'uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0'
         ]
     }
 }

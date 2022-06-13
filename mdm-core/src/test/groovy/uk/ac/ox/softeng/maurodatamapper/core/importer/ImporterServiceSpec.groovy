@@ -202,6 +202,11 @@ otherwise you could get an error.''',
         }
 
         @Override
+        Boolean handlesContentType(String contentType) {
+            contentType.equalsIgnoreCase('application/mauro.test')
+        }
+
+        @Override
         String getDisplayName() {
             'Test Importer'
         }

@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -47,6 +48,11 @@ class ReferenceDataXmlImporterService
     @Override
     Boolean canImportMultipleDomains() {
         false
+    }
+
+    @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(ReferenceDataXmlExporterService.CONTENT_TYPE)
     }
 
     @Override

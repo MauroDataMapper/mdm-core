@@ -20,16 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
-import grails.rest.Link
 import grails.util.Environment
 import groovy.util.logging.Slf4j
 import io.micronaut.http.client.HttpClientConfiguration
@@ -38,14 +35,13 @@ import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.Duration
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 
 @Transactional
 @Slf4j
-class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
+class SubscribedCatalogueService implements AnonymisableService {
 
-    public static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
+    @Autowired
+    Set<SubscribedCatalogueConverter> subscribedCatalogueConverters
 
     @Autowired
     HttpClientConfiguration httpClientConfiguration
@@ -79,27 +75,30 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
-            Map<String, Object> catalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-            }
-            if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
+            def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModelsWithAuthority(subscribedCatalogue)
+
+            // Check that the remote catalogue has a name (Authority label), which is mandatory for both Mauro JSON and Atom XML catalogues
+            // Check that the publishedModels list exists, however this may be empty
+            if (!subscribedAuthority.label || publishedModels == null) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
                                                   'Invalid subscription to catalogue at [{0}], response from catalogue is invalid')
             }
+
             Authority thisAuthority = authorityService.defaultAuthority
 
             // Under prod mode dont let a connection to ourselves exist
             if (Environment.current == Environment.PRODUCTION) {
-                if (catalogueModels.authority.label == thisAuthority.label && catalogueModels.authority.url == thisAuthority.url) {
+                if (subscribedAuthority.label == thisAuthority.label && subscribedAuthority.url == thisAuthority.url) {
                     subscribedCatalogue.errors.reject(
                         'invalid.subscription.url.authority',
                         [subscribedCatalogue.url,
-                         catalogueModels.authority.label,
-                         catalogueModels.authority.url].toArray(),
+                         subscribedAuthority.label,
+                         subscribedAuthority.url].toArray(),
                         'Invalid subscription to catalogue at [{0}] as it has the same Authority as this instance [{1}:{2}]')
                 }
             }
+
         } catch (ApiException exception) {
             subscribedCatalogue.errors.reject('invalid.subscription.url.connection',
                                               [subscribedCatalogue.url, exception.message].toArray(),
@@ -124,50 +123,46 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      *
      */
     List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
-        Map<String, Object> subscribedCatalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getPublishedModels(client, subscribedCatalogue)
         }
-        if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
+    }
 
-        (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
-            new PublishedModel().tap {
-                modelId = Utils.toUuid(pm.modelId)
-                title = pm.title // for compatibility with remote catalogue versions prior to 4.12
-                if (pm.label) modelLabel = pm.label
-                if (pm.version) modelVersion = Version.from(pm.version)
-                modelType = pm.modelType
-                lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                author = pm.author
-                description = pm.description
-                if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
+    Tuple2<Authority, List<PublishedModel>> listPublishedModelsWithAuthority(SubscribedCatalogue subscribedCatalogue) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getAuthorityAndPublishedModels(client, subscribedCatalogue)
+        }
+    }
+
+    Authority getAuthority(SubscribedCatalogue subscribedCatalogue) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getAuthority(client, subscribedCatalogue)
+        }
+    }
+
+    Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, String publishedModelId) {
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
+            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+                client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, publishedModelId)
             }
-        }.sort()
-    }
-
-    List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
+        } else {
+            [:]
         }
     }
 
-    Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
+            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+                client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, publishedModelId)
+            }
+        } else {
+            [:]
         }
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, UUID modelId) {
+    byte[] getBytesResourceExport(SubscribedCatalogue subscribedCatalogue, String resourceUrl) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
-        }
-    }
-
-    String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
-                                           resourceId, exporterInfo)
+            client.getBytesResourceExport(subscribedCatalogue.apiKey, resourceUrl)
         }
     }
 
@@ -181,31 +176,8 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
                              mediaTypeCodecRegistry)
     }
 
-    /**
-     * An ID in the atom feed looks like tag:host,MINTED_DATE:uuid
-     * So get everything after the last :
-     *
-     * @param url A tag ID / URL
-     * @return A UUID as a string
-     */
-    private static String extractUuidFromTagUri(String url) {
-        final String separator = ':'
-        int lastPos = url.lastIndexOf(separator)
-
-        return url.substring(lastPos + 1)
-    }
-
-    /**
-     * An ID in the atom feed looks like urn:uuid:{model.id}* So get everything after the last :
-     *
-     * @param url A urn url
-     * @return A UUID as a string
-     */
-    private static String extractUuidFromUrn(String url) {
-        final String separator = ':'
-        int lastPos = url.lastIndexOf(separator)
-
-        return url.substring(lastPos + 1)
+    private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
+        subscribedCatalogueConverters.find {it.handles(subscribedCatalogue.subscribedCatalogueType)}
     }
 
     void anonymise(String createdBy) {

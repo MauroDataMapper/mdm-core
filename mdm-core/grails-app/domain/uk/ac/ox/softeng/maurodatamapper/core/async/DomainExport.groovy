@@ -38,7 +38,6 @@ class DomainExport implements MdmDomain {
     MdmDomain exportedDomain
     byte[] exportData
     String exportFileName
-    String exportFileType
     String exportContentType
 
     String exporterNamespace
@@ -55,7 +54,6 @@ class DomainExport implements MdmDomain {
         exporterNamespace blank: false
         exporterName blank: false
         exportFileName blank: false
-        exportFileType blank: false
         exportContentType nullable: true, blank: false
     }
 
@@ -94,8 +92,7 @@ class DomainExport implements MdmDomain {
         this.exporterNamespace = exporterProviderService.namespace
         this.exporterName = exporterProviderService.name
         this.exporterVersion = exporterProviderService.sortableVersion()
-        this.exportFileType = exporterProviderService.fileType
-        this.exportContentType = exporterProviderService.producesContentType
+        this.exportContentType = exporterProviderService.contentType
     }
 
     Map getDownloadLinkParams() {

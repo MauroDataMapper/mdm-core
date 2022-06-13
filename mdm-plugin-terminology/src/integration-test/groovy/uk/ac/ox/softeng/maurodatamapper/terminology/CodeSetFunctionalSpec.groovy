@@ -1254,7 +1254,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                 "knownMetadataKeys": [],
                 "providerType": "CodeSetExporter",
                 "fileExtension": "json",
-                "fileType": "text/json",
+                "contentType": "application/mauro.codeset+json",
                 "canExportMultipleDomains": true
             },
             {
@@ -1266,7 +1266,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                 "knownMetadataKeys": [],
                 "providerType": "CodeSetExporter",
                 "fileExtension": "xml",
-                "fileType": "text/xml",
+                "contentType": "application/mauro.codeset+xml",
                 "canExportMultipleDomains": true
             }
         ]'''

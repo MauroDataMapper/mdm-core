@@ -433,7 +433,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "knownMetadataKeys": [],
     "providerType": "DataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.datamodel+json",
     "canExportMultipleDomains": true
   },
   {
@@ -445,7 +445,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "knownMetadataKeys": [],
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.datamodel+xml",
     "canExportMultipleDomains": true
   }
 ]'''
@@ -1083,8 +1083,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       },
       "export": {
         "fileName": "Functional Test DataModel.json",
-        "fileType": "text/json",
-        "contentType": "application/mdm+json",
+        "contentType": "application/mauro.datamodel+json",
         "fileSize": "${json-unit.any-number}"
       },
       "exportedOn": "${json-unit.matches:offsetDateTime}",
