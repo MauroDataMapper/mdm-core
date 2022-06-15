@@ -19,7 +19,7 @@ json {
     exporter {
         namespace domainExport.exporterNamespace
         name domainExport.exporterName
-        nersion domainExport.exporterVersion
+        version domainExport.exporterVersion
     }
 
     export {

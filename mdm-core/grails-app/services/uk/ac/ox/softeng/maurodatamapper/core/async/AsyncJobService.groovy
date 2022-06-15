@@ -73,6 +73,10 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         AsyncJob.list(pagination)
     }
 
+    List<AsyncJob> listWithFilter(Map filter, Map pagination) {
+        AsyncJob.withFilter(AsyncJob.by(), filter).list(pagination)
+    }
+
     @Override
     Long count() {
         AsyncJob.count()
@@ -116,8 +120,8 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
         asyncJob
     }
 
-    List<AsyncJob> findAllByStartedByUser(String emailAddress, Map pagination) {
-        AsyncJob.findAllByStartedByUser(emailAddress, pagination)
+    List<AsyncJob> findAllByStartedByUser(String emailAddress, Map filter, Map pagination) {
+        AsyncJob.withFilter(AsyncJob.byStartedByUser(emailAddress), filter).list(pagination)
     }
 
     AsyncJob findByStartedByUserAndId(String emailAddress, UUID id) {

@@ -78,8 +78,8 @@ class AsyncJobController extends RestfulController<AsyncJob> implements MdmContr
     @Override
     protected List<AsyncJob> listAllResources(Map params) {
         currentUserSecurityPolicyManager.isApplicationAdministrator() ?
-        asyncJobService.list(params) :
-        asyncJobService.findAllByStartedByUser(currentUser.emailAddress, params)
+        asyncJobService.listWithFilter(params, params) :
+        asyncJobService.findAllByStartedByUser(currentUser.emailAddress, params, params)
 
     }
 

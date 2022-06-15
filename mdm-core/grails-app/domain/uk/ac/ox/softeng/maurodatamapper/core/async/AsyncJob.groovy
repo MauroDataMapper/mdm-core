@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import grails.gorm.DetachedCriteria
+
 import java.time.OffsetDateTime
 
 /**
@@ -58,5 +60,20 @@ class AsyncJob implements MdmDomain {
     @Override
     String getPathIdentifier() {
         return null
+    }
+
+    static DetachedCriteria<AsyncJob> by() {
+        new DetachedCriteria<AsyncJob>(AsyncJob)
+    }
+
+    static DetachedCriteria<AsyncJob> byStartedByUser(String emailAddress) {
+        by().eq('startedByUser', emailAddress)
+    }
+
+    static DetachedCriteria<AsyncJob> withFilter(DetachedCriteria<AsyncJob> criteria, Map filters) {
+        if (filters.jobName) criteria = criteria.ilike('jobName', "%${filters.jobName}%")
+        if (filters.startedByUser) criteria = criteria.ilike('startedByUser', "%${filters.startedByUser}%")
+        if (filters.status) criteria = criteria.ilike('status', "%${filters.status}%")
+        criteria
     }
 }
