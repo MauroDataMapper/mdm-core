@@ -137,11 +137,15 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> list() {
-        Folder.list().collect {unwrapIfProxy(it)}
+        Folder.list().collect { unwrapIfProxy(it) }
     }
 
     Long count() {
         Folder.count()
+    }
+
+    boolean exists(Serializable id) {
+        Folder.countById(Utils.toUuid(id))
     }
 
     void delete(Serializable id) {

@@ -457,7 +457,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo,
+    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToCopy,
                                          UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
@@ -469,7 +469,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot delete [${modelItem.domainType}] from CodeSet")
         }

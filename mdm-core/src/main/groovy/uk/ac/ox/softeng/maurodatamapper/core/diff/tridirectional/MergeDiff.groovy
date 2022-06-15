@@ -92,8 +92,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
     Path getFullyQualifiedPath() {
-        String cleanedIdentifier = sourceIdentifier.split('/').last()
-        Path.from(fullyQualifiedObjectPath, source.pathPrefix, cleanedIdentifier)
+        fullyQualifiedObjectPath ? fullyQualifiedObjectPath.resolve(source.path) : source.path
     }
 
     FieldMergeDiff first() {

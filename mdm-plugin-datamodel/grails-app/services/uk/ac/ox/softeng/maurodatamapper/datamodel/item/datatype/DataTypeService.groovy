@@ -39,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.Enum
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.gorm.HQLPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -46,6 +47,8 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_SORT
 
 @SuppressWarnings('ClashingTraitMethods')
 @Slf4j
@@ -327,16 +330,64 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
     }
 
+    List<DataType> findAllByImportingDataModelId(UUID dataModelId) {
+        DataType.byImportingDataModelId(dataModelId).list()
+    }
+
     def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
         DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
 
-    def findAllByDataModelIdIncludingImported(Serializable dataModelId, Map paginate = [:]) {
-        DataType.withFilter(DataType.byDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
+    HQLPagedResultList findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(UUID dataModelId, String searchTerm, Map paginate = [:]) {
+        findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm, paginate, paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
-        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm).list(paginate)
+    HQLPagedResultList findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(UUID dataModelId, String searchTerm, Map filters, Map pagination) {
+
+        Map<String, Object> queryParams = [dataModelId: dataModelId,
+                                           searchTerm : "%${searchTerm}%"]
+
+        findAllDataTypesByHQLQuery('''
+FROM DataType dt
+LEFT JOIN dt.importingDataModels idm
+WHERE
+(
+    dt.dataModel.id = :dataModelId
+    OR
+    idm.id = :dataModelId
+)
+AND (
+    lower(dt.label) like lower(:searchTerm)
+    OR
+    lower(dt.description) like lower(:searchTerm)
+)''', queryParams, filters, pagination)
+    }
+
+    def findAllByDataModelIdIncludingImported(UUID dataModelId, Map filters, Map pagination) {
+        Map<String, Object> queryParams = [dataModelId: dataModelId]
+        findAllDataTypesByHQLQuery('''
+FROM DataType dt
+LEFT JOIN dt.importingDataModels idm
+WHERE
+(
+    dt.dataModel.id = :dataModelId
+    OR
+    idm.id = :dataModelId
+)''', queryParams, filters, pagination)
+    }
+
+    private HQLPagedResultList<DataType> findAllDataTypesByHQLQuery(String baseQuery, Map<String, Object> queryParams, Map filters, Map pagination) {
+        queryParams.putAll(extractFiltersAsHQLParameters(filters))
+
+        String filteredQuery = applyHQLFilters(baseQuery, 'dt', filters)
+        // Cannot sort DCs including imported using idx combined with any other field
+        String sortedQuery = applyHQLSort(filteredQuery, 'dt', pagination[ARGUMENT_SORT] ?: ['label': 'asc'], pagination, true)
+
+        new HQLPagedResultList<DataType>(DataType)
+            .list("SELECT DISTINCT dt ${sortedQuery}".toString())
+            .count("SELECT COUNT(DISTINCT dt.id) ${filteredQuery}".toString())
+            .queryParams(queryParams)
+            .paginate(pagination)
     }
 
     void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {

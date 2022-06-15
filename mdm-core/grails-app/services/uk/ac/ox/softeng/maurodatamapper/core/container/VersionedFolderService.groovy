@@ -992,7 +992,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         Map<String, Object> modelInformation =
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToRemoveFrom, modelItem.domainType)
 
-        (modelInformation.modelService as ModelService).processDeletionPatchOfModelItem(modelItem, modelInformation.targetModel as Model)
+        (modelInformation.modelService as ModelService).processDeletionPatchOfModelItem(modelItem, modelInformation.targetModel as Model, relativePathToRemoveFrom)
     }
 
     MultiFacetAware processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, VersionedFolder targetVersionedFolder, Path path) {
@@ -1057,7 +1057,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToCopyTo, modelItemToCopy.domainType)
         (modelInformation.modelService as ModelService).processCreationPatchOfModelItem(modelItemToCopy,
                                                                                         modelInformation.targetModel as Model,
-                                                                                        (modelInformation.modelItemToModelAbsolutePath as Path).parent,
+                                                                                        (modelInformation.modelItemToModelAbsolutePath as Path),
                                                                                         userSecurityPolicyManager,
                                                                                         true)
     }

@@ -17,14 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit.service
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -34,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
@@ -51,6 +57,7 @@ class CatalogueItemServiceSpec extends BaseUnitSpec {
 
     def setup() {
         log.debug('Setting up CatalogueItemServiceSpec unit')
+        mockArtefact(FolderService)
         mockArtefact(ClassifierService)
         mockArtefact(VersionLinkService)
         mockArtefact(SemanticLinkService)
@@ -58,6 +65,11 @@ class CatalogueItemServiceSpec extends BaseUnitSpec {
         mockArtefact(MetadataService)
         mockArtefact(RuleService)
         mockArtefact(AuthorityService)
+        mockArtefact(MergeDiffService)
+        mockArtefact(BreadcrumbTreeService)
+        mockArtefact(PathService)
+        mockArtefact(VersionedFolderService)
+        mockArtefact(AsyncJobService)
         mockDomains(Classifier, Folder, Annotation, Edit, Metadata, ReferenceFile, SemanticLink, BreadcrumbTree, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http://localhost', createdBy: StandardEmailAddress.UNIT_TEST, defaultAuthority: true))

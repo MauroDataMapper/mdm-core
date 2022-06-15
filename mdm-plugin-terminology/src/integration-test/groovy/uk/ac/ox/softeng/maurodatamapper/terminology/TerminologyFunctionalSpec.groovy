@@ -2020,26 +2020,26 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
       "type": "modification"
     },
     {
-      "path": "te:Functional Test Terminology 1$source|tr:ALO.sameSourceActionType.SALO",
+      "path": "te:Functional Test Terminology 1$source|tm:ALO|tr:ALO.sameSourceActionType.SALO",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "te:Functional Test Terminology 1$source|tr:ALO.similarSourceAction.AAARD",
+      "path": "te:Functional Test Terminology 1$source|tm:ALO|tr:ALO.similarSourceAction.AAARD",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "te:Functional Test Terminology 1$source|tr:MLO.similarSourceAction.MAMRD",
+      "path": "te:Functional Test Terminology 1$source|tm:MLO|tr:MLO.similarSourceAction.MAMRD",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "te:Functional Test Terminology 1$source|tr:SMLO.sameSourceActionType.MLO@description",
+      "path": "te:Functional Test Terminology 1$source|tm:SMLO|tr:SMLO.sameSourceActionType.MLO@description",
       "sourceValue": "NewDescription",
       "targetValue": null,
       "commonAncestorValue": null,
@@ -2104,7 +2104,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
       "type": "modification"
     }
   ]
-}
-'''
+}'''
     }
 }

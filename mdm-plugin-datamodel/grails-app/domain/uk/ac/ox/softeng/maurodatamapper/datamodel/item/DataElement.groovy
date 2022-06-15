@@ -234,6 +234,22 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         }
     }
 
+    static DetachedCriteria<DataElement> byImportingDataClassId(Serializable dataClassId) {
+        new DetachedCriteria<DataElement>(DataElement).where {
+            importingDataClasses {
+                eq 'id', dataClassId
+            }
+        }
+    }
+
+    static DetachedCriteria<DataElement> byImportingDataClassIdInList(List<UUID> dataClassIds) {
+        new DetachedCriteria<DataElement>(DataElement).where {
+            importingDataClasses {
+                inList 'id', dataClassIds
+            }
+        }
+    }
+
     static DetachedCriteria<DataElement> byDataClass(DataClass dataClass) {
         new DetachedCriteria<DataElement>(DataElement).eq('dataClass', dataClass)
     }

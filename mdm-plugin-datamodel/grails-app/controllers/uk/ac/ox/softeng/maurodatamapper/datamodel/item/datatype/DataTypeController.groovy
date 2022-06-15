@@ -130,7 +130,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
         if (params.search) {
             return dataTypeService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(params.dataModelId, params.search, params)
         }
-        return dataTypeService.findAllByDataModelIdIncludingImported(params.dataModelId, params)
+        return dataTypeService.findAllByDataModelIdIncludingImported(params.dataModelId, params, params)
     }
 
     @Override

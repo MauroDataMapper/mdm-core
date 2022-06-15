@@ -46,6 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.hibernate.Session
 import org.springframework.context.MessageSource
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_SORT
@@ -169,6 +170,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = dataClass.dataModel
+        dataModel.merge()
         dataModel.lock()
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass
@@ -294,7 +296,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 batch.clear()
                 // Find all DCs which have a saved parent DC
                 notSaved.removeAll(parentIsSaved)
-                parentIsSaved = notSaved.findAll {it.parentDataClass && it.parentDataClass.id}
+                parentIsSaved = notSaved.findAll { it.parentDataClass && it.parentDataClass.id }
                 log.trace('Ready to save on subsequent run {}', parentIsSaved.size())
             }
         }
@@ -302,8 +304,33 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
+    void batchSave(List<DataClass> modelItems) {
+        super.batchSave(modelItems)
+        // Make sure all the opposing sides
+        modelItems.each { dc ->
+            if (dc.importedDataClasses) {
+                dc.importedDataClasses.each { idc ->
+                    idc.attach()
+                    idc.addToImportingDataClasses(dc)
+                    idc.save(validate: false)
+                }
+            }
+            if (dc.importedDataElements) {
+                dc.importedDataElements.each { ide ->
+                    ide.attach()
+                    ide.addToImportingDataClasses(dc)
+                    ide.save(validate: false)
+                }
+            }
+        }
+        Session currentSession = sessionFactory.currentSession
+        currentSession.flush()
+        currentSession.clear()
+    }
+
+    @Override
     void preBatchSaveHandling(List<DataClass> modelItems) {
-        modelItems.each {dc ->
+        modelItems.each { dc ->
             dc.dataClasses?.clear()
             dc.dataElements?.clear()
             dc.referenceTypes?.clear()
@@ -491,6 +518,19 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     def findAllByDataModelId(UUID dataModelId, Map paginate = [:]) {
         DataClass.withFilter(DataClass.byDataModelId(dataModelId), paginate).list(paginate)
+    }
+
+    List<DataClass> findAllByImportingDataModelId(UUID dataModelId) {
+        DataClass.byImportingDataModelId(dataModelId).list()
+    }
+
+    List<DataClass> findAllByImportingDataClassId(UUID dataClassId) {
+        DataClass.byImportingDataClassId(dataClassId).list()
+    }
+
+    List<DataClass> findAllByImportingDataClassIds(List<UUID> dataClassIds) {
+        if (!dataClassIds) return []
+        DataClass.byImportingDataClassIdInList(dataClassIds).list()
     }
 
     def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:]) {
@@ -824,13 +864,25 @@ WHERE
         copy.dataElements = []
 
         List<DataElement> dataElements = DataElement.byDataClassId(original.id).join('classifiers').list()
-        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect {it.id}, new CopyInformation(copyIndex: true))
-        dataElements.sort().each {element ->
+        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect { it.id }, new CopyInformation(copyIndex: true))
+        dataElements.sort().each { element ->
             copy.addToDataElements(
                 dataElementService
                     .copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata, dataElementCache))
         }
 
+        List<DataClass> importedDataClasses = findAllByImportingDataClassId(original.id)
+        List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassId(original.id)
+
+        // Copy across the imported dataelements
+        importedDataElements.each { de ->
+            copy.addToImportedDataElements(de)
+        }
+
+        // Copy across the imported dataclasses
+        importedDataClasses.each { dc ->
+            copy.addToImportedDataClasses(dc)
+        }
         copy
     }
 

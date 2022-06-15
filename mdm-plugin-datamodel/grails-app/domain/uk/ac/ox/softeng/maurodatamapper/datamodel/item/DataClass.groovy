@@ -227,9 +227,15 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         if (!lhsDiffCache || !rhsDiffCache) {
             base.appendCollection(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
                 .appendCollection(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
+                .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses, otherDataClass.importedDataClasses
+                                  , null, false, false)
+                .appendCollection(DataElement, 'importedDataTypes', this.importedDataElements, otherDataClass.importedDataElements
+                                  , null, false, false)
         } else {
             base.appendCollection(DataClass, 'dataClasses')
                 .appendCollection(DataElement, 'dataElements')
+                .appendCollection(DataClass, 'importedDataClasses', null, false, false)
+                .appendCollection(DataElement, 'importedDataElements', null, false, false)
         }
         base
     }
@@ -270,12 +276,32 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     int countDataElementsByLabel(String label) {
-        dataElements?.count {it.label == label} ?: 0
+        dataElements?.count { it.label == label } ?: 0
     }
 
     Set<DataClass> getAllUnsavedChildren() {
-        Set<DataClass> children = dataClasses.findAll {!it.id}
-        children + children.collectMany {it.getAllUnsavedChildren()}
+        Set<DataClass> children = dataClasses.findAll { !it.id }
+        children + children.collectMany { it.getAllUnsavedChildren() }
+    }
+
+    DataClass addToImportedDataClasses(DataClass dataClass) {
+        dataClass.addTo('importingDataClasses', this).save(flush: false, validate: false)
+        addTo('importedDataClasses', dataClass)
+    }
+
+    DataClass addToImportedDataElements(DataElement dataElement) {
+        dataElement.addTo('importingDataClasses', this).save(flush: false, validate: false)
+        addTo('importedDataElements', dataElement)
+    }
+
+    DataClass removeFromImportedDataClasses(DataClass dataClass) {
+        dataClass.removeFrom('importingDataClasses', this).save(flush: false, validate: false)
+        removeFrom('importedDataClasses', dataClass)
+    }
+
+    DataClass removeFromImportedDataElements(DataElement dataElement) {
+        dataElement.removeFrom('importingDataClasses', this).save(flush: false, validate: false)
+        removeFrom('importedDataElements', dataElement)
     }
 
     static String buildLabelPath(DataClass dataClass) {
@@ -298,6 +324,30 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
                 eq 'id', dataModelId
             }
             join('importingDataModels', JoinType.LEFT)
+        }
+    }
+
+    static DetachedCriteria<DataClass> byImportingDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<DataClass>(DataClass).where {
+            importingDataModels {
+                eq 'id', dataModelId
+            }
+        }
+    }
+
+    static DetachedCriteria<DataClass> byImportingDataClassId(Serializable dataClassId) {
+        new DetachedCriteria<DataClass>(DataClass).where {
+            importingDataClasses {
+                eq 'id', dataClassId
+            }
+        }
+    }
+
+    static DetachedCriteria<DataClass> byImportingDataClassIdInList(List<UUID> dataClassIds) {
+        new DetachedCriteria<DataClass>(DataClass).where {
+            importingDataClasses {
+                inList 'id', dataClassIds
+            }
         }
     }
 

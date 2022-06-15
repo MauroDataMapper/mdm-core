@@ -32,7 +32,7 @@ import grails.testing.mixin.integration.Integration
 import grails.web.mime.MimeType
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import org.spockframework.util.Assert
 
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Future
@@ -90,12 +90,11 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
-    @Shared
     DataModelPluginMergeBuilder builder
 
     AsyncJobService asyncJobService
 
-    def setupSpec() {
+    def setup() {
         builder = new DataModelPluginMergeBuilder(this)
     }
 
@@ -1609,6 +1608,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     void 'DM-#prefix-12 : test importing DataType [not allowed] (as #name)'() {
         given:
+        String mergeFolderId = getTestFolderId()
+        Assert.notNull mergeFolderId
         Map data = configureImportDataType()
         login(name)
 
@@ -2378,9 +2379,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse OK, response
-        responseBody().count == 4
+        responseBody().count == 6
         responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type Pointing Externally', 'existingDataType1',
-                                              'existingDataType2'] as Set
+                                              'existingDataType2', 'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
         def mdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
 
         and:

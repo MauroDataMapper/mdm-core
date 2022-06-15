@@ -115,9 +115,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
 
-        versionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        versionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert versionedFolderId
-        otherVersionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        otherVersionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert otherVersionedFolderId
         builder = new DataModelPluginMergeBuilder(this)
     }
@@ -1541,6 +1543,272 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData()
     }
 
+    void 'VB13 : test creating new branch with imported DataTypes'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType 2',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataTypes/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of datatypes in brach'
+        log.info 'getting list of datatypes'
+        GET("$branchId/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB14 : test creating new branch with imported DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB15 : test creating new branch with DataClasses importing DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$internalId/dataClasses/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.every {it.id != importableId}
+
+        when:
+        String branchInternalId = responseBody().items.first().id
+        GET("$branchId/dataClasses/${branchInternalId}/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        when:
+        GET("$id/dataClasses/${internalId}/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB16 : test creating new branch with DataClasses importing DataElements'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DC
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String finalisedDtId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String finalisedDcId = responseBody().id
+
+        POST("$finalisedId/dataClasses/$finalisedDcId/dataElements", [
+            label: 'Functional Test DataElement', dataType: finalisedDtId])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$internalId/dataElements/$finalisedId/$finalisedDcId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.every {it.id != importableId}
+
+        when:
+        String branchInternalId = responseBody().items.first().id
+        GET("$branchId/dataClasses/${branchInternalId}/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        when:
+        GET("$id/dataClasses/${internalId}/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
     void 'MD01 : test finding merge difference of two datamodels'() {
         given:
         String id = createNewItem(validJson)
@@ -1631,6 +1899,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MD04 : test finding merge diff with new style diff with aliases gh-112'() {
@@ -1704,6 +1975,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MI01 : test merging diff with no patch data'() {
@@ -2094,7 +2368,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.size() == 17
+        responseBody().diffs.size() == 25
 
         when:
         List<Map> patches = responseBody().diffs
@@ -2113,35 +2387,51 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().description == 'DescriptionLeft'
 
         when:
-        GET("$mergeData.target/dataClasses")
+        GET("$mergeData.target/dataClasses?all==true")
 
         then:
+        responseBody().count == 12
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
-                                              'addAndAddReturningNoDifference'] as Set
+                                              'addAndAddReturningNoDifference',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
         responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
         responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
         responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
         responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
 
         then:
-        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+        responseBody().count == 4
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement'] as Set
+        responseBody().count == 4
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement',
+                                              'Functional Test DataElement Importable', 'Functional Test DataElement Importable Add'] as Set
+        responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable'}.imported
+        responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataTypes")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2'] as Set
+        responseBody().count == 5
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2',
+                                              'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable'}.imported
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable Add'}.imported
 
         when:
         GET("${mergeData.target}/metadata")
@@ -2156,6 +2446,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MI08 : test merging diff with metadata creation gh-111'() {
@@ -2202,7 +2495,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                     ],
                     [
 
-                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule|rr:sql',
+                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model ' +
+                                                               'Rule|rr:sql',
                         isMergeConflict                      : false,
                         isSourceModificationAndTargetDeletion: false,
                         type                                 : 'creation',
@@ -2324,7 +2618,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 4
 
         when:
         GET("$mergeData.target/dataClasses")
@@ -2345,6 +2639,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'test changing folder from DataModel context'() {
@@ -4942,7 +5239,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         String sourceId = responseBody().id
         String deleteAndDelete = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:deleteAndDelete")
         String existingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass")
-        String deleteLeftOnlyFromExistingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
+        String deleteLeftOnlyFromExistingClass =
+            builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
         DELETE("$sourceId/dataClasses/$deleteAndDelete")
 
         then:
@@ -5643,7 +5941,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   "targetId": "${json-unit.matches:id}",
   "path": "dm:Functional Test DataModel 1$source",
   "label": "Functional Test DataModel 1",
-  "count": 17,
+  "count": 25,
   "diffs": [
     {
       "fieldName": "description",
@@ -5715,6 +6013,32 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "type": "modification"
     },
     {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable 2 ''' +
+        '''Add|de:Functional Test DataElement Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable 2 ''' +
+        '''Remove|de:Functional Test DataElement Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
       "fieldName": "description",
       "path": "dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
@@ -5737,6 +6061,30 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$1.0.0|dt:Functional Test DataType Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dt:Functional Test DataType Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
     },
     {
       "path": "dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",

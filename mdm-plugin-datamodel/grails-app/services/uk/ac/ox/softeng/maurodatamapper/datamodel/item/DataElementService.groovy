@@ -298,6 +298,15 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
         DataElement.byDataClass(dataClass).list()
     }
 
+    List<DataElement> findAllByImportingDataClassId(UUID dataClassId) {
+        DataElement.byImportingDataClassId(dataClassId).list()
+    }
+
+    List<DataElement> findAllByImportingDataClassIds(List<UUID> dataClassIds) {
+        if (!dataClassIds) return []
+        DataElement.byImportingDataClassIdInList(dataClassIds).list()
+    }
+
     List<DataElement> findAllByDataModelId(Serializable dataModelId, Map pagination = [:]) {
         DataElement.byDataModelId(dataModelId).list(pagination)
     }

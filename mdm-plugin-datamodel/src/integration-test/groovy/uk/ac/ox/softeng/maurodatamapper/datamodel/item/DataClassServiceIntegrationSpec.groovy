@@ -856,6 +856,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         DataClass imported1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported DataClass 1', dataModel: dataModel)
         DataClass imported2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported DataClass 2', dataModel: dataModel)
+        [imported1, imported2].each {checkAndSave(it)}
         imported2.addToImportedDataClasses(importedChild1)
         [imported1, imported2].each {checkAndSave(it)}
 
