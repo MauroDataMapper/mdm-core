@@ -76,7 +76,7 @@ class ImporterService implements DataBinder {
 
     public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportDomains(
         User currentUser, T importer, P importParams, ModelService modelService, Folder folder) {
-        asyncJobService.createAndSaveAsyncJob("Import domains using ${importer}", currentUser.emailAddress) {
+        asyncJobService.createAndSaveAsyncJob("Import domains using ${importer.displayName}", currentUser.emailAddress) {
             List<M> models = importer.importDomains(currentUser, importParams).findAll()
             if (!models) {
                 throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
@@ -104,7 +104,7 @@ class ImporterService implements DataBinder {
 
     public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportDomain(
         User currentUser, T importer, P importParams, ModelService modelService, Folder folder) {
-        asyncJobService.createAndSaveAsyncJob("Import domain using ${importer}", currentUser.emailAddress) {
+        asyncJobService.createAndSaveAsyncJob("Import domain using ${importer.displayName}", currentUser.emailAddress) {
             M model = importer.importDomain(currentUser, importParams)
             if (!model) {
                 throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")

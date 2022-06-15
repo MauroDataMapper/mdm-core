@@ -395,7 +395,7 @@ abstract class ModelService<K extends Model>
 
     AsyncJob asyncCreateNewDocumentationVersion(K model, User user, boolean copyPermissions,
                                                 UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${model.label}",
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${model.path}",
                                               userSecurityPolicyManager.user.emailAddress) {
             model.attach()
             model.authority.attach()
@@ -428,7 +428,7 @@ abstract class ModelService<K extends Model>
 
     AsyncJob asyncCreateNewForkModel(String label, K model, User user, boolean copyPermissions,
                                      UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${model.label}",
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${model.path}",
                                               userSecurityPolicyManager.user.emailAddress) {
             model.attach()
             model.authority.attach()
@@ -456,7 +456,7 @@ abstract class ModelService<K extends Model>
 
     AsyncJob asyncCreateNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
                                               UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        asyncJobService.createAndSaveAsyncJob("Branch model ${model.label} as ${branchName}",
+        asyncJobService.createAndSaveAsyncJob("Branch model ${model.path} as ${branchName}",
                                               userSecurityPolicyManager.user.emailAddress) {
             model.attach()
             model.authority.attach()

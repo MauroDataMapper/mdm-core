@@ -94,7 +94,7 @@ abstract class ExporterProviderService extends MauroDataMapperService {
 
     AsyncJob asyncExportDomain(User currentUser, MdmDomain domain, Map<String, Object> parameters) {
 
-        asyncJobService.createAndSaveAsyncJob("Export ${domain.domainType} ${domain.id} using ${this.toString()}",
+        asyncJobService.createAndSaveAsyncJob("Export ${domain.path} using ${this.displayName}",
                                               currentUser.emailAddress) {asyncJobId ->
             domain.attach()
             ByteArrayOutputStream exportByteArray = exportDomain(currentUser, domain.id, parameters)
@@ -108,7 +108,7 @@ abstract class ExporterProviderService extends MauroDataMapperService {
     }
 
     AsyncJob asyncExportDomains(User currentUser, List<MdmDomain> domains, Map<String, Object> parameters) {
-        asyncJobService.createAndSaveAsyncJob("Export multiple ${domains.first().domainType} ${domains*.id} using ${this.toString()}",
+        asyncJobService.createAndSaveAsyncJob("Export multiple ${domains*.path} using ${this.displayName}",
                                               currentUser.emailAddress) {asyncJobId ->
             domains.each {domain ->
                 domain.attach()

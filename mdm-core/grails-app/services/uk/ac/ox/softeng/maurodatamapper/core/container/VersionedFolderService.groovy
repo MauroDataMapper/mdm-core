@@ -422,7 +422,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     AsyncJob asyncCreateNewForkModel(String label, VersionedFolder folder, User user, boolean copyPermissions,
                                      UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${folder.label}",
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${folder.path}",
                                               userSecurityPolicyManager.user.emailAddress) {
             folder.attach()
             folder.authority.attach()
@@ -445,7 +445,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     AsyncJob asyncCreateNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
                                               UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        asyncJobService.createAndSaveAsyncJob("Branch model ${folder.label} as ${branchName}",
+        asyncJobService.createAndSaveAsyncJob("Branch model ${folder.path} as ${branchName}",
                                               userSecurityPolicyManager.user.emailAddress) {
             folder.attach()
             folder.authority.attach()
@@ -517,7 +517,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     AsyncJob asyncCreateNewDocumentationVersion(VersionedFolder folder, User user, boolean copyPermissions,
                                                 UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${folder.label}",
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${folder.path}",
                                               userSecurityPolicyManager.user.emailAddress) {
             folder.attach()
             folder.authority.attach()
