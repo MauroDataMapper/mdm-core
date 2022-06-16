@@ -22,6 +22,10 @@ import grails.databinding.DataBindingSource
 import grails.validation.Validateable
 import grails.web.databinding.DataBindingUtils
 
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 class SearchParams implements Validateable {
 
     Integer max
@@ -72,6 +76,22 @@ class SearchParams implements Validateable {
         domainTypes = [domainType]
     }
 
+    void setCreatedBefore(String value) {
+        createdBefore = bindDate(value)
+    }
+
+    void setCreatedAfter(String value) {
+        createdAfter = bindDate(value)
+    }
+
+    void setLastUpdatedBefore(String value) {
+        lastUpdatedBefore = bindDate(value)
+    }
+
+    void setLastUpdatedAfter(String value) {
+        lastUpdatedAfter = bindDate(value)
+    }
+
     def propertyMissing(String name) {
         additionalParams[name]
     }
@@ -107,5 +127,10 @@ class SearchParams implements Validateable {
         if (this.order) {
             params.order = this.order
         }
+    }
+
+    private static Date bindDate(String value) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
+        return formatter.parse(value)
     }
 }
