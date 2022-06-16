@@ -268,7 +268,10 @@ class ProfileService implements DataBinder {
                                                                                                        [:])
         Set<String> distinctNamespaces = importMetadata.collect {it.namespace}.toSet()
         List<DynamicImportJsonProfileProviderService> allImportJsonProfileProviderServices = profileProviderServices
-            .findAll {it instanceof DynamicImportJsonProfileProviderService} as List<DynamicImportJsonProfileProviderService>
+            .findAll {
+                it instanceof DynamicImportJsonProfileProviderService &&
+                (it.profileApplicableForDomains().contains(multiFacetAware.domainType) || it.profileApplicableForDomains().size() == 0)
+            } as List<DynamicImportJsonProfileProviderService>
 
         distinctNamespaces.collect {ns ->
             // Find the profile service that should be used for the namespace

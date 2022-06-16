@@ -160,13 +160,13 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
                 if (idValue && domainTypeValue) return
                 if (!idValue) errors.rejectValue("fields[0].currentValue", 'import.group.must.be.supplied',
                                                  new Object[]{'currentValue', ProfileField.simpleName, null, 'Id', 'import_id'},
-                                                 'For a new import profile [Id & Domain Type] OR [Path] must be supplied.')
-                if (!domainTypeValue) errors.rejectValue(".fields[1].currentValue", 'import.group.must.be.supplied',
+                                                 'For a new import profile [Id & Domain Type] OR [Path] must be supplied')
+                if (!domainTypeValue) errors.rejectValue("fields[1].currentValue", 'import.group.must.be.supplied',
                                                          new Object[]{'currentValue', 'ProfileField.simpleName', null, 'Domain Type', 'import_domainType'},
-                                                         'For a new import profile [Id & Domain Type] OR [Path] must be supplied.')
-                if (!pathValue) errors.rejectValue(".fields[2].currentValue", 'import.group.must.be.supplied',
+                                                         'For a new import profile [Id & Domain Type] OR [Path] must be supplied')
+                if (!pathValue) errors.rejectValue("fields[2].currentValue", 'import.group.must.be.supplied',
                                                    new Object[]{'currentValue', 'ProfileField.simpleName', null, 'Path', 'import_path'},
-                                                   'For a new import profile [Id & Domain Type] OR [Path] must be supplied.')
+                                                   'For a new import profile [Id & Domain Type] OR [Path] must be supplied')
             }
         }
         emptyProfile

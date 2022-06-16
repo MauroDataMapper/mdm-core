@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultDynamicImportJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileSpecificationDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.search.searchparamfilter.ProfileFilter
 
 import grails.plugins.Plugin
+import grails.util.Environment
 
 class MdmPluginProfileGrailsPlugin extends Plugin {
 
@@ -66,6 +68,31 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
         {->
             profileSpecificationDataTypeProvider ProfileSpecificationDataTypeProvider
             profileFilter ProfileFilter
+
+            if (Environment.current != Environment.PRODUCTION) {
+
+                importedDataElementDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedDataElementDynamicProfileProviderService'
+                    displayName = 'Import Profile for DataElements'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importDataElementProfile.json'
+                    profileApplicableForDomains = ['DataElement']
+                }
+                importedDataClassDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedDataClassDynamicProfileProviderService'
+                    displayName = 'Import Profile for DataClasses'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importDataClassProfile.json'
+                    profileApplicableForDomains = ['DataClass']
+                }
+                importedDataTypeDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedDataTypeDynamicProfileProviderService'
+                    displayName = 'Import Profile for DataTypes'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importDataTypeProfile.json'
+                    profileApplicableForDomains = ['DataType', 'PrimitiveType', 'EnumerationType', 'ReferenceType', 'ModelDataType']
+                }
+            }
 
             profileSpecificationProfileService(DefaultJsonProfileProviderService) {
                 serviceName = 'ProfileSpecificationProfileService'

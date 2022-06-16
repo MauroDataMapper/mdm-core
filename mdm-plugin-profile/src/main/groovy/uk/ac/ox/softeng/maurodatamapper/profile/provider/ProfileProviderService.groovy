@@ -153,6 +153,11 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         cleanProfile
     }
 
+    void storeFlatMapProfileInEntity(D entity, String userEmailAddress, Map<String, String> profileData) {
+        P profile = createCleanProfileFromFlatMap(profileData)
+        storeProfileInEntity(entity, profile, userEmailAddress)
+    }
+
     Map<String, Collection<String>> listAllValuesInProfile(String domainType, List<String> filter, UserSecurityPolicyManager userSecurityPolicyManager) {
         List<MetadataAware> profiledItems = findAllProfiledItems(domainType)
         List<MetadataAware> filteredProfiledItems = []
