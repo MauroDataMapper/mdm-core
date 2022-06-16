@@ -68,4 +68,24 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         responseBody().count == 0
         responseBody().items.isEmpty()
     }
+
+    void 'test date binding using POST'() {
+        given:
+        def term = 'test'
+
+        when:
+        POST('', [
+            searchTerm      : term,
+            sort            : 'label',
+            lastUpdateBefore: '2022-06-16',
+            lastUpdatedAfter: '2022-06-01',
+            createdBefore   : '2022-06-16',
+            createdAfter    : '2022-06-01'
+        ])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+    }
 }
