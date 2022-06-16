@@ -41,4 +41,6 @@ abstract class ImporterProviderServiceParameters {
             order = Integer.MAX_VALUE
         ))
     Boolean asynchronous = false
+
+    boolean providerHasSavedModels = false
 }

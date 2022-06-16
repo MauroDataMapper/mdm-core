@@ -626,24 +626,30 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
-            transactionStatus.setRollbackOnly()
-            return forbidden('Cannot import a finalised model into a VersionedFolder')
+        Model savedModel
+
+        if (!importerProviderServiceParameters.providerHasSavedModels) {
+            if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
+                transactionStatus.setRollbackOnly()
+                return forbidden('Cannot import a finalised model into a VersionedFolder')
+            }
+
+            model.folder = folder
+
+            getModelService().validate(model)
+
+            if (model.hasErrors()) {
+                transactionStatus.setRollbackOnly()
+                respond model.errors
+                return
+            }
+
+            log.debug('No errors in imported model')
+
+            savedModel = saveNewModelAndAddSecurity(model)
+        } else {
+            savedModel = addSecurity(model)
         }
-
-        model.folder = folder
-
-        getModelService().validate(model)
-
-        if (model.hasErrors()) {
-            transactionStatus.setRollbackOnly()
-            respond model.errors
-            return
-        }
-
-        log.debug('No errors in imported model')
-
-        Model savedModel = saveNewModelAndAddSecurity(model)
 
         log.info('Single Model Import complete')
 
@@ -711,32 +717,41 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any {it.finalised}) {
-            transactionStatus.setRollbackOnly()
-            return forbidden('Cannot import finalised models into a VersionedFolder')
+        List<T> loadedModels
+        if (!importerProviderServiceParameters.providerHasSavedModels) {
+            if (versionedFolderService.isVersionedFolderFamily(folder) && result.any {it.finalised}) {
+                transactionStatus.setRollbackOnly()
+                return forbidden('Cannot import finalised models into a VersionedFolder')
+            }
+
+            result.each {m ->
+                m.folder = folder
+            }
+
+            getModelService().validateMultipleModels(result)
+
+            if (result.any {it.hasErrors()}) {
+                log.debug('Errors found in imported models')
+                transactionStatus.setRollbackOnly()
+                respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
+                return
+            }
+
+            log.debug('No errors in imported models')
+            List<T> savedModels = result.collect {
+                saveNewModelAndAddSecurity(it)
+            }
+
+            log.debug('Saved all models')
+            loadedModels = savedModels.collect {
+                getModelService().get(it.id)
+            } as List<T>
+        } else {
+            loadedModels = result.collect {
+                addSecurity(it)
+            }
         }
 
-        result.each {m ->
-            m.folder = folder
-        }
-
-        getModelService().validateMultipleModels(result)
-
-        if (result.any {it.hasErrors()}) {
-            log.debug('Errors found in imported models')
-            transactionStatus.setRollbackOnly()
-            respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
-            return
-        }
-
-        log.debug('No errors in imported models')
-        List<T> savedModels = result.collect {
-            saveNewModelAndAddSecurity(it)
-        }
-        log.debug('Saved all models')
-        List<T> loadedModels = savedModels.collect {
-            getModelService().get(it.id)
-        } as List<T>
         log.info('Multi-Model Import complete')
 
         respond loadedModels, status: CREATED, view: 'index'
@@ -882,10 +897,14 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     protected T saveNewModelAndAddSecurity(T model) {
         T savedModel = getModelService().saveModelWithContent(model) as T
         log.debug('Saved model')
+        addSecurity(savedModel)
+    }
+
+    protected T addSecurity(T model) {
         if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }
-        savedModel
+        model
     }
 
     protected T performAdditionalUpdates(T model) {
