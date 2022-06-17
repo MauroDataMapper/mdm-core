@@ -77,6 +77,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     UUID finalisedDataModelId
 
     @Shared
+    UUID finalisedDataClassId
+
+    @Shared
     UUID dataTypeId
 
     @Shared
@@ -112,6 +115,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
                                                      finalised: true, dateFinalised: OffsetDateTime.now(), modelVersion: Version.from('1'),
                                                      folder: folder, authority: testAuthority).save(flush: true)
         finalisedDataModelId = finalisedDataModel.id
+
+        finalisedDataClassId = new DataClass(label: 'Functional Test DataClass (Importable)', createdBy: FUNCTIONAL_TEST,
+                                             dataModel: finalisedDataModel).save(flush: true).id
 
         dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
@@ -1313,5 +1319,90 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
 
+    }
+
+    void 'IMI06 : test ordering of DataClasses with imported DataClass'() {
+        given: 'create dataclasses with specified order different to label order'
+        String eId = createNewItem(getValidLabelJson('Functional Test DataClass E', 0))
+        String dId = createNewItem(getValidLabelJson('Functional Test DataClass D', 1))
+        String cId = createNewItem(getValidLabelJson('Functional Test DataClass C', 2))
+        String bId = createNewItem(getValidLabelJson('Functional Test DataClass B', 3))
+        String aId = createNewItem(getValidLabelJson('Functional Test DataClass A', 4))
+
+        when:
+        GET('')
+
+        then: 'label order is default'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataClass A'
+        response.body().items[1].label == 'Functional Test DataClass B'
+        response.body().items[2].label == 'Functional Test DataClass C'
+        response.body().items[3].label == 'Functional Test DataClass D'
+        response.body().items[4].label == 'Functional Test DataClass E'
+
+        when:
+        GET('?sort=idx')
+
+        then: 'index order is available'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataClass E'
+        response.body().items[1].label == 'Functional Test DataClass D'
+        response.body().items[2].label == 'Functional Test DataClass C'
+        response.body().items[3].label == 'Functional Test DataClass B'
+        response.body().items[4].label == 'Functional Test DataClass A'
+
+        when: 'add an imported dataclass'
+        PUT("dataModels/$dataModelId/dataClasses/$finalisedDataModelId/$finalisedDataClassId", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        GET('')
+
+        then: 'label order is used'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataClass (Importable)'
+        response.body().items[1].label == 'Functional Test DataClass A'
+        response.body().items[2].label == 'Functional Test DataClass B'
+        response.body().items[3].label == 'Functional Test DataClass C'
+        response.body().items[4].label == 'Functional Test DataClass D'
+        response.body().items[5].label == 'Functional Test DataClass E'
+
+        and: 'sort by idx param is discarded'
+        GET('?sort=idx')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataClass (Importable)'
+        response.body().items[1].label == 'Functional Test DataClass A'
+        response.body().items[2].label == 'Functional Test DataClass B'
+        response.body().items[3].label == 'Functional Test DataClass C'
+        response.body().items[4].label == 'Functional Test DataClass D'
+        response.body().items[5].label == 'Functional Test DataClass E'
+
+        and: 'sort by date created works as expected'
+        GET('?sort=dateCreated')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataClass (Importable)'
+        response.body().items[1].label == 'Functional Test DataClass E'
+        response.body().items[2].label == 'Functional Test DataClass D'
+        response.body().items[3].label == 'Functional Test DataClass C'
+        response.body().items[4].label == 'Functional Test DataClass B'
+        response.body().items[5].label == 'Functional Test DataClass A'
+
+        when: 'imported data element is removed'
+        DELETE("$finalisedDataModelId/$finalisedDataClassId")
+        verifyResponse OK, response
+
+        then: 'index sorting is available again'
+        GET('?sort=idx')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataClass E'
+        response.body().items[1].label == 'Functional Test DataClass D'
+        response.body().items[2].label == 'Functional Test DataClass C'
+        response.body().items[3].label == 'Functional Test DataClass B'
+        response.body().items[4].label == 'Functional Test DataClass A'
+
+        cleanup:
+        cleanUpData(eId)
+        cleanUpData(dId)
+        cleanUpData(cId)
+        cleanUpData(bId)
+        cleanUpData(aId)
     }
 }

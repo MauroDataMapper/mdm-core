@@ -830,7 +830,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         cleanUpData(responseBody().id)
     }
 
-    void 'IMI02 : test ordering of DataElements and imported DataElement'() {
+    void 'IMI02 : test ordering of DataElements with imported DataElement'() {
         given: 'create dataelements with specified order different to label order'
         String eId = createNewItem(getValidLabelJson('Functional Test DataElement E', 0))
         String dId = createNewItem(getValidLabelJson('Functional Test DataElement D', 1))
@@ -841,7 +841,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         when:
         GET('')
 
-        then: 'index order is used'
+        then: 'index order is default'
         verifyResponse OK, response
         response.body().items[0].label == 'Functional Test DataElement E'
         response.body().items[1].label == 'Functional Test DataElement D'
@@ -852,7 +852,6 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         when: 'add an imported dataelement'
         PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/$finalisedDataModelId/$finalisedDataClassId/$finalisedDataElementId", [:], MAP_ARG, true)
         verifyResponse OK, response
-        String importedId = responseBody().id
         GET('')
 
         then: 'label order is used'
@@ -886,9 +885,9 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
 
         when: 'imported data element is removed'
         DELETE("$finalisedDataModelId/$finalisedDataClassId/$finalisedDataElementId")
+        verifyResponse OK, response
 
         then: 'index sorting is default again'
-        verifyResponse OK, response
         GET('')
         verifyResponse OK, response
         response.body().items[0].label == 'Functional Test DataElement E'

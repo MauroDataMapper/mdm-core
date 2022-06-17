@@ -27,6 +27,10 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
 
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
+
 class DataElementController extends CatalogueItemController<DataElement> {
     static responseFormats = ['json', 'xml']
 
@@ -122,24 +126,29 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected List<DataElement> listAllReadableResources(Map params) {
+        if (params.sort instanceof String) params.sort = [(params.sort): ORDER_DESC.equalsIgnoreCase(params.order) ? ORDER_DESC : ORDER_ASC]
 
         if (params.dataTypeId) {
-            params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
+            params.sort = params.sort ?: ['label': 'asc']
             if (!dataTypeService.findByDataModelIdAndId(params.dataModelId, params.dataTypeId)) {
                 notFound(params.dataTypeId)
                 return null
             }
+            // DEs may be in different DCs so cannot sort by idx
+            (params.sort as Map).remove('idx')
             return dataElementService.findAllByDataTypeId(params.dataTypeId, params)
         }
         if (params.all) removePaginationParameters()
 
         if (!params.dataClassId) {
-            params.sort = params.sort ?: ['dataClass.idx': 'asc', 'idx': 'asc']
+            params.sort = params.sort ?: ['label': 'asc']
+            // Cannot sort by DE idx or DC idx because items may have different parents
+            (params.sort as Map).remove('dataClass.idx')
+            (params.sort as Map).remove('idx')
             return dataElementService.findAllByDataModelId(params.dataModelId, params)
         }
 
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
-        if (params.sort instanceof String) params.sort = [(params.sort): 'asc']
 
         DataClass dataClass = dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)
         if (!dataClass) {
