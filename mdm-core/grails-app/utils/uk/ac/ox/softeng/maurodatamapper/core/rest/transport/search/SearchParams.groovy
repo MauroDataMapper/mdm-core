@@ -22,9 +22,8 @@ import grails.databinding.DataBindingSource
 import grails.validation.Validateable
 import grails.web.databinding.DataBindingUtils
 
+import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 class SearchParams implements Validateable {
 
@@ -130,7 +129,13 @@ class SearchParams implements Validateable {
     }
 
     private static Date bindDate(String value) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
-        return formatter.parse(value)
+        if (value) {
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
+                return formatter.parse(value)
+            } catch (ParseException e) {
+                // Do nothing
+            }
+        }
     }
 }
