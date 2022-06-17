@@ -153,7 +153,7 @@ class DomainExportFunctionalSpec extends BaseFunctionalSpec {
   "exporter": {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.async",
     "name": "DomainExportTestExporter",
-    "nersion": "1.0.0"
+    "version": "1.0.0"
   },
   "export": {
     "fileName": "test.json",

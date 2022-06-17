@@ -64,20 +64,21 @@ class DomainExportController extends RestfulController<DomainExport> implements 
 
     @Override
     protected List<DomainExport> listAllResources(Map params) {
-        if (params.resourceId) {
-            if (params.exporterNamespace) {
-                Version version = params.exporterVersion ? Version.from(params.exporterVersion) : null
+        Map remappedParams = domainExportService.updatePaginationAndFilterParameters(params)
+        if (remappedParams.resourceId) {
+            if (remappedParams.exporterNamespace) {
+                Version version = remappedParams.exporterVersion ? Version.from(remappedParams.exporterVersion) : null
                 return domainExportService.findAllByExportedDomainAndExporterProviderService(
-                    params.resourceId, params.resourceDomainType, params.exporterNamespace, params.exporterName, version, params
+                    remappedParams.resourceId, remappedParams.resourceDomainType, remappedParams.exporterNamespace, remappedParams.exporterName, version, remappedParams
                 )
             }
-            return domainExportService.findAllByExportedDomain(params.resourceId, params.resourceDomainType, params)
+            return domainExportService.findAllByExportedDomain(remappedParams.resourceId, remappedParams.resourceDomainType, remappedParams)
         }
 
 
         currentUserSecurityPolicyManager.isApplicationAdministrator() ?
-        domainExportService.list(params) :
-        domainExportService.findAllReadableByUser(currentUserSecurityPolicyManager, params)
+        domainExportService.listWithFilter(remappedParams, remappedParams) :
+        domainExportService.findAllReadableByUser(currentUserSecurityPolicyManager, remappedParams)
 
     }
 

@@ -110,10 +110,18 @@ class DomainExport implements MdmDomain {
         }
     }
 
-    static DetachedCriteria<DomainExport> byExportedDomain(UUID domainId, String domainType) {
+    static DetachedCriteria<DomainExport> by() {
         new DetachedCriteria<DomainExport>(DomainExport)
+    }
+
+    static DetachedCriteria<DomainExport> byExportedDomain(UUID domainId, String domainType) {
+        by()
             .eq('exportedDomainId', domainId)
             .eq('exportedDomainType', domainType)
+    }
+
+    static DetachedCriteria<DomainExport> byExportedDomainIdInList(List<UUID> domainIds) {
+        by().inList('exportedDomainId', domainIds)
     }
 
     static DetachedCriteria<DomainExport> byExportedDomainAndExporterProviderService(UUID domainId, String domainType, String namespace, String name, Version version) {
@@ -121,6 +129,17 @@ class DomainExport implements MdmDomain {
             .eq('exporterNamespace', namespace)
             .eq('exporterName', name)
         if (version) criteria.eq('exporterVersion', version)
+        criteria
+    }
+
+    static DetachedCriteria<DomainExport> withFilter(DetachedCriteria<DomainExport> criteria, Map filters) {
+        if (filters.exportFileName) criteria = criteria.ilike('exportFileName', "%${filters.exportFileName}%")
+        if (filters.exportContentType) criteria = criteria.ilike('exportContentType', "%${filters.exportContentType}%")
+        if (filters.createdBy) criteria = criteria.ilike('createdBy', "%${filters.createdBy}%")
+        if (filters.exportedDomainType) criteria = criteria.ilike('exportedDomainType', "%${filters.exportedDomainType}%")
+        if (filters.exporterNamespace) criteria = criteria.ilike('exporterNamespace', "%${filters.exporterNamespace}%")
+        if (filters.exporterName) criteria = criteria.ilike('exporterName', "%${filters.exporterName}%")
+        if (filters.exporterVersion) criteria = criteria.ilike('exporterVersion', "%${filters.exporterVersion}%")
         criteria
     }
 }

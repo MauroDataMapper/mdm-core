@@ -1078,7 +1078,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "exporter": {
         "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
         "name": "DataModelJsonExporterService",
-        "nersion": "${json-unit.matches:version}"
+        "version": "${json-unit.matches:version}"
       },
       "export": {
         "fileName": "Functional Test DataModel.json",

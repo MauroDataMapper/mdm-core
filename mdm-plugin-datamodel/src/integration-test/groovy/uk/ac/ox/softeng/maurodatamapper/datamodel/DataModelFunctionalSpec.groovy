@@ -3187,7 +3187,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "exporter": {
         "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
         "name": "DataModelJsonExporterService",
-        "nersion": "${json-unit.matches:version}"
+        "version": "${json-unit.matches:version}"
       },
       "export": {
         "fileName": "Complex Test DataModel.json",

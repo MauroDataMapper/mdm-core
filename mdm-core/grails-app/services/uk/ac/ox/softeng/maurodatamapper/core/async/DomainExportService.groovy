@@ -54,7 +54,11 @@ class DomainExportService implements MdmDomainService<DomainExport> {
 
     @Override
     List<DomainExport> list(Map args) {
-        DomainExport.list()
+        DomainExport.list(args)
+    }
+
+    List<DomainExport> listWithFilter(Map filter, Map pagination) {
+        DomainExport.withFilter(DomainExport.by(), filter).list(pagination)
     }
 
     @Override
@@ -114,15 +118,15 @@ class DomainExportService implements MdmDomainService<DomainExport> {
             .collect {it.domainClass}.toArray() as Class[]
         List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(classes)
 
-        DomainExport.findAllByExportedDomainIdInList(readableModelIds, pagination)
+        DomainExport.withFilter(DomainExport.byExportedDomainIdInList(readableModelIds), pagination).list(pagination)
     }
 
     List<DomainExport> findAllByExportedDomainAndExporterProviderService(UUID domainId, String domainType, String namespace, String name, Version version, Map pagination) {
-        DomainExport.byExportedDomainAndExporterProviderService(domainId, domainType, namespace, name, version).list()
+        DomainExport.withFilter(DomainExport.byExportedDomainAndExporterProviderService(domainId, domainType, namespace, name, version), pagination).list()
     }
 
     List<DomainExport> findAllByExportedDomain(UUID domainId, String domainType, Map pagination) {
-        DomainExport.byExportedDomain(domainId, domainType).list(pagination)
+        DomainExport.withFilter(DomainExport.byExportedDomain(domainId, domainType), pagination).list(pagination)
     }
 
     DomainExport createAndSaveNewDomainExport(ExporterProviderService exporterProviderService, MdmDomain domain, String filename, ByteArrayOutputStream exportByteArray,
@@ -178,5 +182,51 @@ class DomainExportService implements MdmDomainService<DomainExport> {
         if (!domainExport.validate()) throw new ApiInvalidModelException('DES', 'DomainExport model is not valid', domainExport.errors)
 
         save(domainExport, validate: false, flush: true)
+    }
+
+    Map updatePaginationAndFilterParameters(Map params) {
+        // Remap sorting
+        if (params.sort) {
+            switch (params.sort) {
+                case 'exportedOn':
+                    params.sort = 'lastUpdated'
+                    break
+                case 'exportedBy':
+                    params.sort = 'createdBy'
+                    break
+                case 'export.fileName':
+                    params.sort = 'exportFileName'
+                    break
+                case 'export.contentType':
+                    params.sort = 'exportContentType'
+                    break
+                case 'export.fileSize':
+                    params.sort = 'exportfileSize'
+                    break
+                case 'exporter.namespace':
+                    params.sort = 'exporterNamespace'
+                    break
+                case 'exporter.name':
+                    params.sort = 'exporterName'
+                    break
+                case 'exporter.version':
+                    params.sort = 'exporterVersion'
+                    break
+                case 'exported.domainType':
+                    params.sort = 'exportedDomainType'
+                    break
+            }
+        }
+        // Remap filtering
+        if (params.exportedOn) params.lastUpdated = params.exportedOn
+        if (params.exportedBy) params.createdBy = params.exportedBy
+        if (params['export.fileName']) params.exportFileName = params['export.fileName']
+        if (params['export.contentType']) params.exportContentType = params['export.contentType']
+        if (params['export.fileSize']) params.exportFileSize = params['export.fileSize']
+        if (params['exporter.namespace']) params.exporterNamespace = params['exporter.namespace']
+        if (params['exporter.name']) params.exporterName = params['exporter.name']
+        if (params['exporter.version']) params.exporterVersion = params['exporter.version']
+        if (params['exported.domainType']) params.exportedDomainType = params['exported.domainType']
+        params
     }
 }
