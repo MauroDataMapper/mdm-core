@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -734,17 +735,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(original.id)
+        copyImportedElements(copy, original, importedDataTypes, 'importedDataTypes', copier)
+
         List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(original.id)
-
-        // Copy across the imported datatypes
-        importedDataTypes.each {dt ->
-            copy.addToImportedDataTypes(dt)
-        }
-
-        // Copy across the imported dataclasses
-        importedDataClasses.each {dc ->
-            copy.addToImportedDataClasses(dc)
-        }
+        copyImportedElements(copy, original, importedDataClasses, 'importedDataClasses', copier)
 
         log.debug('Copy of datamodel took {}', Utils.timeTaken(start))
         copy
@@ -770,6 +764,26 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
+    }
+
+    void copyImportedElements(DataModel copiedDataModel, DataModel originalDataModel, Collection<ModelItem> importedElements, String field, User copier) {
+        if (!importedElements) return
+
+        // Add all imported elements to the copy
+        importedElements.each {ie ->
+            copiedDataModel.addTo(field, ie)
+        }
+
+        // Find all MD which is attached to the imported elements with a key containing the original id
+        // This will get all MD which pertains to the element wrt the importing object
+        List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%${originalDataModel.id}%")
+        importRelevantMetadata.each {md ->
+            String newNs = md.namespace.replace(originalDataModel.id.toString(), copiedDataModel.id.toString())
+            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: md.value, createdBy: copier.emailAddress)
+            importedElements.find {it.id == md.multiFacetAwareItemId}.addToMetadata(copiedMetadata)
+            metadataService.save(copiedMetadata)
+
+        }
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {

@@ -224,6 +224,10 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         byMultiFacetAwareItemId(multiFacetAwareItemId, filters).like('namespace', likeNamespace)
     }
 
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdInListAndNamespaceLike(List<UUID> multiFacetAwareItemIds, String likeNamespace) {
+        byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).like('namespace', likeNamespace)
+    }
+
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(Serializable multiFacetAwareItemId, List<String> namespaces,
                                                                                                  String notLikeNamespace, Map filters = [:]) {
         byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, filters).not {
