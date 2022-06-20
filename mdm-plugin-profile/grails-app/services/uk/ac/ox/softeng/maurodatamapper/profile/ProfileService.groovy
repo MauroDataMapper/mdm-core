@@ -378,9 +378,8 @@ class ProfileService implements DataBinder {
 
                         if (saveAllowed) {
                             ProfileProvided saved = new ProfileProvided()
-                            MultiFacetAware profiled = storeProfile(profileProviderService, multiFacetAware, submittedInstance, user)
                             // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-                            saved.profile = createProfile(profileProviderService, profiled)
+                            saved.profile = storeProfile(profileProviderService, multiFacetAware, submittedInstance, user)
                             saved.profileProviderService = profileProviderService
                             handledInstances.add(saved)
                         } else {

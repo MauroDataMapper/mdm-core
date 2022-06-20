@@ -104,28 +104,99 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse OK, '''
 [{
-    "name":"ProfileSpecificationProfileService",
-    "version":"${json-unit.matches:version}",
-    "displayName":"Profile Specification Profile (Data Model)",
-    "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys": ["metadataNamespace","domainsApplicable","editableAfterFinalisation"],
-    "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "domains":["DataModel"],
+    "name": "ProfileSpecificationProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Model)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataNamespace",
+      "domainsApplicable",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "domains": [
+      "DataModel"
+    ],
     "editableAfterFinalisation": false
-},
-{
-    "name":"ProfileSpecificationFieldProfileService",
-    "version":"${json-unit.matches:version}",
-    "displayName":"Profile Specification Profile (Data Element)",
-    "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editableAfterFinalisation"],
-    "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
-    "domains":["DataElement"],
+  },
+  {
+    "name": "ProfileSpecificationFieldProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Element)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataPropertyName",
+      "defaultValue",
+      "regularExpression",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
+    "domains": ["DataElement"],
     "editableAfterFinalisation": false
+  },
+  {
+    "name": "ImportedDataClassDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Import Profile for DataClasses",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": ["DataClass"],
+    "editableAfterFinalisation": true
+  },
+  {
+    "name": "ImportedDataElementDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Import Profile for DataElements",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": ["DataElement"],
+    "editableAfterFinalisation": true
+  },
+  {
+    "name": "ImportedDataTypeDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Import Profile for DataTypes",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": [
+      "DataType",
+      "PrimitiveType",
+      "EnumerationType",
+      "ReferenceType",
+      "ModelDataType"
+    ],
+    "editableAfterFinalisation": true
   }]'''
     }
 

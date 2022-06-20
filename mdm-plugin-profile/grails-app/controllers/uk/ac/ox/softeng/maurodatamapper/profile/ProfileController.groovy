@@ -130,8 +130,9 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         }
 
         if (params.importOnly) {
-            profileProviderService =
-                profileService.configureProfileProviderServiceForImportingOwner(profileProviderService, params.importingOwnerDomainType, params.importingOwnerId)
+            profileProviderService = profileService.configureProfileProviderServiceForImportingOwner(profileProviderService,
+                                                                                                     params.importingOwnerDomainType,
+                                                                                                     params.importingOwnerId)
             if (!profileProviderService) {
                 return notFound(params.importingOwnerClass, params.importingOwnerId)
             }
