@@ -23,6 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller.DataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class DataClassComponentInterceptor extends DataModelSecuredInterceptor {
 
     DataFlowService dataFlowService
@@ -43,7 +46,11 @@ class DataClassComponentInterceptor extends DataModelSecuredInterceptor {
     @Override
     void checkParentModelItemId() throws ApiBadRequestException {
         if (!dataFlowService.existsByTargetDataModelIdAndId(params.dataModelId, params.dataFlowId)) {
-            throw new ApiBadRequestException('DEI01', 'Provided dataFlowId is not inside provided dataModelId')
+            if (!dataFlowService.existsBySourceDataModelIdAndId(params.dataModelId, params.dataFlowId)) {
+                throw new ApiBadRequestException('DCCI01', 'Provided dataFlowId is not inside provided dataModelId')
+            } else {
+                log.warn('Access has been acheived through the source DataModel but it should be done through the target DataModel')
+            }
         }
     }
 
