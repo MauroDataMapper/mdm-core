@@ -1337,6 +1337,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.trace('Loading DataType')
         List<DataType> dataTypes = dataTypeService.findAllByDataModelId(loadedModel.id)
         List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(loadedModel.id)
+        List<Metadata> importedDataTypesMetadata = Metadata.extractMetadataForDiff(modelId, importedDataTypes)
 
         log.trace('Loading EnumerationValue')
         List<EnumerationValue> enumerationValues = enumerationValueService.findAllByDataModelId(modelId)
@@ -1345,6 +1346,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.trace('Loading DataClass')
         List<DataClass> dataClasses = dataClassService.findAllByDataModelId(loadedModel.id)
         List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(loadedModel.id)
+        List<Metadata> importedDataClassesMetadata = Metadata.extractMetadataForDiff(modelId, importedDataClasses)
         Map<UUID, List<DataClass>> dataClassesMap = dataClasses.groupBy {it.parentDataClass?.id}
         List<DataClass> importedIntoDataClassDataClasses = dataClassService.findAllByImportingDataClassIds(dataClasses.collect {it.id})
         Map<UUID, List<DataClass>> importedDataClassesMap = [:]
@@ -1357,6 +1359,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 })
             }
         }
+
 
         log.trace('Loading DataElement')
         List<DataElement> dataElements = dataElementService.findAllByDataModelId(loadedModel.id)
@@ -1387,6 +1390,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                                   importedDataClassesMap, importedDataElementsMap)
         diffCache.addField('importedDataTypes', importedDataTypes)
         diffCache.addField('importedDataClasses', importedDataClasses)
+        diffCache.addField('importedDataTypesMetadata', importedDataTypesMetadata)
+        diffCache.addField('importedDataClassesMetadata', importedDataClassesMetadata)
 
         log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
         new CachedDiffable(loadedModel, diffCache)
@@ -1406,6 +1411,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             createCatalogueItemDiffCaches(diffCache, 'dataElements', dataElementsMap[dataClassId], facetData)
             diffCache.addField('importedDataClasses', importedDataClasses[dataClassId] ?: [])
             diffCache.addField('importedDataElements', importedDataElements[dataClassId] ?: [])
+            List<Metadata> importedDataClassesMetadata = Metadata.extractMetadataForDiff(dataClassId, importedDataClasses[dataClassId])
+            List<Metadata> importedDataElementsMetadata = Metadata.extractMetadataForDiff(dataClassId, importedDataElements[dataClassId])
+            diffCache.addField('importedDataClassesMetadata', importedDataClassesMetadata)
+            diffCache.addField('importedDataElementsMetadata', importedDataElementsMetadata)
         }
 
         dataClasses.each {dc ->

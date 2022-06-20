@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
@@ -25,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -241,5 +242,17 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         if (filters.key) criteria = criteria.ilike('key', "%${filters.key}%")
         if (filters.value) criteria = criteria.ilike('value', "%${filters.value}%")
         criteria
+    }
+
+    static List<Metadata> extractMetadataForDiff(UUID id, Collection<MdmDomain> mdmDomains) {
+        if (!mdmDomains) return []
+        String importNamespace = "%${id}%"
+        List<Metadata> metadata = byMultiFacetAwareItemIdInListAndNamespaceLike(mdmDomains*.id, importNamespace).list()
+        if (!metadata) return []
+        metadata.collect {md ->
+            Path path = mdmDomains.find {it.id == md.multiFacetAwareItemId}.path
+            String namespaceReplacement = "[${path.toString()}]"
+            new Metadata(namespace: md.namespace.replace(id.toString(), namespaceReplacement), key: md.key, value: md.value)
+        }
     }
 }

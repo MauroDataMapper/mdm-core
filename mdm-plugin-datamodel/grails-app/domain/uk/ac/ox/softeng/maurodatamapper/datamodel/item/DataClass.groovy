@@ -190,19 +190,19 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     def beforeValidate() {
-//        long st = System.currentTimeMillis()
+        //        long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
-            summaryMetadata?.each {
-                it.beforeValidateCheck(this)
-            }
+        summaryMetadata?.each {
+            it.beforeValidateCheck(this)
+        }
         // New save/validate so all DEs and DCs are also new so sort the indexes now
         // This avoids repeated calls to the individual DE or DC during their beforeValidate
         if (!id) {
             if (dataElements) fullSortOfChildren(dataElements)
             if (dataClasses) fullSortOfChildren(dataClasses)
         }
-//                log.debug('DC {} before validate took {}', this.label, Utils.timeTaken(st))
+        //                log.debug('DC {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override
@@ -225,17 +225,26 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataClass.maxMultiplicity)
 
         if (!lhsDiffCache || !rhsDiffCache) {
+            List<Metadata> thisImportDcMd = Metadata.extractMetadataForDiff(this.id, this.importedDataClasses)
+            List<Metadata> otherImportDcMd = Metadata.extractMetadataForDiff(otherDataClass.id, otherDataClass.importedDataClasses)
+            List<Metadata> thisImportDeMd = Metadata.extractMetadataForDiff(this.id, this.importedDataElements)
+            List<Metadata> otherImportDeMd = Metadata.extractMetadataForDiff(otherDataClass.id, otherDataClass.importedDataElements)
+
             base.appendCollection(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
                 .appendCollection(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
                 .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses, otherDataClass.importedDataClasses
                                   , null, false, false)
                 .appendCollection(DataElement, 'importedDataTypes', this.importedDataElements, otherDataClass.importedDataElements
                                   , null, false, false)
+                .appendCollection(Metadata, 'importedDataClassesMetadata', thisImportDcMd, otherImportDcMd)
+                .appendCollection(Metadata, 'importedDataElementsMetadata', thisImportDeMd, otherImportDeMd)
         } else {
             base.appendCollection(DataClass, 'dataClasses')
                 .appendCollection(DataElement, 'dataElements')
                 .appendCollection(DataClass, 'importedDataClasses', null, false, false)
                 .appendCollection(DataElement, 'importedDataElements', null, false, false)
+                .appendCollection(Metadata, 'importedDataClassesMetadata')
+                .appendCollection(Metadata, 'importedDataElementsMetadata')
         }
         base
     }
@@ -276,12 +285,12 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     int countDataElementsByLabel(String label) {
-        dataElements?.count { it.label == label } ?: 0
+        dataElements?.count {it.label == label} ?: 0
     }
 
     Set<DataClass> getAllUnsavedChildren() {
-        Set<DataClass> children = dataClasses.findAll { !it.id }
-        children + children.collectMany { it.getAllUnsavedChildren() }
+        Set<DataClass> children = dataClasses.findAll {!it.id}
+        children + children.collectMany {it.getAllUnsavedChildren()}
     }
 
     DataClass addToImportedDataClasses(DataClass dataClass) {
