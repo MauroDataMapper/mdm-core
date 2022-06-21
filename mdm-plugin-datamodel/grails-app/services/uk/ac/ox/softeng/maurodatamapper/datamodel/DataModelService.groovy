@@ -780,7 +780,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%${originalDataModel.id}%")
         importRelevantMetadata.each {md ->
             String newNs = md.namespace.replace(originalDataModel.id.toString(), copiedDataModel.id.toString())
-            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: md.value, createdBy: copier.emailAddress)
+            String value = md.value
+            if (md.value == originalDataModel.path.toString()) value = copiedDataModel.path
+            else if (md.value == originalDataModel.id.toString()) value = copiedDataModel.id.toString()
+            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: value, createdBy: copier.emailAddress)
             importedElements.find {it.id == md.multiFacetAwareItemId}.addToMetadata(copiedMetadata)
             metadataService.save(copiedMetadata)
 

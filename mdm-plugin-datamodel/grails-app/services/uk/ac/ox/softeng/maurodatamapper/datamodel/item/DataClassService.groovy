@@ -343,6 +343,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%REPLACE_${savedDataClass.path}%")
         importRelevantMetadata.each {md ->
             md.namespace = md.namespace.replace("REPLACE_${savedDataClass.path}".toString(), savedDataClass.id.toString())
+            md.value = md.value.replace("REPLACE_${savedDataClass.path}".toString(), savedDataClass.id.toString())
             metadataService.save(md)
         }
     }
@@ -934,7 +935,10 @@ WHERE
         List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%${originalDataClass.id}%")
         importRelevantMetadata.each {md ->
             String newNs = md.namespace.replace(originalDataClass.id.toString(), "REPLACE_${copiedDataClass.path}")
-            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: md.value, createdBy: copier.emailAddress)
+            String value = md.value
+            if (md.value == originalDataClass.path.toString()) value = copiedDataClass.path
+            else if (md.value == originalDataClass.id.toString()) value = "REPLACE_${copiedDataClass.path}"
+            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: value, createdBy: copier.emailAddress)
             importedElements.find {it.id == md.multiFacetAwareItemId}.addToMetadata(copiedMetadata)
             metadataService.save(copiedMetadata)
 
