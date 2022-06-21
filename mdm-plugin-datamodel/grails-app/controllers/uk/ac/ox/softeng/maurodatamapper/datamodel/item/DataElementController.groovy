@@ -29,7 +29,6 @@ import grails.gorm.transactions.Transactional
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
-import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 
 class DataElementController extends CatalogueItemController<DataElement> {
     static responseFormats = ['json', 'xml']

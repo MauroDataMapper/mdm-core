@@ -34,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
-import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 
 @Slf4j
 class DataClassController extends CatalogueItemController<DataClass> {

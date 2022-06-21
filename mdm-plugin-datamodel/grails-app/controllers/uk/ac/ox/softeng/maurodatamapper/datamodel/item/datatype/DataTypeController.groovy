@@ -31,7 +31,6 @@ import grails.web.mime.MimeType
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
-import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.OK
 
