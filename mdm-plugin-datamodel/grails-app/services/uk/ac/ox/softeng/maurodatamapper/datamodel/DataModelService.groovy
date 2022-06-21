@@ -37,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -1011,6 +1012,62 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 )
             }
             catalogueItem.addToSummaryMetadata(summaryMetadata)
+        }
+    }
+
+    @Override
+    void customProcessPatchIntoModelForUnfoundPath(FieldPatchData fieldPatchData, DataModel targetModel) {
+
+        Path fullPath = fieldPatchData.path
+        String internalPath = fullPath.toString().find(/^.+\.\[(.+?)\]\..+$/) {it[1]}
+
+        if (internalPath) {
+            String newPath = fullPath.toString().replace("[$internalPath]", 'REPLACE_ME')
+            fullPath = Path.from(newPath)
+        }
+
+        if (fullPath.last().prefix == 'md') {
+            log.debug('Custom metadata for internal path')
+            Path relativePath = fullPath.childPath
+            Path importedElementPath = Path.from(internalPath)
+            MdmDomain importingElement = pathService.findResourceByPathFromRootResource(targetModel, relativePath.parent)
+            PathNode mdNode = relativePath.last()
+            mdNode.identifier = mdNode.identifier.replace('REPLACE_ME', importingElement.id.toString())
+            Path metadataPath = importedElementPath.resolve(Path.from(mdNode))
+            Metadata metadata = pathService.findResourceByPath(metadataPath) as Metadata
+
+            switch (fieldPatchData.type) {
+                case 'creation':
+                    MdmDomain importedElement = pathService.findResourceByPath(importedElementPath)
+                    MdmDomain originalImportingElement = pathService.findResourceByPath(fullPath.parent)
+                    log.debug('Creating Metadata into Model at [{}]', importedElementPath)
+                    mdNode.identifier = mdNode.identifier.replace(importingElement.id.toString(), originalImportingElement.id.toString())
+                    metadataPath = importedElementPath.resolve(Path.from(mdNode))
+                    metadata = pathService.findResourceByPath(metadataPath) as Metadata
+                    String namespace = metadata.namespace.replace(originalImportingElement.id.toString(), importingElement.id.toString())
+                    Metadata copy = new Metadata(namespace: namespace, key: metadata.key, value: metadata.value, createdBy: metadata.createdBy)
+                    importedElement.addToMetadata(copy)
+
+                    if (!copy.validate())
+                        throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
+
+                    metadataService.save(copy, flush: false, validate: false)
+                    break
+                case 'deletion':
+                    log.debug('Deleting Metadata from path [{}]', metadataPath)
+                    metadataService.delete(metadata)
+                    break
+                case 'modification':
+                    String fieldName = fieldPatchData.fieldName
+                    log.debug('Modifying [{}] in [{}]', fieldName, metadataPath)
+                    metadata."${fieldName}" = fieldPatchData.sourceValue
+                    if (!metadata.validate())
+                        throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', metadata.errors, messageSource)
+                    metadataService.save(metadata, flush: false, validate: false)
+                    break
+            }
+        } else {
+            super.customProcessPatchIntoModelForUnfoundPath(fieldPatchData, targetModel)
         }
     }
 

@@ -347,12 +347,11 @@ abstract class ModelService<K extends Model>
         // ModelItem paths are like BT treestrings then need to be updated to replace the branch with the model version
         updateModelItemPathsAfterFinalisationOfModel(model)
 
-        if(model.breadcrumbTree) {
+        if (model.breadcrumbTree) {
             // No requirement to have a breadcrumbtree
             model.breadcrumbTree.update(model)
             breadcrumbTreeService.finalise(model.breadcrumbTree)
         }
-
 
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
@@ -616,7 +615,7 @@ abstract class ModelService<K extends Model>
                                        UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
         if (!domainToCopy) {
-            log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
+            customProcessPatchIntoModelForUnfoundPath(creationPatch, targetModel)
             return
         }
         log.debug('Creating [{}] into [{}]', creationPatch.path, creationPatch.relativePathToRoot.parent)
@@ -632,8 +631,7 @@ abstract class ModelService<K extends Model>
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
         MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
         if (!domain) {
-            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
-                     deletionPatch.relativePathToRoot)
+            customProcessPatchIntoModelForUnfoundPath(deletionPatch, targetModel)
             return
         }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
@@ -650,8 +648,7 @@ abstract class ModelService<K extends Model>
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
         MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         if (!domain) {
-            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target',
-                     modificationPatch.relativePathToRoot)
+            customProcessPatchIntoModelForUnfoundPath(modificationPatch, targetModel)
             return
         }
         String fieldName = modificationPatch.fieldName
@@ -669,6 +666,23 @@ abstract class ModelService<K extends Model>
         if (!domain.validate())
             throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
         domainService.save(domain, flush: false, validate: false)
+    }
+
+    void customProcessPatchIntoModelForUnfoundPath(FieldPatchData fieldPatchData, K targetModel) {
+        switch (fieldPatchData.type) {
+            case 'creation':
+                log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', fieldPatchData.path)
+                break
+            case 'deletion':
+                log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
+                         fieldPatchData.relativePathToRoot)
+                break
+            case 'modification':
+                log.warn('Could not process modification patch into model at path [{}] as no such path exists in the target',
+                         fieldPatchData.relativePathToRoot)
+                break
+        }
+
     }
 
     void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
@@ -817,7 +831,7 @@ abstract class ModelService<K extends Model>
         // List all matching models and sort descending my model version. The first result is the latest version.
         // To get the first result, use [0] rather than .first(), because even with a safe navigation operator,
         // ?.first() throws a NoSuchElementException on an empty collection
-        getDomainClass().byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort{
+        getDomainClass().byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort {
             a, b -> b.modelVersion <=> a.modelVersion
         }[0] as K
     }
