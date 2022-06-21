@@ -262,7 +262,7 @@ LEFT JOIN de.importingDataClasses idc
 INNER JOIN de.dataType dt
 WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filters)
 
-        // Cannot sort DEs including imported using idx combined with any other field
+        // Cannot sort DEs including imported using idx
         String sortedQuery = applyHQLSort(baseQuery, 'de', pagination[ARGUMENT_SORT] ?: ['label': 'asc'], pagination, true)
 
         new HQLPagedResultList<DataElement>(DataElement)

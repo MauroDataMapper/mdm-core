@@ -32,6 +32,9 @@ import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
+
 @Slf4j
 class DataClassController extends CatalogueItemController<DataClass> {
 
@@ -242,23 +245,33 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected List<DataClass> listAllReadableResources(Map params) {
+        if (params.sort instanceof String) params.sort = [(params.sort): ORDER_DESC.equalsIgnoreCase(params.order) ? ORDER_DESC : ORDER_ASC]
         params.sort = params.sort ?: ['label': 'asc']
-        // Cannot sort DCs including imported using idx combined with any other field
-        if (params.sort instanceof Map && (params.sort as Map).size() > 1) (params.sort as Map).remove('idx')
+
         if (params.dataClassId) {
-            if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
+            DataClass parentDataClass = dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)
+            if (!parentDataClass) {
                 notFound(params.dataClassId)
                 return null
+            }
+            // Cannot sort DCs with imported using idx
+            if (parentDataClass.importedDataClasses) {
+                (params.sort as Map).remove('idx')
             }
             return dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(params.dataModelId, params.dataClassId, params)
         }
         if (((GrailsParameterMap) params).boolean('all', false)) {
+            // Cannot sort all DCs of DM by idx because DCs with different parents may not have comparable indices
+            (params.sort as Map).remove('idx')
             if (params.search) {
                 return dataClassService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(params.dataModelId,
                                                                                                              params.search,
                                                                                                              params)
             }
             return dataClassService.findAllByDataModelIdIncludingImported(params.dataModelId, params)
+        }
+        if (dataModelService.get(params.dataModelId).importedDataClasses.findAll {!it.parentDataClass}) {
+            (params.sort as Map).remove('idx')
         }
         return dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(params.dataModelId, params)
     }
