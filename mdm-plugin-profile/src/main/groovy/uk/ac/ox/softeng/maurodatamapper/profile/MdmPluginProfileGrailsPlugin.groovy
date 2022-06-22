@@ -73,21 +73,21 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
 
                 importedDataElementDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
                     serviceName = 'ImportedDataElementDynamicProfileProviderService'
-                    displayName = 'Import Profile for DataElements'
+                    displayNamePrefix = 'Import Profile for DataElement'
                     profileNamespace = 'functional.testing'
                     jsonResourceFile = 'importDataElementProfile.json'
                     profileApplicableForDomains = ['DataElement']
                 }
                 importedDataClassDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
                     serviceName = 'ImportedDataClassDynamicProfileProviderService'
-                    displayName = 'Import Profile for DataClasses'
+                    displayNamePrefix = 'Import Profile for DataClass'
                     profileNamespace = 'functional.testing'
                     jsonResourceFile = 'importDataClassProfile.json'
                     profileApplicableForDomains = ['DataClass']
                 }
                 importedDataTypeDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
                     serviceName = 'ImportedDataTypeDynamicProfileProviderService'
-                    displayName = 'Import Profile for DataTypes'
+                    displayNamePrefix = 'Import Profile for DataType'
                     profileNamespace = 'functional.testing'
                     jsonResourceFile = 'importDataTypeProfile.json'
                     profileApplicableForDomains = ['DataType', 'PrimitiveType', 'EnumerationType', 'ReferenceType', 'ModelDataType']

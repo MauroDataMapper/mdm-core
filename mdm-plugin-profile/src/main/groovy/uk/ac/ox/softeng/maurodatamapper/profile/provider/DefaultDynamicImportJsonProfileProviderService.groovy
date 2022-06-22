@@ -24,7 +24,7 @@ class DefaultDynamicImportJsonProfileProviderService extends DynamicImportJsonPr
 
     String serviceName
     String serviceVersion
-    String displayName
+    String displayNamePrefix
     String profileNamespace
     String jsonResourceFile
     List<String> profileApplicableForDomains
@@ -54,7 +54,7 @@ class DefaultDynamicImportJsonProfileProviderService extends DynamicImportJsonPr
         (super.clone() as DefaultDynamicImportJsonProfileProviderService).tap {
             serviceName = owner.serviceName
             serviceVersion = owner.serviceVersion
-            displayName = owner.displayName
+            displayNamePrefix = owner.displayNamePrefix
             profileNamespace = owner.profileNamespace
             jsonResourceFile = owner.jsonResourceFile
             profileApplicableForDomains = owner.profileApplicableForDomains

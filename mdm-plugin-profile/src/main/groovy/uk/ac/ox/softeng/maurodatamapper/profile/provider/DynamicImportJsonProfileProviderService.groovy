@@ -54,6 +54,15 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
         includeImportOwnerSection = true
     }
 
+    @Override
+    String getDisplayName() {
+        if (importingPath) return "$displayNamePrefix for $importingPath"
+        if (importingId) return "$displayNamePrefix for $importingDomainType:$importingId"
+        "Unassigned $displayNamePrefix"
+    }
+
+    abstract String getDisplayNamePrefix()
+
     abstract String getProfileNamespace()
 
     @Override
