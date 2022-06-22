@@ -27,25 +27,17 @@ class JsonProfile extends Profile {
     // Empty constructor used for deserialization from Json
     JsonProfile() {
         super()
-        sections = []
     }
 
     JsonProfile(List<ProfileSection> sections) {
-        super()
-        this.sections = sections
-    }
-
-    static constraints = {
-        label blank: false
-        domainType blank: false
-        sections minSize: 1
+        super(sections)
     }
 
     @Override
     Set<String> getKnownFields() {
         List<String> fields = []
         sections.each {section ->
-            section.fields.each {field ->
+            section.each {field ->
                 if (field.metadataPropertyName) {
                     fields.add(field.metadataPropertyName)
                 } else {

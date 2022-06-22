@@ -1,0 +1,30 @@
+[
+  {
+    "sectionName": "usage",
+    "sectionDescription": "Fields relating to the use of this Data Class within a Data Set",
+    "fields": [
+      {
+        "fieldName": "Mandation",
+        "metadataPropertyName": "mandation",
+        "description": "Whether this item is mandatory or not",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "Mandatory",
+          "Required",
+          "Optional",
+          "Pilot"
+        ]
+      },
+      {
+        "fieldName": "Multiplicity",
+        "metadataPropertyName": "multiplicity",
+        "description": "Any multiplicity set on this Data Element for this use in a Data Set",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string"
+      }
+    ]
+  }
+]

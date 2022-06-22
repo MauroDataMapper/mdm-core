@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -36,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -734,17 +736,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(original.id)
+        copyImportedElements(copy, original, importedDataTypes, 'importedDataTypes', copier)
+
         List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(original.id)
-
-        // Copy across the imported datatypes
-        importedDataTypes.each {dt ->
-            copy.addToImportedDataTypes(dt)
-        }
-
-        // Copy across the imported dataclasses
-        importedDataClasses.each {dc ->
-            copy.addToImportedDataClasses(dc)
-        }
+        copyImportedElements(copy, original, importedDataClasses, 'importedDataClasses', copier)
 
         log.debug('Copy of datamodel took {}', Utils.timeTaken(start))
         copy
@@ -770,6 +765,29 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
+    }
+
+    void copyImportedElements(DataModel copiedDataModel, DataModel originalDataModel, Collection<ModelItem> importedElements, String field, User copier) {
+        if (!importedElements) return
+
+        // Add all imported elements to the copy
+        importedElements.each {ie ->
+            copiedDataModel.addTo(field, ie)
+        }
+
+        // Find all MD which is attached to the imported elements with a key containing the original id
+        // This will get all MD which pertains to the element wrt the importing object
+        List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%${originalDataModel.id}%")
+        importRelevantMetadata.each {md ->
+            String newNs = md.namespace.replace(originalDataModel.id.toString(), copiedDataModel.id.toString())
+            String value = md.value
+            if (md.value == originalDataModel.path.toString()) value = copiedDataModel.path
+            else if (md.value == originalDataModel.id.toString()) value = copiedDataModel.id.toString()
+            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: value, createdBy: copier.emailAddress)
+            importedElements.find {it.id == md.multiFacetAwareItemId}.addToMetadata(copiedMetadata)
+            metadataService.save(copiedMetadata)
+
+        }
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {
@@ -997,6 +1015,62 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 )
             }
             catalogueItem.addToSummaryMetadata(summaryMetadata)
+        }
+    }
+
+    @Override
+    void customProcessPatchIntoModelForUnfoundPath(FieldPatchData fieldPatchData, DataModel targetModel) {
+
+        Path fullPath = fieldPatchData.path
+        String internalPath = fullPath.toString().find(/^.+\.\[(.+?)\]\..+$/) {it[1]}
+
+        if (internalPath) {
+            String newPath = fullPath.toString().replace("[$internalPath]", 'REPLACE_ME')
+            fullPath = Path.from(newPath)
+        }
+
+        if (fullPath.last().prefix == 'md') {
+            log.debug('Custom metadata for internal path')
+            Path relativePath = fullPath.childPath
+            Path importedElementPath = Path.from(internalPath)
+            MdmDomain importingElement = pathService.findResourceByPathFromRootResource(targetModel, relativePath.parent)
+            PathNode mdNode = relativePath.last()
+            mdNode.identifier = mdNode.identifier.replace('REPLACE_ME', importingElement.id.toString())
+            Path metadataPath = importedElementPath.resolve(Path.from(mdNode))
+            Metadata metadata = pathService.findResourceByPath(metadataPath) as Metadata
+
+            switch (fieldPatchData.type) {
+                case 'creation':
+                    MdmDomain importedElement = pathService.findResourceByPath(importedElementPath)
+                    MdmDomain originalImportingElement = pathService.findResourceByPath(fullPath.parent)
+                    log.debug('Creating Metadata into Model at [{}]', importedElementPath)
+                    mdNode.identifier = mdNode.identifier.replace(importingElement.id.toString(), originalImportingElement.id.toString())
+                    metadataPath = importedElementPath.resolve(Path.from(mdNode))
+                    metadata = pathService.findResourceByPath(metadataPath) as Metadata
+                    String namespace = metadata.namespace.replace(originalImportingElement.id.toString(), importingElement.id.toString())
+                    Metadata copy = new Metadata(namespace: namespace, key: metadata.key, value: metadata.value, createdBy: metadata.createdBy)
+                    importedElement.addToMetadata(copy)
+
+                    if (!copy.validate())
+                        throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
+
+                    metadataService.save(copy, flush: false, validate: false)
+                    break
+                case 'deletion':
+                    log.debug('Deleting Metadata from path [{}]', metadataPath)
+                    metadataService.delete(metadata)
+                    break
+                case 'modification':
+                    String fieldName = fieldPatchData.fieldName
+                    log.debug('Modifying [{}] in [{}]', fieldName, metadataPath)
+                    metadata."${fieldName}" = fieldPatchData.sourceValue
+                    if (!metadata.validate())
+                        throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', metadata.errors, messageSource)
+                    metadataService.save(metadata, flush: false, validate: false)
+                    break
+            }
+        } else {
+            super.customProcessPatchIntoModelForUnfoundPath(fieldPatchData, targetModel)
         }
     }
 
@@ -1323,6 +1397,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.trace('Loading DataType')
         List<DataType> dataTypes = dataTypeService.findAllByDataModelId(loadedModel.id)
         List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(loadedModel.id)
+        List<Metadata> importedDataTypesMetadata = Metadata.extractMetadataForDiff(modelId, importedDataTypes)
 
         log.trace('Loading EnumerationValue')
         List<EnumerationValue> enumerationValues = enumerationValueService.findAllByDataModelId(modelId)
@@ -1331,6 +1406,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.trace('Loading DataClass')
         List<DataClass> dataClasses = dataClassService.findAllByDataModelId(loadedModel.id)
         List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(loadedModel.id)
+        List<Metadata> importedDataClassesMetadata = Metadata.extractMetadataForDiff(modelId, importedDataClasses)
         Map<UUID, List<DataClass>> dataClassesMap = dataClasses.groupBy {it.parentDataClass?.id}
         List<DataClass> importedIntoDataClassDataClasses = dataClassService.findAllByImportingDataClassIds(dataClasses.collect {it.id})
         Map<UUID, List<DataClass>> importedDataClassesMap = [:]
@@ -1343,6 +1419,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 })
             }
         }
+
 
         log.trace('Loading DataElement')
         List<DataElement> dataElements = dataElementService.findAllByDataModelId(loadedModel.id)
@@ -1373,6 +1450,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                                   importedDataClassesMap, importedDataElementsMap)
         diffCache.addField('importedDataTypes', importedDataTypes)
         diffCache.addField('importedDataClasses', importedDataClasses)
+        diffCache.addField('importedDataTypesMetadata', importedDataTypesMetadata)
+        diffCache.addField('importedDataClassesMetadata', importedDataClassesMetadata)
 
         log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
         new CachedDiffable(loadedModel, diffCache)
@@ -1392,6 +1471,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             createCatalogueItemDiffCaches(diffCache, 'dataElements', dataElementsMap[dataClassId], facetData)
             diffCache.addField('importedDataClasses', importedDataClasses[dataClassId] ?: [])
             diffCache.addField('importedDataElements', importedDataElements[dataClassId] ?: [])
+            List<Metadata> importedDataClassesMetadata = Metadata.extractMetadataForDiff(dataClassId, importedDataClasses[dataClassId])
+            List<Metadata> importedDataElementsMetadata = Metadata.extractMetadataForDiff(dataClassId, importedDataElements[dataClassId])
+            diffCache.addField('importedDataClassesMetadata', importedDataClassesMetadata)
+            diffCache.addField('importedDataElementsMetadata', importedDataElementsMetadata)
         }
 
         dataClasses.each {dc ->
@@ -1540,6 +1623,18 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             if (branchedModelItem) {
                 importingCatalogueItem.removeFrom(importCollectionName, importedModelItem)
                 importingCatalogueItem.addTo(importCollectionName, branchedModelItem)
+
+                // Tidy up metadata
+                Set<Metadata> importedMiMetadata = importedModelItem.metadata.findAll {it.namespace.matches(/(.+\.)?${importingCatalogueItem.id}(\..+)?/)}
+                if (importedMiMetadata) {
+                    importedMiMetadata.each {md ->
+                        metadataService.delete(md)
+                        importedModelItem.removeFrom('metadata', md)
+                        branchedModelItem.addToMetadata(new Metadata(namespace: md.namespace, key: md.key, value: md.value, createdBy: md.createdBy))
+                    }
+                }
+
+
             } else {
                 log.error('Branched ModelItem not found [{}]', importedModelItem.path.getPathString(copiedDataModelPath.last().modelIdentifier))
             }

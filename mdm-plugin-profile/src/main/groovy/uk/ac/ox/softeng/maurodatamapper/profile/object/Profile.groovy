@@ -22,9 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.validation.Validateable
-import groovy.transform.CompileStatic
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.FromString
+import groovy.transform.stc.SimpleType
 
-@CompileStatic
 @SuppressFBWarnings('NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE')
 abstract class Profile implements Comparable<Profile>, Validateable {
 
@@ -32,31 +33,80 @@ abstract class Profile implements Comparable<Profile>, Validateable {
     String domainType
     String label
     UUID id
+    Closure customSectionsValidation
+
+    Profile() {
+        sections = []
+    }
+
+    Profile(List<ProfileSection> sections) {
+        super()
+        this.sections = sections
+    }
+
+    static constraints = {
+        id nullable: false
+        label nullable: false, blank: false
+        sections minSize: 1
+        customSectionsValidation nullable: true
+    }
 
     abstract Set<String> getKnownFields()
+
+    List<ProfileSection> getSections() {
+        // Maintain original order the sections were added in
+        sections.eachWithIndex {entry, i ->
+            if (!entry.order) entry.order = i
+        }
+        sections.sort()
+    }
 
     @Override
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         if (!params?.currentValuesOnly) {
             Validateable.super.validate null, params, null
         }
-        sections.eachWithIndex {sec, i ->
+        List<ProfileSection> sortedSections = getSections()
+        for (i in 0..<sortedSections.size()) {
+
+            ProfileSection sec = sortedSections[i]
             sec.validate((Map<String, Object>) params)
             if (sec.hasErrors()) {
                 sec.errors.fieldErrors.each {err ->
-                    this.errors.rejectValue("sections[$i].${err.field}", err.code, err.arguments, err.defaultMessage)
+                    this.errors.rejectValue("sections[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
                 }
             }
         }
+        customSectionsValidation?.call(sections, this.errors)
         !hasErrors()
     }
 
     boolean validateCurrentValues() {
-        Map<String, Object> params = [currentValuesOnly: (Object) true]
-        validate(params)
+        validate(currentValuesOnly: (Object) true)
     }
 
     List<ProfileField> getAllFields() {
         sections.collectMany {it.fields}
+    }
+
+    Profile addToSections(@DelegatesTo(value = ProfileSection, strategy = Closure.DELEGATE_FIRST) Closure closure) {
+        sections.add(new ProfileSection().tap(closure))
+        this
+    }
+
+    Profile customSectionsValidation(@ClosureParams(value = FromString,
+        options = ['java.util.List<uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection>,org.springframework.validation.Errors']) Closure closure) {
+        customSectionsValidation = closure
+        this
+    }
+
+    ProfileSection find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection') Closure closure) {
+        sections.find closure
+    }
+
+    List<ProfileSection> each(@DelegatesTo(List) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection') Closure closure) {
+        sections.each closure
     }
 }

@@ -77,6 +77,24 @@ class UrlMappings {
                 post '/profile/validateMany'(controller: 'profile', action: 'validateMany')
                 post '/profile/saveMany'(controller: 'profile', action: 'saveMany')
             }
+
+            Closure importEndpoints = {
+                get '/used'(controller: 'profile', action: 'usedProfiles')
+                get '/unused'(controller: 'profile', action: 'unusedProfiles')
+                group "/$profileNamespace/$profileName", {
+                    get '/'(controller: 'profile', action: 'show')
+                    delete '/'(controller: 'profile', action: 'delete')
+                    post '/'(controller: 'profile', action: 'save')
+                }
+                post "/$profileNamespace/$profileName/validate"(controller: 'profile', action: 'validate')
+            }
+
+            group "/dataModels/$dataModelId", {
+                group "/dataTypes/$importedDataTypeId/import/profiles", importEndpoints
+                group "/dataClasses/$importedDataClassId/import/profiles", importEndpoints
+                group "/dataClasses/$dataClassId/dataClasses/$importedDataClassId/import/profiles", importEndpoints
+                group "/dataClasses/$dataClassId/dataElements/$importedDataElementId/import/profiles", importEndpoints
+            }
         }
     }
 }

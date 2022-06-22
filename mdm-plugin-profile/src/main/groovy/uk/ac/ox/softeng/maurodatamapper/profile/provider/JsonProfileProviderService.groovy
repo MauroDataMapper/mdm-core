@@ -18,12 +18,23 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
+import grails.core.support.proxy.ProxyHandler
+import org.hibernate.SessionFactory
+
 abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, MultiFacetAware> {
+
+    JsonProfileProviderService() {
+    }
+
+    JsonProfileProviderService(ProxyHandler proxyHandler, MetadataService metadataService, SessionFactory sessionFactory) {
+        super(proxyHandler, metadataService, sessionFactory)
+    }
 
     abstract String getJsonResourceFile()
 
@@ -35,8 +46,8 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile.label = entity.label
 
         List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
-        jsonProfile.sections.each {section ->
-            section.fields.each {field ->
+        jsonProfile.each {section ->
+            section.each {field ->
                 Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
                 // If field is derived then get the location its derived from
                 if (field.derived) {
@@ -60,12 +71,12 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     }
 
     @Override
-    void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress, boolean isEntityFinalised) {
+    JsonProfile storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress, boolean isEntityFinalised) {
         JsonProfile emptyJsonProfile = getNewProfile()
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}
             if (submittedSection) {
-                section.fields.each {field ->
+                section.each {field ->
                     ProfileField submittedField = findFieldInSubmittedSection(submittedSection, section.name, field.getUniqueKey(section.name))
                     if (submittedField) {
                         // Dont allow derived or uneditable fields to be set
@@ -84,6 +95,11 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         entity.findMetadataByNamespace(metadataNamespace).each {md ->
             metadataService.save(md)
         }
+
+        sessionFactory.currentSession.flush()
+
+        // Once its stored then create the full and clean profile from the entity
+        createProfileFromEntity(entity)
     }
 
     ProfileField findFieldInSubmittedSection(ProfileSection submittedSection, String sectionNameToSearch, String profileFieldNameToFind) {
@@ -133,12 +149,5 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
      */
     JsonProfile updateUneditableFields(JsonProfile jsonProfile) {
         jsonProfile
-    }
-
-    void findAndSetProfileField(ProfileSection profileSection, String metadataPropertyName, String value, boolean replaceExistingValue = false) {
-        ProfileField fieldToUpdate = profileSection.find {it.metadataPropertyName == metadataPropertyName}
-        if (!fieldToUpdate.currentValue || replaceExistingValue) {
-            fieldToUpdate.currentValue = value
-        }
     }
 }

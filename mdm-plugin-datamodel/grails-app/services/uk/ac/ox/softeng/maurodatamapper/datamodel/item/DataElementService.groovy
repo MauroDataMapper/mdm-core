@@ -468,6 +468,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
 
                     @Override
                     SimilarityPair<DataElement> apply(DataElement dataElement, Float score) {
+                        if (!dataElement) throw new ApiInternalException('DES', 'No DataElement passed to apply function in findAllSimilarDataElementsInDataModel')
                         dataElement.dataClass = proxyHandler.unwrapIfProxy(dataElement.dataClass)
                         dataElement.dataType = proxyHandler.unwrapIfProxy(dataElement.dataType)
                         dataElement.dataClass.dataModel = proxyHandler.unwrapIfProxy(dataElement.dataClass.dataModel)

@@ -17,10 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultDynamicImportJsonProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileSpecificationDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.search.searchparamfilter.ProfileFilter
 
 import grails.plugins.Plugin
+import grails.util.Environment
 
 class MdmPluginProfileGrailsPlugin extends Plugin {
 
@@ -62,9 +65,52 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
     ]
 
     Closure doWithSpring() {
-        { ->
+        {->
             profileSpecificationDataTypeProvider ProfileSpecificationDataTypeProvider
             profileFilter ProfileFilter
+
+            if (Environment.current != Environment.PRODUCTION) {
+
+                importedDataElementDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedDataElementDynamicProfileProviderService'
+                    displayNamePrefix = 'Import Profile for DataElement'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importDataElementProfile.json'
+                    profileApplicableForDomains = ['DataElement']
+                }
+                importedDataClassDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedDataClassDynamicProfileProviderService'
+                    displayNamePrefix = 'Import Profile for DataClass'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importDataClassProfile.json'
+                    profileApplicableForDomains = ['DataClass']
+                }
+                importedDataTypeDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedDataTypeDynamicProfileProviderService'
+                    displayNamePrefix = 'Import Profile for DataType'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importDataTypeProfile.json'
+                    profileApplicableForDomains = ['DataType', 'PrimitiveType', 'EnumerationType', 'ReferenceType', 'ModelDataType']
+                }
+            }
+
+            profileSpecificationProfileService(DefaultJsonProfileProviderService) {
+                serviceName = 'ProfileSpecificationProfileService'
+                servicePackage = 'uk.ac.ox.softeng.maurodatamapper.profile'
+                displayName = 'Profile Specification Profile (Data Model)'
+                metadataNamespace = 'uk.ac.ox.softeng.maurodatamapper.profile'
+                jsonResourceFile = 'ProfileSpecificationProfile.json'
+                profileApplicableForDomains = ['DataModel']
+            }
+
+            profileSpecificationFieldProfileService(DefaultJsonProfileProviderService) {
+                serviceName = 'ProfileSpecificationFieldProfileService'
+                servicePackage = 'uk.ac.ox.softeng.maurodatamapper.profile'
+                displayName = 'Profile Specification Profile (Data Element)'
+                metadataNamespace = 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement'
+                jsonResourceFile = 'ProfileSpecificationFieldProfile.json'
+                profileApplicableForDomains = ['DataElement']
+            }
         }
     }
 }

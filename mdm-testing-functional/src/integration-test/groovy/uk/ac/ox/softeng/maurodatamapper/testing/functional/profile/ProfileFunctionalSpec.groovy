@@ -21,8 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.profile.DerivedFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.InvalidProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.PostFinalisedEditableProfileService
-import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationFieldProfileService
-import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationProfileService
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -50,10 +49,10 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Integration
 class ProfileFunctionalSpec extends FunctionalSpec {
 
-    ProfileSpecificationProfileService profileSpecificationProfileService
+    DefaultJsonProfileProviderService profileSpecificationProfileService
     PostFinalisedEditableProfileService postFinalisedEditableProfileService
     DerivedFieldProfileService derivedFieldProfileService
-    ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
+    DefaultJsonProfileProviderService profileSpecificationFieldProfileService
     InvalidProfileService invalidProfileService
 
     @Transactional
@@ -327,61 +326,70 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''
 [
   {
-    "name": "PostFinalisedEditableProfileService",
+    "name": "ImportedDataClassDynamicProfileProviderService",
     "version": "${json-unit.matches:version}",
-    "displayName": "Post Finalised Editable Profile",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "displayName": "Unassigned Import Profile for DataClass",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      "metadataNamespace",
-      "domainsApplicable",
-      "notEditableAfterFinalisedField"
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
     ],
     "providerType": "Profile",
-    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.editable",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
     "domains": [
-      "DataModel"
+      "DataClass"
     ],
     "editableAfterFinalisation": true
   },
   {
-    "name": "ProfileSpecificationProfileService",
+    "name": "ImportedDataElementDynamicProfileProviderService",
     "version": "${json-unit.matches:version}",
-    "displayName": "Profile Specification Profile (Data Model)",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "displayName": "Unassigned Import Profile for DataElement",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      "metadataNamespace",
-      "domainsApplicable",
-      "editableAfterFinalisation"
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
     ],
     "providerType": "Profile",
-    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
-    "domains": [
-      "DataModel"
-    ],
-    "editableAfterFinalisation": false
-  },
-  {
-    "name": "ProfileSpecificationFieldProfileService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "Profile Specification Profile (Data Element)",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
-    "allowsExtraMetadataKeys": false,
-    "knownMetadataKeys": [
-      "metadataPropertyName",
-      "defaultValue",
-      "regularExpression",
-      "editableAfterFinalisation"
-    ],
-    "providerType": "Profile",
-    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
     "domains": [
       "DataElement"
     ],
-    "editableAfterFinalisation": false
+    "editableAfterFinalisation": true
   },
-   {
+  {
+    "name": "ImportedDataTypeDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Unassigned Import Profile for DataType",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": [
+      "DataType",
+      "PrimitiveType",
+      "EnumerationType",
+      "ReferenceType",
+      "ModelDataType"
+    ],
+    "editableAfterFinalisation": true
+  },
+  {
     "name": "DerivedFieldProfileService",
     "version": "${json-unit.matches:version}",
     "displayName": "Derived Field Profile",
@@ -412,6 +420,61 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.invalid",
+    "domains": [
+      "DataModel"
+    ],
+    "editableAfterFinalisation": false
+  },
+  {
+    "name": "PostFinalisedEditableProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Post Finalised Editable Profile",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataNamespace",
+      "domainsApplicable",
+      "notEditableAfterFinalisedField"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.editable",
+    "domains": [
+      "DataModel"
+    ],
+    "editableAfterFinalisation": true
+  },
+  {
+    "name": "ProfileSpecificationFieldProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Element)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataPropertyName",
+      "defaultValue",
+      "regularExpression",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
+    "domains": [
+      "DataElement"
+    ],
+    "editableAfterFinalisation": false
+  },
+  {
+    "name": "ProfileSpecificationProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Model)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataNamespace",
+      "domainsApplicable",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
     "domains": [
       "DataModel"
     ],
@@ -1185,7 +1248,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1196,7 +1259,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1207,7 +1270,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -1760,7 +1823,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1771,7 +1834,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1782,7 +1845,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -1919,7 +1982,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1930,7 +1993,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1941,7 +2004,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -1980,7 +2043,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -1991,7 +2054,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -2002,7 +2065,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -2174,7 +2237,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -2185,7 +2248,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -2196,7 +2259,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -2235,7 +2298,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -2246,7 +2309,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         },
         {
@@ -2257,7 +2320,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false
         }
       ]
@@ -2557,7 +2620,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "The namespace under which properties of this profile will be stored"
         },
@@ -2569,7 +2632,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
         '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item."
@@ -2582,7 +2645,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false."
         }
@@ -2610,7 +2673,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": true,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": true,
           "derivedFrom": "label",
           "description": "A field which is derived"
@@ -2623,7 +2686,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": true,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "A field which is uneditable and listed as mandatory"
         },
@@ -2635,7 +2698,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "uneditable": true,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "A field which is uneditable and listed as optional"
         },
@@ -2647,7 +2710,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
           "uneditable": false,
-          "editableAfterFinalisation": true,
+          "editableAfterFinalisation": false,
           "derived": false,
           "description": "A field which is normal"
         }

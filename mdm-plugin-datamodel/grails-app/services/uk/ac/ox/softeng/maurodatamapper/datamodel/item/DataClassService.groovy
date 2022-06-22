@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -116,6 +117,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 updateDataClassHierarchyAfterInsert(args, dc)
             }
         }
+        // Make sure imported elements are correctly associated
+        updateImportedElements([dataClass])
     }
 
     Collection<DataType> saveDataTypesUsedInDataClass(DataClass dataClass) {
@@ -296,7 +299,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 batch.clear()
                 // Find all DCs which have a saved parent DC
                 notSaved.removeAll(parentIsSaved)
-                parentIsSaved = notSaved.findAll { it.parentDataClass && it.parentDataClass.id }
+                parentIsSaved = notSaved.findAll {it.parentDataClass && it.parentDataClass.id}
                 log.trace('Ready to save on subsequent run {}', parentIsSaved.size())
             }
         }
@@ -306,31 +309,48 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     @Override
     void batchSave(List<DataClass> modelItems) {
         super.batchSave(modelItems)
-        // Make sure all the opposing sides
-        modelItems.each { dc ->
-            if (dc.importedDataClasses) {
-                dc.importedDataClasses.each { idc ->
-                    idc.attach()
-                    idc.addToImportingDataClasses(dc)
-                    idc.save(validate: false)
-                }
-            }
-            if (dc.importedDataElements) {
-                dc.importedDataElements.each { ide ->
-                    ide.attach()
-                    ide.addToImportingDataClasses(dc)
-                    ide.save(validate: false)
-                }
-            }
-        }
+        updateImportedElements(modelItems)
         Session currentSession = sessionFactory.currentSession
         currentSession.flush()
         currentSession.clear()
     }
 
+    void updateImportedElements(List<DataClass> modelItems) {
+        // Make sure all the opposing sides
+        modelItems.each {dc ->
+            if (dc.importedDataClasses) {
+                dc.importedDataClasses.each {idc ->
+                    idc.attach()
+                    idc.addToImportingDataClasses(dc)
+                    idc.save(validate: false)
+                }
+                updateImportRelevantMetadata(dc, dc.importedDataClasses)
+            }
+            if (dc.importedDataElements) {
+                dc.importedDataElements.each {ide ->
+                    ide.attach()
+                    ide.addToImportingDataClasses(dc)
+                    ide.save(validate: false)
+                }
+                updateImportRelevantMetadata(dc, dc.importedDataElements)
+            }
+        }
+    }
+
+    void updateImportRelevantMetadata(DataClass savedDataClass, Collection<ModelItem> importedElements) {
+        // Find all MD which is attached to the imported elements with a key that needs replacing for the path of the DC
+        // Update the replace required path to the id
+        List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%REPLACE_${savedDataClass.path}%")
+        importRelevantMetadata.each {md ->
+            md.namespace = md.namespace.replace("REPLACE_${savedDataClass.path}".toString(), savedDataClass.id.toString())
+            md.value = md.value.replace("REPLACE_${savedDataClass.path}".toString(), savedDataClass.id.toString())
+            metadataService.save(md)
+        }
+    }
+
     @Override
     void preBatchSaveHandling(List<DataClass> modelItems) {
-        modelItems.each { dc ->
+        modelItems.each {dc ->
             dc.dataClasses?.clear()
             dc.dataElements?.clear()
             dc.referenceTypes?.clear()
@@ -864,25 +884,19 @@ WHERE
         copy.dataElements = []
 
         List<DataElement> dataElements = DataElement.byDataClassId(original.id).join('classifiers').list()
-        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect { it.id }, new CopyInformation(copyIndex: true))
-        dataElements.sort().each { element ->
+        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect {it.id}, new CopyInformation(copyIndex: true))
+        dataElements.sort().each {element ->
             copy.addToDataElements(
                 dataElementService
                     .copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata, dataElementCache))
         }
 
         List<DataClass> importedDataClasses = findAllByImportingDataClassId(original.id)
+        copyImportedElements(copy, original, importedDataClasses, 'importedDataClasses', copier)
+
         List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassId(original.id)
+        copyImportedElements(copy, original, importedDataElements, 'importedDataElements', copier)
 
-        // Copy across the imported dataelements
-        importedDataElements.each { de ->
-            copy.addToImportedDataElements(de)
-        }
-
-        // Copy across the imported dataclasses
-        importedDataClasses.each { dc ->
-            copy.addToImportedDataClasses(dc)
-        }
         copy
     }
 
@@ -905,6 +919,30 @@ WHERE
                                        User copier,
                                        UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
         copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
+    }
+
+    void copyImportedElements(DataClass copiedDataClass, DataClass originalDataClass, Collection<ModelItem> importedElements, String field, User copier) {
+        if (!importedElements) return
+
+        // Add all imported elements to the copy
+        importedElements.each {ie ->
+            copiedDataClass.addTo(field, ie)
+        }
+
+        // Find all MD which is attached to the imported elements with a key containing the original id
+        // This will get all MD which pertains to the element wrt the importing object
+        // However at this point we dont have a path for the DC so we need to set to "replace"
+        List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%${originalDataClass.id}%")
+        importRelevantMetadata.each {md ->
+            String newNs = md.namespace.replace(originalDataClass.id.toString(), "REPLACE_${copiedDataClass.path}")
+            String value = md.value
+            if (md.value == originalDataClass.path.toString()) value = copiedDataClass.path
+            else if (md.value == originalDataClass.id.toString()) value = "REPLACE_${copiedDataClass.path}"
+            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: value, createdBy: copier.emailAddress)
+            importedElements.find {it.id == md.multiFacetAwareItemId}.addToMetadata(copiedMetadata)
+            metadataService.save(copiedMetadata)
+
+        }
     }
 
     void matchUpAndAddMissingReferenceTypeClasses(DataModel copiedDataModel, DataModel originalDataModel, User copier,

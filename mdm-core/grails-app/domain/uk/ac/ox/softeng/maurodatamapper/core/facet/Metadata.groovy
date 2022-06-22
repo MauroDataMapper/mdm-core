@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
@@ -25,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -89,7 +90,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
     def beforeValidate() {
         value = value ?: 'N/A'
-//        beforeValidateCheck()
+        //        beforeValidateCheck()
     }
 
     @Override
@@ -209,12 +210,30 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces, Map filters = [:]) {
-        DetachedCriteria criteria = byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
-        if (filters) {
-            criteria = withFilter(criteria, filters)
-        }
+        byMultiFacetAwareItemId(multiFacetAwareItemId, filters).not {inList('namespace', namespaces)}
+    }
 
-        criteria
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNamespaceNotLike(Serializable multiFacetAwareItemId,
+                                                                                 String notLikeNamespace, Map filters = [:]) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId, filters).not {
+            like 'namespace', notLikeNamespace
+        }
+    }
+
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNamespaceLike(Serializable multiFacetAwareItemId,
+                                                                              String likeNamespace, Map filters = [:]) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId, filters).like('namespace', likeNamespace)
+    }
+
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdInListAndNamespaceLike(List<UUID> multiFacetAwareItemIds, String likeNamespace) {
+        byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).like('namespace', likeNamespace)
+    }
+
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespacesAndNamespaceNotLike(Serializable multiFacetAwareItemId, List<String> namespaces,
+                                                                                                 String notLikeNamespace, Map filters = [:]) {
+        byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, filters).not {
+            like 'namespace', notLikeNamespace
+        }
     }
 
 
@@ -223,5 +242,17 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         if (filters.key) criteria = criteria.ilike('key', "%${filters.key}%")
         if (filters.value) criteria = criteria.ilike('value', "%${filters.value}%")
         criteria
+    }
+
+    static List<Metadata> extractMetadataForDiff(UUID id, Collection<MdmDomain> mdmDomains) {
+        if (!mdmDomains) return []
+        String importNamespace = "%${id}%"
+        List<Metadata> metadata = byMultiFacetAwareItemIdInListAndNamespaceLike(mdmDomains*.id, importNamespace).list()
+        if (!metadata) return []
+        metadata.collect {md ->
+            Path path = mdmDomains.find {it.id == md.multiFacetAwareItemId}.path
+            String namespaceReplacement = "[${path.toString()}]"
+            new Metadata(namespace: md.namespace.replace(id.toString(), namespaceReplacement), key: md.key, value: md.value)
+        }
     }
 }
