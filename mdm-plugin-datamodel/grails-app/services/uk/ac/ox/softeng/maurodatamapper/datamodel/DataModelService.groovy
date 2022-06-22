@@ -1623,6 +1623,18 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             if (branchedModelItem) {
                 importingCatalogueItem.removeFrom(importCollectionName, importedModelItem)
                 importingCatalogueItem.addTo(importCollectionName, branchedModelItem)
+
+                // Tidy up metadata
+                Set<Metadata> importedMiMetadata = importedModelItem.metadata.findAll {it.namespace.matches(/(.+\.)?${importingCatalogueItem.id}(\..+)?/)}
+                if (importedMiMetadata) {
+                    importedMiMetadata.each {md ->
+                        metadataService.delete(md)
+                        importedModelItem.removeFrom('metadata', md)
+                        branchedModelItem.addToMetadata(new Metadata(namespace: md.namespace, key: md.key, value: md.value, createdBy: md.createdBy))
+                    }
+                }
+
+
             } else {
                 log.error('Branched ModelItem not found [{}]', importedModelItem.path.getPathString(copiedDataModelPath.last().modelIdentifier))
             }
