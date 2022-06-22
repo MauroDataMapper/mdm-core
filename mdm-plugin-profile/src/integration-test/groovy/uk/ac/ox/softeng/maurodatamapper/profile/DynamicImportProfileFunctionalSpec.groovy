@@ -86,7 +86,7 @@ class DynamicImportProfileFunctionalSpec extends BaseFunctionalSpec {
         log.debug('Check and setup test data')
 
         assert profileSpecificationFieldProfileService.displayName == 'Profile Specification Profile (Data Element)'
-        assert importedDataElementDynamicProfileProviderService.displayName == 'Import Profile for DataElements'
+        assert importedDataElementDynamicProfileProviderService.displayName == 'Unassigned Import Profile for DataElement'
 
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)

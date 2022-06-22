@@ -141,7 +141,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
   {
     "name": "ImportedDataClassDynamicProfileProviderService",
     "version": "${json-unit.matches:version}",
-    "displayName": "Import Profile for DataClasses",
+    "displayName": "Unassigned Import Profile for DataClass",
     "namespace": "import.NOT_ASSIGNED.functional.testing",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
@@ -159,7 +159,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
   {
     "name": "ImportedDataElementDynamicProfileProviderService",
     "version": "${json-unit.matches:version}",
-    "displayName": "Import Profile for DataElements",
+    "displayName": "Unassigned Import Profile for DataElement",
     "namespace": "import.NOT_ASSIGNED.functional.testing",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
@@ -177,7 +177,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
   {
     "name": "ImportedDataTypeDynamicProfileProviderService",
     "version": "${json-unit.matches:version}",
-    "displayName": "Import Profile for DataTypes",
+    "displayName": "Unassigned Import Profile for DataType",
     "namespace": "import.NOT_ASSIGNED.functional.testing",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
