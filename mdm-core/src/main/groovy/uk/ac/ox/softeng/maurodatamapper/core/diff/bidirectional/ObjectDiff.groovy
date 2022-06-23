@@ -221,18 +221,26 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
             .leftHandSide(lhs ?: [])
             .rightHandSide(rhs ?: []) as ArrayDiff<K>
 
+        println 'appendCollection 1'
+
         // If no lhs or rhs then nothing to compare
         if (!lhs && !rhs) return addIfEmpty ? append(diff) : this
+
+        println 'appendCollection 2'
 
         // If no lhs then all rhs have been created/added
         if (!lhs) {
             return append(diff.createdObjects(rhs))
         }
 
+        println 'appendCollection 3'
+
         // If no rhs then all lhs have been deleted/removed
         if (!rhs) {
             return append(diff.deletedObjects(lhs))
         }
+
+        println 'appendCollection 4'
 
         Collection<K> deleted = []
         Collection<ObjectDiff> modified = []
@@ -258,15 +266,20 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         // Work through each lhs object and compare to rhs object
         lhsMap.each {di, lObj ->
             K rObj = rhsMap[di]
+            println 'di = ' + di
+            println 'lObj = ' + lObj.label
             if (rObj) {
                 // If robj then it exists and has not been created
                 created.remove(rObj)
+                println 'rObj'
                 // If we want to perform a diff on the actual elements themselves
                 if (diffElements) {
+                    println 'diffElements'
                     ObjectDiff od = caching ?
                                     lObj.diff(rObj, context, lhsDiffCache.getDiffCache(lObj.getPath()), rhsDiffCache.getDiffCache(rObj.getPath())) :
                                     lObj.diff(rObj, context, null, null)
                     // If not equal then objects have been modified
+                    log.info 'ObjectDiff od = {}', od.toString()
                     if (!od.objectsAreIdentical()) {
                         modified.add(od)
                     }

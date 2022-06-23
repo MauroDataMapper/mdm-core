@@ -1,3 +1,4 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
 
 model {
@@ -6,7 +7,7 @@ model {
 
 json {
     if (export.id) id export.id
-    if (export.lastUpdated) lastUpdated export.lastUpdated
-    reportDate export.reportDate
+    if (export.lastUpdated) lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
+    reportDate OffsetDateTimeConverter.toString(export.reportDate)
     reportValue export.reportValue
 }

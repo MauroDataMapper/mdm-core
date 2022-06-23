@@ -161,7 +161,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
         List<Metadata> metadata
         List<Rule> rules
         List<SemanticLink> semanticLinks
+        println 'COPY 1'
         if (copyInformation) {
+            println 'COPY 2'
             metadata =
                 copyInformation.hasFacetData('metadata') ? copyInformation.extractPreloadedFacetsForTypeAndId(Metadata, 'metadata', original.id) :
                 metadataService.findAllByMultiFacetAwareItemId(original.id)
@@ -171,9 +173,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
                             copyInformation.extractPreloadedFacetsForTypeAndId(SemanticLink, 'semanticLinks', original.id) :
                             semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
         } else {
+            println 'COPY 3'
             metadata = metadataService.findAllByMultiFacetAwareItemId(original.id)
             rules = ruleService.findAllByMultiFacetAwareItemId(original.id)
             semanticLinks = semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
+            println 'COPY 3 - END'
         }
 
         metadata.each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
@@ -187,6 +191,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             copy.addToRules(copiedRule)
         }
         semanticLinks.each {link ->
+            println 'COPY 4'
             if (link.targetMultiFacetAwareItem) {
                 copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                         targetMultiFacetAwareItem: link.targetMultiFacetAwareItem,

@@ -60,6 +60,8 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     }
 
     M checkImport(User currentUser, M importedModel, P params) {
+        println 'params.importAsNewBranchModelVersion = ' + params.importAsNewBranchModelVersion.toString()
+
         classifierService.checkClassifiers(currentUser, importedModel)
 
         // Mst check this first to ensure its in place for finding existing models

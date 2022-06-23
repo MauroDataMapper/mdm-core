@@ -687,6 +687,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(importer, request)
         }
 
+        println 'params class = ' + importerProviderServiceParameters.class
+
         def errors = importerService.validateParameters(importerProviderServiceParameters, importer.importerProviderServiceParametersClass)
 
         if (errors.hasErrors()) {

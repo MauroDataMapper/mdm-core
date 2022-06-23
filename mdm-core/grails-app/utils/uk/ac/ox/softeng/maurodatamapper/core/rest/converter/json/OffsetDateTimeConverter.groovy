@@ -43,7 +43,7 @@ class OffsetDateTimeConverter implements JsonGenerator.Converter, Ordered {
     static String toString(OffsetDateTime offsetDateTime) {
         if (!offsetDateTime) return null
         // Grails cant handle nanoseconds on conversion so we just want to ignore them if we have them
-        offsetDateTime.truncatedTo(ChronoUnit.MILLIS).withOffsetSameInstant(ZoneOffset.UTC)?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        offsetDateTime.truncatedTo(ChronoUnit.MILLIS).withOffsetSameInstant(ZoneOffset.UTC)?.format(DateTimeFormatter.ofPattern('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''))
     }
 
     @Override

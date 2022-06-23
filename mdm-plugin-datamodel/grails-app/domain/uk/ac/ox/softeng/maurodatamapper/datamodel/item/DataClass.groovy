@@ -220,16 +220,17 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     ObjectDiff<DataClass> diff(DataClass otherDataClass, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        log.info 'DataClass::diff'
         ObjectDiff<DataClass> base = DiffBuilder.catalogueItemDiffBuilder(DataClass, this, otherDataClass, lhsDiffCache, rhsDiffCache)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataClass.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataClass.maxMultiplicity)
 
         if (!lhsDiffCache || !rhsDiffCache) {
-            base.appendCollection(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
-                .appendCollection(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
-                .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses, otherDataClass.importedDataClasses
+            base.appendCollection(DataClass, 'dataClasses', this.dataClasses?.sort(), otherDataClass.dataClasses?.sort())
+                .appendCollection(DataElement, 'dataElements', this.dataElements?.sort(), otherDataClass.dataElements?.sort())
+                .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses?.sort(), otherDataClass.importedDataClasses?.sort()
                                   , null, false, false)
-                .appendCollection(DataElement, 'importedDataTypes', this.importedDataElements, otherDataClass.importedDataElements
+                .appendCollection(DataElement, 'importedDataTypes', this.importedDataElements?.sort(), otherDataClass.importedDataElements?.sort()
                                   , null, false, false)
         } else {
             base.appendCollection(DataClass, 'dataClasses')
