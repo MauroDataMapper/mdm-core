@@ -1185,7 +1185,7 @@ abstract class ModelService<K extends Model>
         if (!versionedFolderService.isVersionedFolderFamily(model.folder) || !versionedFolderService.isVersionedFolderFamily(otherModel.folder)) return false
         Path modelPath = getFullPathForModel(model)
         Path otherModelPath = getFullPathForModel(otherModel)
-        modelPath.getParent() == otherModelPath.getParent()
+        modelPath.first() == otherModelPath.first()
 
     }
 
