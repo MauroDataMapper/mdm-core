@@ -18,5 +18,7 @@ include(
     'mdm-plugin-referencedata',
     'mdm-plugin-profile',
     'mdm-plugin-federation',
+    'mdm-plugin-freemarker',
+    'mdm-plugin-xsd'
     )
 

@@ -109,6 +109,8 @@ grails {
         implementation project(':mdm-security')
         implementation project(':mdm-plugin-dataflow')
         implementation project(':mdm-plugin-profile')
+        implementation project(':mdm-plugin-freemarker')
+        implementation project(':mdm-plugin-xsd')
     }
 }
 

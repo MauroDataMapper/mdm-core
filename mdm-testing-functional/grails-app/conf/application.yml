@@ -26,6 +26,9 @@ grails:
         failOnError: true
     resources:
         pattern: /**
+    plugins:
+        hibernatesearch:
+            rebuildIndexOnStart: false
 info:
     app:
         name: '@info.app.name@'
