@@ -159,6 +159,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
     }
 
     private boolean shouldIncludeModelSupersededItems() {
-        params.boolean(INCLUDE_MODEL_SUPERSEDED_PARAM)
+        //params.boolean(INCLUDE_MODEL_SUPERSEDED_PARAM)
+        true
     }
 }
