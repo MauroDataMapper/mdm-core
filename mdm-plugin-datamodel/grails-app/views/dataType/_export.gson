@@ -3,7 +3,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 
-inherits template: '/catalogueItem/export'
+inherits template: '/modelItem/export'
 model {
     DataType export
 }

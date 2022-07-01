@@ -1,6 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 
-inherits template: '/catalogueItem/export', model: [addContents: addContents]
+inherits template: '/modelItem/export', model: [addContents: addContents]
 model {
     DataClass export
     Boolean addContents = true

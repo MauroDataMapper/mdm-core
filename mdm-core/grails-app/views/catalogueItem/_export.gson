@@ -9,7 +9,6 @@ model {
 }
 json {
     if (export.id) id export.id
-    if (export instanceof Ordered) index (((Ordered) export).order)
     label export.label
     if (addContents) {
         if (export.description) description export.description
