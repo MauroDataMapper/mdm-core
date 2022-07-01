@@ -1,12 +1,15 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 
+import org.springframework.core.Ordered
+
 model {
     CatalogueItem export
     Boolean addContents = true
 }
 json {
     if (export.id) id export.id
+    if (export instanceof Ordered) index (((Ordered) export).order)
     label export.label
     if (addContents) {
         if (export.description) description export.description
