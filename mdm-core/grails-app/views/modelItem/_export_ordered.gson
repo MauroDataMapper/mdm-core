@@ -4,7 +4,7 @@ inherits template: '/catalogueItem/export', model: [addContents: addContents]
 
 model {
     ModelItem export
-    Boolean addContents
+    Boolean addContents = true
 }
 
 json {

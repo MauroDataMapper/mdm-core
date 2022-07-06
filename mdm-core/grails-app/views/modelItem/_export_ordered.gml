@@ -5,7 +5,7 @@ model {
     Boolean addContents
 }
 ModelItem export = modelItem as ModelItem
-Boolean add = addContents
+Boolean add = addContents == null ? true : addContents
 
 layout '/catalogueItem/_export.gml', catalogueItem: export, addContents: add
 if (export.idx != null) 'mdm:index' export.order

@@ -18,57 +18,57 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
   <mdm:dataModel>
-    <mdm:id>412d7b5f-247b-4136-a663-584610ad491b</mdm:id>
+    <mdm:id>9ec7f7ff-ea45-43a8-a460-275872291358</mdm:id>
     <mdm:label>Complex Test DataModel</mdm:label>
-    <mdm:lastUpdated>2020-04-12T16:48:47.62286Z</mdm:lastUpdated>
+    <mdm:lastUpdated>2022-07-06T15:23:36.366Z</mdm:lastUpdated>
     <mdm:classifiers>
       <mdm:classifier>
-        <mdm:id>ac05bfdc-350b-47db-854a-267b2cd8cc0d</mdm:id>
+        <mdm:id>b71260b3-4dce-4c67-a87f-4411e69241f9</mdm:id>
         <mdm:label>test classifier</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.482769Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.275Z</mdm:lastUpdated>
       </mdm:classifier>
       <mdm:classifier>
-        <mdm:id>35e1d820-02c5-479d-b804-02e1dd157583</mdm:id>
+        <mdm:id>945d5dd9-8e81-4798-8d33-946261100fcc</mdm:id>
         <mdm:label>test classifier2</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.48489Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.277Z</mdm:lastUpdated>
       </mdm:classifier>
     </mdm:classifiers>
     <mdm:metadata>
       <mdm:metadata>
-        <mdm:id>5506be6b-69da-4261-95b3-dc34dd2d8a86</mdm:id>
+        <mdm:id>b1b42ad1-1261-434f-b4a4-532599b326ff</mdm:id>
         <mdm:namespace>test.com</mdm:namespace>
         <mdm:key>mdk1</mdm:key>
         <mdm:value>mdv1</mdm:value>
-        <mdm:lastUpdated>2020-04-12T16:48:47.522121Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.305Z</mdm:lastUpdated>
       </mdm:metadata>
       <mdm:metadata>
-        <mdm:id>507a212f-f6d0-4a4e-9f83-a9956111b212</mdm:id>
+        <mdm:id>86524057-ef57-4c44-afc2-28a360e68f2e</mdm:id>
         <mdm:namespace>test.com</mdm:namespace>
         <mdm:key>mdk2</mdm:key>
         <mdm:value>mdv2</mdm:value>
-        <mdm:lastUpdated>2020-04-12T16:48:47.522415Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.305Z</mdm:lastUpdated>
       </mdm:metadata>
       <mdm:metadata>
-        <mdm:id>bb5aaa74-2f92-4f5e-8c0c-e3449cd0efcd</mdm:id>
+        <mdm:id>164e286d-1dd8-40e7-90f2-af23384ef668</mdm:id>
         <mdm:namespace>test.com/test</mdm:namespace>
         <mdm:key>mdk1</mdm:key>
         <mdm:value>mdv2</mdm:value>
-        <mdm:lastUpdated>2020-04-12T16:48:47.52267Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.306Z</mdm:lastUpdated>
       </mdm:metadata>
     </mdm:metadata>
     <mdm:annotations>
       <mdm:annotation>
-        <mdm:id>bb1b78be-a54a-498e-8676-1d543982dd08</mdm:id>
+        <mdm:id>5a8afd9e-5af4-411b-8916-32a7dc614ff1</mdm:id>
         <mdm:createdBy>development@test.com</mdm:createdBy>
-        <mdm:lastUpdated>2020-04-12T16:48:47.509604Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.304Z</mdm:lastUpdated>
         <mdm:label>test annotation 1</mdm:label>
       </mdm:annotation>
       <mdm:annotation>
-        <mdm:id>0f6f85e2-d1e0-497b-9797-3b58a474fa40</mdm:id>
+        <mdm:id>0c2f41d0-68fc-4759-bc2a-a5ba2485c819</mdm:id>
         <mdm:createdBy>development@test.com</mdm:createdBy>
-        <mdm:lastUpdated>2020-04-12T16:48:47.510166Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.303Z</mdm:lastUpdated>
         <mdm:label>test annotation 2</mdm:label>
         <mdm:description>with description</mdm:description>
       </mdm:annotation>
@@ -79,61 +79,65 @@
     <mdm:finalised>false</mdm:finalised>
     <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
-      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:id>44b8a28d-be7d-4e46-9485-37da3a54fa08</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
-      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+      <mdm:lastUpdated>2022-07-06T15:23:11.674Z</mdm:lastUpdated>
     </mdm:authority>
     <mdm:type>Data Standard</mdm:type>
     <mdm:dataTypes>
       <mdm:dataType>
-        <mdm:id>554c36e4-19f6-4491-a3bd-8290ceef54a5</mdm:id>
-        <mdm:label>string</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.575694Z</mdm:lastUpdated>
-        <mdm:domainType>PrimitiveType</mdm:domainType>
-      </mdm:dataType>
-      <mdm:dataType>
-        <mdm:id>3bbb815e-25c1-4e0e-9044-ada3ddbc5926</mdm:id>
-        <mdm:label>integer</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.577016Z</mdm:lastUpdated>
-        <mdm:domainType>PrimitiveType</mdm:domainType>
-      </mdm:dataType>
-      <mdm:dataType>
-        <mdm:id>49f130ff-eadc-43e6-b282-bb792247ecf3</mdm:id>
+        <mdm:id>90eb9488-5f71-4df0-9ed0-5ff0b6bba600</mdm:id>
         <mdm:label>yesnounknown</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.514923Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.295Z</mdm:lastUpdated>
+        <mdm:index>2</mdm:index>
         <mdm:domainType>EnumerationType</mdm:domainType>
         <mdm:enumerationValues>
           <mdm:enumerationValue>
-            <mdm:id>51c439ff-19b9-47e7-9dd8-ef1b92497d4b</mdm:id>
+            <mdm:id>85f75831-4322-4ab2-b5ad-ad19f1da0793</mdm:id>
             <mdm:index>0</mdm:index>
             <mdm:key>Y</mdm:key>
             <mdm:value>Yes</mdm:value>
-            <mdm:lastUpdated>2020-04-12T16:48:47.52511Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.301Z</mdm:lastUpdated>
           </mdm:enumerationValue>
           <mdm:enumerationValue>
-            <mdm:id>7126391d-d889-43ee-97a1-6eb7c1139c04</mdm:id>
+            <mdm:id>ebc2296b-2237-4a44-810a-0faf0e77d8c4</mdm:id>
             <mdm:index>1</mdm:index>
             <mdm:key>N</mdm:key>
             <mdm:value>No</mdm:value>
-            <mdm:lastUpdated>2020-04-12T16:48:47.525912Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.302Z</mdm:lastUpdated>
           </mdm:enumerationValue>
           <mdm:enumerationValue>
-            <mdm:id>cd58f079-b730-4c12-9d64-b554918e6c87</mdm:id>
+            <mdm:id>7c347d49-6678-4b5f-bd2d-0ecf00f83f17</mdm:id>
             <mdm:index>2</mdm:index>
             <mdm:key>U</mdm:key>
             <mdm:value>Unknown</mdm:value>
-            <mdm:lastUpdated>2020-04-12T16:48:47.517611Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.302Z</mdm:lastUpdated>
           </mdm:enumerationValue>
         </mdm:enumerationValues>
       </mdm:dataType>
       <mdm:dataType>
-        <mdm:id>c4f4eaf9-7557-4e5f-92ea-bfa9008456ab</mdm:id>
+        <mdm:id>d32637ca-d794-4504-bd55-8d2ef14263ee</mdm:id>
+        <mdm:label>integer</mdm:label>
+        <mdm:lastUpdated>2022-07-06T15:23:36.366Z</mdm:lastUpdated>
+        <mdm:index>2</mdm:index>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>4d45d7ed-84a9-4b66-b31b-e6425b0040d3</mdm:id>
+        <mdm:label>string</mdm:label>
+        <mdm:lastUpdated>2022-07-06T15:23:36.367Z</mdm:lastUpdated>
+        <mdm:index>2</mdm:index>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>4dfbd257-1062-4bdb-ab7c-f725a3e7d5b9</mdm:id>
         <mdm:label>child</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.567198Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.332Z</mdm:lastUpdated>
+        <mdm:index>3</mdm:index>
         <mdm:domainType>ReferenceType</mdm:domainType>
         <mdm:referenceClass>
-          <mdm:id>ac948501-d3d9-430d-81a9-b3ceaa8c3171</mdm:id>
+          <mdm:id>5dbc83d9-61ff-4ac9-8b5e-479b6684d74d</mdm:id>
           <mdm:label>child</mdm:label>
           <mdm:dataClassPath>parent|child</mdm:dataClassPath>
         </mdm:referenceClass>
@@ -141,54 +145,59 @@
     </mdm:dataTypes>
     <mdm:childDataClasses>
       <mdm:dataClass>
-        <mdm:id>6584b013-0d2d-4f38-927d-e98063a0cd49</mdm:id>
+        <mdm:id>3df16f01-91de-4838-a792-fdc29c07ec88</mdm:id>
         <mdm:label>emptyclass</mdm:label>
         <mdm:description>dataclass with desc</mdm:description>
-        <mdm:lastUpdated>2020-04-12T16:48:47.518743Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.297Z</mdm:lastUpdated>
+        <mdm:index>1</mdm:index>
       </mdm:dataClass>
       <mdm:dataClass>
-        <mdm:id>2f6e15d5-c7ab-4d86-92fe-6a4d8df738c8</mdm:id>
+        <mdm:id>2ddf8bfc-71d7-43f1-b945-719181c0e823</mdm:id>
         <mdm:label>parent</mdm:label>
-        <mdm:lastUpdated>2020-04-12T16:48:47.581144Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.337Z</mdm:lastUpdated>
         <mdm:metadata>
           <mdm:metadata>
-            <mdm:id>f586794a-2132-4392-9154-4d94f3df4ccc</mdm:id>
+            <mdm:id>66648737-60d7-42e6-a4ad-0c4529359db2</mdm:id>
             <mdm:namespace>test.com</mdm:namespace>
             <mdm:key>mdcl1</mdm:key>
             <mdm:value>mdcl1</mdm:value>
-            <mdm:lastUpdated>2021-12-16T20:03:06.918Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.335Z</mdm:lastUpdated>
           </mdm:metadata>
         </mdm:metadata>
+        <mdm:index>1</mdm:index>
         <mdm:maxMultiplicity>-1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>1</mdm:minMultiplicity>
         <mdm:dataClasses>
           <mdm:dataClass>
-            <mdm:id>ac948501-d3d9-430d-81a9-b3ceaa8c3171</mdm:id>
+            <mdm:id>5dbc83d9-61ff-4ac9-8b5e-479b6684d74d</mdm:id>
             <mdm:label>child</mdm:label>
-            <mdm:lastUpdated>2020-04-12T16:48:47.580016Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.338Z</mdm:lastUpdated>
+            <mdm:index>0</mdm:index>
           </mdm:dataClass>
         </mdm:dataClasses>
         <mdm:dataElements>
           <mdm:dataElement>
-            <mdm:id>7a14a850-5e5d-4b4d-8e77-a61d79a0236f</mdm:id>
+            <mdm:id>16656224-02f3-4b7f-a66e-94f5892bd65a</mdm:id>
             <mdm:label>child</mdm:label>
-            <mdm:lastUpdated>2020-04-12T16:48:47.572319Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.344Z</mdm:lastUpdated>
             <mdm:metadata>
               <mdm:metadata>
-                <mdm:id>b67eda47-5515-455a-8aa0-afcb28ba4a74</mdm:id>
+                <mdm:id>8105cb14-ced0-4a8b-b973-00125f54164a</mdm:id>
                 <mdm:namespace>test.com</mdm:namespace>
                 <mdm:key>mdel1</mdm:key>
                 <mdm:value>mdel1</mdm:value>
-                <mdm:lastUpdated>2021-12-16T20:03:06.949Z</mdm:lastUpdated>
+                <mdm:lastUpdated>2022-07-06T15:23:36.344Z</mdm:lastUpdated>
               </mdm:metadata>
             </mdm:metadata>
+            <mdm:index>0</mdm:index>
             <mdm:dataType>
-              <mdm:id>c4f4eaf9-7557-4e5f-92ea-bfa9008456ab</mdm:id>
+              <mdm:id>4dfbd257-1062-4bdb-ab7c-f725a3e7d5b9</mdm:id>
               <mdm:label>child</mdm:label>
-              <mdm:lastUpdated>2020-04-12T16:48:47.567198Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2022-07-06T15:23:36.332Z</mdm:lastUpdated>
+              <mdm:index>3</mdm:index>
               <mdm:domainType>ReferenceType</mdm:domainType>
               <mdm:referenceClass>
-                <mdm:id>ac948501-d3d9-430d-81a9-b3ceaa8c3171</mdm:id>
+                <mdm:id>5dbc83d9-61ff-4ac9-8b5e-479b6684d74d</mdm:id>
                 <mdm:label>child</mdm:label>
                 <mdm:dataClassPath>parent|child</mdm:dataClassPath>
               </mdm:referenceClass>
@@ -199,34 +208,39 @@
         </mdm:dataElements>
       </mdm:dataClass>
       <mdm:dataClass>
-        <mdm:id>8db8c926-9222-4642-b70a-14b7226846da</mdm:id>
+        <mdm:id>ba0a2dc1-1cf5-440a-82fc-96c0e680c45c</mdm:id>
         <mdm:label>content</mdm:label>
         <mdm:description>A dataclass with elements</mdm:description>
-        <mdm:lastUpdated>2020-04-12T16:48:47.629537Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:36.392Z</mdm:lastUpdated>
+        <mdm:index>2</mdm:index>
         <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>0</mdm:minMultiplicity>
         <mdm:dataElements>
           <mdm:dataElement>
-            <mdm:id>72a3c86e-2a20-453a-b024-36d423dbc73a</mdm:id>
+            <mdm:id>1c0f461c-03fa-4e18-aff2-f18e7ce04da4</mdm:id>
             <mdm:label>ele1</mdm:label>
-            <mdm:lastUpdated>2020-04-12T16:48:47.570751Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.379Z</mdm:lastUpdated>
+            <mdm:index>0</mdm:index>
             <mdm:dataType>
-              <mdm:id>554c36e4-19f6-4491-a3bd-8290ceef54a5</mdm:id>
+              <mdm:id>4d45d7ed-84a9-4b66-b31b-e6425b0040d3</mdm:id>
               <mdm:label>string</mdm:label>
-              <mdm:lastUpdated>2020-04-12T16:48:47.575694Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2022-07-06T15:23:36.367Z</mdm:lastUpdated>
+              <mdm:index>2</mdm:index>
               <mdm:domainType>PrimitiveType</mdm:domainType>
             </mdm:dataType>
             <mdm:maxMultiplicity>20</mdm:maxMultiplicity>
             <mdm:minMultiplicity>0</mdm:minMultiplicity>
           </mdm:dataElement>
           <mdm:dataElement>
-            <mdm:id>71c2f7ee-6cf4-4e60-8f4c-81e087bbc910</mdm:id>
+            <mdm:id>a5cd33f7-de53-4fc4-a6c5-8ae0cf26798d</mdm:id>
             <mdm:label>element2</mdm:label>
-            <mdm:lastUpdated>2020-04-12T16:48:47.571387Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:23:36.365Z</mdm:lastUpdated>
+            <mdm:index>1</mdm:index>
             <mdm:dataType>
-              <mdm:id>3bbb815e-25c1-4e0e-9044-ada3ddbc5926</mdm:id>
+              <mdm:id>d32637ca-d794-4504-bd55-8d2ef14263ee</mdm:id>
               <mdm:label>integer</mdm:label>
-              <mdm:lastUpdated>2020-04-12T16:48:47.577016Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2022-07-06T15:23:36.366Z</mdm:lastUpdated>
+              <mdm:index>2</mdm:index>
               <mdm:domainType>PrimitiveType</mdm:domainType>
             </mdm:dataType>
             <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
@@ -238,11 +252,11 @@
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
-    <exp:exportedOn>2020-04-12T17:48:47.716793+01:00</exp:exportedOn>
+    <exp:exportedOn>2022-07-06T16:23:36.396250+01:00</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>5.1</exp:version>
+      <exp:version>5.2</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

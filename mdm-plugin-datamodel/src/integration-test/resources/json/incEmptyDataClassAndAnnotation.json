@@ -1,6 +1,6 @@
 {
   "dataModel": {
-    "id": "${json-unit.ignore}",
+    "id": "${json-unit.matches:id}",
     "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
@@ -13,18 +13,19 @@
     },
     "childDataClasses": [
       {
-        "id": "${json-unit.ignore}",
+        "id": "${json-unit.matches:id}",
         "label": "Core",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "annotations": [
           {
-            "id": "${json-unit.ignore}",
+            "id": "${json-unit.matches:id}",
             "createdBy": "admin@maurodatamapper.com",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "label": "Link to NHS Data Dictionary element",
             "description": "http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1"
           }
-        ]
+        ],
+        "index": 0
       }
     ]
   },
@@ -34,7 +35,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

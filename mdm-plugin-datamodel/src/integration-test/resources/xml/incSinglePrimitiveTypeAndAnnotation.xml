@@ -18,46 +18,47 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
   <mdm:dataModel>
-    <mdm:id>5e393a3b-6722-40b2-a713-12ed7e13ffe3</mdm:id>
+    <mdm:id>29dc2d06-c803-4c45-b050-549ef038ebc7</mdm:id>
     <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
-    <mdm:lastUpdated>2017-11-21T13:17:02.322Z</mdm:lastUpdated>
+    <mdm:lastUpdated>2022-07-06T15:09:25.168Z</mdm:lastUpdated>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
     <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
-      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:id>c731dab3-f0ae-40a1-b9ee-41c8a52c3af4</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
-      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+      <mdm:lastUpdated>2022-07-06T15:09:18.444Z</mdm:lastUpdated>
     </mdm:authority>
     <mdm:type>Data Standard</mdm:type>
     <mdm:dataTypes>
       <mdm:dataType>
-        <mdm:id>745239a1-7813-4fe3-a412-7d650bf31fda</mdm:id>
+        <mdm:id>2471f82f-60a5-4bdf-8320-c3a64e76c143</mdm:id>
         <mdm:label>openworld_tick</mdm:label>
-        <mdm:lastUpdated>2017-11-21T13:17:02.323Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:09:25.172Z</mdm:lastUpdated>
         <mdm:annotations>
           <mdm:annotation>
-            <mdm:id>0ad3168f-6ae0-49a4-ab11-5e992261484d</mdm:id>
+            <mdm:id>eddecc7e-eab2-4ae9-8fbe-a419fe6e9b3d</mdm:id>
             <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
-            <mdm:lastUpdated>2017-11-21T13:17:02.326Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:09:25.173Z</mdm:lastUpdated>
             <mdm:label>Link to NHS Data Dictionary element</mdm:label>
             <mdm:description>http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1</mdm:description>
           </mdm:annotation>
         </mdm:annotations>
+        <mdm:index>0</mdm:index>
         <mdm:domainType>PrimitiveType</mdm:domainType>
       </mdm:dataType>
     </mdm:dataTypes>
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
-    <exp:exportedOn>2017-11-21T13:17:02.329Z</exp:exportedOn>
+    <exp:exportedOn>2022-07-06T16:09:25.188695+01:00</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>5.1</exp:version>
+      <exp:version>5.2</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

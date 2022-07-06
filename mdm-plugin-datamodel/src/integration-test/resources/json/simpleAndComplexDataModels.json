@@ -55,7 +55,8 @@
               "value": "mdv1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-          ]
+          ],
+          "index": 0
         }
       ]
     },
@@ -78,22 +79,22 @@
       "metadata": [
         {
           "id": "${json-unit.matches:id}",
-          "key": "mdk1",
           "namespace": "test.com",
+          "key": "mdk1",
           "value": "mdv1",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         },
         {
           "id": "${json-unit.matches:id}",
-          "key": "mdk2",
           "namespace": "test.com",
+          "key": "mdk2",
           "value": "mdv2",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         },
         {
           "id": "${json-unit.matches:id}",
-          "key": "mdk1",
           "namespace": "test.com/test",
+          "key": "mdk1",
           "value": "mdv2",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
@@ -126,49 +127,53 @@
       "dataTypes": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "string",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "domainType": "PrimitiveType"
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "integer",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "domainType": "PrimitiveType"
-        },
-        {
-          "id": "${json-unit.matches:id}",
           "label": "yesnounknown",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 2,
           "domainType": "EnumerationType",
           "enumerationValues": [
             {
               "id": "${json-unit.matches:id}",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}",
               "index": 0,
               "key": "Y",
-              "value": "Yes"
+              "value": "Yes",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
             },
             {
               "id": "${json-unit.matches:id}",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}",
               "index": 1,
               "key": "N",
-              "value": "No"
+              "value": "No",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
             },
             {
               "id": "${json-unit.matches:id}",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}",
               "index": 2,
               "key": "U",
-              "value": "Unknown"
+              "value": "Unknown",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
           ]
         },
         {
           "id": "${json-unit.matches:id}",
+          "label": "integer",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 2,
+          "domainType": "PrimitiveType"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "string",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 2,
+          "domainType": "PrimitiveType"
+        },
+        {
+          "id": "${json-unit.matches:id}",
           "label": "child",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 3,
           "domainType": "ReferenceType",
           "referenceClass": {
             "id": "${json-unit.matches:id}",
@@ -182,28 +187,31 @@
           "id": "${json-unit.matches:id}",
           "label": "emptyclass",
           "description": "dataclass with desc",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 1
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "parent",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "maxMultiplicity": -1,
-          "minMultiplicity": 1,
           "metadata": [
             {
               "id": "${json-unit.matches:id}",
-              "key": "mdcl1",
               "namespace": "test.com",
+              "key": "mdcl1",
               "value": "mdcl1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
           ],
+          "index": 1,
+          "maxMultiplicity": -1,
+          "minMultiplicity": 1,
           "dataClasses": [
             {
               "id": "${json-unit.matches:id}",
               "label": "child",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0
             }
           ],
           "dataElements": [
@@ -211,10 +219,21 @@
               "id": "${json-unit.matches:id}",
               "label": "child",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "metadata": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "namespace": "test.com",
+                  "key": "mdel1",
+                  "value": "mdel1",
+                  "lastUpdated": "${json-unit.matches:offsetDateTime}"
+                }
+              ],
+              "index": 0,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "child",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "index": 3,
                 "domainType": "ReferenceType",
                 "referenceClass": {
                   "id": "${json-unit.matches:id}",
@@ -223,16 +242,7 @@
                 }
               },
               "maxMultiplicity": 1,
-              "minMultiplicity": 1,
-              "metadata": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "key": "mdel1",
-                  "namespace": "test.com",
-                  "value": "mdel1",
-                  "lastUpdated": "${json-unit.matches:offsetDateTime}"
-                }
-              ]
+              "minMultiplicity": 1
             }
           ]
         },
@@ -241,6 +251,7 @@
           "label": "content",
           "description": "A dataclass with elements",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 2,
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "dataElements": [
@@ -248,10 +259,12 @@
               "id": "${json-unit.matches:id}",
               "label": "ele1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "string",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "index": 2,
                 "domainType": "PrimitiveType"
               },
               "maxMultiplicity": 20,
@@ -261,10 +274,12 @@
               "id": "${json-unit.matches:id}",
               "label": "element2",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 1,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "integer",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "index": 2,
                 "domainType": "PrimitiveType"
               },
               "maxMultiplicity": 1,
@@ -281,7 +296,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

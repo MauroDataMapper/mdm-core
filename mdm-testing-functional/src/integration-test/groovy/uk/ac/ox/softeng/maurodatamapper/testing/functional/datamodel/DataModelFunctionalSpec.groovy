@@ -466,7 +466,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         verifyJsonResponse OK, '''[
   {
     "name": "DataModelJsonImporterService",
-    "version": "3.1",
+    "version": "3.2",
     "displayName": "JSON DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -479,7 +479,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   },
   {
     "name": "DataModelXmlImporterService",
-    "version": "5.1",
+    "version": "5.2",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -992,7 +992,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", canRead ? STRING_ARG : MAP_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", canRead ? STRING_ARG : MAP_ARG)
 
         then:
         if (!canRead) verifyNotFound response, id
@@ -1017,7 +1017,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -1126,7 +1126,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -1161,7 +1161,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
              [dataModelIds: [id, getSimpleDataModelId()]], canRead ? STRING_ARG : MAP_ARG)
 
         then:
@@ -1248,7 +1248,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -1273,7 +1273,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1284,7 +1284,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId,
@@ -1332,7 +1332,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1342,7 +1342,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -1383,7 +1383,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         given:
         String id = getValidFinalisedId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1393,7 +1393,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1438,7 +1438,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         String id
         String id2
         loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
              [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
 
         expect:
@@ -1451,7 +1451,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
