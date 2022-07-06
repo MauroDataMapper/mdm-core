@@ -32,14 +32,14 @@ DataModel dm = dataModel as DataModel
     'mdm:type'(dm.modelType)
     if (dm.dataTypes) {
         'mdm:dataTypes' {
-            dm.dataTypes.each {dt ->
+            dm.dataTypes.sort().each {dt ->
                 layout '/dataType/export.gml', dataType: dt
             }
         }
     }
     if (dm.childDataClasses) {
         'mdm:childDataClasses' {
-            dm.childDataClasses.each {dc ->
+            dm.childDataClasses.sort().each {dc ->
                 layout '/dataClass/export.gml', dataClass: dc
             }
         }

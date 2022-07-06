@@ -1,10 +1,12 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 
 inherits template: '/catalogueItem/export', model: [addContents: addContents]
+
 model {
     ModelItem export
-    Boolean addContents = true
+    Boolean addContents
 }
+
 json {
-    if (export.order) index export.order
+    if (export.idx != null) index export.order
 }

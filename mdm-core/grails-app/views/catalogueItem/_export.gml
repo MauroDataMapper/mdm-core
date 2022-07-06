@@ -1,8 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 
-import org.springframework.core.Ordered
-
 model {
     CatalogueItem catalogueItem
     Boolean addContents
@@ -12,7 +10,6 @@ Boolean add = addContents == null ? true : addContents
 
 
 if (export.id) 'mdm:id'(export.id)
-if (export instanceof Ordered) 'mdm:index'(((Ordered) export).order)
 'mdm:label' {yield export.label}
 
 if (add) {

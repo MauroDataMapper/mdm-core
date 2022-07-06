@@ -2,14 +2,14 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 
-inherits template: '/modelItem/export'
+inherits template: '/modelItem/export_ordered'
 model {
     ReferenceDataType export
 }
 json {
     domainType export.domainType
     if (export.instanceOf(ReferenceEnumerationType)) {
-        referenceEnumerationValues tmpl.'/referenceEnumerationValue/export'(((ReferenceEnumerationType) export).referenceEnumerationValues)
+        referenceEnumerationValues tmpl.'/referenceEnumerationValue/export'(((ReferenceEnumerationType) export).referenceEnumerationValues.sort())
     } else if (export.instanceOf(ReferencePrimitiveType)) {
         ReferencePrimitiveType pt = export as ReferencePrimitiveType
         if (pt.units) units pt.units

@@ -5,14 +5,14 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 ReferenceDataType dt = referenceDataType as ReferenceDataType
 
 'mdm:referenceDataType' {
-    layout '/catalogueItem/_export.gml', catalogueItem: dt
+    layout '/modelItem/_export_ordered.gml', modelItem: dt
 
     'mdm:domainType'(dt.domainType)
 
     if (dt.instanceOf(ReferenceEnumerationType)) {
         ReferenceEnumerationType et = dt as ReferenceEnumerationType
         'mdm:enumerationValues' {
-            et.referenceEnumerationValues.each {ev ->
+            et.referenceEnumerationValues.sort().each {ev ->
                 layout '/referenceEnumerationValue/export.gml', referenceEnumerationValue: ev
             }
         }

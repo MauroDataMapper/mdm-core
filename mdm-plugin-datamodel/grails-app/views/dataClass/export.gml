@@ -3,7 +3,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 DataClass dc = dataClass as DataClass
 
 'mdm:dataClass' {
-    layout '/catalogueItem/_export.gml', catalogueItem: dc
+    layout '/modelItem/_export_ordered.gml', modelItem: dc
     if (dc.summaryMetadata) {
         'mdm:summaryMetadata' {
             dc.summaryMetadata.each {sm ->
@@ -16,14 +16,14 @@ DataClass dc = dataClass as DataClass
     if (dc.minMultiplicity != null) 'mdm:minMultiplicity'(dc.minMultiplicity)
     if (dc.dataClasses) {
         'mdm:dataClasses' {
-            dc.dataClasses.each {child ->
+            dc.dataClasses.sort().each {child ->
                 layout '/dataClass/export.gml', dataClass: child
             }
         }
     }
     if (dc.dataElements) {
         'mdm:dataElements' {
-            dc.dataElements.each {child ->
+            dc.dataElements.sort().each {child ->
                 layout '/dataElement/export.gml', dataElement: child
             }
         }

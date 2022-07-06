@@ -24,7 +24,7 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
 
     if (rdm.referenceDataTypes) {
         'mdm:referenceDataTypes' {
-            rdm.referenceDataTypes.each {rdt ->
+            rdm.referenceDataTypes.sort().each {rdt ->
                 layout '/referenceDataType/export.gml', referenceDataType: rdt
             }
         }
@@ -32,7 +32,7 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
 
     if (rdm.referenceDataElements) {
         'mdm:referenceDataElements' {
-            rdm.referenceDataElements.each {rde ->
+            rdm.referenceDataElements.sort().each {rde ->
                 layout '/referenceDataElement/export.gml', referenceDataElement: rde
             }
         }
