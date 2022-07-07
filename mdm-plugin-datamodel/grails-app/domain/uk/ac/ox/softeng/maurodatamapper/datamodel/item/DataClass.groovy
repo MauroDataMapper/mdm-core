@@ -196,12 +196,9 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         summaryMetadata?.each {
             it.beforeValidateCheck(this)
         }
-        // New save/validate so all DEs and DCs are also new so sort the indexes now
-        // This avoids repeated calls to the individual DE or DC during their beforeValidate
-        if (!id) {
-            if (dataElements) fullSortOfChildren(dataElements)
-            if (dataClasses) fullSortOfChildren(dataClasses)
-        }
+        // Children might be new so sort them
+        if (dataElements) fullSortOfChildren(dataElements)
+        if (dataClasses) fullSortOfChildren(dataClasses)
         //                log.debug('DC {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
