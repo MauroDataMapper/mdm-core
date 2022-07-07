@@ -128,7 +128,7 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
 
         if (!prodEnv) {
 
-            setLoggerLevel('uk.ac.ox.softeng', DEBUG)
+            setLoggerLevel('uk.ac.ox.softeng', TRACE)
             setLoggerLevel('db.migration', DEBUG)
             setLoggerLevel('org.flyway', DEBUG)
 

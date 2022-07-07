@@ -150,6 +150,8 @@ class BootstrapModels {
         DataModel dataModel = DataModel.findByLabel(COMPLEX_DATAMODEL_NAME)
 
         if (!dataModel) {
+            log.debug '----- Begin building complex data model -----'
+
             dataModel = new DataModel(createdBy: DEVELOPMENT, label: COMPLEX_DATAMODEL_NAME, organisation: 'brc', author: 'admin person',
                                       folder: folder, authority: authority)
             checkAndSave(messageSource, dataModel)
@@ -257,6 +259,8 @@ class BootstrapModels {
 
             checkAndSave(messageSource, dataModel)
             checkAndSave(messageSource, link)
+
+            log.debug '----- End building complex data model -----'
         }
 
         dataModel

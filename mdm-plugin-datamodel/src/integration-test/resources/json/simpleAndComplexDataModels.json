@@ -129,7 +129,7 @@
           "id": "${json-unit.matches:id}",
           "label": "yesnounknown",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "index": 2,
+          "index": 0,
           "domainType": "EnumerationType",
           "enumerationValues": [
             {
@@ -159,7 +159,7 @@
           "id": "${json-unit.matches:id}",
           "label": "integer",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "index": 2,
+          "index": 1,
           "domainType": "PrimitiveType"
         },
         {
@@ -188,7 +188,7 @@
           "label": "emptyclass",
           "description": "dataclass with desc",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "index": 1
+          "index": 0
         },
         {
           "id": "${json-unit.matches:id}",
@@ -279,7 +279,7 @@
                 "id": "${json-unit.matches:id}",
                 "label": "integer",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                "index": 2,
+                "index": 1,
                 "domainType": "PrimitiveType"
               },
               "maxMultiplicity": 1,

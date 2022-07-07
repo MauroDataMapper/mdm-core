@@ -3156,7 +3156,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
 
         then:
         verifyResponse ACCEPTED, response
@@ -3249,7 +3249,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
 
         then:
         verifyResponse ACCEPTED, response
@@ -3275,7 +3275,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'export again'
         String deId = responseBody().items.first().id
         String firstExportDateTime = responseBody().items.first().exportedOn
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
 
         then:
         verifyResponse ACCEPTED, response
@@ -5341,7 +5341,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'LS02 : test get link suggestions for a model'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -5354,7 +5354,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -5396,7 +5396,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         ])
 
         and:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,

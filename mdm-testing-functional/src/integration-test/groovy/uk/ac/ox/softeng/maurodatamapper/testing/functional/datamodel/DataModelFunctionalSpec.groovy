@@ -1045,7 +1045,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1?asynchronous=true")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
 
         then:
         if (!canRead) verifyNotFound response, id
