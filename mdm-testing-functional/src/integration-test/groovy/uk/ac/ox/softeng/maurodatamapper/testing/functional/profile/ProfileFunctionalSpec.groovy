@@ -108,6 +108,30 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ['dataModelId': id, 'dataTypeId': dataTypeId, 'dataClassId': dataClassId, 'firstDataElementId': firstDataElementId, 'secondDataElementId': secondDataElementId]
     }
 
+    Map<String, String> getSecondTerminologyIds() {
+        loginCreator()
+
+        // Create a Data Model
+        POST("folders/${getTestFolderId()}/terminologies", [label: 'second profile functional model'])
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+        addAccessShares(id, 'terminologies/')
+
+        // Add a Term
+        POST("terminologies/${id}/terms", [code: 'PT01', definition: 'first term in profile functional class'])
+        verifyResponse(CREATED, response)
+        String firstTermId = responseBody().id
+
+        // And another Term
+        POST("terminologies/${id}/terms", [code: 'PT02', definition: 'second term in profile functional class'])
+        verifyResponse(CREATED, response)
+        String secondTermId = responseBody().id
+
+        logout()
+
+        ['terminologyId': id, 'firstTermId': firstTermId, 'secondTermId': secondTermId]
+    }
+
     Map<String, String> getThirdDataModelIds() {
         loginCreator()
 
@@ -139,6 +163,29 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         logout()
         ['dataModelId': id, 'dataTypeId': dataTypeId, 'dataClassId': dataClassId, 'firstDataElementId': firstDataElementId, 'secondDataElementId': secondDataElementId]
+    }
+
+    Map<String, String> getThirdTerminologyIds() {
+        loginCreator()
+
+        // Create a Terminology
+        POST("folders/${getTestFolderId()}/terminologies", [label: 'third profile functional model'])
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+        addAccessShares(id, 'terminologies/')
+
+        // Add a Term
+        POST("terminologies/${id}/terms", [code: 'PT01', definition: 'first term in profile functional class'])
+        verifyResponse(CREATED, response)
+        String firstTermId = responseBody().id
+
+        // And another Term
+        POST("terminologies/${id}/terms", [code: 'PT02', definition: 'second term in profile functional class'])
+        verifyResponse(CREATED, response)
+        String secondTermId = responseBody().id
+
+        logout()
+        ['terminologyId': id, 'firstTermId': firstTermId, 'secondTermId': secondTermId]
     }
 
     String getDynamicProfileModelId() {
@@ -311,9 +358,23 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         logout()
     }
 
+    void finaliseTerminologyId(String id) {
+        loginCreator()
+        PUT("terminologies/$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        logout()
+    }
+
     void cleanupDataModelId(String id) {
         loginCreator()
         DELETE("dataModels/$id?permanent=true")
+        verifyResponse(NO_CONTENT, response)
+        logout()
+    }
+
+    void cleanupTerminologyId(String id) {
+        loginCreator()
+        DELETE("terminologies/$id?permanent=true")
         verifyResponse(NO_CONTENT, response)
         logout()
     }
@@ -1407,7 +1468,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(dynamicProfileModelId)
     }
 
-    void 'N12 : test validating valid dynamic profiles using validateMany (as reader)'() {
+    void 'N12DM : test validating valid dynamic profiles using validateMany (as reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds['dataModelId']
@@ -1424,94 +1485,19 @@ class ProfileFunctionalSpec extends FunctionalSpec {
          * 1. Validate two profiles against two data elements, both succeed
          */
         when: 'use saveMany to save one profile on the first data element'
-        Map optionalFieldMap1 = [
-            fieldName   : 'Dynamic Profile Elem (Optional)',
-            currentValue: 'abc'
-        ]
-        Map mandatoryFieldMap1 = [
-            fieldName   : 'Dynamic Profile Elem (Mandatory)',
-            currentValue: 'def'
-        ]
-        Map defaultOptionalFieldMap1 = [
-            fieldName   : 'Dynamic Profile Elem (Default Optional)',
-            currentValue: ''
-        ]
-
-        Map optionalFieldMap2_1 = [
-            fieldName   : 'Dynamic Profile Elem (Optional)',
-            currentValue: '2_1 abc'
-        ]
-        Map mandatoryFieldMap2_1 = [
-            fieldName   : 'Dynamic Profile Elem (Mandatory)',
-            currentValue: '2_1 def'
-        ]
-        Map defaultOptionalFieldMap2_1 = [
-            fieldName   : 'Dynamic Profile Elem (Default Optional)',
-            currentValue: '2_1'
-        ]
-
-        Map dynamicProfileMap = [
-            profilesProvided: [
-                [
-                    profile: [
-                        sections  : [
-                            [
-                                fields: [
-                                    optionalFieldMap1,
-                                    mandatoryFieldMap1,
-                                    defaultOptionalFieldMap1
-                                ],
-                                name  : 'Profile Section Class'
-                            ]
-                        ],
-                        id        : secondModelFirstDataElementId,
-                        label     : 'first data element in profile functional class',
-                        domainType: 'DataElement'],
-                    profileProviderService: [
-                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name: 'Dynamic%20Profile%20Model'
-                    ]
-                ],
-                [
-                    profile: [
-                        sections  : [
-                            [
-                                fields: [
-                                    optionalFieldMap2_1,
-                                    mandatoryFieldMap2_1,
-                                    defaultOptionalFieldMap2_1
-                                ],
-                                name  : 'Profile Section Class'
-                            ]
-                        ],
-                        id        : secondModelSecondDataElementId,
-                        label     : 'second data element in profile functional class',
-                        domainType: 'DataElement'],
-                    profileProviderService: [
-                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name: 'Second%20Dynamic%20Profile%20Model'
-                    ]
-                ]
-            ]
-        ]
+        Map dynamicProfileMap = getDynamicProfileMapValid(
+            secondModelFirstDataElementId,
+            'first data element in profile functional class',
+            secondModelSecondDataElementId,
+            'second data element in profile functional class',
+            'DataElement'
+        )
 
         loginReader()
         POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
 
         then: 'the profiles are validated successfully'
-        verifyResponse(OK, response)
-        responseBody().count == 2
-        responseBody().profilesProvided.size == 2
-        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
-        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
-        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
-        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
-        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
-        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
-        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
-        responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
-        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
+        verifyResponseValidateManyValidProfile(response, secondModelFirstDataElementId, secondModelSecondDataElementId, 'DataElement')
 
         when: 'used profiles are retrieved for the first data element'
         HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
@@ -1534,7 +1520,58 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(secondDynamicProfileModelId)
     }
 
-    void 'N13 : test validating invalid dynamic profiles using validateMany (as reader)'() {
+    void 'N12T : test validating valid dynamic profiles for Terms on a Terminology using validateMany (as reader)'() {
+        given:
+        Map<String, String> secondIds = getSecondTerminologyIds()
+        String secondModelId = secondIds['terminologyId']
+        String secondModelFirstTermId = secondIds['firstTermId']
+        String secondModelSecondTermId = secondIds['secondTermId']
+        Map<String, String> thirdIds = getThirdTerminologyIds()
+        String thirdModelId = thirdIds['terminologyId']
+        String dynamicProfileModelId = getDynamicProfileModelId()
+        String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
+
+        /**
+         * 1. Validate two profiles against two terms, both succeed
+         */
+        when: 'use saveMany to save one profile on the first term'
+        Map dynamicProfileMap = getDynamicProfileMapValid(
+            secondModelFirstTermId,
+            'PT01',
+            secondModelSecondTermId,
+            'PT02',
+            'Term'
+        )
+
+        loginReader()
+        POST("terminologies/$secondModelId/profile/validateMany", dynamicProfileMap)
+
+        then: 'the profiles are validated successfully'
+        verifyResponseValidateManyValidProfile(response, secondModelFirstTermId, secondModelSecondTermId, 'Term')
+
+        when: 'used profiles are retrieved for the first term'
+        HttpResponse<List<Map>> localResponse = GET("terms/$secondModelFirstTermId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'used profiles are retrieved for the second term'
+        localResponse = GET("terms/$secondModelSecondTermId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        cleanup:
+        cleanupTerminologyId(secondModelId)
+        cleanupTerminologyId(thirdModelId)
+        cleanupDataModelId(dynamicProfileModelId)
+        cleanupDataModelId(secondDynamicProfileModelId)
+    }
+
+
+    void 'N13DM : test validating invalid dynamic profiles using validateMany (as reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds['dataModelId']
@@ -1551,99 +1588,19 @@ class ProfileFunctionalSpec extends FunctionalSpec {
          * 1. Validate two profiles against two data elements, first one fails
          */
         when: 'use validateMany to save one profile on the first data element'
-        Map optionalFieldMap1 = [
-            fieldName   : 'Dynamic Profile Elem (Optional)',
-            currentValue: 'abc'
-        ]
-        Map mandatoryFieldMap1 = [
-            fieldName   : 'Dynamic Profile Elem (Mandatory)',
-            currentValue: '' // Missing value so should fail validation
-        ]
-        Map defaultOptionalFieldMap1 = [
-            fieldName   : 'Dynamic Profile Elem (Default Optional)',
-            currentValue: ''
-        ]
-
-        Map optionalFieldMap2_1 = [
-            fieldName   : 'Dynamic Profile Elem (Optional)',
-            currentValue: '2_1 abc'
-        ]
-        Map mandatoryFieldMap2_1 = [
-            fieldName   : 'Dynamic Profile Elem (Mandatory)',
-            currentValue: '2_1 def'
-        ]
-        Map defaultOptionalFieldMap2_1 = [
-            fieldName   : 'Dynamic Profile Elem (Default Optional)',
-            currentValue: '2_1'
-        ]
-
-        Map dynamicProfileMap = [
-            profilesProvided: [
-                [
-                    profile: [
-                        sections  : [
-                            [
-                                fields: [
-                                    optionalFieldMap1,
-                                    mandatoryFieldMap1,
-                                    defaultOptionalFieldMap1
-                                ],
-                                name  : 'Profile Section Class'
-                            ]
-                        ],
-                        id        : secondModelFirstDataElementId,
-                        label     : 'first data element in profile functional class',
-                        domainType: 'DataElement'],
-                    profileProviderService: [
-                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name: 'Dynamic%20Profile%20Model'
-                    ]
-                ],
-                [
-                    profile: [
-                        sections  : [
-                            [
-                                fields: [
-                                    optionalFieldMap2_1,
-                                    mandatoryFieldMap2_1,
-                                    defaultOptionalFieldMap2_1
-                                ],
-                                name  : 'Profile Section Class'
-                            ]
-                        ],
-                        id        : secondModelSecondDataElementId,
-                        label     : 'second data element in profile functional class',
-                        domainType: 'DataElement'],
-                    profileProviderService: [
-                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name: 'Second%20Dynamic%20Profile%20Model'
-                    ]
-                ]
-            ]
-        ]
+        Map dynamicProfileMap = getDynamicProfileMapInvalid(
+            secondModelFirstDataElementId,
+            'first data element in profile functional class',
+            secondModelSecondDataElementId,
+            'second data element in profile functional class',
+            'DataElement'
+        )
 
         loginReader()
         POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
 
         then: 'the first profile has an error'
-        verifyResponse(UNPROCESSABLE_ENTITY, response)
-        responseBody().count == 2
-        responseBody().profilesProvided.size == 2
-        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
-        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
-        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
-        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
-        responseBody().profilesProvided[0].errors.errors.size == 1
-        responseBody().profilesProvided[0].errors.errors[0].message == 'This field cannot be empty'
-        responseBody().profilesProvided[0].errors.errors[0].fieldName == "Dynamic Profile Elem (Mandatory)"
-
-        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
-        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
-        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
-        responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
-        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
-        !responseBody().profilesProvided[1].errors
+        verifyResponseValidateManyInvalidProfileError(response, secondModelFirstDataElementId, secondModelSecondDataElementId, 'DataElement')
 
         when: 'used profiles are retrieved for the first data element'
         HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
@@ -1666,6 +1623,56 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(secondDynamicProfileModelId)
     }
 
+    void 'N13T : test validating invalid dynamic profiles for Terms on a Terminology using validateMany (as reader)'() {
+        given:
+        Map<String, String> secondIds = getSecondTerminologyIds()
+        String secondModelId = secondIds['terminologyId']
+        String secondModelFirstTermId = secondIds['firstTermId']
+        String secondModelSecondTermId = secondIds['secondTermId']
+        Map<String, String> thirdIds = getThirdTerminologyIds()
+        String thirdModelId = thirdIds['terminologyId']
+        String dynamicProfileModelId = getDynamicProfileModelId()
+        String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
+
+        /**
+         * 1. Validate two profiles against two data elements, first one fails
+         */
+        when: 'use validateMany to save one profile on the first data element'
+        Map dynamicProfileMap = getDynamicProfileMapInvalid(
+            secondModelFirstTermId,
+            'PT01',
+            secondModelSecondTermId,
+            'PT02',
+            'Term'
+        )
+
+        loginReader()
+        POST("terminologies/$secondModelId/profile/validateMany", dynamicProfileMap)
+
+        then: 'the first profile has an error'
+        verifyResponseValidateManyInvalidProfileError(response, secondModelFirstTermId, secondModelSecondTermId, 'Term')
+
+        when: 'used profiles are retrieved for the first term'
+        HttpResponse<List<Map>> localResponse = GET("terms/$secondModelFirstTermId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'used profiles are retrieved for the second term'
+        localResponse = GET("terms/$secondModelSecondTermId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        cleanup:
+        cleanupTerminologyId(secondModelId)
+        cleanupTerminologyId(thirdModelId)
+        cleanupDataModelId(dynamicProfileModelId)
+        cleanupDataModelId(secondDynamicProfileModelId)
+    }
+
 
     /**
      * 1. Save two profiles for one Data Element
@@ -1678,7 +1685,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
      * third should fail silently.
      * 4. Use getMany to retrieve the saved profiles
      */
-    void 'N14 : test saving and retrieving dynamic profiles using saveMany and getMany (as author and reader)'() {
+    void 'N14DM : test saving and retrieving dynamic profiles using saveMany and getMany (as author and reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds['dataModelId']
@@ -1687,7 +1694,6 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         Map<String, String> thirdIds = getThirdDataModelIds()
         String thirdModelId = thirdIds['dataModelId']
         String thirdModelFirstDataElementId = thirdIds['firstDataElementId']
-        String thirdModelSecondDataElementId = thirdIds['secondDataElementId']
         String dynamicProfileModelId = getDynamicProfileModelId()
         String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
 
@@ -2410,6 +2416,749 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(secondDynamicProfileModelId)
     }
 
+    /**
+     * 1. Save two profiles for one Term
+     * 2. Update one of the previously saved dynamic profiles, and in the same
+     * request save a dynamic profile against the second data element
+     * 3. Use saveMany to update the dynamic profiles that have previously been saved
+     * against the first and second data elements on the second data model, and also
+     * try to save a profile against the first data element of the third model, but using
+     * the endpoint of the second data model. The first two updates should work, and the
+     * third should fail silently.
+     * 4. Use getMany to retrieve the saved profiles
+     */
+    void 'N14T : test saving and retrieving dynamic profiles using saveMany and getMany (as author and reader)'() {
+        given:
+        Map<String, String> secondIds = getSecondTerminologyIds()
+        String secondModelId = secondIds['terminologyId']
+        String secondModelFirstTermId = secondIds['firstTermId']
+        String secondModelSecondTermId = secondIds['secondTermId']
+        Map<String, String> thirdIds = getThirdTerminologyIds()
+        String thirdModelId = thirdIds['terminologyId']
+        String thirdModelFirstTermId = thirdIds['firstTermId']
+        String dynamicProfileModelId = getDynamicProfileModelId()
+        String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
+
+
+        Map optionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc'
+        ]
+        Map mandatoryFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def'
+        ]
+        Map defaultOptionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+
+        Map optionalFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: '2_1 abc'
+        ]
+        Map mandatoryFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: '2_1 def'
+        ]
+        Map defaultOptionalFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: '2_1'
+        ]
+
+        Map dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstTermId,
+                        label     : 'PT01',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2_1,
+                                    mandatoryFieldMap2_1,
+                                    defaultOptionalFieldMap2_1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstTermId,
+                        label     : 'PT01',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Second%20Dynamic%20Profile%20Model'
+                    ]
+                ]
+            ]
+        ]
+
+        /**
+         * 1. First save two dynamic profiles against the first data element
+         */
+
+        when: 'use saveMany on a MultiFacetAwareItem that is not a Model'
+        loginAuthor()
+        POST("terms/$secondModelFirstTermId/profile/saveMany", dynamicProfileMap)
+
+        then:
+        verifyResponse(BAD_REQUEST, response)
+
+        when: 'use saveMany to save one profile on the first data element'
+        POST("terminologies/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then: 'the profile is saved for the first term'
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstTermId
+        responseBody().profilesProvided[0].profile.domainType == 'Term'
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelFirstTermId
+        responseBody().profilesProvided[1].profile.domainType == 'Term'
+
+        when: 'used profiles are retrieved for the first term'
+        HttpResponse<List<Map>> localResponse = GET("terms/$secondModelFirstTermId/profiles/used", Argument.listOf(Map))
+
+        then: 'the saved profile is returned'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 2
+        localResponse.body()[0].name == 'Dynamic%20Profile%20Model'
+        localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+        localResponse.body()[1].name == 'Second%20Dynamic%20Profile%20Model'
+        localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        loginReader()
+        GET("terms/$secondModelFirstTermId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "abc",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "def",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "PT01: first term in profile functional class",
+  "domainType": "Term"
+}'''
+
+
+        /**
+         * 2. Use saveMany to update one of the previously saved dynamic profiles, and in the same
+         * request save a dynamic profile against the second data element
+         */
+        when:
+        loginAuthor()
+        optionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc updated'
+        ]
+        mandatoryFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def updated'
+        ]
+        defaultOptionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: 'updated'
+        ]
+
+        Map optionalFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'xyz'
+        ]
+        Map mandatoryFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'pqr'
+        ]
+        Map defaultOptionalFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: 'onm'
+        ]
+
+        dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstTermId,
+                        label     : 'PT01',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2,
+                                    mandatoryFieldMap2,
+                                    defaultOptionalFieldMap2
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondTermId,
+                        label     : 'PT02',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ]
+            ]
+        ]
+
+        POST("terminologies/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstTermId
+        responseBody().profilesProvided[0].profile.domainType == 'Term'
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelSecondTermId
+        responseBody().profilesProvided[1].profile.domainType == 'Term'
+
+        when:
+        loginReader()
+        localResponse = GET("terms/$secondModelFirstTermId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 2
+        localResponse.body()[0].name == 'Dynamic%20Profile%20Model'
+        localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+        localResponse.body()[1].name == 'Second%20Dynamic%20Profile%20Model'
+        localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("terms/$secondModelFirstTermId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "abc updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "def updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "PT01: first term in profile functional class",
+  "domainType": "Term"
+}'''
+
+        when:
+        localResponse = GET("terms/$secondModelSecondTermId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == 'Dynamic%20Profile%20Model'
+        localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("terms/$secondModelSecondTermId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "xyz",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "pqr",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "onm",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "PT02: second term in profile functional class",
+  "domainType": "Term"
+}'''
+
+        /**
+         * 3. Use saveMany to update the dynamic profiles that have previously been saved
+         * against the first and second terms on the second terminology, and also
+         * try to save a profile against the first term of the third model, but using
+         * the endpoint of the second data model. The first two updates should work, and the
+         * third should fail silently.
+         */
+        when:
+        loginAuthor()
+        optionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc updated again'
+        ]
+        mandatoryFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def updated again'
+        ]
+        defaultOptionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: 'updated again'
+        ]
+
+        optionalFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'xyz updated'
+        ]
+        mandatoryFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'pqr updated'
+        ]
+        defaultOptionalFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: 'onm updated'
+        ]
+
+        Map optionalFieldMap3 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'hij'
+        ]
+        Map mandatoryFieldMap3 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'klm'
+        ]
+        Map defaultOptionalFieldMap3 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+
+        dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstTermId,
+                        label     : 'PT01',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2,
+                                    mandatoryFieldMap2,
+                                    defaultOptionalFieldMap2
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondTermId,
+                        label     : 'PT02',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap3,
+                                    mandatoryFieldMap3,
+                                    defaultOptionalFieldMap3
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : thirdModelFirstTermId,
+                        label     : 'PT01: first term in profile functional class',
+                        domainType: 'Term'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Second%20Dynamic%20Profile%20Model'
+                    ]
+                ]
+            ]
+        ]
+
+        POST("terminologies/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstTermId
+        responseBody().profilesProvided[0].profile.domainType == 'Term'
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelSecondTermId
+        responseBody().profilesProvided[1].profile.domainType == 'Term'
+
+        when:
+        loginReader()
+        localResponse = GET("terms/$secondModelFirstTermId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 2
+        localResponse.body()[0].name == 'Dynamic%20Profile%20Model'
+        localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+        localResponse.body()[1].name == 'Second%20Dynamic%20Profile%20Model'
+        localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("terms/$secondModelFirstTermId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "abc updated again",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "def updated again",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "updated again",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "PT01: first term in profile functional class",
+  "domainType": "Term"
+}'''
+
+        when:
+        localResponse = GET("terms/$secondModelSecondTermId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == 'Dynamic%20Profile%20Model'
+        localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("terms/$secondModelSecondTermId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "xyz updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "pqr updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "onm updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "PT02: second term in profile functional class",
+  "domainType": "Term"
+}'''
+
+        when:
+        localResponse = GET("terms/$thirdModelFirstTermId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'do the same POST again, but after finalising the terminologies'
+        finaliseTerminologyId(secondModelId)
+        finaliseTerminologyId(thirdModelId)
+        loginEditor()
+        POST("terminologies/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then: 'no changes are made'
+        verifyResponse(OK, response)
+        responseBody().count == 0
+        responseBody().profilesProvided.size == 0
+
+        when: 'make the same POST again, but this time to third terminology'
+        POST("terminologies/$thirdModelId/profile/saveMany", dynamicProfileMap)
+
+        then: 'the change to the first term on the third model is made'
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().profilesProvided.size == 1
+
+        /**
+         * 4. Get many profiles for many elements
+         */
+        when: 'request made against a MultiFacetAwareItem that is not a model'
+        loginAuthor()
+        Map getManyMap = [
+            'multiFacetAwareItems'   : [
+                [
+                    'multiFacetAwareItemDomainType': 'term',
+                    'multiFacetAwareItemId'        : secondModelFirstTermId
+                ],
+                [
+                    'multiFacetAwareItemDomainType': 'term',
+                    'multiFacetAwareItemId'        : secondModelSecondTermId
+                ]
+            ],
+            'profileProviderServices': [
+                [
+                    'name'     : "Dynamic%20Profile%20Model",
+                    'namespace': "uk.ac.ox.softeng.maurodatamapper.profile.provider"
+                ]
+            ]
+        ]
+
+        POST("terms/$secondModelFirstTermId/profile/getMany", getManyMap)
+
+        then:
+        verifyResponse(BAD_REQUEST, response)
+
+        when: 'correctly request against the second model'
+        POST("terminologies/$secondModelId/profile/getMany", getManyMap)
+
+        then: 'the profiles are listed'
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+
+        when: 'incorrectly request against the third model'
+        POST("terminologies/$thirdModelId/profile/getMany", getManyMap)
+
+        then: 'the profiles are not listed'
+        verifyResponse(OK, response)
+        responseBody().count == 0
+        !responseBody().profilesProvided
+
+
+        cleanup:
+        cleanupTerminologyId(secondModelId)
+        cleanupTerminologyId(thirdModelId)
+        cleanupDataModelId(dynamicProfileModelId)
+        cleanupDataModelId(secondDynamicProfileModelId)
+    }
+
+
     void 'N15 : test that a profile having two versions, each with version tags, can be retrieved by namespace and name only'() {
         given: 'a finalised profile and a simple data model'
         String simpleModelId = getDataModelId()
@@ -2721,5 +3470,218 @@ class ProfileFunctionalSpec extends FunctionalSpec {
   "label": "profile functional model",
   "domainType": "DataModel"
 }'''
+    }
+
+
+    Map getOptionalFieldMap1() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc'
+        ]
+    }
+
+    Map getMandatoryFieldMap1() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def'
+        ]
+    }
+
+    Map getMandatoryFieldMap1Invalid() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: '' // Missing value so should fail validation
+        ]
+    }
+
+    Map getDefaultOptionalFieldMap1() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+    }
+
+    Map getOptionalFieldMap2_1() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: '2_1 abc'
+        ]
+    }
+    Map getMandatoryFieldMap2_1() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: '2_1 def'
+        ]
+    }
+
+    Map getDefaultOptionalFieldMap2_1() {
+        [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: '2_1'
+        ]
+    }
+
+    Map getDynamicProfileMapInvalid(
+        String secondModelFirstModelItemId,
+        String secondModelFirstModelItemLabel,
+        String secondModelSecondModelItemId,
+        String secondModelSecondModelItemLabel,
+        String modelItemDomainType)
+    {
+        Map dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1Invalid,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstModelItemId,
+                        label     : secondModelFirstModelItemLabel,
+                        domainType: modelItemDomainType],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2_1,
+                                    mandatoryFieldMap2_1,
+                                    defaultOptionalFieldMap2_1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondModelItemId,
+                        label     : secondModelSecondModelItemLabel,
+                        domainType: modelItemDomainType],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Second%20Dynamic%20Profile%20Model'
+                    ]
+                ]
+            ]
+        ]
+
+        return dynamicProfileMap
+    }
+
+    Map getDynamicProfileMapValid(
+        String secondModelFirstModelItemId,
+        String secondModelFirstModelItemLabel,
+        String secondModelSecondModelItemId,
+        String secondModelSecondModelItemLabel,
+        String modelItemDomainType)
+    {
+        Map dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstModelItemId,
+                        label     : secondModelFirstModelItemLabel,
+                        domainType: modelItemDomainType],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Dynamic%20Profile%20Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2_1,
+                                    mandatoryFieldMap2_1,
+                                    defaultOptionalFieldMap2_1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondModelItemId,
+                        label     : secondModelSecondModelItemLabel,
+                        domainType: modelItemDomainType],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name: 'Second%20Dynamic%20Profile%20Model'
+                    ]
+                ]
+            ]
+        ]
+
+        return dynamicProfileMap
+    }
+
+
+    void verifyResponseValidateManyInvalidProfileError(
+        HttpResponse response,
+        String firstModelItemId,
+        String secondModelItemId,
+        String modelItemDomainType) {
+
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        assert responseBody().count == 2
+        assert responseBody().profilesProvided.size == 2
+        assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue ==
+          optionalFieldMap1.currentValue
+        assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1Invalid.fieldName}
+            .currentValue == mandatoryFieldMap1Invalid.currentValue
+        assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}
+            .currentValue == defaultOptionalFieldMap1.currentValue
+        assert responseBody().profilesProvided[0].profile.id == firstModelItemId
+        assert responseBody().profilesProvided[0].profile.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[0].errors.errors.size == 1
+        assert responseBody().profilesProvided[0].errors.errors[0].message == 'This field cannot be empty'
+        assert responseBody().profilesProvided[0].errors.errors[0].fieldName == "Dynamic Profile Elem (Mandatory)"
+
+        assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue
+            == optionalFieldMap2_1.currentValue
+        assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue
+            == mandatoryFieldMap2_1.currentValue
+        assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}
+            .currentValue == defaultOptionalFieldMap2_1.currentValue
+        assert responseBody().profilesProvided[1].profile.id == secondModelItemId
+        assert responseBody().profilesProvided[1].profile.domainType == modelItemDomainType
+        assert !responseBody().profilesProvided[1].errors
+    }
+
+    void verifyResponseValidateManyValidProfile(
+        HttpResponse response,
+        String firstModelItemId,
+        String secondModelItemId,
+        String modelItemDomainType) {
+
+        verifyResponse(OK, response)
+        assert responseBody().count == 2
+        assert responseBody().profilesProvided.size == 2
+        assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        assert responseBody().profilesProvided[0].profile.id == firstModelItemId
+        assert responseBody().profilesProvided[0].profile.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
+        assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
+        assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
+        assert responseBody().profilesProvided[1].profile.id == secondModelItemId
+        assert responseBody().profilesProvided[1].profile.domainType == modelItemDomainType
     }
 }
