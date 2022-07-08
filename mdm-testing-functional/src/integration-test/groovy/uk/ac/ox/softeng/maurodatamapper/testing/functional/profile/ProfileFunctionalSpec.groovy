@@ -1315,52 +1315,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "profile functional model",
-  "domainType": "DataModel"
-}'''
+        verifyJsonResponse OK, getDynamicProfileExpectedJson("profile functional model", "DataModel")
 
         cleanup:
         cleanupDataModelId(simpleModelId)
@@ -2025,53 +1980,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "first data element in profile functional class",
-  "domainType": "DataElement"
-}'''
-
+        verifyJsonResponse OK, getDynamicProfileExpectedJson("first data element in profile functional class", "DataElement")
 
         /**
          * 2. Use saveMany to update one of the previously saved dynamic profiles, and in the same
@@ -2184,52 +2093,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "first data element in profile functional class",
-  "domainType": "DataElement"
-}'''
+        verifyJsonResponse OK, getDynamicProfileExpectedJsonPostUpdate("first data element in profile functional class", "DataElement")
 
         when:
         localResponse = GET("dataElements/$secondModelSecondDataElementId/profiles/used", Argument.listOf(Map))
@@ -2768,53 +2632,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "first profile functional data type",
-  "domainType": "PrimitiveType"
-}'''
-
+        verifyJsonResponse OK, getDynamicProfileExpectedJson("first profile functional data type", "PrimitiveType")
 
         /**
          * 2. Use saveMany to update one of the previously saved dynamic profiles, and in the same
@@ -2928,52 +2746,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "first profile functional data type",
-  "domainType": "PrimitiveType"
-}'''
+        verifyJsonResponse OK, getDynamicProfileExpectedJsonPostUpdate("first profile functional data type", "PrimitiveType")
 
         when:
         localResponse = GET("dataTypes/$secondModelSecondModelItemId/profiles/used", Argument.listOf(Map))
@@ -3523,53 +3296,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "profile functional class",
-  "domainType": "DataClass"
-}'''
-
+        verifyJsonResponse OK, getDynamicProfileExpectedJson("profile functional class", "DataClass")
 
         /**
          * 2. Use saveMany to update one of the previously saved dynamic profiles, and in the same
@@ -3693,52 +3420,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "profile functional class",
-  "domainType": "DataClass"
-}'''
+        verifyJsonResponse OK, getDynamicProfileExpectedJsonPostUpdate("profile functional class", "DataClass")
 
         when:
         localResponse = GET("dataClasses/$secondModelChildDataClassId/profiles/used", Argument.listOf(Map))
@@ -4280,53 +3962,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "PT01: first term in profile functional class",
-  "domainType": "Term"
-}'''
-
+        verifyJsonResponse OK, getDynamicProfileExpectedJson("PT01: first term in profile functional class", "Term")
 
         /**
          * 2. Use saveMany to update one of the previously saved dynamic profiles, and in the same
@@ -4439,52 +4075,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, jsonCapableResponse)
-        verifyJsonResponse OK, '''{
-  "sections": [
-    {
-      "name": "Profile Section Class",
-      "description": null,
-      "fields": [
-        {
-          "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "currentValue": "abc updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "currentValue": "def updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        },
-        {
-          "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "currentValue": "updated",
-          "dataType": "string",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "uneditable": false,
-          "editableAfterFinalisation": false,
-          "derived": false
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "PT01: first term in profile functional class",
-  "domainType": "Term"
-}'''
+        verifyJsonResponse OK, getDynamicProfileExpectedJsonPostUpdate("PT01: first term in profile functional class", "Term")
 
         when:
         localResponse = GET("terms/$secondModelSecondTermId/profiles/used", Argument.listOf(Map))
@@ -5406,5 +4997,104 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.id == secondModelItemId
         assert responseBody().profilesProvided[1].profile.domainType == modelItemDomainType
+    }
+
+    String getDynamicProfileExpectedJson(String label, String domainType) {
+        return '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "abc",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "def",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "''' + "${label}" + '''",
+  "domainType": "''' + "${domainType}" + '''"
+}'''
+    }
+
+
+    String getDynamicProfileExpectedJsonPostUpdate(String label, String domainType) {
+        return '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "currentValue": "abc updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "currentValue": "def updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "currentValue": "updated",
+          "dataType": "string",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "uneditable": false,
+          "editableAfterFinalisation": false,
+          "derived": false
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "''' + "${label}" + '''",
+  "domainType": "''' + "${domainType}" + '''"
+}'''
     }
 }
