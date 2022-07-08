@@ -227,6 +227,71 @@ class TerminologyService extends ModelService<Terminology> {
         get(terminology.id)
     }
 
+    List<Terminology> saveModelsWithContent(List<Terminology> terminologies, Integer modelItemBatchSize) {
+
+
+        if (terminologies.any { it.terms.any {te -> te.id}} ||
+                terminologies.any { it.termRelationshipTypes.any {trt -> trt.id}}) {
+            throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
+                    new IllegalStateException('Terminology has previously saved content'))
+        }
+
+        log.debug('Saving {} terminologies with content', terminologies.size())
+
+        long start = System.currentTimeMillis()
+        Map<Terminology, Collection<Term>> terms = [:]
+        Map<Terminology, Collection<TermRelationshipType>> termRelationshipTypes = [:]
+
+        Set<Classifier> classifiers = [] as Set
+        terminologies.each { terminology ->
+            if(terminology.classifiers) {
+                classifiers.addAll(terminology.classifiers)
+            }
+        }
+        log.trace('Saving {} classifiers', classifiers.size())
+        classifierService.saveAll(classifiers)
+
+        terminologies.each { terminology ->
+            if (terminology.termRelationshipTypes) {
+                List<TermRelationshipType> theseTermRelationshipTypes = []
+                theseTermRelationshipTypes.addAll(terminology.termRelationshipTypes)
+                termRelationshipTypes[terminology] = theseTermRelationshipTypes
+                terminology.termRelationshipTypes.clear()
+            }
+
+            if (terminology.terms) {
+                List<Term> theseTerms = []
+                theseTerms.addAll(terminology.terms)
+                terms[terminology] = theseTerms
+                terminology.terms.clear()
+            }
+
+            if (terminology.breadcrumbTree.children) {
+                terminology.breadcrumbTree.disableValidation()
+            }
+        }
+
+        long st = System.currentTimeMillis()
+
+        // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+
+        terminologies.each {terminology ->
+            save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
+        }
+        sessionFactory.currentSession.flush()
+        log.debug('Save of Terminology and BreadcrumbTree took {}', Utils.timeTaken(st))
+
+        saveContent(modelItemBatchSize, terms.values().flatten(), termRelationshipTypes.values().flatten())
+
+        log.debug('Complete save of Terminology complete in {}', Utils.timeTaken(start))
+        // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
+        List<Terminology> returnValues = []
+        getAll(terminologies.collect{it.id})
+    }
+
+
     @Override
     Terminology saveModelNewContentOnly(Terminology model) {
         save(failOnError: true, validate: false, flush: true, model)
