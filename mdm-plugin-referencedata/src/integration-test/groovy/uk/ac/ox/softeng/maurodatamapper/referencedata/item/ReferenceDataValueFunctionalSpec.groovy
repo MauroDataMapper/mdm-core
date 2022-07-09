@@ -91,7 +91,6 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         [
             rowNumber           : 1,
             value               : 'Functional Test ReferenceDataValue',
-            referenceDataModel  : referenceDataModelId,
             referenceDataElement: referenceDataElementId,
         ]
     }
@@ -101,7 +100,6 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         [
             rowNumber           : -1,
             value               : null,
-            referenceDataModel  : null,
             referenceDataElement: null,
         ]
     }

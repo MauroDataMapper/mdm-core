@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 
 import groovy.util.logging.Slf4j
 
@@ -27,6 +28,7 @@ import groovy.util.logging.Slf4j
 class ReferenceDataValueController extends EditLoggingController<ReferenceDataValue> {
     static responseFormats = ['json', 'xml']
 
+    ReferenceDataModelService referenceDataModelService
     ReferenceDataValueService referenceDataValueService
 
     ReferenceDataValueController() {
@@ -136,6 +138,15 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
             return rowify(referenceDataValues)
         }
         referenceDataValueService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
+    }
+
+    @Override
+    protected ReferenceDataValue createResource(Map includesExcludes = Collections.EMPTY_MAP) {
+        ReferenceDataValue instance = super.createResource(includesExcludes)
+
+        instance.referenceDataModel = referenceDataModelService.get(params.referenceDataModelId)
+
+        instance
     }
 
     @Override
