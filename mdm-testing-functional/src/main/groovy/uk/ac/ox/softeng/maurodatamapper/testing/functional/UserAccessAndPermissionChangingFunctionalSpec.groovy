@@ -313,6 +313,16 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         responseBody().userGroup.id == groupId
         responseBody().groupRole.id == groupRoleId
 
+        when: 'list user groups'
+        loginAdmin()
+        GET("$id/groupRoles/$groupRoleId/userGroups")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items[0].id == groupId
+        responseBody().items[0].name == "extraGroup"
+
         when: 'getting item as new reader'
         loginAuthenticated2()
         GET(id)
