@@ -2,7 +2,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 
-inherits template: '/modelItem/export_ordered'
+inherits template: '/catalogueItem/export'
 model {
     ReferenceDataType export
 }

@@ -1207,7 +1207,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
               "key": "mdk1",
               "value": "mdv1"
             }
-          ]
+          ],
+          "index": 0
         }
       ],
       "classifiers": [

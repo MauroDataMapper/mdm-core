@@ -5,7 +5,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 ReferenceDataType dt = referenceDataType as ReferenceDataType
 
 'mdm:referenceDataType' {
-    layout '/modelItem/_export_ordered.gml', modelItem: dt
+    layout '/catalogueItem/_export.gml', catalogueItem: dt
 
     'mdm:domainType'(dt.domainType)
 

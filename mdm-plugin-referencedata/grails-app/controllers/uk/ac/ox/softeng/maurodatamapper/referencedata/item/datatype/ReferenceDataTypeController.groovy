@@ -121,6 +121,8 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
 
     @Override
     protected List<ReferenceDataType> listAllReadableResources(Map params) {
+        params.sort = params.sort ?: 'label'
+
         if (params.search) {
             return referenceDataTypeService.findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(params.referenceDataModelId, params.search, params)
         }

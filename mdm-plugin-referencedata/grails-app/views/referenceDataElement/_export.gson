@@ -1,6 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 
-inherits template: '/modelItem/export_ordered', model: [export: referenceDataElement]
+inherits template: '/catalogueItem/export', model: [export: referenceDataElement]
 model {
     ReferenceDataElement referenceDataElement
 }
