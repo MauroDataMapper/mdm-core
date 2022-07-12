@@ -197,12 +197,12 @@ Ignored otherwise</xs:documentation>
 If you have not provided all the information at the DataModel level then a DataType will be created using the information provided.</xs:documentation>
             </xs:annotation>
           </xs:element>
-          <xs:element name="maxMultiplicity" type="mdm:multiplicity" default="1">
+          <xs:element name="maxMultiplicity" type="mdm:multiplicity" default="1" minOccurs="0">
             <xs:annotation>
               <xs:documentation/>
             </xs:annotation>
           </xs:element>
-          <xs:element name="minMultiplicity" type="mdm:multiplicity" default="1">
+          <xs:element name="minMultiplicity" type="mdm:multiplicity" default="1" minOccurs="0">
             <xs:annotation>
               <xs:documentation/>
             </xs:annotation>

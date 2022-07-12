@@ -1,0 +1,79 @@
+{
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "2022-07-12T15:29:04.441Z",
+    "exporter": {
+      "name": "ReferenceDataJsonExporterService",
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+      "version": "4.0"
+    }
+  },
+  "referenceDataModel": {
+    "authority": {
+      "id": "a2a06942-9c66-4fba-9a69-7e9f0c482976",
+      "label": "Test Authority",
+      "url": "http://localhost"
+    },
+    "author": "Test Author",
+    "organisation": "Test Organisation",
+    "description": "Test ReferenceDataModel with an ReferenceEnumerationType with ordered ReferenceEnumerationValues.",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "id": "0adfbe6e-a30a-4553-b70b-9432fc7055db",
+    "label": "importSimple Reference Data Model",
+    "lastUpdated": "2022-07-12T14:55:37.845Z",
+    "referenceDataTypes": [
+      {
+        "domainType": "ReferenceEnumerationType",
+        "id": "4fea072a-04fc-436b-9674-068cd719231c",
+        "label": "Test ReferenceEnumerationType",
+        "lastUpdated": "2022-07-12T15:00:45.493Z",
+        "referenceEnumerationValues": [
+          {
+            "id": "f27622a7-d005-4323-9c30-a264d1b979a7",
+            "index": 0,
+            "key": "F",
+            "lastUpdated": "2022-07-12T14:48:12.463Z",
+            "value": "EV F"
+          },
+          {
+            "id": "636a5f6a-3fb7-41e1-b03d-3a2a007a9280",
+            "index": 1,
+            "key": "E",
+            "lastUpdated": "2022-07-12T14:48:12.477Z",
+            "value": "EV E"
+          },
+          {
+            "id": "f1985026-e3ef-426a-a067-42399f23fde2",
+            "index": 2,
+            "key": "D",
+            "lastUpdated": "2022-07-12T14:48:12.476Z",
+            "value": "EV D"
+          },
+          {
+            "id": "e889bf01-e2ac-4a2e-a3c5-50311cd0ab1f",
+            "index": 3,
+            "key": "C",
+            "lastUpdated": "2022-07-12T14:48:12.476Z",
+            "value": "EV C"
+          },
+          {
+            "id": "1e4294e1-2319-4600-b437-3509763e42af",
+            "index": 4,
+            "key": "B",
+            "lastUpdated": "2022-07-12T14:48:12.477Z",
+            "value": "EV B"
+          },
+          {
+            "id": "6bfc3114-b2b5-4225-a4b8-6f29a849801c",
+            "index": 5,
+            "key": "A",
+            "lastUpdated": "2022-07-12T14:48:12.477Z",
+            "value": "EV A"
+          }
+        ]
+      }
+    ],
+    "type": "ReferenceDataModel"
+  }
+}

@@ -150,7 +150,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             'incEmptyDataClassAndAnnotation',
             'incDataClassWithChild',
             'incDataClassWithDataElement',
-            'incDataClassWithChildAndSingleReferenceDataType'
+            'incDataClassWithChildAndSingleReferenceDataType',
+            'incOrderedModelItems'
         ]
     }
 

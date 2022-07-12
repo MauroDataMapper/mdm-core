@@ -1,0 +1,97 @@
+<?xml version='1.0'?>
+<!--
+  ~ Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/referenceDataModel/5.0">
+	<mdm:referenceDataModel>
+		<mdm:id>0adfbe6e-a30a-4553-b70b-9432fc7055db</mdm:id>
+		<mdm:label>importSimple Reference Data Model</mdm:label>
+		<mdm:description>Test ReferenceDataModel with an ReferenceEnumerationType with ordered ReferenceEnumerationValues.</mdm:description>
+		<mdm:lastUpdated>2022-07-12T15:55:13.43Z</mdm:lastUpdated>
+		<mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+		<mdm:finalised>false</mdm:finalised>
+		<mdm:branchName>main</mdm:branchName>
+		<mdm:authority>
+			<mdm:id>a2a06942-9c66-4fba-9a69-7e9f0c482976</mdm:id>
+			<mdm:label>Mauro Data Mapper</mdm:label>
+			<mdm:url>http://localhost</mdm:url>
+			<mdm:lastUpdated>2022-06-27T09:34:05.213Z</mdm:lastUpdated>
+		</mdm:authority>
+		<mdm:referenceDataTypes>
+			<mdm:referenceDataType>
+				<mdm:id>4fea072a-04fc-436b-9674-068cd719231c</mdm:id>
+				<mdm:label>Test ReferenceEnumerationType</mdm:label>
+				<mdm:lastUpdated>2022-07-12T15:29:04.636Z</mdm:lastUpdated>
+				<mdm:domainType>ReferenceEnumerationType</mdm:domainType>
+				<mdm:enumerationValues>
+					<mdm:referenceEnumerationValue>
+						<mdm:id>f27622a7-d005-4323-9c30-a264d1b979a7</mdm:id>
+						<mdm:index>0</mdm:index>
+						<mdm:key>F</mdm:key>
+						<mdm:value>EV F</mdm:value>
+						<mdm:lastUpdated>2022-07-12T15:29:04.483Z</mdm:lastUpdated>
+					</mdm:referenceEnumerationValue>
+					<mdm:referenceEnumerationValue>
+						<mdm:id>636a5f6a-3fb7-41e1-b03d-3a2a007a9280</mdm:id>
+						<mdm:index>1</mdm:index>
+						<mdm:key>E</mdm:key>
+						<mdm:value>EV E</mdm:value>
+						<mdm:lastUpdated>2022-07-12T15:29:04.487Z</mdm:lastUpdated>
+					</mdm:referenceEnumerationValue>
+					<mdm:referenceEnumerationValue>
+						<mdm:id>f1985026-e3ef-426a-a067-42399f23fde2</mdm:id>
+						<mdm:index>2</mdm:index>
+						<mdm:key>D</mdm:key>
+						<mdm:value>EV D</mdm:value>
+						<mdm:lastUpdated>2022-07-12T15:29:04.481Z</mdm:lastUpdated>
+					</mdm:referenceEnumerationValue>
+					<mdm:referenceEnumerationValue>
+						<mdm:id>e889bf01-e2ac-4a2e-a3c5-50311cd0ab1f</mdm:id>
+						<mdm:index>3</mdm:index>
+						<mdm:key>C</mdm:key>
+						<mdm:value>EV C</mdm:value>
+						<mdm:lastUpdated>2022-07-12T15:29:04.478Z</mdm:lastUpdated>
+					</mdm:referenceEnumerationValue>
+					<mdm:referenceEnumerationValue>
+						<mdm:id>1e4294e1-2319-4600-b437-3509763e42af</mdm:id>
+						<mdm:index>4</mdm:index>
+						<mdm:key>B</mdm:key>
+						<mdm:value>EV B</mdm:value>
+						<mdm:lastUpdated>2022-07-12T15:29:04.485Z</mdm:lastUpdated>
+					</mdm:referenceEnumerationValue>
+					<mdm:referenceEnumerationValue>
+						<mdm:id>6bfc3114-b2b5-4225-a4b8-6f29a849801c</mdm:id>
+						<mdm:index>5</mdm:index>
+						<mdm:key>A</mdm:key>
+						<mdm:value>EV A</mdm:value>
+						<mdm:lastUpdated>2022-07-12T15:29:04.488Z</mdm:lastUpdated>
+					</mdm:referenceEnumerationValue>
+				</mdm:enumerationValues>
+			</mdm:referenceDataType>
+		</mdm:referenceDataTypes>
+	</mdm:referenceDataModel>
+	<exp:exportMetadata>
+		<exp:exportedBy>Admin User</exp:exportedBy>
+		<exp:exportedOn>2022-07-12T16:55:22.664560+01:00</exp:exportedOn>
+		<exp:exporter>
+			<exp:namespace>uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter</exp:namespace>
+			<exp:name>ReferenceDataXmlExporterService</exp:name>
+			<exp:version>5.0</exp:version>
+		</exp:exporter>
+	</exp:exportMetadata>
+</exp:exportModel>

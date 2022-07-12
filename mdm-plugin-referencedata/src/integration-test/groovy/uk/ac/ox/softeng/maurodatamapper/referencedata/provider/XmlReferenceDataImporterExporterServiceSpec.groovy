@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
@@ -408,7 +409,52 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         validateExportedModel('importSimpleWithClassifiers', exported)
     }
 
-    void 'RDM09: test reference data import and export'() {
+    void 'RDM09: test simple data with ordered reference enumeration values'() {
+        given:
+        setupData()
+
+        expect:
+        ReferenceDataModel.count() == 2
+
+        when:
+        String data = new String(loadTestFile('importSimpleWithReferenceEnumerationValues'))
+        log.debug("importing ${data}")
+        and:
+        ReferenceDataModel rdm = importAndConfirm(data.bytes)
+
+        then:
+        rdm.label == 'importSimple Reference Data Model'
+        rdm.author == 'Test Author'
+        rdm.organisation == 'Test Organisation'
+        rdm.documentationVersion.toString() == '1.0.0'
+        rdm.finalised == false
+        rdm.authority.label == 'Test Authority'
+        rdm.authority.url == 'http://localhost'
+        !rdm.aliases
+        !rdm.annotations
+        !rdm.metadata
+        !rdm.classifiers
+        rdm.referenceDataTypes.size() == 1
+        !rdm.referenceDataElements
+        !rdm.referenceDataValues
+
+        and:
+        rdm.referenceDataTypes.first() instanceof ReferenceEnumerationType
+        ((ReferenceEnumerationType) rdm.referenceDataTypes.first()).referenceEnumerationValues.size() == 6
+
+        and: 'the 6 REVs have order set in reverse label order'
+        ((ReferenceEnumerationType) rdm.referenceDataTypes.first()).referenceEnumerationValues.sort {it.label}.eachWithIndex {rev, i ->
+            rev.order == 5 - i
+        }
+
+        when:
+        String exported = exportModel(rdm.id)
+
+        then:
+        validateExportedModel('importSimpleWithReferenceEnumerationValues', exported)
+    }
+
+    void 'RDM10: test reference data import and export'() {
         given:
         setupData()
 

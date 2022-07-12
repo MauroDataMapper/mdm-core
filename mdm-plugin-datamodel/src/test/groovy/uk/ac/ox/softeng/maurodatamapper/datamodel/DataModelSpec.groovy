@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -172,6 +173,46 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         then:
         contentS.description == 'A dataclass with elements'
         contentS.dataElements.size() == 2
+    }
+
+    void 'test adding ordered dataclasses to datamodel (with multiple saves)'() {
+        given:
+        setValidDomainValues()
+
+        when:
+        domain.addToDataClasses(new DataClass(createdBy: UNIT_TEST, label: 'Test DC A'))
+
+        then:
+        checkAndSave(domain)
+        domain.count() == 1
+        DataClass.count() == 1
+        domain.dataClasses.find {it.label == 'Test DC A'}.order == 0
+
+        when:
+        domain.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Test DC B'))
+        domain.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Test DC C'))
+
+
+        then:
+        checkAndSave(domain)
+        domain.count() == 1
+        DataClass.count() == 3
+        domain.dataClasses.find {it.label == 'Test DC B'}.order == 1
+        domain.dataClasses.find {it.label == 'Test DC C'}.order == 2
+
+        when:
+        domain.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Test DC D (first)', index: -1))
+        domain.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Test DC E (last)', index: 100))
+
+        then:
+        checkAndSave(domain)
+        domain.count() == 1
+        DataClass.count() == 5
+        domain.dataClasses.find {it.label == 'Test DC D (first)'}.order == 0
+        domain.dataClasses.find {it.label == 'Test DC A'}.order == 1
+        domain.dataClasses.find {it.label == 'Test DC B'}.order == 2
+        domain.dataClasses.find {it.label == 'Test DC C'}.order == 3
+        domain.dataClasses.find {it.label == 'Test DC E (last)'}.order == 4
     }
 
     void 'test invalid dataclass'() {
