@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -842,6 +844,65 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.getTotalCount() == 2
         result[0].label == 'Providing DC 6'
         result[1].label == 'ProvidingImporting DC 6'
+    }
+
+
+
+    void 'Test DE Import from different parts of a VF'() {
+        // Test to address #gh-278 where the path to the VF wasn't being looked up correctly
+
+        given:
+        setupData()
+
+        when:
+        VersionedFolder versionedFolder = new VersionedFolder(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'VF 01', authority: testAuthority)
+
+        checkAndSave(versionedFolder)
+
+        Folder childFolder1 = new Folder(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'F01', parentFolder: versionedFolder)
+        Folder childFolder2 = new Folder(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'F02', parentFolder: versionedFolder)
+
+        checkAndSave(childFolder1)
+        checkAndSave(childFolder2)
+
+        DataModel dataModel1 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'DM01', folder: childFolder1, authority: testAuthority)
+
+        checkAndSave(dataModel1)
+
+        DataClass dataClass1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'DC01')
+        dataModel1.addToDataClasses(dataClass1)
+
+        checkAndSave(dataClass1)
+
+        DataType primitiveDataType = new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'PT01')
+        dataModel1.addToDataTypes(primitiveDataType)
+        checkAndSave(primitiveDataType)
+
+        DataElement dataElement1 = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'DE01', dataType: primitiveDataType)
+        dataClass1.addToDataElements(dataElement1)
+
+        checkAndSave(dataElement1)
+
+
+        DataModel dataModel2 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'DM02', folder: childFolder2, authority: testAuthority)
+
+        checkAndSave(dataModel2)
+
+        DataClass dataClass2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'DC02')
+        dataModel2.addToDataClasses(dataClass2)
+
+        checkAndSave(dataClass2)
+
+
+
+        then:
+        dataClassService.validateImportAddition(dataClass2, dataElement1)
+
+        //dataClass2.addToImportedDataElements(dataElement1)
+
+
+
+
     }
 
     private void setupImportingData() {
