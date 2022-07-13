@@ -319,9 +319,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        responseBody().count == 1
-        responseBody().items[0].id == groupId
-        responseBody().items[0].name == "extraGroup"
+        responseBody().items.find{it.id == groupId && it.name == "extraGroup"}
 
         when: 'getting item as new reader'
         loginAuthenticated2()
