@@ -1515,14 +1515,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             'first profile functional data type',
             secondModelSecondDataTypeId,
             'second profile functional data type',
-            'DataType'
+            'PrimitiveType'
         )
 
         loginReader()
         POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
 
         then: 'the profiles are validated successfully'
-        verifyResponseValidateManyValidProfile(response, secondModelFirstDataTypeId, secondModelSecondDataTypeId, 'DataType')
+        verifyResponseValidateManyValidProfile(response, secondModelFirstDataTypeId, secondModelSecondDataTypeId, 'PrimitiveType')
 
         when: 'used profiles are retrieved for the first data type'
         HttpResponse<List<Map>> localResponse = GET("dataTypes/$secondModelFirstDataTypeId/profiles/used", Argument.listOf(Map))
@@ -4464,11 +4464,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         assert responseBody().profilesProvided[0].profile.id == firstModelItemId
         assert responseBody().profilesProvided[0].profile.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[0].multiFacetAwareItem.id == firstModelItemId
+        assert responseBody().profilesProvided[0].multiFacetAwareItem.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.id == secondModelItemId
         assert responseBody().profilesProvided[1].profile.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelItemId
+        assert responseBody().profilesProvided[1].multiFacetAwareItem.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
     }
 
     String getDynamicProfileExpectedJson(String label, String domainType) {
