@@ -6,6 +6,7 @@ model {
 }
 json {
     profile tmpl.'/profile/profile'(profileProvided.profile)
+    multiFacetAwareItem tmpl.'/catalogueItem/catalogueItem'(profileProvided.multiFacetAware)
 
     if (profileProvided.profile.hasErrors()) {
         errors tmpl.'/profile/errors'(errors: profileProvided.profile.errors)
