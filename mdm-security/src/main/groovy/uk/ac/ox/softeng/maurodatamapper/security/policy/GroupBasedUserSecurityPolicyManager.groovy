@@ -360,6 +360,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             // Anyone who's logged in can index or read an authority
             return isAuthenticated()
         }
+        if (Utils.parentClassIsAssignableFromChild(GroupRole, securableResourceClass)) {
+            // Group admin can index and get GroupRoles
+            return hasApplicationLevelRole(GROUP_ADMIN_ROLE_NAME)
+        }
         hasAnyAccessToSecuredResource(securableResourceClass, id)
     }
 

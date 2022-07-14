@@ -40,7 +40,7 @@ class GroupRoleController extends EditLoggingController<GroupRole> {
 
     def listApplicationAccess() {
         List<GroupRole> applicationGroupRoles = (currentUserSecurityPolicyManager as GroupBasedUserSecurityPolicyManager)
-            .applicationPermittedRoles
+            .userPolicy.applicationPermittedRoles
             .toList()
         respond applicationGroupRoles, view: 'index', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager]
     }

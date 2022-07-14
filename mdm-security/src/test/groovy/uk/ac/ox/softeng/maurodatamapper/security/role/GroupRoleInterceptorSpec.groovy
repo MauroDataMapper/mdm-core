@@ -138,4 +138,49 @@ class GroupRoleInterceptorSpec extends ResourceInterceptorUnitSpec implements In
                 'writeAccessId'
         expectedStatus = id in [writeAccessId, readAccessId] ? HttpStatus.OK : HttpStatus.NOT_FOUND
     }
+
+    @Unroll
+    void 'test access to groupRoles index is only available to admins'() {
+        given:
+        String action = 'index'
+
+        when:
+        params.currentUserSecurityPolicyManager = publicAccessUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        interceptor.before()
+        response.status == HttpStatus.OK.code
+
+        when:
+        response.reset()
+        params.currentUserSecurityPolicyManager = noAccessUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        !interceptor.before()
+        response.status == HttpStatus.FORBIDDEN.code
+
+        when:
+        response.reset()
+        params.currentUserSecurityPolicyManager = idSecuredUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        !interceptor.before()
+        response.status == HttpStatus.FORBIDDEN.code
+
+        when:
+        response.reset()
+        params.currentUserSecurityPolicyManager = applicationAdminSecuredUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        interceptor.before()
+        response.status == HttpStatus.OK.code
+    }
 }
