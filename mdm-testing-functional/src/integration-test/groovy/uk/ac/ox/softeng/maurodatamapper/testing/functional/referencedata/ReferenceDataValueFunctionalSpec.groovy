@@ -52,6 +52,9 @@ import java.util.regex.Pattern
 class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Shared
+    int rowNumber = 100
+
+    @Shared
     Path resourcesPath
 
     @RunOnce
@@ -110,8 +113,10 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Map getValidJson() {
+        // increment the rowNumber so that we don't try to break the unique constraint
+        rowNumber = rowNumber + 1
         [
-            rowNumber           : 1,
+            rowNumber           : rowNumber,
             value               : 'Functional Test ReferenceDataValue',
             referenceDataElement: referenceDataElementId
         ]

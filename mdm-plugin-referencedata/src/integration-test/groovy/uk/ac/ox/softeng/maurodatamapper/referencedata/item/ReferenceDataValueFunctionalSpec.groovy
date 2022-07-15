@@ -158,6 +158,12 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
             referenceDataElement: referenceDataElementId,
         ]
 
+        Map value3 = [
+            rowNumber           : 2,
+            value               : 'Second Value',
+            referenceDataElement: referenceDataElementId,
+        ]
+
         when: 'The save action is executed with valid data'
         POST(getSavePath(), value1, MAP_ARG, true)
 
@@ -184,8 +190,17 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then: 'We still the same one reference data value'
         verifyR3IndexResponse(id)
 
+        when: 'The save action is executed with the same row number and data element'
+        POST(getSavePath(), value3, MAP_ARG, true)
+
+        then: 'The response is CREATED'
+        response.status == HttpStatus.CREATED
+        String id3 = response.body().id
+
         cleanup:
         DELETE(getDeleteEndpoint(id))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id3))
         assert response.status() == HttpStatus.NO_CONTENT
     }
 }
