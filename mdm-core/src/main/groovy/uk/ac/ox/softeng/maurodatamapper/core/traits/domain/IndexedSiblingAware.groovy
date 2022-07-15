@@ -29,7 +29,6 @@ import org.hibernate.TransientObjectException
 trait IndexedSiblingAware {
 
     void fullSortOfChildren(Collection<? extends ModelItem> children) {
-        log.debug '----- Full sort of children -----'
         if (!children) return
         //        Map<String, Collection<ModelItem>> idxExists = children.groupBy {(it.idx != null && it.idx != Integer.MAX_VALUE).toString()}
         //        if(!idxExists.false) return
@@ -44,7 +43,6 @@ trait IndexedSiblingAware {
             log.trace('Full sort of {} children', children.size())
             children.sort().eachWithIndex {ModelItem mi, int i ->
                 if (mi.idx != i) mi.idx = i
-                log.trace('  Child {} has index {}', mi.label, i)
             }
         }
     }

@@ -20,6 +20,8 @@
 <exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/referenceDataModel/5.0">
 	<mdm:referenceDataModel>
 		<mdm:id>0adfbe6e-a30a-4553-b70b-9432fc7055db</mdm:id>
+		<mdm:author>Test Author</mdm:author>
+		<mdm:organisation>Test Organisation</mdm:organisation>
 		<mdm:label>importSimple Reference Data Model</mdm:label>
 		<mdm:description>Test ReferenceDataModel with an ReferenceEnumerationType with ordered ReferenceEnumerationValues.</mdm:description>
 		<mdm:lastUpdated>2022-07-12T15:55:13.43Z</mdm:lastUpdated>
@@ -38,7 +40,7 @@
 				<mdm:label>Test ReferenceEnumerationType</mdm:label>
 				<mdm:lastUpdated>2022-07-12T15:29:04.636Z</mdm:lastUpdated>
 				<mdm:domainType>ReferenceEnumerationType</mdm:domainType>
-				<mdm:enumerationValues>
+				<mdm:referenceEnumerationValues>
 					<mdm:referenceEnumerationValue>
 						<mdm:id>f27622a7-d005-4323-9c30-a264d1b979a7</mdm:id>
 						<mdm:index>0</mdm:index>
@@ -81,7 +83,7 @@
 						<mdm:value>EV A</mdm:value>
 						<mdm:lastUpdated>2022-07-12T15:29:04.488Z</mdm:lastUpdated>
 					</mdm:referenceEnumerationValue>
-				</mdm:enumerationValues>
+				</mdm:referenceEnumerationValues>
 			</mdm:referenceDataType>
 		</mdm:referenceDataTypes>
 	</mdm:referenceDataModel>

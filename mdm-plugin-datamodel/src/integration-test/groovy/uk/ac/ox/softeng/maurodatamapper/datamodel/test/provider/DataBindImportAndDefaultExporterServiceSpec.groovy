@@ -249,12 +249,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         then:
         assert imported
-        imported.dataTypes.sort().each {
-            log.debug '^^ imported datatype {} has index {}', it.label, it.idx
-        }
-        dataModelService.get(complexDataModelId).dataTypes.sort().each {
-            log.debug '^^ complexDataModel datatype {} has index {}', it.label, it.idx
-        }
 
         when:
         imported.folder = testFolder

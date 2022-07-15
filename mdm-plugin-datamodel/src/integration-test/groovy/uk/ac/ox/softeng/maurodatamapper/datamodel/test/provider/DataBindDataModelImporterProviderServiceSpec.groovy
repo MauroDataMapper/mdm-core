@@ -1087,7 +1087,47 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dtSm.summaryMetadataReports[0].reportValue == '{"False":17,"True":10}'
     }
 
-    void 'I20 : test load datamodel with datatypes'() {
+    void 'I20 : test inc ordered modelitems data import'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('incOrderedModelItems'))
+
+        then:
+        !dm.annotations
+        !dm.metadata
+        !dm.classifiers
+        !dm.summaryMetadata
+        dm.dataTypes.size() == 8
+        dm.dataClasses.size() == 6
+        dm.childDataClasses.size() == 6
+        dm.allDataElements.size() == 6
+
+        and: 'data classes are reverse alphabetically ordered'
+        dm.childDataClasses.sort {it.label}.reverse().eachWithIndex{dc, i ->
+            assert dc.order == i
+        }
+
+        and: 'data types are reverse alphabetically ordered'
+        dm.dataTypes.sort {it.label}.reverse().eachWithIndex{dt, i ->
+            assert dt.order == i
+        }
+
+        when:
+        DataClass dataClass = dm.dataClasses.find {it.label == 'DC A'}
+
+        then: 'data elements in data class are reverse alphabetically ordered'
+        dataClass.dataElements.size() == 6
+        dataClass.dataElements.sort {it.label}.reverse().eachWithIndex{de, i ->
+            assert de.order == i
+        }
+    }
+
+    void 'I21 : test load datamodel with datatypes'() {
         given:
         setupData()
 
@@ -1125,7 +1165,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         EnumerationValue.count() == 20
     }
 
-    void 'I21 : test load complete exported datamodel from cancer audit dataloader'() {
+    void 'I22 : test load complete exported datamodel from cancer audit dataloader'() {
         given:
         setupData()
 
