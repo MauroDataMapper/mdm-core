@@ -44,7 +44,8 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
     static belongsTo = [ReferenceDataModel, ReferenceDataElement]
 
     static constraints = {
-        value blank: true, nullable: true, unique: ['rowNumber', 'referenceDataElement']
+        value blank: true, nullable: true
+        rowNumber unique: 'referenceDataElement'
     }
 
     static mapping = {

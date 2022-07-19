@@ -27,6 +27,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -142,5 +143,64 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         "maxMultiplicity": 1
     }
 }'''
+    }
+
+    void 'R3A: Test the row and column number constraint'() {
+        Map value1 = [
+            rowNumber           : 1,
+            value               : 'First Value',
+            referenceDataElement: referenceDataElementId,
+        ]
+
+        Map value2 = [
+            rowNumber           : 1,
+            value               : 'Second Value',
+            referenceDataElement: referenceDataElementId,
+        ]
+
+        Map value3 = [
+            rowNumber           : 2,
+            value               : 'Second Value',
+            referenceDataElement: referenceDataElementId,
+        ]
+
+        when: 'The save action is executed with valid data'
+        POST(getSavePath(), value1, MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'List is called'
+        String id = response.body().id
+        GET('')
+
+        then: 'We now list one value'
+        verifyR3IndexResponse(id)
+
+        when: 'The save action is executed with the same row number and data element'
+        POST(getSavePath(), value2, MAP_ARG, true)
+
+        then: 'The response is unprocessable'
+        response.status == HttpStatus.UNPROCESSABLE_ENTITY
+
+        when: 'List is called'
+        GET('')
+
+        then: 'We still the same one reference data value'
+        verifyR3IndexResponse(id)
+
+        when: 'The save action is executed with the same row number and data element'
+        POST(getSavePath(), value3, MAP_ARG, true)
+
+        then: 'The response is CREATED'
+        response.status == HttpStatus.CREATED
+        String id3 = response.body().id
+
+        cleanup:
+        DELETE(getDeleteEndpoint(id))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id3))
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 }
