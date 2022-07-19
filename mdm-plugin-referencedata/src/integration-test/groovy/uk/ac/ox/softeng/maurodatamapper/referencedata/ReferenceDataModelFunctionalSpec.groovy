@@ -2165,6 +2165,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
             ])
         }
 
+        // To check that deleting an unknown ID does not cause an exception
+        // See https://github.com/MauroDataMapper/mdm-core/issues/257
+        idstoDelete << UUID.randomUUID().toString()
+
         when:
         DELETE('', [
             ids      : idstoDelete,

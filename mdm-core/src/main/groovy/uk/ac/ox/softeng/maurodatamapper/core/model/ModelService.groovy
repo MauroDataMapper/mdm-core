@@ -234,9 +234,14 @@ abstract class ModelService<K extends Model>
 
     List<K> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
         if (!permanent) {
-            List<K> updated = idsToDelete.collect {
+            // Use findResults rather than collect so that we don't add
+            // null values, which would happen if an unknown ID has been provided,
+            // to the updated list
+            List<K> updated = idsToDelete.findResults {
                 K dm = get(it)
-                delete(dm, permanent, false)
+                if (dm) {
+                    delete(dm, permanent, false)
+                }
                 dm
             }
             return updated
