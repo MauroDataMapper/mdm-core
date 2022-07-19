@@ -309,6 +309,7 @@ class ProfileService implements DataBinder {
                         ProfileProvided profileProvided = new ProfileProvided()
                         profileProvided.profile = createProfile(profileProviderService, multiFacetAware)
                         profileProvided.profileProviderService = profileProviderService
+                        profileProvided.multiFacetAware = multiFacetAware
                         profiles.add(profileProvided)
                     }
                 }
@@ -360,6 +361,7 @@ class ProfileService implements DataBinder {
                         ProfileProvided validated = new ProfileProvided()
                         validated.profile = validateProfileValues(profileProviderService, submittedInstance)
                         validated.profileProviderService = profileProviderService
+                        validated.multiFacetAware = multiFacetAware
                         handledInstances.add(validated)
                     } else {
                         boolean saveAllowed
@@ -381,6 +383,7 @@ class ProfileService implements DataBinder {
                             // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
                             saved.profile = storeProfile(profileProviderService, multiFacetAware, submittedInstance, user)
                             saved.profileProviderService = profileProviderService
+                            saved.multiFacetAware = multiFacetAware
                             handledInstances.add(saved)
                         } else {
                             log.debug("Save not allowed for multiFacetAware ${multiFacetAware.model.id}")

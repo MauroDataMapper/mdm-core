@@ -1515,14 +1515,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             'first profile functional data type',
             secondModelSecondDataTypeId,
             'second profile functional data type',
-            'DataType'
+            'PrimitiveType'
         )
 
         loginReader()
         POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
 
         then: 'the profiles are validated successfully'
-        verifyResponseValidateManyValidProfile(response, secondModelFirstDataTypeId, secondModelSecondDataTypeId, 'DataType')
+        verifyResponseValidateManyValidProfile(response, secondModelFirstDataTypeId, secondModelSecondDataTypeId, 'PrimitiveType')
 
         when: 'used profiles are retrieved for the first data type'
         HttpResponse<List<Map>> localResponse = GET("dataTypes/$secondModelFirstDataTypeId/profiles/used", Argument.listOf(Map))
@@ -1957,11 +1957,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
         responseBody().profilesProvided[0].profile.domainType == 'DataElement'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'DataElement'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelFirstDataElementId
         responseBody().profilesProvided[1].profile.domainType == 'DataElement'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'DataElement'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'used profiles are retrieved for the first data element'
         HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
@@ -2070,11 +2076,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
         responseBody().profilesProvided[0].profile.domainType == 'DataElement'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'DataElement'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
         responseBody().profilesProvided[1].profile.domainType == 'DataElement'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelSecondDataElementId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'DataElement'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -2235,11 +2247,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
         responseBody().profilesProvided[0].profile.domainType == 'DataElement'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'DataElement'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
         responseBody().profilesProvided[1].profile.domainType == 'DataElement'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelSecondDataElementId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'DataElement'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -2321,6 +2339,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
         responseBody().count == 2
         responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'incorrectly request against the third model'
         POST("dataModels/$thirdModelId/profile/getMany", manyMap)
@@ -2456,11 +2476,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstModelItemId
         responseBody().profilesProvided[0].profile.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstModelItemId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelFirstModelItemId
         responseBody().profilesProvided[1].profile.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelFirstModelItemId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'used profiles are retrieved for the first data type'
         HttpResponse<List<Map>> localResponse = GET("dataTypes/$secondModelFirstModelItemId/profiles/used", Argument.listOf(Map))
@@ -2570,11 +2596,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstModelItemId
         responseBody().profilesProvided[0].profile.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstModelItemId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondModelItemId
         responseBody().profilesProvided[1].profile.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelSecondModelItemId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -2737,11 +2769,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstModelItemId
         responseBody().profilesProvided[0].profile.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstModelItemId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondModelItemId
         responseBody().profilesProvided[1].profile.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelSecondModelItemId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'PrimitiveType'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -2825,6 +2863,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
         responseBody().count == 2
         responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'incorrectly request against the third model'
         POST("dataModels/$thirdModelId/profile/getMany", manyMap)
@@ -2961,11 +3001,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelDataClassId
         responseBody().profilesProvided[0].profile.domainType == 'DataClass'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelDataClassId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'DataClass'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelChildDataClassId
         responseBody().profilesProvided[1].profile.domainType == 'DataClass'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelChildDataClassId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'DataClass'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'used profiles are retrieved for the first data class'
         HttpResponse<List<Map>> localResponse = GET("dataClasses/$secondModelDataClassId/profiles/used", Argument.listOf(Map))
@@ -3082,11 +3128,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelDataClassId
         responseBody().profilesProvided[0].profile.domainType == 'DataClass'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelDataClassId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'DataClass'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelChildDataClassId
         responseBody().profilesProvided[1].profile.domainType == 'DataClass'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelChildDataClassId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'DataClass'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -3261,11 +3313,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelDataClassId
         responseBody().profilesProvided[0].profile.domainType == 'DataClass'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelDataClassId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'DataClass'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelChildDataClassId
         responseBody().profilesProvided[1].profile.domainType == 'DataClass'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelChildDataClassId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'DataClass'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -3347,6 +3405,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
         responseBody().count == 2
         responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'incorrectly request against the third model'
         POST("dataModels/$thirdModelId/profile/getMany", manyMap)
@@ -3483,11 +3543,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstTermId
         responseBody().profilesProvided[0].profile.domainType == 'Term'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstTermId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'Term'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelFirstTermId
         responseBody().profilesProvided[1].profile.domainType == 'Term'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelFirstTermId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'Term'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'used profiles are retrieved for the first term'
         HttpResponse<List<Map>> localResponse = GET("terms/$secondModelFirstTermId/profiles/used", Argument.listOf(Map))
@@ -3596,11 +3662,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstTermId
         responseBody().profilesProvided[0].profile.domainType == 'Term'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstTermId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'Term'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondTermId
         responseBody().profilesProvided[1].profile.domainType == 'Term'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelSecondTermId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'Term'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -3761,11 +3833,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstTermId
         responseBody().profilesProvided[0].profile.domainType == 'Term'
+        responseBody().profilesProvided[0].multiFacetAwareItem.id == secondModelFirstTermId
+        responseBody().profilesProvided[0].multiFacetAwareItem.domainType == 'Term'
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondTermId
         responseBody().profilesProvided[1].profile.domainType == 'Term'
+        responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelSecondTermId
+        responseBody().profilesProvided[1].multiFacetAwareItem.domainType == 'Term'
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when:
         loginReader()
@@ -3847,6 +3925,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
         responseBody().count == 2
         responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
+        responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
 
         when: 'incorrectly request against the third model'
         POST("terminologies/$thirdModelId/profile/getMany", manyMap)
@@ -4384,11 +4464,17 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         assert responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         assert responseBody().profilesProvided[0].profile.id == firstModelItemId
         assert responseBody().profilesProvided[0].profile.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[0].multiFacetAwareItem.id == firstModelItemId
+        assert responseBody().profilesProvided[0].multiFacetAwareItem.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[0].multiFacetAwareItem.breadcrumbs
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         assert responseBody().profilesProvided[1].profile.id == secondModelItemId
         assert responseBody().profilesProvided[1].profile.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[1].multiFacetAwareItem.id == secondModelItemId
+        assert responseBody().profilesProvided[1].multiFacetAwareItem.domainType == modelItemDomainType
+        assert responseBody().profilesProvided[1].multiFacetAwareItem.breadcrumbs
     }
 
     String getDynamicProfileExpectedJson(String label, String domainType) {
