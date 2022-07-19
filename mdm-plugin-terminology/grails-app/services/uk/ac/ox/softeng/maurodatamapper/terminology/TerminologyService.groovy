@@ -230,10 +230,10 @@ class TerminologyService extends ModelService<Terminology> {
     List<Terminology> saveModelsWithContent(List<Terminology> terminologies, Integer modelItemBatchSize) {
 
 
-        if (terminologies.any { it.terms.any {te -> te.id}} ||
-                terminologies.any { it.termRelationshipTypes.any {trt -> trt.id}}) {
+        if (terminologies.any {it.terms.any {te -> te.id}} ||
+            terminologies.any {it.termRelationshipTypes.any {trt -> trt.id}}) {
             throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
-                    new IllegalStateException('Terminology has previously saved content'))
+                                           new IllegalStateException('Terminology has previously saved content'))
         }
 
         log.debug('Saving {} terminologies with content', terminologies.size())
@@ -243,15 +243,15 @@ class TerminologyService extends ModelService<Terminology> {
         Map<Terminology, Collection<TermRelationshipType>> termRelationshipTypes = [:]
 
         Set<Classifier> classifiers = [] as Set
-        terminologies.each { terminology ->
-            if(terminology.classifiers) {
+        terminologies.each {terminology ->
+            if (terminology.classifiers) {
                 classifiers.addAll(terminology.classifiers)
             }
         }
         log.trace('Saving {} classifiers', classifiers.size())
         classifierService.saveAll(classifiers)
 
-        terminologies.each { terminology ->
+        terminologies.each {terminology ->
             if (terminology.termRelationshipTypes) {
                 List<TermRelationshipType> theseTermRelationshipTypes = []
                 theseTermRelationshipTypes.addAll(terminology.termRelationshipTypes)
@@ -287,8 +287,7 @@ class TerminologyService extends ModelService<Terminology> {
 
         log.debug('Complete save of Terminology complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
-        List<Terminology> returnValues = []
-        getAll(terminologies.collect{it.id})
+        getAll(terminologies.collect {it.id})
     }
 
 
