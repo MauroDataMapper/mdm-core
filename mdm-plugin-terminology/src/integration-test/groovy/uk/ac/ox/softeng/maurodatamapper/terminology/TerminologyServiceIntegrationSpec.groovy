@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -151,6 +152,66 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         then:
         terminology.id != null
     }
+
+    void 'test batch save (single)'() {
+        given:
+        setupData()
+
+        when:
+        Terminology terminology = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'saving test', folder: testFolder, authority: testAuthority)
+        (1..10).each {idx ->
+            Term term = new Term (code: "Term $idx", definition: "Definition $idx", createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            terminology.addToTerms(term)
+        }
+
+        terminology = terminologyService.validate(terminology)
+
+        then:
+        !terminology.hasErrors()
+
+        when:
+        terminology = terminologyService.saveModelWithContent(terminology)
+        sessionFactory.currentSession.flush()
+
+        then:
+        terminology.id != null
+        terminology.terms.size() == 10
+    }
+
+    void 'test batch save (multiple)'() {
+        given:
+        setupData()
+
+        when:
+        List<Terminology> terminologies = []
+        (1..10).each { terminologyIndex ->
+            Terminology terminology = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "saving test $terminologyIndex", folder: testFolder, authority: testAuthority)
+            (1..terminologyIndex).each {termIndex ->
+                Term term = new Term (code: "Term $termIndex", definition: "Definition $termIndex", createdBy: StandardEmailAddress.INTEGRATION_TEST)
+                terminology.addToTerms(term)
+            }
+            terminology = terminologyService.validate(terminology)
+            terminologies.add(terminology)
+        }
+
+
+
+        then:
+        terminologies.each {terminology ->
+            !terminology.hasErrors()
+        }
+
+        when:
+        terminologies = terminologyService.saveModelsWithContent(terminologies, 100)
+        sessionFactory.currentSession.flush()
+
+        then:
+        terminologies.eachWithIndex {terminology, idx ->
+            assert terminology.id != null
+            assert terminology.terms.size() == idx + 1
+        }
+    }
+
 
 
     void 'test finalising model'() {
