@@ -22,12 +22,19 @@ import uk.ac.ox.softeng.maurodatamapper.core.interceptor.SecurableResourceInterc
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.springframework.beans.factory.annotation.Autowired
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class ClassifierInterceptor extends SecurableResourceInterceptor {
+
+    ApiPropertyService apiPropertyService
 
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
@@ -70,6 +77,18 @@ class ClassifierInterceptor extends SecurableResourceInterceptor {
             return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
 
         }
+
+        if (isSave()) {
+            // Check api property to determine if new classifiers can be
+            // created by a non-admin user
+            if (restrictClassifierCreate()
+                && !currentUserSecurityPolicyManager.isApplicationAdministrator()
+                && !getId()) {
+                log.warn("Additions of new classifiers by this user are not allowed")
+                return forbiddenDueToPermissions()
+            }
+        }
+
         checkActionAuthorisationOnSecuredResource(Classifier, getId(), true)
     }
 
@@ -77,5 +96,10 @@ class ClassifierInterceptor extends SecurableResourceInterceptor {
         ModelItemService service = modelItemServices.find {it.handles(domainType)}
         if (!service) throw new ApiBadRequestException('CI01', "Classifier retrieval for model item [${domainType}] with no supporting service")
         service.get(catalogueItemId)
+    }
+
+    private boolean restrictClassifierCreate() {
+        ApiProperty property = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE)
+        property?.value?.toBoolean()
     }
 }
