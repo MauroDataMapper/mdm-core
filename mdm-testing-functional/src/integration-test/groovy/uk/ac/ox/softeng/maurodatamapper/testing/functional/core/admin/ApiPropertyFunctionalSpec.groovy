@@ -217,11 +217,13 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct'
         verifyResponse OK, response
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL])}
+            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
+                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {
                     it.key == ape.key &&
-                    it.category == 'Email'
+                    (it.category == 'Email')
                 }
             }
 
@@ -231,7 +233,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct'
         verifyResponse OK, jsonCapableResponse
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL])}
+            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
+                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("<key>${ape.key}</key>")
             }
@@ -250,7 +254,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
 
         and:
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL])}
+            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
+                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("${ape.key},")
             }
