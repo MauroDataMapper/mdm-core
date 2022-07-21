@@ -40,7 +40,12 @@ class UserGroupInterceptor extends TieredAccessSecurableResourceInterceptor {
 
     @Override
     UUID getId() {
-        params.userGroupId ?: params.id ?: params.securableResourceId
+        params.userGroupId ?: params.id
+    }
+
+    @Override
+    UUID getSecuredId() {
+        getId() ?: params.securableResourceId
     }
 
     boolean before() {
