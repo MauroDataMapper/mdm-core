@@ -71,7 +71,6 @@ dependencies {
     implementation "org.grails.plugins:views-markup"
     implementation "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     profile "org.grails.profiles:rest-api-plugin"
-    developmentOnly "org.springframework.boot:spring-boot-starter-tomcat"
     runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
     integrationTestRuntimeOnly "com.h2database:h2"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
