@@ -98,7 +98,7 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
                 }
                 []
             }
-            findSecurableResource(_, _) >> {clazz, id ->
+            findSecurableResource(_, _, _) >> {clazz, id, silenceException ->
                 id == folder.id ? folder : null
             }
         }
