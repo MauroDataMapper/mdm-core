@@ -393,6 +393,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void delete(VersionedFolder folder, boolean permanent, boolean flush = true) {
         folderService.delete(folder, permanent, flush)
+
+        if (permanent) {
+            // delete version links which point to this VF
+            versionLinkService.findAllByTargetModelId(folder.id).each{
+                versionLinkService.delete(it, flush)
+            }
+        }
     }
 
     @Override
