@@ -28,6 +28,9 @@ import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpStatus
 
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.OK
+
 /**
  * <pre>
  * Controller: folder
@@ -252,6 +255,90 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the permanent delete action correctly deletes an version links'() {
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        String originalVersionId = responseBody().id
+
+        when: 'The VF is finalised'
+        PUT("${originalVersionId}/finalise", [versionChangeType: "Major"])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'A new version is created'
+        PUT("${originalVersionId}/newBranchModelVersion", [:])
+
+        then: 'The response is correct'
+        verifyResponse HttpStatus.CREATED, response
+        String firstVersionId = responseBody().id
+
+        when: 'The first version of the VF is finalised'
+        PUT("${firstVersionId}/finalise", [versionChangeType: "Minor"])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'A new version is created'
+        PUT("${firstVersionId}/newBranchModelVersion", [:])
+
+        then: 'The response is correct'
+        verifyResponse HttpStatus.CREATED, response
+        String secondVersionId = responseBody().id
+
+        when: 'Get the original version'
+        GET("${originalVersionId}")
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the first version'
+        GET("${firstVersionId}")
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the second version'
+        GET("${secondVersionId}")
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'When the delete action is executed on the original version'
+        DELETE("${originalVersionId}?permanent=true")
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+
+        when: 'Get the original version'
+        GET("${originalVersionId}")
+
+        then: 'The response is not found'
+        verifyResponse NOT_FOUND, response
+
+        when: 'Get the first version'
+        GET("${firstVersionId}")
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the second version'
+        GET("${secondVersionId}")
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        // This is a failing test for https://github.com/MauroDataMapper/mdm-core/issues/330
+        when: 'Get the simpleModelVersionTree'
+        GET("${secondVersionId}/simpleModelVersionTree?branchesOnly=undefined")
+
+        then: 'The response is correct'
+        verifyResponse OK, response
     }
 
     void 'test searching for label "test" in empty folder'() {
