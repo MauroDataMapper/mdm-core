@@ -165,7 +165,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             if (!importerProviderService) {
                 log.debug('No ImporterProviderService found for any published content type and given parameters')
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.format.unsupported',
-                                              'Could not import SubscribedModel into local Catalogue, no importer and available content type found with given parameters')
+                                              'Could not import SubscribedModel into local Catalogue, cannot find compatible export link and importer using given parameters')
                 return subscribedModel.errors
             }
 
@@ -195,7 +195,8 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
             log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             MdmDomainService domainService = domainServices.find {it.handles(model.domainType)}
-            if (domainService.respondsTo('countByAuthorityAndLabelAndVersion') && domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
+            if (domainService.respondsTo('countByAuthorityAndLabelAndVersion') &&
+                domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
                                               [model.authority, model.label, model.modelVersion].toArray(),
                                               'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')
@@ -274,7 +275,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     /**
      * Export a model as bytes from a remote link from a SubscribedCatalogue
      *
-     * @param subscribedModel, link
+     * @param subscribedModel , link
      * @return Byte array of the linked resource
      */
     byte[] exportSubscribedModelFromSubscribedCatalogue(SubscribedModel subscribedModel, Link link) {
@@ -331,7 +332,8 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     private List<Link> getExportLinksForSubscribedModel(SubscribedModel subscribedModel) {
         List<PublishedModel> sourcePublishedModels = subscribedCatalogueService.listPublishedModels(subscribedModel.subscribedCatalogue)
             .findAll {pm -> pm.modelId == subscribedModel.subscribedModelId}
-            .sort {pm -> pm.lastUpdated} // Atom feeds may allow multiple versions of an entry with the same ID
+            .sort {pm -> pm.lastUpdated}
+        // Atom feeds may allow multiple versions of an entry with the same ID
 
         if (sourcePublishedModels) {
             sourcePublishedModels.last().links
@@ -341,7 +343,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     }
 
     void anonymise(String createdBy) {
-        SubscribedModel.findAllByCreatedBy(createdBy).each { subscribedModel ->
+        SubscribedModel.findAllByCreatedBy(createdBy).each {subscribedModel ->
             subscribedModel.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
             subscribedModel.save(validate: false)
         }

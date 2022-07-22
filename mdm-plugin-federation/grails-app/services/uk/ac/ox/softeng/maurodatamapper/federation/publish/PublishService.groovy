@@ -72,7 +72,7 @@ class PublishService {
                 publishedModels << getPublishedModel(model, modelService)
             }
         }
-        publishedModels
+        publishedModels.sort()
     }
 
     List<PublishedModel> findPublishedSupersedingModels(List<PublishedModel> publishedModels, String modelType, UUID modelId,
@@ -88,7 +88,7 @@ class PublishService {
         }.each {vtm ->
             newerPublishedModels << getPublishedModel(vtm.versionAware, modelService).tap {previousModelId = vtm.parentVersionTreeModel.versionAware.id}
         }
-        return newerPublishedModels
+        newerPublishedModels.sort()
     }
 
     private ModelService findServiceForModelDomainType(String domainType) {
