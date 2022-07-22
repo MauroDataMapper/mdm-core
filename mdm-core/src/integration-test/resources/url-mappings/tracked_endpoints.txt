@@ -71,7 +71,6 @@
 | GET    | /api/folders/${folderId}/folders/${id} | show |
 | GET    | /api/folders/${folderId}/export/${exporterNamespace}/${exporterName}/${exporterVersion} | exportFolder |
 | PUT    | /api/folders/${folderId}/folder/${destinationFolderId} | changeFolder |
-| PUT    | /api/folders/${folderId}/folder | changeFolder |
 | POST   | /api/folders | save |
 | GET    | /api/folders | index |
 | DELETE | /api/folders/${id} | delete |

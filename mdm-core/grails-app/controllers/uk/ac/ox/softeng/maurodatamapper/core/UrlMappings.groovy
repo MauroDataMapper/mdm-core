@@ -94,7 +94,6 @@ class UrlMappings {
                 get '/search'(controller: 'folder', action: 'search')
 
                 put "/folder/$destinationFolderId"(controller: 'folder', action: 'changeFolder')
-                put "/folder"(controller: 'folder', action: 'changeFolder')
 
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'folder', action: 'exportFolder')
             }
