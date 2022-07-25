@@ -153,17 +153,25 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
                                                                      groupRoleId).list(pagination)
     }
 
-    def <R extends SecurableResource> R findSecurableResource(Class<R> clazz, UUID id) {
+    // There are valid situations in which there may be no securable resource service found, so let the caller
+    // of this method decide whether an exception should be thrown, or a null value returned
+    def <R extends SecurableResource> R findSecurableResource(Class<R> clazz, UUID id, boolean silenceException = false) {
         SecurableResourceService service = securableResourceServices.find { it.handles(clazz) }
-        if (!service) throw new ApiBadRequestException('SRGRS01',
-                                                       "SecurableResourceGroupRole retrieval for securable resource [${clazz.simpleName}] with no " +
-                                                       'supporting service')
+        if (!service) {
+            if (silenceException) {
+                return null
+            } else {
+                throw new ApiBadRequestException('SRGRS01',
+                                             "SecurableResourceGroupRole retrieval for securable resource [${clazz.simpleName}] with no " +
+                                             'supporting service')
+            }
+        }
         service.get(id)
     }
 
     def <R extends SecurableResource> R findSecurableResource(String domainType, UUID id) {
         SecurableResourceService service = securableResourceServices.find { it.handles(domainType) }
-        if (!service) throw new ApiBadRequestException('SRGRS01',
+        if (!service) throw new ApiBadRequestException('SRGRS02',
                                                        "SecurableResourceGroupRole retrieval for securable resource [${domainType}] with no " +
                                                        'supporting service')
         service.get(id)

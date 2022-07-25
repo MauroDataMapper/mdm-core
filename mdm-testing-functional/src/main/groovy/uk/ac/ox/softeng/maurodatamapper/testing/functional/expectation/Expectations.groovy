@@ -39,6 +39,7 @@ class Expectations {
     private boolean availableActionsProvided
     private boolean editorCanChangePermissions
     private boolean isSecuredResource
+    private boolean hasEditsEndpoint
 
     private Expectations() {
 
@@ -66,6 +67,10 @@ class Expectations {
 
     boolean getMergingIsAvailable() {
         mergingIsAvailable
+    }
+
+    boolean getHasEditsEndpoint() {
+        hasEditsEndpoint
     }
 
     List<String> getContainerAdminAvailableActions() {
@@ -232,6 +237,16 @@ class Expectations {
         this
     }
 
+    Expectations withEdits() {
+        this.hasEditsEndpoint = true
+        this
+    }
+
+    Expectations withoutEdits() {
+        this.hasEditsEndpoint = false
+        this
+    }
+
     Expectations whereAdmins(@DelegatesTo(UserExpectation) Closure closure) {
         closure.setDelegate(admin)
         closure.call()
@@ -335,6 +350,7 @@ class Expectations {
         withMergingAvailable()
         whereTestingSecuredResource()
         whereEditorsCanChangePermissions()
+        withEdits()
         admin.canUpdate().canDelete().canCreate().canSee().canIndex().withDefaultActions()
         containerAdmin.canUpdate().canDelete().canCreate().canSee().canIndex().withDefaultActions()
         editor.canUpdate().canDelete().canCreate().canSee().canIndex().withDefaultActions()
