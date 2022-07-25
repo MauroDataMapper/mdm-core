@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderInterceptor
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ResourceInterceptorUnitSpec
 
@@ -27,6 +29,11 @@ import spock.lang.Unroll
 
 class FolderInterceptorSpec extends ResourceInterceptorUnitSpec implements InterceptorUnitTest<FolderInterceptor> {
 
+    def setup() {
+        mockDomain(ApiProperty)
+        ApiPropertyService apiPropertyService = new ApiPropertyService()
+        this.getInterceptor().apiPropertyService = apiPropertyService
+    }
     @Override
     String getControllerName() {
         'folder'

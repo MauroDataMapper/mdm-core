@@ -223,7 +223,10 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         assert responseBody().count == 15
 
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL, ApiPropertyEnum.EMAIL_FROM_ADDRESS])}
+            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
+                               ApiPropertyEnum.EMAIL_FROM_ADDRESS,
+                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {
                     it.key == ape.key &&
