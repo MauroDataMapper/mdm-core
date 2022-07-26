@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
@@ -55,6 +56,10 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     static hasMany = [
         subscribedModels: SubscribedModel
+    ]
+
+    static hasOne = [
+        subscribedCatalogueAuthenticationCredentials: SubscribedCatalogueAuthenticationCredentials
     ]
 
     static constraints = {
