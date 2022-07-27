@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
-import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
@@ -48,22 +47,23 @@ import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
 import java.util.concurrent.ThreadFactory
+
 /**
  * @since 14/04/2021
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> implements Closeable {
+class ApiKeyAuthenticatingFederationClient extends FederationClient {
 
+    static final String API_KEY_HEADER = 'apiKey'
     private HttpClient client
     private String hostUrl
     private String contextPath
-    private C subscribedCatalogueAuthenticationCredentials
     private HttpClientConfiguration httpClientConfiguration
     private NettyClientSslBuilder nettyClientSslBuilder
     private MediaTypeCodecRegistry mediaTypeCodecRegistry
 
-    FederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
+    ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
         this(subscribedCatalogue,
              applicationContext.getBean(HttpClientConfiguration),
              applicationContext.getBean(NettyClientSslBuilder),
@@ -71,10 +71,10 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         )
     }
 
-    FederationClient(SubscribedCatalogue subscribedCatalogue,
-                     HttpClientConfiguration httpClientConfiguration,
-                     NettyClientSslBuilder nettyClientSslBuilder,
-                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
+                                         HttpClientConfiguration httpClientConfiguration,
+                                         NettyClientSslBuilder nettyClientSslBuilder,
+                                         MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this(subscribedCatalogue,
              httpClientConfiguration,
              new DefaultThreadFactory(MultithreadEventLoopGroup),
@@ -83,11 +83,11 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         )
     }
 
-    private FederationClient(SubscribedCatalogue subscribedCatalogue,
-                             HttpClientConfiguration httpClientConfiguration,
-                             ThreadFactory threadFactory,
-                             NettyClientSslBuilder nettyClientSslBuilder,
-                             MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    private ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
+                                                 HttpClientConfiguration httpClientConfiguration,
+                                                 ThreadFactory threadFactory,
+                                                 NettyClientSslBuilder nettyClientSslBuilder,
+                                                 MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.httpClientConfiguration = httpClientConfiguration
         this.nettyClientSslBuilder = nettyClientSslBuilder
         this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
@@ -120,25 +120,25 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         client.close()
     }
 
-    GPathResult getSubscribedCatalogueModelsFromAtomFeed(C authenticationCredentials) {
+    GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {
         // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
-        retrieveXmlDataFromClient(UriBuilder.of(''), authenticationCredentials)
+        retrieveXmlDataFromClient(UriBuilder.of(''), apiKey)
     }
 
-    Map<String, Object> getSubscribedCatalogueModels(C authenticationCredentials) {
-        retrieveMapFromClient(UriBuilder.of('published/models'), authenticationCredentials)
+    Map<String, Object> getSubscribedCatalogueModels(UUID apiKey) {
+        retrieveMapFromClient(UriBuilder.of('published/models'), apiKey)
     }
 
-    List<Map<String, Object>> getAvailableExporters(C authenticationCredentials, String urlResourceType) {
-        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), authenticationCredentials)
+    List<Map<String, Object>> getAvailableExporters(UUID apiKey, String urlResourceType) {
+        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), apiKey)
     }
 
-    Map<String, Object> getVersionLinksForModel(C authenticationCredentials, String urlModelResourceType, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), authenticationCredentials)
+    Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, String publishedModelId) {
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), apiKey)
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(C authenticationCredentials, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), authenticationCredentials)
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, String publishedModelId) {
+        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), apiKey)
     }
 
     byte[] getBytesResourceExport(UUID apiKey, String resourceUrl) {

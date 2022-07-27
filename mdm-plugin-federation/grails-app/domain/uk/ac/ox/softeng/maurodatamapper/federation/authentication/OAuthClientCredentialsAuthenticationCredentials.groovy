@@ -18,18 +18,19 @@
 
 package uk.ac.ox.softeng.maurodatamapper.federation.authentication
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import java.time.OffsetDateTime
 
-import grails.databinding.BindUsing
+class OAuthClientCredentialsAuthenticationCredentials extends SubscribedCatalogueAuthenticationCredentials {
 
-class SubscribedCatalogueAuthenticationCredentials {
+    // Client ID and secret to be set by administrator.
+    String clientId
+    String clientSecret
 
-    UUID id
+    // Access and Refresh tokens and expiry times to be retrieved from authorization server.
+    String accessToken
+    OffsetDateTime accessTokenExpiryTime
 
-    static belongsTo = [
-        subscribedCatalogue: SubscribedCatalogue
-    ]
+    String refreshToken
+    OffsetDateTime refreshTokenExpiryTime
+
 }

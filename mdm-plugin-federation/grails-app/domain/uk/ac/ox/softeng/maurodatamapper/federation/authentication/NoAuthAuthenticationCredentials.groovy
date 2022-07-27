@@ -18,18 +18,6 @@
 
 package uk.ac.ox.softeng.maurodatamapper.federation.authentication
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+class NoAuthAuthenticationCredentials extends SubscribedCatalogueAuthenticationCredentials {
 
-import grails.databinding.BindUsing
-
-class SubscribedCatalogueAuthenticationCredentials {
-
-    UUID id
-
-    static belongsTo = [
-        subscribedCatalogue: SubscribedCatalogue
-    ]
 }

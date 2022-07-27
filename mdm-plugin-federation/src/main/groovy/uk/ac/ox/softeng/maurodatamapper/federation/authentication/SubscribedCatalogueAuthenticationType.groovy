@@ -18,13 +18,14 @@
 
 package uk.ac.ox.softeng.maurodatamapper.federation.authentication
 
-enum SubscribedCatalogueAuthenticationCredentialsType {
+enum SubscribedCatalogueAuthenticationType {
     OAUTH_CLIENT_CREDENTIALS('OAuth (Client Credentials)'),
-    API_KEY('API Key')
+    API_KEY('API Key'),
+    NO_AUTHENTICATION('No Authentication')
 
     String label
 
-    SubscribedCatalogueAuthenticationCredentialsType(String label) {
+    SubscribedCatalogueAuthenticationType(String label) {
         this.label = label
     }
 
@@ -32,7 +33,7 @@ enum SubscribedCatalogueAuthenticationCredentialsType {
         values().collect {it.label}.sort()
     }
 
-    static SubscribedCatalogueAuthenticationCredentialsType findForLabel(String label) {
+    static SubscribedCatalogueAuthenticationType findForLabel(String label) {
         String convert = label?.toUpperCase()?.replaceAll(/ /, '_').replaceAll(/\(|\)/, '')
         try {
             return valueOf(convert)
@@ -40,9 +41,9 @@ enum SubscribedCatalogueAuthenticationCredentialsType {
         null
     }
 
-    static SubscribedCatalogueAuthenticationCredentialsType findFromMap(def map) {
-        map['subscribedCatalogueAuthenticationCredentialsType'] instanceof SubscribedCatalogueAuthenticationCredentialsType ?
-        map['subscribedCatalogueAuthenticationCredentialsType'] as SubscribedCatalogueAuthenticationCredentialsType :
+    static SubscribedCatalogueAuthenticationType findFromMap(def map) {
+        map['subscribedCatalogueAuthenticationCredentialsType'] instanceof SubscribedCatalogueAuthenticationType ?
+        map['subscribedCatalogueAuthenticationCredentialsType'] as SubscribedCatalogueAuthenticationType :
         findForLabel(map['subscribedCatalogueAuthenticationCredentialsType'] as String)
     }
 }

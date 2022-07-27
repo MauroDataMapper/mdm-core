@@ -163,6 +163,7 @@ class SubscribedCatalogueService implements AnonymisableService {
     byte[] getBytesResourceExport(SubscribedCatalogue subscribedCatalogue, String resourceUrl) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
             client.getBytesResourceExport(subscribedCatalogue.apiKey, resourceUrl)
+            client.retrieveStringFromClient(null, null, null)
         }
     }
 
