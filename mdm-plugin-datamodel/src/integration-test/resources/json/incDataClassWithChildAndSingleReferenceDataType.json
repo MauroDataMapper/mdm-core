@@ -16,6 +16,7 @@
         "id": "${json-unit.matches:id}",
         "label": "child",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "domainType": "ReferenceType",
         "referenceClass": {
           "id": "${json-unit.matches:id}",
@@ -29,13 +30,15 @@
         "id": "${json-unit.matches:id}",
         "label": "parent",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "maxMultiplicity": -1,
         "minMultiplicity": 1,
         "dataClasses": [
           {
             "id": "${json-unit.matches:id}",
             "label": "child",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0
           }
         ],
         "dataElements": [
@@ -43,10 +46,12 @@
             "id": "${json-unit.matches:id}",
             "label": "child",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0,
             "dataType": {
               "id": "${json-unit.matches:id}",
               "label": "child",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0,
               "domainType": "ReferenceType",
               "referenceClass": {
                 "id": "${json-unit.matches:id}",
@@ -67,7 +72,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

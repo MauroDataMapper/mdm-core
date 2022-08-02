@@ -1,0 +1,237 @@
+<?xml version='1.0'?>
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
+	<mdm:dataModel>
+		<mdm:id>f930c276-1020-4866-81ad-a7315ab18012</mdm:id>
+		<mdm:label>Ordered Test DataModel</mdm:label>
+		<mdm:description>Test DataModel with the DataTypes, DataElements and DataClasses all ordered in reverse alphabetical order by setting indices.</mdm:description>
+		<mdm:lastUpdated>2022-07-12T12:12:02.799Z</mdm:lastUpdated>
+		<mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+		<mdm:finalised>false</mdm:finalised>
+		<mdm:branchName>main</mdm:branchName>
+		<mdm:authority>
+			<mdm:id>a2a06942-9c66-4fba-9a69-7e9f0c482976</mdm:id>
+			<mdm:label>Test Authority</mdm:label>
+			<mdm:url>http://localhost</mdm:url>
+			<mdm:lastUpdated>2022-06-27T09:34:05.213Z</mdm:lastUpdated>
+		</mdm:authority>
+		<mdm:type>Data Standard</mdm:type>
+		<mdm:dataTypes>
+			<mdm:dataType>
+				<mdm:id>02f58f6a-ff52-4db9-a76e-f241e87b9966</mdm:id>
+				<mdm:label>Timestamp</mdm:label>
+				<mdm:description>A timestamp</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.623Z</mdm:lastUpdated>
+				<mdm:index>0</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+				<mdm:label>Text</mdm:label>
+				<mdm:description>A piece of text</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+				<mdm:index>1</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>abf374ad-d11b-4cf7-a4f8-1733069355dd</mdm:id>
+				<mdm:label>Number</mdm:label>
+				<mdm:description>A whole number</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.62Z</mdm:lastUpdated>
+				<mdm:index>2</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>3cc008ce-5a2f-4285-b8a8-0816b24a9757</mdm:id>
+				<mdm:label>Duration</mdm:label>
+				<mdm:description>A time period in arbitrary units</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.625Z</mdm:lastUpdated>
+				<mdm:index>3</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>44d2e191-193e-4469-b6d1-f055d3f76ac7</mdm:id>
+				<mdm:label>Decimal</mdm:label>
+				<mdm:description>A decimal number</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.621Z</mdm:lastUpdated>
+				<mdm:index>4</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>36470462-52b9-42a2-8d54-fb7e41a93b4e</mdm:id>
+				<mdm:label>DateTime</mdm:label>
+				<mdm:description>A date with a timestamp</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.623Z</mdm:lastUpdated>
+				<mdm:index>5</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>e5f9bdd5-1972-4f21-9bea-c3537cb7abcb</mdm:id>
+				<mdm:label>Date</mdm:label>
+				<mdm:description>A date</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.622Z</mdm:lastUpdated>
+				<mdm:index>6</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+			<mdm:dataType>
+				<mdm:id>c183c36e-50d7-4115-878b-679b1050943f</mdm:id>
+				<mdm:label>Boolean</mdm:label>
+				<mdm:description>A true or false value</mdm:description>
+				<mdm:lastUpdated>2022-07-12T12:05:16.624Z</mdm:lastUpdated>
+				<mdm:index>7</mdm:index>
+				<mdm:domainType>PrimitiveType</mdm:domainType>
+			</mdm:dataType>
+		</mdm:dataTypes>
+		<mdm:childDataClasses>
+			<mdm:dataClass>
+				<mdm:id>7c26d327-3753-4d0b-82a4-726c050098f0</mdm:id>
+				<mdm:label>DC F</mdm:label>
+				<mdm:lastUpdated>2022-07-12T12:12:02.797Z</mdm:lastUpdated>
+				<mdm:index>0</mdm:index>
+			</mdm:dataClass>
+			<mdm:dataClass>
+				<mdm:id>26ac5870-9e9e-4e1a-b290-c42a6088b180</mdm:id>
+				<mdm:label>DC E</mdm:label>
+				<mdm:lastUpdated>2022-07-12T12:11:56.828Z</mdm:lastUpdated>
+				<mdm:index>1</mdm:index>
+			</mdm:dataClass>
+			<mdm:dataClass>
+				<mdm:id>2ed0f75d-4a72-4b60-883b-bd65a4fa6b18</mdm:id>
+				<mdm:label>DC D</mdm:label>
+				<mdm:lastUpdated>2022-07-12T12:11:49.401Z</mdm:lastUpdated>
+				<mdm:index>2</mdm:index>
+			</mdm:dataClass>
+			<mdm:dataClass>
+				<mdm:id>4ca5cd99-0efc-433b-9605-068b24b1589a</mdm:id>
+				<mdm:label>DC C</mdm:label>
+				<mdm:lastUpdated>2022-07-12T12:11:42.58Z</mdm:lastUpdated>
+				<mdm:index>3</mdm:index>
+			</mdm:dataClass>
+			<mdm:dataClass>
+				<mdm:id>e37f5a7a-f929-4545-b218-adcdf0b608e1</mdm:id>
+				<mdm:label>DC B</mdm:label>
+				<mdm:lastUpdated>2022-07-12T12:11:36.481Z</mdm:lastUpdated>
+				<mdm:index>4</mdm:index>
+			</mdm:dataClass>
+			<mdm:dataClass>
+				<mdm:id>69604628-2d1b-4a30-abf9-851fdf2b44a9</mdm:id>
+				<mdm:label>DC A</mdm:label>
+				<mdm:lastUpdated>2022-07-12T12:14:28.696Z</mdm:lastUpdated>
+				<mdm:index>5</mdm:index>
+				<mdm:dataElements>
+					<mdm:dataElement>
+						<mdm:id>66da1887-468d-48e9-9f53-9a0831f80611</mdm:id>
+						<mdm:label>DE F</mdm:label>
+						<mdm:lastUpdated>2022-07-12T12:14:33.434Z</mdm:lastUpdated>
+						<mdm:index>0</mdm:index>
+						<mdm:dataType>
+							<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+							<mdm:label>Text</mdm:label>
+							<mdm:description>A piece of text</mdm:description>
+							<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+							<mdm:index>1</mdm:index>
+							<mdm:domainType>PrimitiveType</mdm:domainType>
+						</mdm:dataType>
+					</mdm:dataElement>
+					<mdm:dataElement>
+						<mdm:id>dcb55883-8d5e-474b-bfaa-4aa5d08954f9</mdm:id>
+						<mdm:label>DE E</mdm:label>
+						<mdm:lastUpdated>2022-07-12T12:14:33.433Z</mdm:lastUpdated>
+						<mdm:index>1</mdm:index>
+						<mdm:dataType>
+							<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+							<mdm:label>Text</mdm:label>
+							<mdm:description>A piece of text</mdm:description>
+							<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+							<mdm:index>1</mdm:index>
+							<mdm:domainType>PrimitiveType</mdm:domainType>
+						</mdm:dataType>
+					</mdm:dataElement>
+					<mdm:dataElement>
+						<mdm:id>0e26fb2e-41bd-4ae3-aeb7-9cddf2d2fdb3</mdm:id>
+						<mdm:label>DE D</mdm:label>
+						<mdm:lastUpdated>2022-07-12T12:14:03.587Z</mdm:lastUpdated>
+						<mdm:index>2</mdm:index>
+						<mdm:dataType>
+							<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+							<mdm:label>Text</mdm:label>
+							<mdm:description>A piece of text</mdm:description>
+							<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+							<mdm:index>1</mdm:index>
+							<mdm:domainType>PrimitiveType</mdm:domainType>
+						</mdm:dataType>
+					</mdm:dataElement>
+					<mdm:dataElement>
+						<mdm:id>23f68bee-33e6-4c9b-8ffd-34d72e24adec</mdm:id>
+						<mdm:label>DE C</mdm:label>
+						<mdm:lastUpdated>2022-07-12T12:13:45.574Z</mdm:lastUpdated>
+						<mdm:index>3</mdm:index>
+						<mdm:dataType>
+							<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+							<mdm:label>Text</mdm:label>
+							<mdm:description>A piece of text</mdm:description>
+							<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+							<mdm:index>1</mdm:index>
+							<mdm:domainType>PrimitiveType</mdm:domainType>
+						</mdm:dataType>
+					</mdm:dataElement>
+					<mdm:dataElement>
+						<mdm:id>cf0aea18-1f66-410e-bd0d-322dc7a708bb</mdm:id>
+						<mdm:label>DE B</mdm:label>
+						<mdm:lastUpdated>2022-07-12T12:13:33.862Z</mdm:lastUpdated>
+						<mdm:index>4</mdm:index>
+						<mdm:dataType>
+							<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+							<mdm:label>Text</mdm:label>
+							<mdm:description>A piece of text</mdm:description>
+							<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+							<mdm:index>1</mdm:index>
+							<mdm:domainType>PrimitiveType</mdm:domainType>
+						</mdm:dataType>
+					</mdm:dataElement>
+					<mdm:dataElement>
+						<mdm:id>04ad783c-a99e-4f76-800c-97e9f0b04f49</mdm:id>
+						<mdm:label>DE A</mdm:label>
+						<mdm:lastUpdated>2022-07-12T12:13:11.856Z</mdm:lastUpdated>
+						<mdm:index>5</mdm:index>
+						<mdm:dataType>
+							<mdm:id>f9c824ab-5d5c-46df-993d-431584367989</mdm:id>
+							<mdm:label>Text</mdm:label>
+							<mdm:description>A piece of text</mdm:description>
+							<mdm:lastUpdated>2022-07-12T12:14:28.705Z</mdm:lastUpdated>
+							<mdm:index>1</mdm:index>
+							<mdm:domainType>PrimitiveType</mdm:domainType>
+						</mdm:dataType>
+					</mdm:dataElement>
+				</mdm:dataElements>
+			</mdm:dataClass>
+		</mdm:childDataClasses>
+	</mdm:dataModel>
+	<exp:exportMetadata>
+		<exp:exportedBy>Admin User</exp:exportedBy>
+		<exp:exportedOn>2022-07-12T13:27:20.462923+01:00</exp:exportedOn>
+		<exp:exporter>
+			<exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
+			<exp:name>DataModelXmlExporterService</exp:name>
+			<exp:version>5.2</exp:version>
+		</exp:exporter>
+	</exp:exportMetadata>
+</exp:exportModel>

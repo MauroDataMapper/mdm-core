@@ -276,6 +276,13 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
       {
         "id": "${json-unit.matches:id}",
         "namespace": "test.com",
+        "key": "mdk1",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "test.com",
         "key": "mdk2",
         "value": "mdv2",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
@@ -285,13 +292,6 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
         "namespace": "test.com/test",
         "key": "mdk1",
         "value": "mdv2",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "namespace": "test.com",
-        "key": "mdk1",
-        "value": "mdv1",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
     ],
@@ -325,6 +325,7 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
         "id": "${json-unit.matches:id}",
         "label": "yesnounknown",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "domainType": "EnumerationType",
         "enumerationValues": [
           {
@@ -336,16 +337,16 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           },
           {
             "id": "${json-unit.matches:id}",
-            "index": 2,
-            "key": "U",
-            "value": "Unknown",
+            "index": 1,
+            "key": "N",
+            "value": "No",
             "lastUpdated": "${json-unit.matches:offsetDateTime}"
           },
           {
             "id": "${json-unit.matches:id}",
-            "index": 1,
-            "key": "N",
-            "value": "No",
+            "index": 2,
+            "key": "U",
+            "value": "Unknown",
             "lastUpdated": "${json-unit.matches:offsetDateTime}"
           }
         ]
@@ -354,18 +355,21 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
         "id": "${json-unit.matches:id}",
         "label": "integer",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 1,
         "domainType": "PrimitiveType"
       },
       {
         "id": "${json-unit.matches:id}",
         "label": "string",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 2,
         "domainType": "PrimitiveType"
       },
       {
         "id": "${json-unit.matches:id}",
         "label": "child",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 3,
         "domainType": "ReferenceType",
         "referenceClass": {
           "id": "${json-unit.matches:id}",
@@ -379,7 +383,8 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
         "id": "${json-unit.matches:id}",
         "label": "emptyclass",
         "description": "dataclass with desc",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0
       },
       {
         "id": "${json-unit.matches:id}",
@@ -394,13 +399,15 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
             "lastUpdated": "${json-unit.matches:offsetDateTime}"
           }
         ],
+        "index": 1,
         "maxMultiplicity": -1,
         "minMultiplicity": 1,
         "dataClasses": [
           {
             "id": "${json-unit.matches:id}",
             "label": "child",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0
           }
         ],
         "dataElements": [
@@ -417,10 +424,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
                 "lastUpdated": "${json-unit.matches:offsetDateTime}"
               }
             ],
+            "index": 0,
             "dataType": {
               "id": "${json-unit.matches:id}",
               "label": "child",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 3,
               "domainType": "ReferenceType",
               "referenceClass": {
                 "id": "${json-unit.matches:id}",
@@ -438,6 +447,7 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
         "label": "content",
         "description": "A dataclass with elements",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 2,
         "maxMultiplicity": 1,
         "minMultiplicity": 0,
         "dataElements": [
@@ -445,10 +455,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
             "id": "${json-unit.matches:id}",
             "label": "ele1",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0,
             "dataType": {
               "id": "${json-unit.matches:id}",
               "label": "string",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 2,
               "domainType": "PrimitiveType"
             },
             "maxMultiplicity": 20,
@@ -458,10 +470,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
             "id": "${json-unit.matches:id}",
             "label": "element2",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 1,
             "dataType": {
               "id": "${json-unit.matches:id}",
               "label": "integer",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 1,
               "domainType": "PrimitiveType"
             },
             "maxMultiplicity": 1,
@@ -477,7 +491,7 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "${json-unit.matches:version}"
+      "version": "3.2"
     }
   }
 }'''
@@ -493,12 +507,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "test classifier2",
+          "label": "test classifier",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         },
         {
           "id": "${json-unit.matches:id}",
-          "label": "test classifier",
+          "label": "test classifier2",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
@@ -530,14 +544,14 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           "id": "${json-unit.matches:id}",
           "createdBy": "development@test.com",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "label": "test annotation 2",
-          "description": "with description"
+          "label": "test annotation 1"
         },
         {
           "id": "${json-unit.matches:id}",
           "createdBy": "development@test.com",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "label": "test annotation 1"
+          "label": "test annotation 2",
+          "description": "with description"
         }
       ],
       "type": "Data Standard",
@@ -555,8 +569,16 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           "id": "${json-unit.matches:id}",
           "label": "yesnounknown",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 0,
           "domainType": "EnumerationType",
           "enumerationValues": [
+            {
+              "id": "${json-unit.matches:id}",
+              "index": 0,
+              "key": "Y",
+              "value": "Yes",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
             {
               "id": "${json-unit.matches:id}",
               "index": 1,
@@ -570,13 +592,6 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
               "key": "U",
               "value": "Unknown",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "index": 0,
-              "key": "Y",
-              "value": "Yes",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
           ]
         },
@@ -584,18 +599,21 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           "id": "${json-unit.matches:id}",
           "label": "integer",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 1,
           "domainType": "PrimitiveType"
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "string",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 2,
           "domainType": "PrimitiveType"
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "child",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 3,
           "domainType": "ReferenceType",
           "referenceClass": {
             "id": "${json-unit.matches:id}",
@@ -609,7 +627,8 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           "id": "${json-unit.matches:id}",
           "label": "emptyclass",
           "description": "dataclass with desc",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 0
         },
         {
           "id": "${json-unit.matches:id}",
@@ -624,13 +643,15 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
           ],
+          "index": 1,
           "maxMultiplicity": -1,
           "minMultiplicity": 1,
           "dataClasses": [
             {
               "id": "${json-unit.matches:id}",
               "label": "child",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0
             }
           ],
           "dataElements": [
@@ -647,10 +668,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
                   "lastUpdated": "${json-unit.matches:offsetDateTime}"
                 }
               ],
+              "index": 0,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "child",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "index": 3,
                 "domainType": "ReferenceType",
                 "referenceClass": {
                   "id": "${json-unit.matches:id}",
@@ -668,6 +691,7 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           "label": "content",
           "description": "A dataclass with elements",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "index": 2,
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "dataElements": [
@@ -675,10 +699,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
               "id": "${json-unit.matches:id}",
               "label": "ele1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "string",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "index": 2,
                 "domainType": "PrimitiveType"
               },
               "maxMultiplicity": 20,
@@ -688,10 +714,12 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
               "id": "${json-unit.matches:id}",
               "label": "element2",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 1,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "integer",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "index": 1,
                 "domainType": "PrimitiveType"
               },
               "maxMultiplicity": 1,
@@ -715,6 +743,13 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
       "metadata": [
         {
           "id": "${json-unit.matches:id}",
+          "namespace": "test.com/simple",
+          "key": "mdk1",
+          "value": "mdv1",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
           "namespace": "test.com",
           "key": "mdk2",
           "value": "mdv2",
@@ -725,13 +760,6 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
           "namespace": "test.com/simple",
           "key": "mdk2",
           "value": "mdv2",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "namespace": "test.com/simple",
-          "key": "mdk1",
-          "value": "mdv1",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
@@ -756,7 +784,8 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
               "value": "mdv1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-          ]
+          ],
+          "index": 0
         }
       ]
     }
@@ -767,7 +796,7 @@ class DomainExportFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

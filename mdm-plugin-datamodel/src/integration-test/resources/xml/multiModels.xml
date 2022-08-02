@@ -1,4 +1,4 @@
-<mdm:dataModels xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+<mdm:dataModels xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
  <mdm:dataModel>
     <mdm:id>412d7b5f-247b-4136-a663-584610ad491b</mdm:id>
     <mdm:label>Complex Test DataModel 3</mdm:label>
@@ -198,7 +198,7 @@
       </mdm:dataClass>
     </mdm:childDataClasses>
   </mdm:dataModel>
-   <mdm:dataModel xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+   <mdm:dataModel xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
     <mdm:id>4e321c7d-9299-452b-b4cc-456c666f1cec</mdm:id>
     <mdm:label>Simple Test DataModel 3</mdm:label>
     <mdm:lastUpdated>2020-04-13T13:11:39.233648Z</mdm:lastUpdated>

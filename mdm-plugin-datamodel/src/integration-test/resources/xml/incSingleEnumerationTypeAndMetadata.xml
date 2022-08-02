@@ -18,50 +18,51 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
   <mdm:dataModel>
-    <mdm:id>06f260b6-bdcd-45b5-9fdd-a7864bb90872</mdm:id>
+    <mdm:id>8dfe6780-684d-44d4-93fe-1066c07956bf</mdm:id>
     <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
-    <mdm:lastUpdated>2017-11-21T13:17:02.864Z</mdm:lastUpdated>
+    <mdm:lastUpdated>2022-07-06T15:09:26.237Z</mdm:lastUpdated>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
     <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
-      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:id>c731dab3-f0ae-40a1-b9ee-41c8a52c3af4</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
-      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+      <mdm:lastUpdated>2022-07-06T15:09:18.444Z</mdm:lastUpdated>
     </mdm:authority>
     <mdm:type>Data Standard</mdm:type>
     <mdm:dataTypes>
       <mdm:dataType>
-        <mdm:id>2c0eec46-8dcc-4a38-abc2-87887ff8fa1b</mdm:id>
+        <mdm:id>fbbb5103-cc66-4dcd-bbca-acfd42f753cb</mdm:id>
         <mdm:label>Sex</mdm:label>
-        <mdm:lastUpdated>2017-11-21T13:17:02.865Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:09:26.241Z</mdm:lastUpdated>
         <mdm:metadata>
           <mdm:metadata>
-            <mdm:id>f1f13287-fb72-4da1-bcfc-1e9e22f281d2</mdm:id>
+            <mdm:id>19b59710-7f60-48e9-bc77-646d5ee446f6</mdm:id>
             <mdm:namespace>ox.softeng.maurodatamapper.dataloaders.cancer.audits</mdm:namespace>
             <mdm:key>SCTSImport</mdm:key>
             <mdm:value>0.1</mdm:value>
-            <mdm:lastUpdated>2017-11-21T13:17:02.870Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:09:26.24Z</mdm:lastUpdated>
           </mdm:metadata>
         </mdm:metadata>
+        <mdm:index>0</mdm:index>
         <mdm:domainType>EnumerationType</mdm:domainType>
         <mdm:enumerationValues>
           <mdm:enumerationValue>
-            <mdm:id>76cf2ecc-3424-4688-9590-f23ebf2a419a</mdm:id>
+            <mdm:id>0ce47f43-0aa9-46b2-976e-2260134e6c90</mdm:id>
             <mdm:index>0</mdm:index>
             <mdm:key>M</mdm:key>
             <mdm:value>male</mdm:value>
-            <mdm:lastUpdated>2017-11-21T13:17:02.874Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:09:26.241Z</mdm:lastUpdated>
           </mdm:enumerationValue>
           <mdm:enumerationValue>
-            <mdm:id>b465cb87-b151-4cc7-a76b-7578f8b94dc2</mdm:id>
+            <mdm:id>2ca3ef81-ee8d-44e1-ba9c-e5fa42b112d3</mdm:id>
             <mdm:index>1</mdm:index>
             <mdm:key>F</mdm:key>
             <mdm:value>female</mdm:value>
-            <mdm:lastUpdated>2017-11-21T13:17:02.872Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-07-06T15:09:26.241Z</mdm:lastUpdated>
           </mdm:enumerationValue>
         </mdm:enumerationValues>
       </mdm:dataType>
@@ -69,11 +70,11 @@
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
-    <exp:exportedOn>2017-11-21T13:17:02.879Z</exp:exportedOn>
+    <exp:exportedOn>2022-07-06T16:09:26.253835+01:00</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>5.1</exp:version>
+      <exp:version>5.2</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

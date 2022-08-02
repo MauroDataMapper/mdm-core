@@ -55,7 +55,8 @@
               "value": "mdv1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-          ]
+          ],
+          "index": 0
         }
       ]
     }
@@ -66,7 +67,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

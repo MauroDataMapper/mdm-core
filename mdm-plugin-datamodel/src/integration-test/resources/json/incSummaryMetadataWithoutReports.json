@@ -13,35 +13,38 @@
     },
     "dataTypes": [
       {
+        "id": "${json-unit.matches:id}",
+        "label": "Coin",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "domainType": "EnumerationType",
         "enumerationValues": [
           {
             "id": "${json-unit.matches:id}",
-            "index": 1,
-            "key": "Heads",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "value": "Heads"
+            "index": 0,
+            "key": "Tails",
+            "value": "Tails",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
           },
           {
             "id": "${json-unit.matches:id}",
-            "index": 0,
-            "key": "Tails",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "value": "Tails"
+            "index": 1,
+            "key": "Heads",
+            "value": "Heads",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
           }
         ],
-        "id": "${json-unit.matches:id}",
-        "label": "Coin",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "summaryMetadata": [
           {
-            "createdBy": "admin@maurodatamapper.com",
-            "description": "Value Distribution",
             "id": "${json-unit.matches:id}",
-            "label": "Coin",
+            "createdBy": "admin@maurodatamapper.com",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "summaryMetadataReports": [],
-            "summaryMetadataType": "MAP"
+            "label": "Coin",
+            "description": "Value Distribution",
+            "summaryMetadataType": "MAP",
+            "summaryMetadataReports": [
+
+            ]
           }
         ]
       }
@@ -51,81 +54,92 @@
         "id": "${json-unit.matches:id}",
         "label": "Heads and Tails",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "dataElements": [
           {
+            "id": "${json-unit.matches:id}",
+            "label": "Coin",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0,
             "dataType": {
+              "id": "${json-unit.matches:id}",
+              "label": "Coin",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0,
               "domainType": "EnumerationType",
               "enumerationValues": [
                 {
                   "id": "${json-unit.matches:id}",
-                  "index": 1,
-                  "key": "Heads",
-                  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                  "value": "Heads"
+                  "index": 0,
+                  "key": "Tails",
+                  "value": "Tails",
+                  "lastUpdated": "${json-unit.matches:offsetDateTime}"
                 },
                 {
                   "id": "${json-unit.matches:id}",
-                  "index": 0,
-                  "key": "Tails",
-                  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                  "value": "Tails"
+                  "index": 1,
+                  "key": "Heads",
+                  "value": "Heads",
+                  "lastUpdated": "${json-unit.matches:offsetDateTime}"
                 }
               ],
-              "id": "${json-unit.matches:id}",
-              "label": "Coin",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}",
               "summaryMetadata": [
                 {
-                  "createdBy": "admin@maurodatamapper.com",
-                  "description": "Value Distribution",
                   "id": "${json-unit.matches:id}",
-                  "label": "Coin",
+                  "createdBy": "admin@maurodatamapper.com",
                   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                  "summaryMetadataReports": [],
-                  "summaryMetadataType": "MAP"
+                  "label": "Coin",
+                  "description": "Value Distribution",
+                  "summaryMetadataType": "MAP",
+                  "summaryMetadataReports": [
+
+                  ]
                 }
               ]
             },
-            "id": "${json-unit.matches:id}",
-            "label": "Coin",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "maxMultiplicity": 1,
             "minMultiplicity": 1,
             "summaryMetadata": [
               {
-                "createdBy": "admin@maurodatamapper.com",
-                "description": "Value Distribution",
                 "id": "${json-unit.matches:id}",
-                "label": "Coin",
+                "createdBy": "admin@maurodatamapper.com",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                "summaryMetadataReports": [],
-                "summaryMetadataType": "MAP"
+                "label": "Coin",
+                "description": "Value Distribution",
+                "summaryMetadataType": "MAP",
+                "summaryMetadataReports": [
+
+                ]
               }
             ]
           }
         ],
         "summaryMetadata": [
           {
-            "createdBy": "admin@maurodatamapper.com",
-            "description": "Value Distribution",
             "id": "${json-unit.matches:id}",
-            "label": "Coin",
+            "createdBy": "admin@maurodatamapper.com",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "summaryMetadataReports": [],
-            "summaryMetadataType": "MAP"
+            "label": "Coin",
+            "description": "Value Distribution",
+            "summaryMetadataType": "MAP",
+            "summaryMetadataReports": [
+
+            ]
           }
         ]
       }
     ],
     "summaryMetadata": [
       {
-        "createdBy": "admin@maurodatamapper.com",
-        "description": "Instance Count",
         "id": "${json-unit.matches:id}",
-        "label": "Heads and Tails",
+        "createdBy": "admin@maurodatamapper.com",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "summaryMetadataReports": [],
-        "summaryMetadataType": "NUMBER"
+        "label": "Heads and Tails",
+        "description": "Instance Count",
+        "summaryMetadataType": "NUMBER",
+        "summaryMetadataReports": [
+
+        ]
       }
     ]
   },
@@ -133,9 +147,9 @@
     "exportedBy": "Admin User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
-      "name": "DataModelJsonExporterService",
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
-      "version": "3.1"
+      "name": "DataModelJsonExporterService",
+      "version": "3.2"
     }
   }
 }

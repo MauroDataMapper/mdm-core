@@ -74,10 +74,10 @@ abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
 
     void confirmDataModel(DataModel dataModel) {
         assert dataModel
-        assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery'
+        assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery' || dataModel.label.contains('Test DataModel')
         assert dataModel.modelType == DataModelType.DATA_STANDARD.label
         assert dataModel.createdBy == admin.emailAddress
-        assert !dataModel.description
+        assert !dataModel.description || dataModel.description.contains('Test DataModel')
         assert !dataModel.author
         assert !dataModel.organisation
         assert dataModel.breadcrumbTree

@@ -538,7 +538,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         loginEditor()
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised : false,
             modelName : 'Functional Test Import',
             folderId  : id,
@@ -590,7 +590,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         loginEditor()
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised : false,
             modelName : 'Functional Test Import',
             folderId  : id,

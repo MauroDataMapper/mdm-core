@@ -44,7 +44,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
 
     @Override
     String getVersion() {
-        '5.1'
+        '5.2'
     }
 
     @Override
@@ -70,12 +70,12 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.1', 'gml', exportMetadata), contentType)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.2', 'gml', exportMetadata), contentType)
     }
 
     @Override
     ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.1', 'gml', exportMetadata), contentType)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.2', 'gml', exportMetadata), contentType)
     }
 }

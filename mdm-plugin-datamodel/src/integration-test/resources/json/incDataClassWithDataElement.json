@@ -1,6 +1,6 @@
 {
   "dataModel": {
-    "id": "${json-unit.ignore}",
+    "id": "${json-unit.matches:id}",
     "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
@@ -13,43 +13,47 @@
     },
     "dataTypes": [
       {
-        "id": "${json-unit.ignore}",
+        "id": "${json-unit.matches:id}",
         "label": "openworld_tick",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "domainType": "PrimitiveType"
       }
     ],
     "childDataClasses": [
       {
-        "id": "${json-unit.ignore}",
+        "id": "${json-unit.matches:id}",
         "label": "Core",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "dataElements": [
           {
-            "id": "${json-unit.ignore}",
+            "id": "${json-unit.matches:id}",
             "label": "Lung Cancer Surgery",
             "description": "Is the patient undergoing",
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "metadata": [
               {
-                "id": "${json-unit.ignore}",
-                "key": "Notes",
+                "id": "${json-unit.matches:id}",
                 "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
                 "value": "N/A",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}"
               },
               {
-                "id": "${json-unit.ignore}",
-                "key": "Number",
+                "id": "${json-unit.matches:id}",
                 "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
                 "value": "93",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}"
               }
             ],
+            "index": 0,
             "dataType": {
-              "id": "${json-unit.ignore}",
+              "id": "${json-unit.matches:id}",
               "label": "openworld_tick",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "index": 0,
               "domainType": "PrimitiveType"
             },
             "maxMultiplicity": 1,
@@ -65,7 +69,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

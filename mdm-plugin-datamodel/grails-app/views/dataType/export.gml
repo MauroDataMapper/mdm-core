@@ -6,7 +6,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 DataType dt = dataType as DataType
 
 'mdm:dataType' {
-    layout '/catalogueItem/_export.gml', catalogueItem: dt
+    layout '/modelItem/_export_ordered.gml', modelItem: dt
     if (dt.summaryMetadata) {
         'mdm:summaryMetadata' {
             dt.summaryMetadata.each {sm ->
@@ -20,7 +20,7 @@ DataType dt = dataType as DataType
     if (dt.instanceOf(EnumerationType)) {
         EnumerationType et = dt as EnumerationType
         'mdm:enumerationValues' {
-            et.enumerationValues.each {ev ->
+            et.enumerationValues.sort().each {ev ->
                 layout '/enumerationValue/export.gml', enumerationValue: ev
             }
         }

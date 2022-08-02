@@ -16,21 +16,22 @@
         "id": "${json-unit.matches:id}",
         "label": "Sex",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "domainType": "EnumerationType",
         "enumerationValues": [
           {
             "id": "${json-unit.matches:id}",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "index": 1,
-            "key": "M",
-            "value": "male"
+            "index": 0,
+            "key": "F",
+            "value": "female",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
           },
           {
             "id": "${json-unit.matches:id}",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "index": 0,
-            "key": "F",
-            "value": "female"
+            "index": 1,
+            "key": "M",
+            "value": "male",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
           }
         ]
       }
@@ -42,7 +43,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

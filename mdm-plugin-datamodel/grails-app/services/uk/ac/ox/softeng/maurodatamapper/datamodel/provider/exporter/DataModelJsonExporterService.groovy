@@ -41,7 +41,7 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
 
     @Override
     String getVersion() {
-        '3.1'
+        '3.2'
     }
 
     @Override
