@@ -488,12 +488,15 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('DataModels removed')
 
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
+//        sessionFactory.currentSession
+//            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
+//            .setParameter('ids', idsToDelete)
+//            .executeUpdate()
+//
+//        log.trace('Breadcrumb trees removed')
 
-        log.trace('Breadcrumb trees removed')
+        log.trace('Removing BreadcrumbTrees')
+        breadcrumbTreeService.deleteAllByDomainIds(idsToDelete)
 
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }

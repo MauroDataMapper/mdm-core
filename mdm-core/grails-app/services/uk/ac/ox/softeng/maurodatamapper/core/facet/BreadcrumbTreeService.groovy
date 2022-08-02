@@ -52,4 +52,14 @@ class BreadcrumbTreeService {
         breadcrumbTree.save()
         log.trace('BT finalisation took {}', Utils.timeTaken(start))
     }
+
+    void deleteAllByDomainIds(Set<UUID> domainIds) {
+        List<String> idsToDelete = domainIds.collect {it.toString()}
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE SUBSTR(tree_string, 1, 36) IN :ids')
+            .setParameterList('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('BreadcrumbTrees removed')
+    }
 }
