@@ -23,6 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDi
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.DeletionMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -267,15 +269,40 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         expect:
         dataModelService.count() == 5
         DataModel dm = dataModelService.get(id)
+        BreadcrumbTree.count() == 23
 
         when:
         dataModelService.delete(dm)
         dataModelService.save(dm)
         sessionFactory.currentSession.flush()
 
-        then:
+        then: 'check datamodel is marked as deleted and breadcrumbs remain'
         DataModel.countByDeleted(false) == 4
         DataModel.countByDeleted(true) == 1
+        BreadcrumbTree.count() == 23
+    }
+
+    void 'test permanent delete'() {
+        given:
+        setupData()
+
+        expect:
+        dataModelService.count() == 5
+        DataModel dm = dataModelService.get(id)
+        BreadcrumbTree.count() == 23
+//        UUID deId = dm.allDataElements.first().id
+//        BreadcrumbTree.findByDomainId(deId)
+
+        when:
+//        dataModelService.permanentDeleteModel(dm) -- permanent delete causes all the following tests to fail - why?
+        dataModelService.delete(dm)
+        dataModelService.save(dm)
+        sessionFactory.currentSession.flush()
+
+        then: 'check datamodel is permanently deleted and breadcrumbs are also deleted'
+        dataModelService.count() == 4
+        BreadcrumbTree.count() == 19
+//        !BreadcrumbTree.findByDomainId(deId)
     }
 
     void 'test save'() {

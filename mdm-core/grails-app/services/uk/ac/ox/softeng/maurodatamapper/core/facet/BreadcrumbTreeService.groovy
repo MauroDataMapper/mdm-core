@@ -54,10 +54,11 @@ class BreadcrumbTreeService {
     }
 
     void deleteAllByDomainIds(Set<UUID> domainIds) {
-        List<String> idsToDelete = domainIds.collect {it.toString()}
+        List<String> idPrefixesToDelete = domainIds.collect {it.toString() + '|'}
         sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE SUBSTR(tree_string, 1, 36) IN :ids')
-            .setParameterList('ids', idsToDelete)
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE SUBSTR(tree_string, 1, :id_length+1) IN :id_prefixes')
+            .setParameter('id_length', Utils.UUID_CHARACTER_LENGTH)
+            .setParameterList('id_prefixes', idPrefixesToDelete)
             .executeUpdate()
 
         log.trace('BreadcrumbTrees removed')

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
@@ -120,18 +121,53 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         given:
         setupData()
 
-        expect:
-        terminologyService.count() == 5
+        when:
         Terminology dm = terminologyService.get(id)
+        dm.addToTerms(new Term(code: 'Test Term', definition: 'Definition', createdBy: StandardEmailAddress.INTEGRATION_TEST))
+        check(dm)
+        dm = terminologyService.saveModelWithContent(dm)
+
+        then:
+        dm
+        terminologyService.count() == 5
+        BreadcrumbTree.count() == 230
 
         when:
         terminologyService.delete(dm)
         terminologyService.save(dm)
         sessionFactory.currentSession.flush()
 
-        then:
+        then: 'check terminology is marked as deleted and breadcrumbs remain'
         Terminology.countByDeleted(false) == 4
         Terminology.countByDeleted(true) == 1
+        BreadcrumbTree.count() == 230
+    }
+
+    void 'test permanent delete'() {
+        given:
+        setupData()
+
+        when:
+        Terminology dm = terminologyService.get(id)
+        dm.addToTerms(new Term(code: 'Test Term', definition: 'Definition', createdBy: StandardEmailAddress.INTEGRATION_TEST))
+        check(dm)
+        dm = terminologyService.saveModelWithContent(dm)
+        UUID termId = dm.terms.first().id
+        BreadcrumbTree.findByDomainId(termId)
+
+        then:
+        dm
+        terminologyService.count() == 5
+        BreadcrumbTree.count() == 230
+
+        when:
+        terminologyService.permanentDeleteModel(dm)
+        sessionFactory.currentSession.flush()
+
+        then: 'check terminology is permanently deleted and breadcrumbs are also deleted'
+        terminologyService.count() == 4
+        BreadcrumbTree.count() == 228
+        !BreadcrumbTree.findByDomainId(termId)
     }
 
     void 'test save'() {
