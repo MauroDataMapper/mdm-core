@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -33,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
@@ -3873,7 +3875,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                 fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('complexDataModel').toList()
             ],
-            asynchronous: true
+            asynchronous                   : true
         ])
 
         then:
@@ -3970,6 +3972,40 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse NO_CONTENT, response
+    }
+
+    @Rollback
+    void 'DB : test permanent delete removes BreadcrumbTree'() {
+        given:
+        int breadcrumbTreeCount = BreadcrumbTree.count()
+        String id = createNewItem(validJson)
+        POST("$id/dataClasses", [label: 'Functional Test Data Class'])
+        verifyResponse CREATED, response
+        String dcId = responseBody().id
+        POST("$id/dataTypes", [label: 'Functional Test Data Type', domainType: 'PrimitiveType'])
+        verifyResponse CREATED, response
+        String dtId = responseBody().id
+        POST("$id/dataClasses/$dcId/dataElements", [label: 'Functional Test Data Element', dataType: dtId])
+        verifyResponse CREATED, response
+        String deId = responseBody().id
+
+        expect:
+        BreadcrumbTree.count() == breadcrumbTreeCount + 4
+        BreadcrumbTree.findByDomainId(id)
+        BreadcrumbTree.findByDomainId(dcId)
+        BreadcrumbTree.findByDomainId(dtId)
+        BreadcrumbTree.findByDomainId(deId)
+
+        when:
+        DELETE("$id?permanent=true")
+        verifyResponse NO_CONTENT, response
+
+        then:
+        BreadcrumbTree.count() == breadcrumbTreeCount
+        !BreadcrumbTree.findByDomainId(id)
+        !BreadcrumbTree.findByDomainId(dcId)
+        !BreadcrumbTree.findByDomainId(dtId)
+        !BreadcrumbTree.findByDomainId(deId)
     }
 
     void 'H01 : test getting simple DataModel hierarchy'() {
@@ -5499,7 +5535,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'Get the intersectionMany between complex and [target, target2]'
         POST("/${source.dataModelId}/intersectsMany", [
             targetDataModelIds: [target.dataModelId, target2.dataModelId],
-            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
         ])
 
         then: 'The response is OK with two results'
@@ -5554,7 +5590,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'Get the intersectionMany between complex and [target, target2]'
         POST("/${source.dataModelId}/intersectsMany", [
             targetDataModelIds: [target.dataModelId, target2.dataModelId],
-            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
         ])
 
         then: 'The response is OK with two results'
@@ -5643,7 +5679,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'Get the intersectionMany between complex and [target, target2]'
         POST("/${source.dataModelId}/intersectsMany", [
             targetDataModelIds: [target.dataModelId, target2.dataModelId],
-            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
         ])
 
         then: 'The response is OK with two results'
@@ -5672,7 +5708,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'Get the intersectionMany between complex and [target, target2]'
         POST("/${source.dataModelId}/intersectsMany", [
             targetDataModelIds: [target.dataModelId, target2.dataModelId],
-            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
         ])
 
         then: 'The response is OK with two results'

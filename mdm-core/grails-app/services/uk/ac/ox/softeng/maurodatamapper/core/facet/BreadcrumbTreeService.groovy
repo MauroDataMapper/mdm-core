@@ -55,6 +55,7 @@ class BreadcrumbTreeService {
 
     void deleteAllByDomainIds(Set<UUID> domainIds) {
         List<String> idPrefixesToDelete = domainIds.collect {it.toString() + '|'}
+
         sessionFactory.currentSession
             .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE SUBSTR(tree_string, 1, :id_length+1) IN :id_prefixes')
             .setParameter('id_length', Utils.UUID_CHARACTER_LENGTH)
