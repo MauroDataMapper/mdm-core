@@ -22,3 +22,5 @@ ALTER TABLE core.breadcrumb_tree ENABLE TRIGGER ALL;
 INSERT INTO core.breadcrumb_tree
 SELECT *
 FROM valid_breadcrumb_trees_temp;
+
+CREATE INDEX breadcrumb_tree_tree_string_idx ON core.breadcrumb_tree (tree_string text_pattern_ops);
