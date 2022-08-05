@@ -22,7 +22,7 @@ import grails.plugins.Plugin
 class MdmPluginAuthenticationBasicGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.1.7 > *'
+    def grailsVersion = '5.1.9 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
     ]
