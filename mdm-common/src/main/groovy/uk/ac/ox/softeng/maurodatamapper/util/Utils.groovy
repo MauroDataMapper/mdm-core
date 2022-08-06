@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit
 @SuppressFBWarnings('DCN_NULLPOINTER_EXCEPTION')
 class Utils {
 
+    public static final int UUID_CHARACTER_LENGTH = 36
+
     private Utils() {
     }
 
