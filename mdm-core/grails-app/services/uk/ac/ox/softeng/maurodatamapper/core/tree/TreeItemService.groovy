@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.tree
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -101,7 +103,7 @@ class TreeItemService {
     }
 
     def <K extends Container> List<ContainerTreeItem> buildModelCreatableContainerOnlyTree(Class<K> containerClass,
-                                                                             UserSecurityPolicyManager userSecurityPolicyManager) {
+                                                                                           UserSecurityPolicyManager userSecurityPolicyManager) {
         log.info('Creating model creatable container only tree')
         buildContainerTreeFromContainerTreeItems(getAllModelCreatableContainerTreeItems(containerClass, userSecurityPolicyManager), false)
     }
@@ -152,22 +154,26 @@ class TreeItemService {
         }
 
         log.debug('Getting container tree items which are in container [{}]', container?.path)
-        List<ContainerTreeItem> directTree = getAllReadableContainerTreeItemsInsideContainer(containerClass, userSecurityPolicyManager, container)
+        List<ContainerTreeItem> directTree =
+            getAllReadableContainerTreeItemsInsideContainer(containerClass, userSecurityPolicyManager, container, includeDocumentSuperseded, includeModelSuperseded,
+                                                            includeDeleted)
         Set<UUID> directTreeIds = directTree.collect {it.id}.toSet()
         List<ContainerTreeItem> readableContainersInContainers = []
         List<ModelTreeItem> readableModelsInContainers = []
 
-        if(directTreeIds) {
+        if (directTreeIds) {
             log.debug('Getting containers inside container tree items [{}] inside container', directTreeIds.size())
-            readableContainersInContainers = getAllReadableContainerTreeItemsInsideContainers(containerClass, userSecurityPolicyManager, directTreeIds)
+            readableContainersInContainers =
+                getAllReadableContainerTreeItemsInsideContainers(containerClass, userSecurityPolicyManager, directTreeIds, includeDocumentSuperseded, includeModelSuperseded,
+                                                                 includeDeleted)
 
             log.debug('Getting readable models inside container tree items [{}] inside container (wont check content of models)', directTreeIds.size())
             // So that we can work out if the containers have children
             readableModelsInContainers = getAllReadableModelTreeItemsInContainers(userSecurityPolicyManager,
-                                                                                                      service.containerPropertyNameInModel,
-                                                                                                      directTreeIds,
-                                                                                                      includeDocumentSuperseded, includeModelSuperseded, includeDeleted,
-                                                                                                      false)
+                                                                                  service.containerPropertyNameInModel,
+                                                                                  directTreeIds,
+                                                                                  includeDocumentSuperseded, includeModelSuperseded, includeDeleted,
+                                                                                  false)
         }
 
         log.debug('Marking containers with children')
@@ -429,30 +435,68 @@ class TreeItemService {
     @CompileDynamic
     private <K extends Container> List<ContainerTreeItem> getAllReadableContainerTreeItemsInsideContainer(Class<K> containerClass,
                                                                                                           UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                                          K container) {
+                                                                                                          K container,
+                                                                                                          boolean includeDocumentSuperseded,
+                                                                                                          boolean includeModelSuperseded,
+                                                                                                          boolean includeDeleted) {
         List<UUID> readableContainerIds = userSecurityPolicyManager.listReadableSecuredResourceIds(containerClass)
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds).findAll()
         List<K> readableContainerInside = container ? readableContainers.findAll {it.parent && it.parent.id == container.id} :
                                           readableContainers.findAll {!it.parent}
-        readableContainerInside.collect {c ->
+
+        // Check if containers are versionable and filter accordingly. If there are no versioned containers then original list is used
+        List<K> readableContainersFiltered =
+            filterAllReadableVersionableContainers(readableContainerInside, includeDocumentSuperseded, includeModelSuperseded, includeDeleted);
+
+        readableContainersFiltered.collect {c ->
             createContainerTreeItem(c, userSecurityPolicyManager)
         }
     }
 
     private <K extends Container> List<ContainerTreeItem> getAllReadableContainerTreeItemsInsideContainers(Class<K> containerClass,
                                                                                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                                           Collection<UUID> containerIds) {
-        if(!containerIds) return []
+                                                                                                           Collection<UUID> containerIds,
+                                                                                                           boolean includeDocumentSuperseded,
+                                                                                                           boolean includeModelSuperseded,
+                                                                                                           boolean includeDeleted) {
+        if (!containerIds) return []
         List<UUID> readableContainerIds = userSecurityPolicyManager.listReadableSecuredResourceIds(containerClass)
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds).findAll()
         List<K> readableContainerInside = readableContainers.findAll {it.parent && it.parent.id in containerIds}
-        readableContainerInside.collect {c ->
+
+        // Check if containers are versionable and filter accordingly. If there are no versioned containers then original list is used
+        List<K> readableContainersFiltered =
+            filterAllReadableVersionableContainers(readableContainerInside, includeDocumentSuperseded, includeModelSuperseded, includeDeleted);
+
+        readableContainersFiltered.collect {c ->
             createContainerTreeItem(c, userSecurityPolicyManager)
         }
+    }
+
+    private <K extends Container> List<K> filterAllReadableVersionableContainers(List<K> containers,
+                                                                                 boolean includeDocumentSuperseded,
+                                                                                 boolean includeModelSuperseded,
+                                                                                 boolean includeDeleted) {
+        VersionedFolderService versionedFolderService = containerServices.find {it.handles(VersionedFolder)} as VersionedFolderService
+        def versionedContainers = containers.findAll {it.class == VersionedFolder}
+        def nonVersionedContainers = containers.findAll {it.class != VersionedFolder}
+
+        if (!versionedContainers || !versionedFolderService) {
+            return containers
+        }
+
+        def readableVersionedContainers =
+            versionedFolderService.filterAllReadableModels(versionedContainers as List<VersionedFolder>, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+
+        List<K> combined = [];
+        combined.addAll(nonVersionedContainers)
+        combined.addAll(readableVersionedContainers as List<K>)
+
+        combined
     }
 
     private <K extends Container> List<ContainerTreeItem> getAllReadableContainerTreeItems(Class<K> containerClass,
@@ -468,7 +512,7 @@ class TreeItemService {
     }
 
     private <K extends Container> List<ContainerTreeItem> getAllModelCreatableContainerTreeItems(Class<K> containerClass,
-                                                                                           UserSecurityPolicyManager userSecurityPolicyManager) {
+                                                                                                 UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug("Getting all editable containers of type {}", containerClass.simpleName)
         List<UUID> readableContainerIds = userSecurityPolicyManager.listReadableSecuredResourceIds(containerClass)
         List<UUID> modelCreatableContainerIds = readableContainerIds.findAll {

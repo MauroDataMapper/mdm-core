@@ -156,7 +156,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
+        VersionedFolder.treeLabelHibernateSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -248,8 +248,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                              "${OffsetDateTimeConverter.toString(folder.dateFinalised)}")
 
         editService.createAndSaveEdit(EditTitle.FINALISE, folder.id, folder.domainType,
-                                      "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
-                                      "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
+                                      "${folder.label} finalised by ${user.firstName} ${user.lastName} on " + "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
                                       user)
 
         if (Environment.current != Environment.TEST) {
@@ -275,8 +274,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             long st = System.currentTimeMillis()
             Collection<Model> modelsInFolder = service.findAllByFolderIdInList(foldersInside)
             log.debug('Found {} {} inside VF', modelsInFolder.size(), service.getDomainClass().simpleName)
-            modelsInFolder.each {model ->
-                service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
+            modelsInFolder.each {model -> service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
             }
             log.debug('Finalisation of {} models took {}', modelsInFolder.size(), Utils.timeTaken(st))
         }
@@ -284,10 +282,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Folder contents finalisation took {}', Utils.timeTaken(start))
     }
 
-    Set<UUID> collectAllFoldersIdsInsideFolder(UUID folderId){
+    Set<UUID> collectAllFoldersIdsInsideFolder(UUID folderId) {
         Set<UUID> folderIds = new HashSet<>()
         List<Folder> folders = folderService.findAllByParentId(folderId)
-        folderIds.addAll(folders.collect{it.id})
+        folderIds.addAll(folders.collect {it.id})
         folderIds.addAll(folders.collectMany {collectAllFoldersIdsInsideFolder(it.id)})
         folderIds
     }
@@ -396,7 +394,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         if (permanent) {
             // delete version links which point to this VF
-            versionLinkService.findAllByTargetModelId(folder.id).each{
+            versionLinkService.findAllByTargetModelId(folder.id).each {
                 versionLinkService.delete(it, flush)
             }
         }
@@ -482,14 +480,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         if (!draftFolderOnMainBranchForLabel) {
             log.info('Creating a new branch model version of {} with name {}', folder.id, VersionAwareConstraints.DEFAULT_BRANCH_NAME)
-            VersionedFolder newMainBranchModelVersion = copyFolderAsNewBranchFolder(
-                folder,
-                user,
-                copyPermissions,
-                folder.label,
-                VersionAwareConstraints.DEFAULT_BRANCH_NAME,
-                additionalArguments.throwErrors as boolean,
-                userSecurityPolicyManager)
+            VersionedFolder newMainBranchModelVersion = copyFolderAsNewBranchFolder(folder,
+                                                                                    user,
+                                                                                    copyPermissions,
+                                                                                    folder.label,
+                                                                                    VersionAwareConstraints.DEFAULT_BRANCH_NAME,
+                                                                                    additionalArguments.throwErrors as boolean,
+                                                                                    userSecurityPolicyManager)
             setFolderIsNewBranchModelVersionOfFolder(newMainBranchModelVersion, folder, user)
 
             // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
@@ -508,14 +505,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             }
         }
         log.info('Creating a new branch model version of {} with name {}', folder.id, branchName)
-        VersionedFolder newBranchModelVersion = copyFolderAsNewBranchFolder(
-            folder,
-            user,
-            copyPermissions,
-            folder.label,
-            branchName,
-            additionalArguments.throwErrors as boolean,
-            userSecurityPolicyManager)
+        VersionedFolder newBranchModelVersion = copyFolderAsNewBranchFolder(folder,
+                                                                            user,
+                                                                            copyPermissions,
+                                                                            folder.label,
+                                                                            branchName,
+                                                                            additionalArguments.throwErrors as boolean,
+                                                                            userSecurityPolicyManager)
 
         setFolderIsNewBranchModelVersionOfFolder(newBranchModelVersion, folder, user)
 
@@ -609,27 +605,21 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void setFolderIsNewBranchModelVersionOfFolder(VersionedFolder newVersionedFolder, VersionedFolder oldVersionedFolder, User catalogueUser) {
-        newVersionedFolder.addToVersionLinks(
-            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
-            createdBy: catalogueUser.emailAddress,
-            targetModel: oldVersionedFolder
-        )
+        newVersionedFolder.addToVersionLinks(linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+                                             createdBy: catalogueUser.emailAddress,
+                                             targetModel: oldVersionedFolder)
     }
 
     void setFolderIsNewForkModelOfFolder(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
-        newFolder.addToVersionLinks(
-            linkType: VersionLinkType.NEW_FORK_OF,
-            createdBy: catalogueUser.emailAddress,
-            targetModel: oldFolder
-        )
+        newFolder.addToVersionLinks(linkType: VersionLinkType.NEW_FORK_OF,
+                                    createdBy: catalogueUser.emailAddress,
+                                    targetModel: oldFolder)
     }
 
     void setModelIsNewDocumentationVersionOfModel(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
-        newFolder.addToVersionLinks(
-            linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
-            createdBy: catalogueUser.emailAddress,
-            targetModel: oldFolder
-        )
+        newFolder.addToVersionLinks(linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+                                    createdBy: catalogueUser.emailAddress,
+                                    targetModel: oldFolder)
     }
 
     VersionedFolder findLatestModelByLabel(String label) {
@@ -651,8 +641,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder findOldestAncestor(VersionedFolder versionedFolder) {
         // Look for model version or doc version only
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-        versionLink =
-            versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+        versionLink = versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
 
         // If no versionlink then we're at the oldest ancestor
         if (!versionLink) {
@@ -764,9 +753,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         getDiffForVersionedFolders(thisCachedDiffable, otherCachedDiffable, contentContext)
     }
 
-    ObjectDiff<VersionedFolder> getDiffForVersionedFolders( CachedDiffable<VersionedFolder> thisCachedDiffable, CachedDiffable<VersionedFolder> otherCachedDiffable,
-                                                            String contentContext = 'none') {
-        ObjectDiff<VersionedFolder> coreDiff =  thisCachedDiffable.diff(otherCachedDiffable, 'none')
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(CachedDiffable<VersionedFolder> thisCachedDiffable, CachedDiffable<VersionedFolder> otherCachedDiffable,
+                                                           String contentContext = 'none') {
+        ObjectDiff<VersionedFolder> coreDiff = thisCachedDiffable.diff(otherCachedDiffable, 'none')
         folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisCachedDiffable.diffable, otherCachedDiffable.diffable, contentContext)
         coreDiff
     }
@@ -802,14 +791,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
 
-      MergeDiff<VersionedFolder> mergeDiff =  mergeDiffService.generateMergeDiff(DiffBuilder
-                                               .mergeDiff(VersionedFolder)
-                                               .forMergingDiffable(sourceVersionedFolder)
-                                               .intoDiffable(targetVersionedFolder)
-                                               .havingCommonAncestor(commonAncestor)
-                                               .withCommonAncestorDiffedAgainstSource(caDiffSource)
-                                               .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
-        )
+        MergeDiff<VersionedFolder> mergeDiff = mergeDiffService.generateMergeDiff(DiffBuilder
+                                                                                      .mergeDiff(VersionedFolder)
+                                                                                      .forMergingDiffable(sourceVersionedFolder)
+                                                                                      .intoDiffable(targetVersionedFolder)
+                                                                                      .havingCommonAncestor(commonAncestor)
+                                                                                      .withCommonAncestorDiffedAgainstSource(caDiffSource)
+                                                                                      .withCommonAncestorDiffedAgainstTarget(caDiffTarget))
             .flatten()
             .clean {
                 Path diffPath = it.fullyQualifiedPath
@@ -824,23 +812,20 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void removeBranchNameDiff(ObjectDiff diff) {
 
-        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
-            fieldDiff.fieldName == 'branchName'
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff -> fieldDiff.fieldName == 'branchName'
         },] as Predicate
 
         diff.diffs.removeIf(branchNamePredicate)
 
         ArrayDiff modelsDiff = diff.diffs.find {it.fieldName == 'models'}
         if (modelsDiff) {
-            modelsDiff.modified.each {md ->
-                md.diffs.removeIf(branchNamePredicate)
+            modelsDiff.modified.each {md -> md.diffs.removeIf(branchNamePredicate)
             }
         }
 
         ArrayDiff folderDiff = diff.diffs.find {it.fieldName == 'folders'}
         if (folderDiff) {
-            folderDiff.modified.each {fd ->
-                removeBranchNameDiff(fd)
+            folderDiff.modified.each {fd -> removeBranchNameDiff(fd)
             }
         }
     }
@@ -979,8 +964,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         // Use the domain service validation to ensure proper object validation
         domainService.validate(domain)
-        if (domain.hasErrors())
-            throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
+        if (domain.hasErrors()) throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
         domainService.save(domain, flush: false, validate: false)
     }
 
@@ -1082,8 +1066,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                            getModelIdentifier(targetVersionedFolder)) as MultiFacetAware
         MultiFacetItemAware copy = multiFacetItemAwareService.copy(multiFacetItemAwareToCopy, parentToCopyInto)
 
-        if (!copy.validate())
-            throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
+        if (!copy.validate()) throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
 
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
     }
@@ -1127,8 +1110,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         relativePathToMergeTo.each {node ->
             if (!modelService) {
                 // Build up the path to the model
-                if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node)
-                else modelRelativeToTargetPath.addToPathNodes(node)
+                if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node) else modelRelativeToTargetPath.addToPathNodes(node)
 
                 modelService = modelServices.find {s -> s.handlesPathPrefix(node.prefix)}
             }
@@ -1139,8 +1121,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 // Make sure we repoint the path to the target model so we can use the model service code to do the copy
                 if (!modelItemToModelAbsolutePath) modelItemToModelAbsolutePath = Path.from(node).tap {
                     it.first().modelIdentifier = getModelIdentifier(targetVersionedFolder)
-                }
-                else modelItemToModelAbsolutePath.addToPathNodes(node)
+                } else modelItemToModelAbsolutePath.addToPathNodes(node)
             }
         }
         if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle creation of model item [${modelItemDomainType}]")
@@ -1149,11 +1130,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, modelRelativeToTargetPath,
                                                            getModelIdentifier(targetVersionedFolder)) as Model
 
-        [
-            targetModel                 : targetModel,
-            modelService                : modelService,
-            modelItemToModelAbsolutePath: modelItemToModelAbsolutePath
-        ]
+        [targetModel                 : targetModel,
+         modelService                : modelService,
+         modelItemToModelAbsolutePath: modelItemToModelAbsolutePath]
     }
 
     static String getModelIdentifier(VersionedFolder versionedFolder) {
@@ -1174,7 +1153,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         log.trace('Loading Folder')
         List<Folder> folders = getAllFoldersInside(loadedFolder)
-        Map<UUID,List<Folder>> foldersMap = folders.groupBy{it.parentFolder.id}
+        Map<UUID, List<Folder>> foldersMap = folders.groupBy {it.parentFolder.id}
 
         log.trace('Loading Facets')
         List<UUID> allIds = Utils.gatherIds(Collections.singleton(folderId),
@@ -1183,7 +1162,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
 
         DiffCache diffCache = folderService.createFolderDiffCache(null, loadedFolder, facetData)
-        folderService.createFolderDiffCaches(diffCache,  foldersMap, facetData, folderId)
+        folderService.createFolderDiffCaches(diffCache, foldersMap, facetData, folderId)
 
         log.debug('Folder loaded into memory, took {}', Utils.timeTaken(start))
         new CachedDiffable(loadedFolder, diffCache)
@@ -1216,5 +1195,24 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, user, savedCopy.label)
         }
         savedCopy
+    }
+
+    List<VersionedFolder> filterAllReadableModels(Collection<VersionedFolder> containers, boolean includeDocumentSuperseded,
+                                                  boolean includeModelSuperseded, boolean includeDeleted) {
+        List<UUID> ids = containers.findAll {includeDeleted ? true : !it.deleted}.collect {it.id}
+        List<UUID> constrainedIds
+        // The list of ids are ALL the readable ids by the user, no matter the model status
+        if (includeDocumentSuperseded && includeModelSuperseded) {
+            constrainedIds = new ArrayList<>(ids)
+        } else if (includeModelSuperseded) {
+            constrainedIds = findAllExcludingDocumentSupersededIds(ids)
+        } else if (includeDocumentSuperseded) {
+            constrainedIds = findAllExcludingModelSupersededIds(ids)
+        } else {
+            constrainedIds = findAllExcludingDocumentAndModelSupersededIds(ids)
+        }
+        if (!constrainedIds) return []
+
+        containers.findAll {it.id in constrainedIds}
     }
 }
