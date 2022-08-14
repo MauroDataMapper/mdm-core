@@ -1519,6 +1519,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         updateCopiedCrossModelDataTypeLinks(copiedDataModel, originalDataModel)
         updateCopiedCrossModelImportedLinks(copiedDataModel, originalDataModel)
+        updateCopiedCrossModelExtendedLinks(copiedDataModel, originalDataModel)
 
         save(copiedDataModel, flush: false, validate: false)
     }
@@ -1603,6 +1604,22 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
         }
     }
+
+    void updateCopiedCrossModelExtendedLinks(DataModel copiedDataModel, DataModel originalDataModel) {
+        log.debug('Updating all extended classes inside copied DataModel')
+        Path copiedDataModelPath = getFullPathForModel(copiedDataModel)
+        Path originalDataModelPath = getFullPathForModel(originalDataModel)
+
+        copiedDataModel.dataClasses.each {dc ->
+            List<DataClass> extendedDataClasses = dataClassService.findAllByExtendingDataClassId(dc.id)
+
+            log.debug('Updating extended DCs inside DC {}', dc.path)
+            extendedDataClasses.each {mi ->
+                updateCopiedImportedModelItemLink(copiedDataModel, dc, mi, copiedDataModelPath, originalDataModelPath, 'extendedDataClasses')
+            }
+        }
+    }
+
 
     void updateCopiedImportedModelItemLink(DataModel copiedDataModel,
                                            CatalogueItem importingCatalogueItem, ModelItem importedModelItem,

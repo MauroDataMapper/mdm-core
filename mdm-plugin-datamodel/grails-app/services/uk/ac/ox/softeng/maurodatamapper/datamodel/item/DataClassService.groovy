@@ -548,6 +548,14 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         DataClass.byImportingDataClassId(dataClassId).list()
     }
 
+    List<DataClass> findAllByExtendedDataClassId(UUID dataClassId) {
+        DataClass.byExtendedDataClassId(dataClassId).list()
+    }
+
+    List<DataClass> findAllByExtendingDataClassId(UUID dataClassId) {
+        DataClass.byExtendingDataClassId(dataClassId).list()
+    }
+
     List<DataClass> findAllByImportingDataClassIds(List<UUID> dataClassIds) {
         if (!dataClassIds) return []
         DataClass.byImportingDataClassIdInList(dataClassIds).list()
@@ -893,6 +901,9 @@ WHERE
 
         List<DataClass> importedDataClasses = findAllByImportingDataClassId(original.id)
         copyImportedElements(copy, original, importedDataClasses, 'importedDataClasses', copier)
+
+        List<DataClass> extendedDataClasses = findAllByExtendingDataClassId(original.id)
+        copyImportedElements(copy, original, extendedDataClasses, 'extendedDataClasses', copier)
 
         List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassId(original.id)
         copyImportedElements(copy, original, importedDataElements, 'importedDataElements', copier)

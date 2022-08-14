@@ -456,6 +456,14 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
+    static DetachedCriteria<DataClass> byExtendingDataClassId(UUID dataClassId) {
+        where {
+            extendingDataClasses {
+                eq 'id', dataClassId
+            }
+        }
+    }
+
     static DetachedCriteria<DataClass> byImportedDataClassId(UUID dataClassId) {
         where {
             importedDataClasses {
