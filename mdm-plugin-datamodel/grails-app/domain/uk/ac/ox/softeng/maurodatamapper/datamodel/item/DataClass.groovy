@@ -61,21 +61,22 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     DataModel dataModel
 
     static hasMany = [
-        classifiers         : Classifier,
-        metadata            : Metadata,
-        annotations         : Annotation,
-        semanticLinks       : SemanticLink,
-        referenceFiles      : ReferenceFile,
-        dataClasses         : DataClass,
-        dataElements        : DataElement,
-        referenceTypes      : ReferenceType,
-        summaryMetadata     : SummaryMetadata,
-        rules               : Rule,
-        extendedDataClasses : DataClass,
-        importedDataClasses : DataClass,
-        importedDataElements: DataElement,
-        importingDataModels : DataModel,
-        importingDataClasses: DataClass,
+        classifiers          : Classifier,
+        metadata             : Metadata,
+        annotations          : Annotation,
+        semanticLinks        : SemanticLink,
+        referenceFiles       : ReferenceFile,
+        dataClasses          : DataClass,
+        dataElements         : DataElement,
+        referenceTypes       : ReferenceType,
+        summaryMetadata      : SummaryMetadata,
+        rules                : Rule,
+        extendedDataClasses  : DataClass,
+        extendingDataClasses : DataClass,
+        importedDataClasses  : DataClass,
+        importedDataElements : DataElement,
+        importingDataModels  : DataModel,
+        importingDataClasses : DataClass,
     ]
 
     static belongsTo = [DataClass, DataModel]
@@ -118,6 +119,11 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             key   : 'dataclass_id',
             column: 'extended_dataclass_id'
         ]
+        extendingDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
+            name  : 'join_dataclass_to_extended_data_class',
+            column   : 'dataclass_id',
+            key: 'extended_dataclass_id'
+        ]
         importedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
             name  : 'join_dataclass_to_imported_data_class',
             key   : 'dataclass_id',
@@ -141,14 +147,15 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     static mappedBy = [
-        dataClasses         : 'parentDataClass',
-        referenceTypes      : 'referenceClass',
-        dataElements        : 'dataClass',
-        extendedDataClasses : 'none',
-        importedDataClasses : 'none',
-        importedDataElements: 'none',
-        importingDataModels : 'none',
-        importingDataClasses: 'none'
+        dataClasses          : 'parentDataClass',
+        referenceTypes       : 'referenceClass',
+        dataElements         : 'dataClass',
+        extendedDataClasses  : 'none',
+        extendingDataClasses : 'none',
+        importedDataClasses  : 'none',
+        importedDataElements : 'none',
+        importingDataModels  : 'none',
+        importingDataClasses : 'none'
     ]
 
     static search = {
