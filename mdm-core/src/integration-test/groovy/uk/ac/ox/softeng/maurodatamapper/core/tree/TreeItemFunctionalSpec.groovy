@@ -554,4 +554,276 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         DELETE("folders/$parentId?permanent=true")
         assert response.status() == HttpStatus.NO_CONTENT
     }
+
+    void '11. test tree with VersionedFolders: exclude model superseded'() {
+        given:
+        boolean includeModelSuperseded = false
+        String expectedChildren = '''[
+        {
+            "id": "${json-unit.matches:id}",
+            "domainType": "VersionedFolder",
+            "label": "Functional Versioned Folder",
+            "hasChildren": false,
+            "availableActions": [],
+            "deleted": false,
+            "parentFolder": "${json-unit.matches:id}",
+            "finalised": true,
+            "documentationVersion": "1.0.0",
+            "modelVersion": "2.0.0"
+        }
+    ]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Versioned Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'finalise versioned folder for v1'
+        def versionedFolderVer1Id = response.body().id
+        PUT("versionedFolders/$versionedFolderVer1Id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'create next model version of versioned folder'
+        PUT("versionedFolders/$versionedFolderVer1Id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'finalise versioned folder for v2'
+        def versionedFolderVer2Id = response.body().id
+        PUT("versionedFolders/$versionedFolderVer2Id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'getting folder tree'
+        GET("$folderTreeResourcePath/$parentId?includeModelSuperseded=$includeModelSuperseded", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expectedChildren
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '12. test tree with VersionedFolders: include model superseded'() {
+        given:
+        boolean includeModelSuperseded = true
+        String expectedChildren = '''[
+        {
+            "id": "${json-unit.matches:id}",
+            "domainType": "VersionedFolder",
+            "label": "Functional Versioned Folder",
+            "hasChildren": false,
+            "availableActions": [],
+            "deleted": false,
+            "parentFolder": "${json-unit.matches:id}",
+            "finalised": true,
+            "documentationVersion": "1.0.0",
+            "modelVersion": "1.0.0"
+        },
+        {
+            "id": "${json-unit.matches:id}",
+            "domainType": "VersionedFolder",
+            "label": "Functional Versioned Folder",
+            "hasChildren": false,
+            "availableActions": [],
+            "deleted": false,
+            "parentFolder": "${json-unit.matches:id}",
+            "finalised": true,
+            "documentationVersion": "1.0.0",
+            "modelVersion": "2.0.0"
+        }
+    ]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Versioned Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'finalise versioned folder for v1'
+        def versionedFolderVer1Id = response.body().id
+        PUT("versionedFolders/$versionedFolderVer1Id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'create next model version of versioned folder'
+        PUT("versionedFolders/$versionedFolderVer1Id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'finalise versioned folder for v2'
+        def versionedFolderVer2Id = response.body().id
+        PUT("versionedFolders/$versionedFolderVer2Id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'getting folder tree'
+        GET("$folderTreeResourcePath/$parentId?includeModelSuperseded=$includeModelSuperseded", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expectedChildren
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '13. test tree with VersionedFolders: exclude deleted'() {
+        given:
+        boolean includeDeleted = false
+        String expectedChildren = '''[
+        {
+            "id": "${json-unit.matches:id}",
+            "domainType": "VersionedFolder",
+            "label": "Functional Versioned Folder",
+            "hasChildren": false,
+            "availableActions": [],
+            "deleted": false,
+            "parentFolder": "${json-unit.matches:id}",
+            "finalised": true,
+            "documentationVersion": "1.0.0",
+            "modelVersion": "1.0.0"
+        }
+    ]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Versioned Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'finalise versioned folder for v1'
+        def versionedFolderVer1Id = response.body().id
+        PUT("versionedFolders/$versionedFolderVer1Id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'create next model version of versioned folder'
+        PUT("versionedFolders/$versionedFolderVer1Id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'mark draft versioned folder as deleted'
+        def versionedFolderVer2Id = response.body().id
+        DELETE("versionedFolders/$versionedFolderVer2Id?permanent=false")
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'getting folder tree'
+        GET("$folderTreeResourcePath/$parentId?includeDeleted=$includeDeleted", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expectedChildren
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '14. test tree with VersionedFolders: include deleted'() {
+        given:
+        boolean includeDeleted = true
+        String expectedChildren = '''[
+        {
+            "id": "${json-unit.matches:id}",
+            "domainType": "VersionedFolder",
+            "label": "Functional Versioned Folder",
+            "hasChildren": false,
+            "availableActions": [],
+            "deleted": false,
+            "parentFolder": "${json-unit.matches:id}",
+            "finalised": true,
+            "documentationVersion": "1.0.0",
+            "modelVersion": "1.0.0"
+        },
+        {
+            "id": "${json-unit.matches:id}",
+            "domainType": "VersionedFolder",
+            "label": "Functional Versioned Folder",
+            "hasChildren": false,
+            "availableActions": [],
+            "deleted": true,
+            "parentFolder": "${json-unit.matches:id}",
+            "finalised": false,
+            "documentationVersion": "1.0.0",
+            "branchName": "main"
+        }
+    ]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Versioned Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'finalise versioned folder for v1'
+        def versionedFolderVer1Id = response.body().id
+        PUT("versionedFolders/$versionedFolderVer1Id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'create next model version of versioned folder'
+        PUT("versionedFolders/$versionedFolderVer1Id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'mark draft versioned folder as deleted'
+        def versionedFolderVer2Id = response.body().id
+        DELETE("versionedFolders/$versionedFolderVer2Id?permanent=false")
+
+        then:
+        verifyResponse HttpStatus.OK, response
+
+        when: 'getting folder tree'
+        GET("$folderTreeResourcePath/$parentId?includeDeleted=$includeDeleted", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expectedChildren
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
 }
