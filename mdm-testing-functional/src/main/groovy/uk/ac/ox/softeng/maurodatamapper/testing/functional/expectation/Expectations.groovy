@@ -29,6 +29,7 @@ class Expectations {
     private UserExpectation author = new UserExpectation('authors')
     private UserExpectation editor = new UserExpectation('editors')
     private UserExpectation containerAdmin = new UserExpectation('container admins')
+    private UserExpectation admin = new UserExpectation('admins')
 
     private boolean isSoftDeleteByDefault
     private boolean accessPermissionIsInherited
@@ -38,6 +39,7 @@ class Expectations {
     private boolean availableActionsProvided
     private boolean editorCanChangePermissions
     private boolean isSecuredResource
+    private boolean hasEditsEndpoint
 
     private Expectations() {
 
@@ -65,6 +67,10 @@ class Expectations {
 
     boolean getMergingIsAvailable() {
         mergingIsAvailable
+    }
+
+    boolean getHasEditsEndpoint() {
+        hasEditsEndpoint
     }
 
     List<String> getContainerAdminAvailableActions() {
@@ -127,6 +133,10 @@ class Expectations {
         anonymous.can(action)
     }
 
+    boolean adminCan(String action) {
+        admin.can(action)
+    }
+
     boolean can(String name, String action) {
         switch (name) {
             case 'Authenticated': return authenticatedUsersCan(action)
@@ -135,7 +145,7 @@ class Expectations {
             case 'Author': return authorsCan(action)
             case 'Editor': return editorsCan(action)
             case 'ContainerAdmin': return containerAdminsCan(action)
-            case 'Admin': return true
+            case 'Admin': return adminCan(action)
         }
         anonymousUsersCan(action)
     }
@@ -148,7 +158,7 @@ class Expectations {
             case 'Author': return author.availableActions()
             case 'Editor': return editor.availableActions()
             case 'ContainerAdmin': return containerAdmin.availableActions()
-            case 'Admin': return containerAdmin.availableActions()
+            case 'Admin': return admin.availableActions()
         }
         anonymous.availableActions()
     }
@@ -227,6 +237,22 @@ class Expectations {
         this
     }
 
+    Expectations withEdits() {
+        this.hasEditsEndpoint = true
+        this
+    }
+
+    Expectations withoutEdits() {
+        this.hasEditsEndpoint = false
+        this
+    }
+
+    Expectations whereAdmins(@DelegatesTo(UserExpectation) Closure closure) {
+        closure.setDelegate(admin)
+        closure.call()
+        this
+    }
+
     Expectations whereContainerAdmins(@DelegatesTo(UserExpectation) Closure closure) {
         closure.setDelegate(containerAdmin)
         closure.call()
@@ -291,6 +317,11 @@ class Expectations {
 
     Expectations whereContainerAdminsCanAction(String... actions) {
         this.containerAdmin.canAction actions
+        whereAdminsCanAction(actions)
+    }
+
+    Expectations whereAdminsCanAction(String... actions) {
+        this.admin.canAction actions
         this
     }
 
@@ -299,6 +330,7 @@ class Expectations {
         withoutDefaultCreation()
         withInheritedAccessPermissions()
         withoutMergingAvailable()
+        admin.canUpdate().canDelete().canCreate().canSee().canIndex()
         containerAdmin.hasNoAccess()
         editor.hasNoAccess()
         author.hasNoAccess()
@@ -318,11 +350,13 @@ class Expectations {
         withMergingAvailable()
         whereTestingSecuredResource()
         whereEditorsCanChangePermissions()
-        containerAdmin.canUpdate().withDefaultActions()
-        editor.canUpdate().withDefaultActions()
-        author.canSee().canEditDescription().withDefaultActions()
-        reviewer.canSee().withDefaultActions()
-        reader.canSee().withDefaultActions()
+        withEdits()
+        admin.canUpdate().canDelete().canCreate().canSee().canIndex().withDefaultActions()
+        containerAdmin.canUpdate().canDelete().canCreate().canSee().canIndex().withDefaultActions()
+        editor.canUpdate().canDelete().canCreate().canSee().canIndex().withDefaultActions()
+        author.canEditDescription().canSee().canIndex().withDefaultActions()
+        reviewer.canSee().canIndex().withDefaultActions()
+        reader.canSee().canIndex().withDefaultActions()
         authenticated.hasNoAccess()
         anonymous.hasNoAccess()
         this

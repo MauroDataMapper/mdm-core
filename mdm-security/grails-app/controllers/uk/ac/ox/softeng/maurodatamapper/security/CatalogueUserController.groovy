@@ -182,8 +182,8 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
         done()
     }
 
-    def search(SearchParams searchParams) {
-        searchParams.validate()
+    def search() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors

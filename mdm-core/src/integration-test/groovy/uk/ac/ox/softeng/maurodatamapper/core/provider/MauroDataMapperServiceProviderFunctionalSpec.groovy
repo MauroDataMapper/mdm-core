@@ -59,7 +59,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     ],
     "providerType": "FolderExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.folder+json",
     "canExportMultipleDomains": false
   }
 ]''')

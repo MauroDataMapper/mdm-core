@@ -200,11 +200,26 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         ObjectDiff<DataModel> base = DiffBuilder.modelDiffBuilder(DataModel, this, otherDataModel, lhsDiffCache, rhsDiffCache)
 
         if (!lhsDiffCache || !rhsDiffCache) {
+            List<Metadata> thisImportDtMd = Metadata.extractMetadataForDiff(this.id, this.importedDataTypes)
+            List<Metadata> otherImportDtMd = Metadata.extractMetadataForDiff(otherDataModel.id, otherDataModel.importedDataTypes)
+            List<Metadata> thisImportDcMd = Metadata.extractMetadataForDiff(this.id, this.importedDataClasses)
+            List<Metadata> otherImportDcMd = Metadata.extractMetadataForDiff(otherDataModel.id, otherDataModel.importedDataClasses)
+
             base.appendCollection(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
                 .appendCollection(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
+                .appendCollection(DataType, 'importedDataTypes', this.importedDataTypes, otherDataModel.importedDataTypes
+                                  , null, false, false)
+                .appendCollection(DataClass, 'importedDataClasses', this.importedDataClasses, otherDataModel.importedDataClasses
+                                  , null, false, false)
+                .appendCollection(Metadata, 'importedDataTypesMetadata', thisImportDtMd, otherImportDtMd)
+                .appendCollection(Metadata, 'importedDataClassesMetadata', thisImportDcMd, otherImportDcMd)
         } else {
             base.appendCollection(DataType, 'dataTypes')
                 .appendCollection(DataClass, 'dataClasses')
+                .appendCollection(DataType, 'importedDataTypes', null, false, false)
+                .appendCollection(DataClass, 'importedDataClasses', null, false, false)
+                .appendCollection(Metadata, 'importedDataTypesMetadata')
+                .appendCollection(Metadata, 'importedDataClassesMetadata')
         }
         base
     }
@@ -215,12 +230,9 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         summaryMetadata?.each {
             it.beforeValidateCheck(this)
         }
-        // New save/validate so all DEs and DCs are also new so sort the indexes now
-        // This avoids repeated calls to the individual DE or DC during their beforeValidate
-        if (!id) {
-            fullSortOfChildren(getDataTypes())
-            fullSortOfChildren(childDataClasses)
-        }
+        // Children might be new so sort them
+        fullSortOfChildren(getDataTypes())
+        fullSortOfChildren(childDataClasses)
     }
 
     DataType findDataTypeByLabel(String label) {
@@ -334,6 +346,26 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
 
     Set<DataClass> getChildDataClassesAndImportedDataClasses() {
         getChildDataClasses() + importedDataClasses
+    }
+
+    DataModel addToImportedDataClasses(DataClass dataClass) {
+        dataClass.addToImportingDataModels(this)
+        addTo('importedDataClasses', dataClass)
+    }
+
+    DataModel addToImportedDataTypes(DataType dataType) {
+        dataType.addToImportingDataModels(this)
+        addTo('importedDataTypes', dataType)
+    }
+
+    DataModel removeFromImportedDataClasses(DataClass dataClass) {
+        dataClass.removeFromImportingDataModels(this)
+        removeFrom('importedDataClasses', dataClass)
+    }
+
+    DataModel removeFromImportedDataTypes(DataType dataType) {
+        dataType.removeFromImportingDataModels(this)
+        removeFrom('importedDataTypes', dataType)
     }
 
     @Override

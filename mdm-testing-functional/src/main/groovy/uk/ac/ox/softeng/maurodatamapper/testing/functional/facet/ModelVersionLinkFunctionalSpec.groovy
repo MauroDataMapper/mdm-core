@@ -75,6 +75,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
 
     }

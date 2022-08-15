@@ -54,6 +54,10 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         null
     }
 
+    String getAuthenticatedIndexJson() {
+        null
+    }
+
     String getReaderIndexJson() {
         getEditorIndexJson()
     }
@@ -71,6 +75,10 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
         assert responseBody().containsKey('count')
         assert responseBody().containsKey('items')
+    }
+
+    void verifyNotAllowedResponse(HttpResponse response, String id) {
+        verifyNotFound(response, id)
     }
 
     void verify02Response(HttpResponse<Map> response, String id, List<String> actions) {
@@ -104,13 +112,13 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
 
             then: 'The response is correct'
             if (expectations.can(name, 'index')) verify01Response(response)
-            else verifyNotFound(response, null)
+            else verifyNotAllowedResponse(response, null)
         }
 
         where:
         prefix | name             | expectedJson
         'LO'   | 'Anonymous'      | null
-        'NA'   | 'Authenticated'  | null
+        'NA' | 'Authenticated' | getAuthenticatedIndexJson()
         'RE'   | 'Reader'         | getReaderIndexJson()
         'RV'   | 'Reviewer'       | getReaderIndexJson()
         'AU'   | 'Author'         | getReaderIndexJson()
@@ -124,7 +132,7 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         def id = getValidId()
         login(name)
 
-        if (showJson && name == 'reader') {
+        if (showJson && name == 'Reader') {
             when: 'When the show action is called to retrieve a resource'
             GET("$id", STRING_ARG)
 

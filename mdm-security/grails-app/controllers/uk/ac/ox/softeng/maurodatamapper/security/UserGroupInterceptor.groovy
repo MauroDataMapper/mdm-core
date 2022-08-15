@@ -43,6 +43,11 @@ class UserGroupInterceptor extends TieredAccessSecurableResourceInterceptor {
         params.userGroupId ?: params.id
     }
 
+    @Override
+    UUID getSecuredId() {
+        getId() ?: params.securableResourceId
+    }
+
     boolean before() {
         securableResourceChecks()
         if (isIndex()) {

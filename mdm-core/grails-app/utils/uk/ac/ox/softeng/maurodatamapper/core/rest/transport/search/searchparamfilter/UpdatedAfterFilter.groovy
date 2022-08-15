@@ -33,5 +33,4 @@ class UpdatedAfterFilter extends DateTimeSearchParamFilter {
         }
     }
 
-
 }

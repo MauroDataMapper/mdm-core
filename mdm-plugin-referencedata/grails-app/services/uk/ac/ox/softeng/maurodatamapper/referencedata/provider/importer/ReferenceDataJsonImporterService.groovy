@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -41,6 +42,11 @@ class ReferenceDataJsonImporterService
     @Override
     String getVersion() {
         '4.0'
+    }
+
+    @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(ReferenceDataJsonExporterService.CONTENT_TYPE)
     }
 
     @Override

@@ -57,14 +57,14 @@ class PublishController extends RestfulController<Model> implements Resourceless
 
     def newerVersions() {
         List<PublishedModel> publishedModels = publishService.findAllPublishedReadableModels(currentUserSecurityPolicyManager)
-        UUID modelId = Utils.toUuid(params.publishedModelId)
-        PublishedModel publishedModel = publishedModels.find({it.modelId == modelId})
+        PublishedModel publishedModel = publishedModels.find({it.modelId == params.publishedModelId})
+        String modelId = params.publishedModelId
         if (!publishedModel) {
-            return notFound(PublishedModel, params.publishedModelId)
+            return notFound(PublishedModel, modelId)
         }
 
         List<PublishedModel> newerPublishedModels =
-            publishService.findPublishedSupersedingModels(publishedModels, publishedModel.modelType, modelId, currentUserSecurityPolicyManager)
+            publishService.findPublishedSupersedingModels(publishedModels, publishedModel.modelType, Utils.toUuid(modelId), currentUserSecurityPolicyManager)
         respond(newerPublishedModels: newerPublishedModels)
     }
 }

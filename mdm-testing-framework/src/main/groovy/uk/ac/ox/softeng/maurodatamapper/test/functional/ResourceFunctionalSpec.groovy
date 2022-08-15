@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.gorm.transactions.Transactional
@@ -65,6 +66,11 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
             sessionFactory.currentSession.flush()
             assert getResource().count() == getExpectedInitialResourceCount()
         }
+    }
+
+    @Transactional
+    def cleanup() {
+        DomainExport.deleteAll(DomainExport.list())
     }
 
     void cleanUpData(String id = null) {

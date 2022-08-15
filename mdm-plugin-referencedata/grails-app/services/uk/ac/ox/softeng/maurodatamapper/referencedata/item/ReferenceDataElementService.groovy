@@ -154,7 +154,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             long start = System.currentTimeMillis()
             results =
                 ReferenceDataElement
-                    .labelHibernateSearch(ReferenceDataElement, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
+                    .labelHibernateSearch(ReferenceDataElement, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePaths(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -336,7 +336,9 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
                     @Override
                     SimilarityPair<ReferenceDataElement> apply(ReferenceDataElement dataElement, Float score) {
-                        dataElement.referenceDataType = proxyHandler.unwrapIfProxy(dataElement.referenceDataType)
+                        if (dataElement) {
+                            dataElement.referenceDataType = proxyHandler.unwrapIfProxy(dataElement.referenceDataType) as ReferenceDataType
+                        }
                         new SimilarityPair<ReferenceDataElement>(dataElement, score)
                     }
                 }, pf.entity(), pf.score())
@@ -344,7 +346,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id], [referenceDataModelToSearch.path.last()]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id], [referenceDataModelToSearch.path]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(referenceDataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->

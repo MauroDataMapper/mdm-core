@@ -7,7 +7,7 @@ buildscript {
 
     }
     dependencies {
-        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath "org.grails.plugins:hibernate5:$grailsHibernate5Version"
         classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
@@ -27,7 +27,7 @@ apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
 apply plugin: "com.bertramlabs.asset-pipeline"
 
-apply plugin: 'ox.softeng.grails'
+apply plugin: 'uk.ac.ox.softeng.maurodatamapper.gradle.mdm-grails'
 
 repositories {
     mavenLocal()
@@ -71,7 +71,6 @@ dependencies {
     implementation "org.grails.plugins:views-markup"
     implementation "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     profile "org.grails.profiles:rest-api-plugin"
-    developmentOnly "org.springframework.boot:spring-boot-starter-tomcat"
     runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
     integrationTestRuntimeOnly "com.h2database:h2"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
@@ -105,4 +104,3 @@ bootRun {
 bootJar.enabled = false
 
 apply from: 'dependencies.gradle'
-apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"

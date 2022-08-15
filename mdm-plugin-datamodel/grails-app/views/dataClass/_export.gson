@@ -1,6 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 
-inherits template: '/catalogueItem/export', model: [addContents: addContents]
+inherits template: '/modelItem/export_ordered', model: [addContents: addContents]
 model {
     DataClass export
     Boolean addContents = true
@@ -9,8 +9,8 @@ json {
     if (addContents) {
         if (export.maxMultiplicity != null) maxMultiplicity export.maxMultiplicity
         if (export.minMultiplicity != null) minMultiplicity export.minMultiplicity
-        if (export.dataClasses) dataClasses tmpl.'/dataClass/export'(export.dataClasses)
-        if (export.dataElements) dataElements tmpl.'/dataElement/export'(export.dataElements)
+        if (export.dataClasses) dataClasses tmpl.'/dataClass/export'(export.dataClasses.sort())
+        if (export.dataElements) dataElements tmpl.'/dataElement/export'(export.dataElements.sort())
     } else dataClassPath DataClass.buildLabelPath(export)
     if (export.summaryMetadata) summaryMetadata tmpl.'/summaryMetadata/export'(export.summaryMetadata)
 }

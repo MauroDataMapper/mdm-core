@@ -203,7 +203,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             long start = System.currentTimeMillis()
             results =
                 DataElement
-                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
@@ -262,7 +262,7 @@ LEFT JOIN de.importingDataClasses idc
 INNER JOIN de.dataType dt
 WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filters)
 
-        // Cannot sort DEs including imported using idx combined with any other field
+        // Cannot sort DEs including imported using idx
         String sortedQuery = applyHQLSort(baseQuery, 'de', pagination[ARGUMENT_SORT] ?: ['label': 'asc'], pagination, true)
 
         new HQLPagedResultList<DataElement>(DataElement)
@@ -298,6 +298,15 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
         DataElement.byDataClass(dataClass).list()
     }
 
+    List<DataElement> findAllByImportingDataClassId(UUID dataClassId) {
+        DataElement.byImportingDataClassId(dataClassId).list()
+    }
+
+    List<DataElement> findAllByImportingDataClassIds(List<UUID> dataClassIds) {
+        if (!dataClassIds) return []
+        DataElement.byImportingDataClassIdInList(dataClassIds).list()
+    }
+
     List<DataElement> findAllByDataModelId(Serializable dataModelId, Map pagination = [:]) {
         DataElement.byDataModelId(dataModelId).list(pagination)
     }
@@ -325,6 +334,10 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
 
     DataElement findByDataClassIdAndLabel(Serializable dataClassId, String label) {
         DataElement.byDataClassIdAndLabel(dataClassId, label).get()
+    }
+
+    DataElement findByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        DataElement.byDataModelIdAndId(dataModelId, id).get()
     }
 
     DataElement findOrCreateDataElementForDataClass(DataClass parentClass, String label, String description, User createdBy,
@@ -455,6 +468,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
 
                     @Override
                     SimilarityPair<DataElement> apply(DataElement dataElement, Float score) {
+                        if (!dataElement) throw new ApiInternalException('DES', 'No DataElement passed to apply function in findAllSimilarDataElementsInDataModel')
                         dataElement.dataClass = proxyHandler.unwrapIfProxy(dataElement.dataClass)
                         dataElement.dataType = proxyHandler.unwrapIfProxy(dataElement.dataType)
                         dataElement.dataClass.dataModel = proxyHandler.unwrapIfProxy(dataElement.dataClass.dataModel)
@@ -465,7 +479,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path.last()]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->

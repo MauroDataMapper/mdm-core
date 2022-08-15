@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.importer
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
@@ -40,7 +39,7 @@ class ImporterServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Import
         def groups = service.describeImporterParams(importer)
 
         then:
-        groups.size() == 2
+        groups.size() == 3
 
         when:
         ImportParameterGroup dmGroup = groups[0]
@@ -123,7 +122,7 @@ otherwise you could get an error.'''
         !result.hasErrors()
     }
 
-    class TestFileImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+    class TestFileImporterProviderServiceParameters extends ImporterProviderServiceParameters {
 
         @ImportParameterConfig(
             displayName = 'File',
@@ -200,6 +199,11 @@ otherwise you could get an error.''',
         @Override
         Boolean canImportMultipleDomains() {
             null
+        }
+
+        @Override
+        Boolean handlesContentType(String contentType) {
+            contentType.equalsIgnoreCase('application/mauro.test')
         }
 
         @Override

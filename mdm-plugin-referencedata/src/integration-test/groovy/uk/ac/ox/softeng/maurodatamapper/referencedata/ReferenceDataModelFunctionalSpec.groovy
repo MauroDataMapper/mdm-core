@@ -189,7 +189,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.referencedatamodel+json",
     "canExportMultipleDomains": false
   },
   {
@@ -203,7 +203,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.referencedatamodel+xml",
     "canExportMultipleDomains": false
   }
 ]'''
@@ -2164,6 +2164,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
                 label : UUID.randomUUID().toString()
             ])
         }
+
+        // To check that deleting an unknown ID does not cause an exception
+        // See https://github.com/MauroDataMapper/mdm-core/issues/257
+        idstoDelete << UUID.randomUUID().toString()
 
         when:
         DELETE('', [

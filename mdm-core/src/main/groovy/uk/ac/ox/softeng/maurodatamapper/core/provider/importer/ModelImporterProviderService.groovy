@@ -43,6 +43,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     M importDomain(User currentUser, ModelImporterProviderServiceParameters params) {
         M model = importModel(currentUser, params as P)
         if (!model) return null
+        if (params.providerHasSavedModels) return model
         M updated = updateImportedModelFromParameters(model, params as P, false)
         checkImport(currentUser, updated, params as P)
     }
@@ -50,6 +51,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     @Override
     List<M> importDomains(User currentUser, ModelImporterProviderServiceParameters params) {
         List<M> models = importModels(currentUser, params as P)
+        if (params.providerHasSavedModels) return models
         models?.collect {
             M updated = updateImportedModelFromParameters(it, params as P, models?.size() > 1)
             checkImport(currentUser, updated, params as P)

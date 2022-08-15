@@ -3,7 +3,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 DataElement de = dataElement as DataElement
 
 'mdm:dataElement' {
-    layout '/catalogueItem/_export.gml', catalogueItem: de
+    layout '/modelItem/_export_ordered.gml', modelItem: de
     if (de.summaryMetadata) {
         'mdm:summaryMetadata' {
             de.summaryMetadata.each {sm ->

@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
@@ -30,8 +32,12 @@ import grails.testing.mixin.integration.Integration
 import grails.web.mime.MimeType
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import org.spockframework.util.Assert
 
+import java.util.concurrent.CancellationException
+import java.util.concurrent.Future
+
+import static io.micronaut.http.HttpStatus.ACCEPTED
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -84,10 +90,11 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
-    @Shared
     DataModelPluginMergeBuilder builder
 
-    def setupSpec() {
+    AsyncJobService asyncJobService
+
+    def setup() {
         builder = new DataModelPluginMergeBuilder(this)
     }
 
@@ -252,6 +259,21 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 }'''
     }
 
+    void waitForAysncToComplete(String id) {
+        log.debug('Waiting to complete {}', id)
+        Future p = asyncJobService.getAsyncJobFuture(id)
+        try {
+            p.get()
+        } catch (CancellationException ignored) {
+        }
+        log.debug('Async Job Completed')
+    }
+
+    @Transactional
+    void cleanupDomainExport(String id) {
+        if (id) DomainExport.get(id).delete(flush: true)
+    }
+
     void 'DM01 : Test getting DataModel types'() {
         when: 'not logged in'
         GET('types')
@@ -410,7 +432,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "knownMetadataKeys": [],
     "providerType": "DataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.datamodel+json",
     "canExportMultipleDomains": true
   },
   {
@@ -422,7 +444,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "knownMetadataKeys": [],
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.datamodel+xml",
     "canExportMultipleDomains": true
   }
 ]'''
@@ -444,7 +466,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         verifyJsonResponse OK, '''[
   {
     "name": "DataModelJsonImporterService",
-    "version": "3.1",
+    "version": "3.2",
     "displayName": "JSON DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -457,7 +479,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   },
   {
     "name": "DataModelXmlImporterService",
-    "version": "5.1",
+    "version": "5.2",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -964,13 +986,13 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
 
 
-    void 'DM-#prefix-06 : test export a single DataModel [allowed] (as #name)'() {
+    void 'DM-#prefix-06 : test export a single DataModel (as #name)'() {
         given:
         String id = getValidId()
 
         when:
         login(name)
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", canRead ? STRING_ARG : MAP_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", canRead ? STRING_ARG : MAP_ARG)
 
         then:
         if (!canRead) verifyNotFound response, id
@@ -995,7 +1017,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -1016,13 +1038,130 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         'AD'   | 'Admin'          | true
     }
 
+    void 'DM-#prefix-06a : test async export a single DataModel (as #name)'() {
+        given:
+        String deId
+        String id = getValidId()
+
+        when:
+        login(name)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
+
+        then:
+        if (!canRead) verifyNotFound response, id
+        else {
+            verifyResponse ACCEPTED, response
+
+            when:
+            String jobId = responseBody().id
+            waitForAysncToComplete(jobId)
+            GET("asyncJobs/$jobId", MAP_ARG, true)
+
+            then:
+            verifyResponse(OK, response)
+            responseBody().status == 'COMPLETED'
+            responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
+
+            when:
+            GET('domainExports', STRING_ARG, true)
+
+            then:
+            verifyJsonResponse(OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "exported": {
+        "domainType": "DataModel",
+        "domainId": "${json-unit.matches:id}"
+      },
+      "exporter": {
+        "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+        "name": "DataModelJsonExporterService",
+        "version": "${json-unit.matches:version}"
+      },
+      "export": {
+        "fileName": "Functional Test DataModel.json",
+        "contentType": "application/mauro.datamodel+json",
+        "fileSize": "${json-unit.any-number}"
+      },
+      "exportedOn": "${json-unit.matches:offsetDateTime}",
+      "exportedBy": "${json-unit.regex}.+?@.+?",
+      "links": {
+        "relative": "${json-unit.regex}/api/domainExports/[\\\\w-]+?/download",
+        "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExports/.+?/download"
+      }
+    }
+  ]
+}''')
+
+            when:
+            GET('domainExports', MAP_ARG, true)
+
+            then:
+            verifyResponse(OK, response)
+
+            when:
+            deId = responseBody().items.first().id
+            GET(responseBody().items.first().links.absolute, STRING_ARG, true)
+
+            then:
+            verifyJsonResponse OK, '''{
+  "dataModel": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataModel",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "${json-unit.any-string}",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.2"
+    }
+  }
+}'''
+            when:
+            GET("$id/domainExports")
+
+            then:
+            verifyResponse(OK, response)
+            responseBody().count == 1
+            responseBody().items.first().id == deId
+        }
+
+        cleanup:
+        cleanupDomainExport(deId)
+        removeValidIdObject(id)
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
+    }
+
     void 'DM-#prefix-07 : test export multiple DataModels (as reader)'() {
         given:
         String id = getValidId()
 
         when:
         login(name)
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
              [dataModelIds: [id, getSimpleDataModelId()]], canRead ? STRING_ARG : MAP_ARG)
 
         then:
@@ -1068,7 +1207,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
               "key": "mdk1",
               "value": "mdv1"
             }
-          ]
+          ],
+          "index": 0
         }
       ],
       "classifiers": [
@@ -1109,7 +1249,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -1134,7 +1274,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1145,7 +1285,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId,
@@ -1193,7 +1333,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1203,7 +1343,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -1244,7 +1384,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         given:
         String id = getValidFinalisedId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1254,7 +1394,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1299,7 +1439,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         String id
         String id2
         loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
              [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
 
         expect:
@@ -1312,7 +1452,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         login(name)
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1469,6 +1609,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     void 'DM-#prefix-12 : test importing DataType [not allowed] (as #name)'() {
         given:
+        String mergeFolderId = getTestFolderId()
+        Assert.notNull mergeFolderId
         Map data = configureImportDataType()
         login(name)
 
@@ -2238,9 +2380,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse OK, response
-        responseBody().count == 4
+        responseBody().count == 6
         responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type Pointing Externally', 'existingDataType1',
-                                              'existingDataType2'] as Set
+                                              'existingDataType2', 'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
         def mdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
 
         and:
@@ -2299,6 +2441,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     void 'SUBSET01 : test subsetting of Complex Data Model'() {
         def source = [:]
         def target = [:]
+        def target2 = [:]
 
         given:
         source.dataModelId = getComplexDataModelId()
@@ -2308,6 +2451,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         POST(getSavePath(), ['label': 'Target of Subset'], MAP_ARG, true)
         verifyResponse CREATED, response
         target.dataModelId = response.body().id
+        POST(getSavePath(), ['label': 'Second Target of Subset'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        target2.dataModelId = response.body().id
 
         and:
         loginAdmin()
@@ -2414,6 +2560,30 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         response.body().intersects.size() == 1
         response.body().intersects.contains(source.contentClass.ele1.id)
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains one intersection'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 1
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+
+
         /**
          * Subset delete DataElement 'ele1' which belongs to the 'content' Data Class. This should:
          * 1. Remove ele1 Data Element from targetDataModel
@@ -2445,6 +2615,30 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then: 'The response is OK with no results'
         verifyResponse OK, response
         response.body().intersects.size() == 0
+
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 0
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+
 
         /**
          * Subset delete DataElement 'ele1' (again) and also 'element2', and 'childde' which belongs to the parent | child Data Class.
@@ -2512,6 +2706,59 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         response.body().intersects.contains(source.contentClass.element2.id)
         response.body().intersects.contains(source.parentClass.childClass.grandchild.id)
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains three intersections'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 3
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 0
+
+        when: 'subset ele1, element2 and child onto target2'
+        PUT("/${source.dataModelId}/subset/${target2.dataModelId}", [
+            'additions': [
+                source.contentClass.ele1.id,
+                source.contentClass.element2.id,
+                source.parentClass.childClass.grandchild.id
+            ],
+            'deletions': []
+        ])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds: [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains three intersections'
+        response.body().items.find{ it.targetDataModelId == target.dataModelId }.intersects.size() == 3
+
+        and: 'The result for target2 now has intersections'
+        response.body().items.find{ it.targetDataModelId == target2.dataModelId }.intersects.size() == 3
+
+
         when: 'Delete the grandchild from the subset'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
             'additions': [],
@@ -2531,6 +2778,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanup:
         loginAdmin()
         DELETE("/${target.dataModelId}?permanent=true")
+        verifyResponse NO_CONTENT, response
+        DELETE("/${target2.dataModelId}?permanent=true")
         verifyResponse NO_CONTENT, response
         DELETE("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements/${source.parentClass.childClass.grandchild.id}")
         verifyResponse NO_CONTENT, response

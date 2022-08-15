@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
@@ -52,6 +54,8 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
     ReferenceDataModel referenceDataModel
 
     def setup() {
+        mockArtefact(AsyncJobService)
+        mockArtefact(FolderService)
         mockArtefact(MergeDiffService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(ClassifierService)

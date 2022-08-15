@@ -32,7 +32,7 @@ class NoAccessSecurityPolicyManager extends AbstractBasicSecurityPolicyManager {
     }
 
     @Override
-    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
+    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource>... securableResourceClass) {
         []
     }
 

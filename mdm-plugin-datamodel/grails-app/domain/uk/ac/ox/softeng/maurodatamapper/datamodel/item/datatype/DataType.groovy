@@ -187,6 +187,16 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         }
     }
 
+    static DetachedCriteria<DataType> byImportingDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<DataType>(DataType).where {
+            importingDataModels {
+                eq 'id', dataModelId
+            }
+            join('importingDataModels', JoinType.LEFT)
+        }
+
+    }
+
     static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm) {
         byDataModelId(dataModelId).or {
             ilike('label', "%${searchTerm}%")

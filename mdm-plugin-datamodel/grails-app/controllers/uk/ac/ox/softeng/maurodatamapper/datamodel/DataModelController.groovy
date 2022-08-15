@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Intersects
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
@@ -82,23 +83,17 @@ class DataModelController extends ModelController<DataModel> {
         dataModelService
     }
 
-    def search(SearchParams searchParams) {
+    def search() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors
             return
         }
 
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
-        params.sort = params.sort ?: searchParams.sort ?: 'label'
-        if (searchParams.order) {
-            params.order = searchParams.order
-        }
+        searchParams.crossValuesIntoParametersMap(params, 'label')
 
-        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(params.dataModelId,
-                                                                                                                                 searchParams, params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(params.dataModelId, searchParams, params)
         respond result
     }
 
@@ -219,5 +214,11 @@ class DataModelController extends ModelController<DataModel> {
         respond(intersection: dataModelService.intersects(sourceModel, targetModel))
     }
 
+    def intersectsMany(Intersects intersects) {
 
+        DataModel sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
+
+        respond(intersectionMany: dataModelService.intersectsMany(currentUserSecurityPolicyManager, sourceModel, intersects))
+    }
 }

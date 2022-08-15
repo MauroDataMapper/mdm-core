@@ -46,6 +46,7 @@ class TerminologyInterceptor extends ModelInterceptor {
     @Override
     boolean checkExportModelAction() {
         def json = request.getJSON()
+        request.setAttribute('cached_body', json)
         params.terminologyIds = []
         if (json) {
             if (json instanceof JSONObject) {

@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
@@ -50,13 +51,13 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 
-        label validator: { val, obj -> new VersionedFolderLabelValidator(obj).isValid(val) }
+        label validator: {val, obj -> new VersionedFolderLabelValidator(obj).isValid(val)}
         parentFolder nullable: true
-        childFolders validator: { val, obj ->
+        childFolders validator: {val, obj ->
             if (obj.ident()) {
                 return VersionedFolder.countByParentFolder(obj) ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
             }
-            val.any { it.domainType == VersionedFolder.simpleName } ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+            val.any {it.domainType == VersionedFolder.simpleName} ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
         }
     }
 
@@ -151,7 +152,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll { f ->
+            .findAll {f ->
                 ids.any {
                     it in f.path.split('/')
                 }
@@ -161,7 +162,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     static List<VersionedFolder> findAllContainedInFolderId(UUID folderId) {
         hibernateSearchList {
             should {
-                keyword 'path', folderId.toString()
+                keyword 'path', Path.from(Folder.get(folderId).path.last())
             }
         }
     }

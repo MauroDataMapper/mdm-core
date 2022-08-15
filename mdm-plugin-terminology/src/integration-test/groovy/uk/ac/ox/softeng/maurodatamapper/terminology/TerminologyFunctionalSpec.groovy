@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -33,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
@@ -1271,6 +1273,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
             ])
         }
 
+        // To check that deleting an unknown ID does not cause an exception
+        // See https://github.com/MauroDataMapper/mdm-core/issues/257
+        idstoDelete << UUID.randomUUID().toString()
+
         when:
         DELETE('', [
             ids      : idstoDelete,
@@ -1351,6 +1357,30 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         verifyResponse NO_CONTENT, response
     }
 
+    @Rollback
+    void 'DB : test permanent delete removes BreadcrumbTree'() {
+        given:
+        int breadcrumbTreeCount = BreadcrumbTree.count()
+        String id = createNewItem(validJson)
+        POST("$id/terms", [code: 'Test DB', description: 'Functional Test Description', definition: 'Functional Test Definition'])
+        verifyResponse CREATED, response
+        String termId = responseBody().id
+
+        expect:
+        BreadcrumbTree.count() == breadcrumbTreeCount + 2
+        BreadcrumbTree.findByDomainId(id)
+        BreadcrumbTree.findByDomainId(termId)
+
+        when:
+        DELETE("$id?permanent=true")
+        verifyResponse NO_CONTENT, response
+
+        then:
+        BreadcrumbTree.count() == breadcrumbTreeCount
+        !BreadcrumbTree.findByDomainId(id)
+        !BreadcrumbTree.findByDomainId(termId)
+    }
+
     void 'EX01 : test getting Terminology exporters'() {
         when:
         GET('providers/exporters', STRING_ARG)
@@ -1366,7 +1396,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "knownMetadataKeys": [],
                 "providerType": "TerminologyExporter",
                 "fileExtension": "json",
-                "fileType": "text/json",
+                "contentType": "application/mauro.terminology+json",
                 "canExportMultipleDomains": true
             },
             {
@@ -1378,7 +1408,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "knownMetadataKeys": [],
                 "providerType": "TerminologyExporter",
                 "fileExtension": "xml",
-                "fileType": "text/xml",
+                "contentType": "application/mauro.terminology+xml",
                 "canExportMultipleDomains": true
             }
         ]'''
@@ -2020,26 +2050,26 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
       "type": "modification"
     },
     {
-      "path": "te:Functional Test Terminology 1$source|tr:ALO.sameSourceActionType.SALO",
+      "path": "te:Functional Test Terminology 1$source|tm:ALO|tr:ALO.sameSourceActionType.SALO",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "te:Functional Test Terminology 1$source|tr:ALO.similarSourceAction.AAARD",
+      "path": "te:Functional Test Terminology 1$source|tm:ALO|tr:ALO.similarSourceAction.AAARD",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "te:Functional Test Terminology 1$source|tr:MLO.similarSourceAction.MAMRD",
+      "path": "te:Functional Test Terminology 1$source|tm:MLO|tr:MLO.similarSourceAction.MAMRD",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "te:Functional Test Terminology 1$source|tr:SMLO.sameSourceActionType.MLO@description",
+      "path": "te:Functional Test Terminology 1$source|tm:SMLO|tr:SMLO.sameSourceActionType.MLO@description",
       "sourceValue": "NewDescription",
       "targetValue": null,
       "commonAncestorValue": null,
@@ -2104,7 +2134,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
       "type": "modification"
     }
   ]
-}
-'''
+}'''
     }
 }

@@ -26,6 +26,7 @@ import io.micronaut.http.HttpResponse
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -155,10 +156,15 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         GET("${getEditsFullPath(id)}/edits?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then:
-        verifyResponse OK, response
-        responseBody().count >= 1
-        responseBody().items.first().createdBy == userEmailAddresses.creator
-        (responseBody().items.first().description as String).matches(getExpectedCreatedEditRegex())
+        if (expectations.getHasEditsEndpoint()) {
+            verifyResponse OK, response
+            responseBody().count >= 1
+            responseBody().items.first().createdBy == userEmailAddresses.creator
+            (responseBody().items.first().description as String).matches(getExpectedCreatedEditRegex())
+        } else {
+            verifyResponse NOT_FOUND, response
+        }
+
 
         cleanup:
         removeValidIdObject(id)
@@ -176,12 +182,17 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         GET("${getEditsFullPath(id)}/edits?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then:
-        verifyResponse OK, response
-        responseBody().count >= 2
-        responseBody().items[1].createdBy == userEmailAddresses.creator
-        (responseBody().items[1].description as String).matches(getExpectedCreatedEditRegex())
-        responseBody().items[0].createdBy == userEmailAddresses.creator
-        (responseBody().items[0].description as String).matches(getExpectedUpdateEditRegex())
+        if (expectations.getHasEditsEndpoint()) {
+            verifyResponse OK, response
+            responseBody().count >= 2
+            responseBody().items[1].createdBy == userEmailAddresses.creator
+            (responseBody().items[1].description as String).matches(getExpectedCreatedEditRegex())
+            responseBody().items[0].createdBy == userEmailAddresses.creator
+            (responseBody().items[0].description as String).matches(getExpectedUpdateEditRegex())
+        } else {
+            verifyResponse NOT_FOUND, response
+        }
+
 
 
         cleanup:
@@ -197,8 +208,12 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         GET("${getEditsFullPath(id)}/changelogs?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then:
-        verifyResponse OK, response
-        responseBody().count == 0
+        if (expectations.getHasEditsEndpoint()) {
+            verifyResponse OK, response
+            responseBody().count == 0
+        } else {
+            verifyResponse NOT_FOUND, response
+        }
 
         cleanup:
         removeValidIdObject(id)
@@ -213,22 +228,34 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         POST("${getEditsFullPath(id)}/changelogs", ['description': 'Functional Test Changelog'], MAP_ARG, true)
 
         then: 'the response is created'
-        verifyResponse CREATED, response
+        if (expectations.getHasEditsEndpoint()) {
+            verifyResponse CREATED, response
+        } else {
+            verifyResponse NOT_FOUND, response
+        }
 
         when: 'getting changelogs after creation'
         loginReader()
         GET("${getEditsFullPath(id)}/changelogs?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then: 'the response is correct'
-        verifyResponse OK, response
-        responseBody().count == 1
-        responseBody().items[0].createdBy == userEmailAddresses.creator
-        responseBody().items[0].description == 'Functional Test Changelog'
-        responseBody().items[0].title == 'CHANGELOG'
-        def changelogId = responseBody().items[0].id
+        String changelogId
+        if (expectations.getHasEditsEndpoint()) {
+            verifyResponse OK, response
+            responseBody().count == 1
+            responseBody().items[0].createdBy == userEmailAddresses.creator
+            responseBody().items[0].description == 'Functional Test Changelog'
+            responseBody().items[0].title == 'CHANGELOG'
+            changelogId = responseBody().items[0].id
+        } else {
+            verifyResponse NOT_FOUND, response
+        }
 
         cleanup:
         removeValidIdObject(id)
-        removeChangelogUsingTransaction(changelogId)
+        if (changelogId) {
+            removeChangelogUsingTransaction(changelogId)
+        }
+
     }
 }

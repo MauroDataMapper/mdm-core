@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class TerminologyJsonExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.terminology+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -43,13 +45,18 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
-    String getFileType() {
-        'text/json'
+    String getFileExtension() {
+        'json'
     }
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getContentType() {
+        CONTENT_TYPE
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
     }
 
     @Override
@@ -58,14 +65,14 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
-    ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
+    ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminology, 'terminology', version, exportMetadata), fileType)
+        exportModel(new ExportModel(terminology, 'terminology', version, exportMetadata), contentType)
     }
 
     @Override
-    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
+    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, exportMetadata), fileType)
+        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, exportMetadata), contentType)
     }
 }

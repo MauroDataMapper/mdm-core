@@ -70,13 +70,7 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
             return
         }
 
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
-        params.sort = params.sort ?: searchParams.sort ?: 'label'
-        if (searchParams.order) {
-            params.order = searchParams.order
-        }
+        searchParams.crossValuesIntoParametersMap(params, 'label')
 
         PaginatedHibernateSearchResult<ModelItem> result = mdmPluginReferenceDataModelSearchService.findAllByReferenceDataModelIdByHibernateSearch(params.referenceDataModelId,
                                                                                                                                                    searchParams, params)

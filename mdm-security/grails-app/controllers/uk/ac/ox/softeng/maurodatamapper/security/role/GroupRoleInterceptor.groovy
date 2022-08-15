@@ -60,6 +60,6 @@ class GroupRoleInterceptor extends SecurableResourceInterceptor {
             return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
 
-        checkActionAuthorisationOnSecuredResource(GroupRole, getId())
+        checkActionAuthorisationOnSecuredResource(GroupRole, getId(), currentUserSecurityPolicyManager.isApplicationAdministrator())
     }
 }

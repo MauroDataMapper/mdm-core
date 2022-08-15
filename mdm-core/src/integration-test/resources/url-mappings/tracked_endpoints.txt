@@ -22,8 +22,10 @@
 | DELETE | /api/admin/properties/${id} | delete |
 | PUT    | /api/admin/properties/${id} | update |
 | GET    | /api/admin/properties/${id} | show |
+| GET    | /api/asyncJobs | index |
+| DELETE | /api/asyncJobs/${id} | delete |
+| GET    | /api/asyncJobs/${id} | show |
 | GET    | /api/properties | index |
-| POST   | /api/authorities | save |
 | GET    | /api/authorities | index |
 | DELETE | /api/authorities/${id} | delete |
 | PUT    | /api/authorities/${id} | update |
@@ -124,6 +126,7 @@
 | DELETE | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id} | delete |
 | PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id} | update |
 | GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id} | show |
+| POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/search | prefixLabelSearch |
 | GET    | /api/catalogueItems/search | search |
 | POST   | /api/catalogueItems/search | search |
 | PUT    | /api/${containerDomainType}/${containerId}/semanticLinks/${semanticLinkId}/confirm | confirm |
@@ -186,3 +189,10 @@
 | DELETE | /api/versionedFolders/${id} | delete |
 | PUT    | /api/versionedFolders/${id} | update |
 | GET    | /api/versionedFolders/${id} | show |
+| POST   | /api/authorities | save |
+| GET    | /api/domainExports/${domainExportId}/download | download |
+| GET    | /api/domainExports | index |
+| DELETE | /api/domainExports/${id} | delete |
+| GET    | /api/domainExports/${id} | show |
+| GET    | /api/${resourceDomainType}/${resourceId}/domainExports | index |
+| GET    | /api/${resourceDomainType}/${resourceId}/domainExports/${exporterNamespace}/${exporterName}/${exporterVersion}? | index |

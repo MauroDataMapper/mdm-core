@@ -17,17 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.federation.gorm.mapping.MdmPluginFederationSchemaMappingContext
-import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmAtomModelCollectionRenderer
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmAtomPublishedModelCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmOpmlSubscribedCatalogueCollectionRenderer
+import uk.ac.ox.softeng.maurodatamapper.federation.converter.MauroJsonSubscribedCatalogueConverter
+import uk.ac.ox.softeng.maurodatamapper.federation.converter.AtomSubscribedCatalogueConverter
 
 import grails.plugins.Plugin
 
 class MdmPluginFederationGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.1.7 > *'
+    def grailsVersion = '5.1.9 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
     ]
@@ -73,9 +74,9 @@ The federation domain, services and controllers for the Mauro Data Mapper backen
             /*
              * Define the ATOM model feed renderer beans
              */
-            atomModelListRenderer(MdmAtomModelCollectionRenderer, Collection) {
+            atomModelListRenderer(MdmAtomPublishedModelCollectionRenderer, Collection) {
             }
-            atomModelRenderer(MdmAtomModelCollectionRenderer, Model) {
+            atomModelRenderer(MdmAtomPublishedModelCollectionRenderer, PublishedModel) {
             }
 
             /*
@@ -85,6 +86,12 @@ The federation domain, services and controllers for the Mauro Data Mapper backen
             }
             opmlSubscribedCatalogueRenderer(MdmOpmlSubscribedCatalogueCollectionRenderer, SubscribedCatalogue) {
             }
+
+            /*
+             * Define converters for JSON and Atom Subscribed Catalogues
+             */
+            mauroJsonSubscribedCatalogueConverter MauroJsonSubscribedCatalogueConverter
+            atomSubscribedCatalogueConverter AtomSubscribedCatalogueConverter
         }
     }
 }

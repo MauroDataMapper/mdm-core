@@ -52,6 +52,9 @@ import java.util.regex.Pattern
 class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Shared
+    int rowNumber = 100
+
+    @Shared
     Path resourcesPath
 
     @RunOnce
@@ -84,6 +87,7 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 
@@ -109,10 +113,11 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Map getValidJson() {
+        // increment the rowNumber so that we don't try to break the unique constraint
+        rowNumber = rowNumber + 1
         [
-            rowNumber           : 1,
+            rowNumber           : rowNumber,
             value               : 'Functional Test ReferenceDataValue',
-            referenceDataModel  : simpleReferenceDataModelId,
             referenceDataElement: referenceDataElementId
         ]
     }
@@ -122,7 +127,6 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
         [
             rowNumber           : -1,
             value               : null,
-            referenceDataModel  : null,
             referenceDataElement: null,
         ]
     }

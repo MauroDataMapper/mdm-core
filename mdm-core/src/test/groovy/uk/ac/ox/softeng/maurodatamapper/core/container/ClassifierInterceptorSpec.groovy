@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierInterceptor
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ResourceInterceptorUnitSpec
@@ -36,6 +38,9 @@ class ClassifierInterceptorSpec extends ResourceInterceptorUnitSpec implements I
     def setup() {
         log.debug('Setting up classifier interceptor unit')
         mockDomain(BasicModel)
+        mockDomain(ApiProperty)
+        ApiPropertyService apiPropertyService = new ApiPropertyService()
+        this.getInterceptor().apiPropertyService = apiPropertyService
     }
 
     @Override

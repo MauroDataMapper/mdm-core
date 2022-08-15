@@ -307,6 +307,28 @@ class SearchFunctionalSpec extends FunctionalSpec {
         responseBody().items.first().domainType == 'DataModel'
     }
 
+    void 'S05b : test searching for "simple" limited to DataModel types'() {
+        given:
+        String term = 'simple'
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST('', [searchTerm: term, sort: 'label', domainTypes: ['DataModel'], dataModelTypes: ['Data Standard']])
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().label == BootstrapModels.SIMPLE_DATAMODEL_NAME
+        responseBody().items.first().domainType == 'DataModel'
+
+        loginReader()
+        POST('', [searchTerm: term, sort: 'label', domainTypes: ['DataModel'], dataModelTypes: ['Data Asset']])
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+    }
+
     void 'S06 : test searching for "simple" using POST with pagination'() {
         given:
         String term = 'simple'

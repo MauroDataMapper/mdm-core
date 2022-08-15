@@ -1,6 +1,6 @@
 {
   "dataModel": {
-    "id": "${json-unit.ignore}",
+    "id": "${json-unit.matches:id}",
     "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
@@ -13,14 +13,16 @@
     },
     "childDataClasses": [
       {
-        "id": "${json-unit.ignore}",
+        "id": "${json-unit.matches:id}",
         "label": "Core",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "index": 0,
         "dataClasses": [
           {
-            "id": "${json-unit.ignore}",
+            "id": "${json-unit.matches:id}",
             "label": "Primary lung cancer pathological (post-op) TNM staging",
-            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0
           }
         ]
       }
@@ -32,7 +34,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }

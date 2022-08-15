@@ -109,6 +109,10 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         assert responseBody().deleted == true
     }
 
+    void verifyDeleteResponse(HttpResponse<Map> response) {
+        verifyResponse NO_CONTENT, response
+    }
+
     /**
      * Items are created by the editor user
      * This ensures that they dont have some possible weird admin protection
@@ -337,7 +341,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             if (expectations.isSoftDeleteByDefault) {
                 verifySoftDeleteResponse(response)
             } else {
-                verifyResponse NO_CONTENT, response
+                verifyDeleteResponse response
             }
         } else verify04NotAllowedToDeleteResponse(response, name, id)
 
@@ -347,7 +351,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
             then:
             if (name == 'Editor') verifyForbidden(response)
-            else verifyResponse NO_CONTENT, response
+            else verifyDeleteResponse response
         }
 
         cleanup:

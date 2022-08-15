@@ -25,7 +25,7 @@ import groovy.transform.CompileStatic
 
 @AutoClone
 @CompileStatic
-class ModelImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+class ModelImporterProviderServiceParameters extends ImporterProviderServiceParameters {
 
     @ImportParameterConfig(
         displayName = 'Folder',

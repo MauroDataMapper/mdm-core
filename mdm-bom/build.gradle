@@ -6,7 +6,7 @@ buildscript {
 
     }
     dependencies {
-        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
     }
 }
 
@@ -89,7 +89,6 @@ dependencyManagement {
 javaPlatform {
     allowDependencies()
 }
-
 
 dependencies {
 

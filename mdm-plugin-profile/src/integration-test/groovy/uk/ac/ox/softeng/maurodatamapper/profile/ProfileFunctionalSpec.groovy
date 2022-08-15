@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DefaultJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -55,7 +56,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     UUID simpleDataModelId
 
-    ProfileSpecificationProfileService profileSpecificationProfileService
+    DefaultJsonProfileProviderService profileSpecificationProfileService
 
     @Transactional
     Authority getTestAuthority() {
@@ -96,39 +97,110 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         getProfilePath().replace('/', ':')
     }
 
-    void 'test getting profile providers'() {
+    void '01 : test getting profile providers'() {
         when:
         GET('profiles/providers', STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''
 [{
-    "name":"ProfileSpecificationProfileService",
-    "version":"${json-unit.matches:version}",
-    "displayName":"Profile Specification Profile (Data Model)",
-    "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys": ["metadataNamespace","domainsApplicable","editableAfterFinalisation"],
-    "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "domains":["DataModel"],
+    "name": "ProfileSpecificationProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Model)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataNamespace",
+      "domainsApplicable",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "domains": [
+      "DataModel"
+    ],
     "editableAfterFinalisation": false
-},
-{
-    "name":"ProfileSpecificationFieldProfileService",
-    "version":"${json-unit.matches:version}",
-    "displayName":"Profile Specification Profile (Data Element)",
-    "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editableAfterFinalisation"],
-    "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
-    "domains":["DataElement"],
+  },
+  {
+    "name": "ProfileSpecificationFieldProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Element)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataPropertyName",
+      "defaultValue",
+      "regularExpression",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
+    "domains": ["DataElement"],
     "editableAfterFinalisation": false
-}]'''
+  },
+  {
+    "name": "ImportedDataClassDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Unassigned Import Profile for DataClass",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": ["DataClass"],
+    "editableAfterFinalisation": true
+  },
+  {
+    "name": "ImportedDataElementDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Unassigned Import Profile for DataElement",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": ["DataElement"],
+    "editableAfterFinalisation": true
+  },
+  {
+    "name": "ImportedDataTypeDynamicProfileProviderService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Unassigned Import Profile for DataType",
+    "namespace": "import.NOT_ASSIGNED.functional.testing",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "import_id",
+      "import_domainType",
+      "import_path",
+      "mandation",
+      "multiplicity"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "import.NOT_ASSIGNED.functional.testing",
+    "domains": [
+      "DataType",
+      "PrimitiveType",
+      "EnumerationType",
+      "ReferenceType",
+      "ModelDataType"
+    ],
+    "editableAfterFinalisation": true
+  }]'''
     }
 
-    void 'test get all models in profile which doesnt exist'() {
+    void '02 : test get all models in profile which doesnt exist'() {
         when:
         GET("profiles/${getProfilePath()}/DataModel")
 
@@ -138,7 +210,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test get all models values in profile which doesnt exist'() {
+    void '03 : test get all models values in profile which doesnt exist'() {
         when:
         GET("profiles/${getProfilePath()}/DataModel/values")
 
@@ -148,7 +220,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test searching in profile which doesnt exist'() {
+    void '04 : test searching in profile which doesnt exist'() {
         when:
         POST("profiles/${getProfilePath()}/search", [searchTerm: 'test'])
 
@@ -158,7 +230,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test get profile for model which doesnt exist'() {
+    void '05 : test get profile for model which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
 
@@ -171,7 +243,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == id
     }
 
-    void 'test get profile for model when profile doesnt exist'() {
+    void '06 : test get profile for model when profile doesnt exist'() {
         given:
         String id = getComplexDataModelId()
 
@@ -184,7 +256,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test get profile for folder when profile doesnt exist'() {
+    void '07 : test get profile for folder when profile doesnt exist'() {
         given:
         String id = folder.id.toString()
 
@@ -197,7 +269,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test save profile for model which doesnt exist'() {
+    void '08 : test save profile for model which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
 
@@ -211,7 +283,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == id
     }
 
-    void 'test save profile for folder which doesnt exist'() {
+    void '09 : test save profile for folder which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
 
@@ -225,7 +297,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == id
     }
 
-    void 'test save profile for model when profile doesnt exist'() {
+    void '10 : test save profile for model when profile doesnt exist'() {
         given:
         String id = getComplexDataModelId()
 
@@ -239,7 +311,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test getting unused profiles on datamodel'() {
+    void '11 : test getting unused profiles on datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -253,7 +325,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().first().displayName == 'Profile Specification Profile (Data Model)'
     }
 
-    void 'test getting unused profiles on folder'() {
+    void '12 : test getting unused profiles on folder'() {
         given:
         String id = folder.id.toString()
 
@@ -265,7 +337,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 0
     }
 
-    void 'test getting used profiles on datamodel'() {
+    void '13 : test getting used profiles on datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -277,7 +349,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 0
     }
 
-    void 'test getting used profiles on folder'() {
+    void '14 : test getting used profiles on folder'() {
         given:
         String id = folder.id.toString()
 
@@ -289,7 +361,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 0
     }
 
-    void 'test getting other properties on a datamodel'() {
+    void '15 : test getting other properties on a datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -323,7 +395,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 '''
     }
 
-    void 'test getting with filters other properties on a datamodel'() {
+    void '16 : test getting with filters other properties on a datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -425,7 +497,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 '''
     }
 
-    void 'test getting other properties on a folder'() {
+    void '17 : test getting other properties on a folder'() {
         given:
         String id = folder.id.toString()
 
@@ -834,50 +906,35 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Dynamic Profile Elem (Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "description": null,
+          "currentValue": "abc",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "abc"
+          "editableAfterFinalisation": false,
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Mandatory)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "description": null,
+          "currentValue": "def",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "def"
+          "editableAfterFinalisation": false,
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Default Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "description": null,
+          "currentValue": "",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": ""
+          "editableAfterFinalisation": false,
+          "derived": false
         }
       ]
     }
@@ -1160,50 +1217,35 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Dynamic Profile Elem (Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
-          "description": null,
+          "currentValue": "abc",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "abc"
+          "editableAfterFinalisation": false,
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Mandatory)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
-          "description": null,
+          "currentValue": "def",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "def"
+          "editableAfterFinalisation": false,
+          "derived": false
         },
         {
           "fieldName": "Dynamic Profile Elem (Default Optional)",
           "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
-          "description": null,
+          "currentValue": "",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": [],
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": ""
+          "editableAfterFinalisation": false,
+          "derived": false
         }
       ]
     }
@@ -1909,51 +1951,39 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Metadata namespace",
           "metadataPropertyName": "metadataNamespace",
-          "description": "The namespace under which properties of this profile will be stored",
+          "currentValue": "functional.test.profile",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "functional.test.profile"
+          "editableAfterFinalisation": false,
+          "derived": false,
+          "description": "The namespace under which properties of this profile will be stored"
         },
         {
           "fieldName": "Applicable for domains",
           "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
-        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "currentValue": "DataModel",
+          "dataType": "string",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "DataModel"
+          "editableAfterFinalisation": false,
+          "derived": false,
+           "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
+        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item."
         },
         {
           "fieldName": "Can be edited after finalisation",
           "metadataPropertyName": "editableAfterFinalisation",
-          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
+          "currentValue": "",
+          "dataType": "boolean",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "boolean",
-          "derived": false,
-          "derivedFrom": null,
           "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": ""
+          "editableAfterFinalisation": false,
+          "derived": false,
+          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false."
         }
       ]
     }

@@ -18,13 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
 interface CatalogueItemSearchDomainProvider {
     Set<Class<CatalogueItem>> getSearchableCatalogueItemDomains()
-
-    Set<Class<SearchParamFilter>> getSearchParamFilters()
 }

@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.CompileStatic
@@ -40,4 +41,6 @@ trait Diffable<T extends Diffable> {
     }
 
     abstract String getPathPrefix()
+
+    abstract Path getPath()
 }

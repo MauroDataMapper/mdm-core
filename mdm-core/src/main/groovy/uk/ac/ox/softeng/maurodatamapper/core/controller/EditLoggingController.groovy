@@ -22,9 +22,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.artefact.controller.RestResponder
+import grails.databinding.DataBindingSource
 import grails.gorm.PagedResultList
 import grails.gorm.transactions.Transactional
 import grails.rest.RestfulController
+import grails.web.databinding.DataBindingUtils
 import grails.web.http.HttpHeaders
 import groovy.util.logging.Slf4j
 
@@ -231,5 +233,21 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     @Override
     protected getObjectToBind() {
         request.getAttribute('cached_body') ?: request
+    }
+
+    Map<String, Object> extractRequestBodyToMap() {
+        Object body = getObjectToBind()
+        if (body instanceof Map<String, Object>) {
+            return cacheBodyIntoRequest(body)
+        }
+        DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, Map, getObjectToBind())
+        Map<String, Object> requestBody = dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
+        cacheBodyIntoRequest(requestBody)
+    }
+
+    Map<String, Object> cacheBodyIntoRequest(Map<String, Object> requestBody) {
+        requestBody.baseUrl = getWebRequest().baseUrl
+        request.setAttribute('cached_body', requestBody)
+        requestBody
     }
 }

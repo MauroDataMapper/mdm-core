@@ -46,7 +46,11 @@ class DataElementComponentInterceptor extends DataModelSecuredInterceptor {
     @Override
     void checkParentModelItemId() throws ApiBadRequestException {
         if (!dataFlowService.existsByTargetDataModelIdAndId(params.dataModelId, params.dataFlowId)) {
-            throw new ApiBadRequestException('DEI01', 'Provided dataFlowId is not inside provided dataModelId')
+            if (!dataFlowService.existsBySourceDataModelIdAndId(params.dataModelId, params.dataFlowId)) {
+                throw new ApiBadRequestException('DECI01', 'Provided dataFlowId is not inside provided dataModelId')
+            } else {
+                log.warn('Access has been acheived through the source DataModel but it should be done through the target DataModel')
+            }
         }
         if (!dataClassComponentService.existsByDataFlowIdAndId(params.dataFlowId, params.dataClassComponentId)) {
             throw new ApiBadRequestException('DEI01', 'Provided dataClassComponentId is not inside provided dataFlowId')

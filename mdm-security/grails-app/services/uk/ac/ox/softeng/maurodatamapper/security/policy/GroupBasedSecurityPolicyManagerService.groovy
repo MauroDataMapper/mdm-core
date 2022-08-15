@@ -133,14 +133,15 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
         // Rebuild all policies which have access, this needs to be done incase we revoke access to something which provides access to something else
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-            ids.each {id ->
-                if (userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResourceDomainType, id)) {
-                    userSecurityPolicyManager.lock()
-                    UserSecurityPolicy updatedPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicyManager.userPolicy)
-                    storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
-                }
+            // The code performs a complete rebuild of the USP so if any of the ids match then the build will be done for all the ids
+            // We only need to do this once
+            if (ids.any { id -> userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResourceDomainType, id) }) {
+                userSecurityPolicyManager.lock()
+                UserSecurityPolicy updatedPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicyManager.userPolicy)
+                userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy)
+                storeUserSecurityPolicyManager(userSecurityPolicyManager)
             }
         }
 
@@ -209,9 +210,10 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         retrieveUserSecurityPolicyManager(currentUser)
     }
 
-    GroupBasedUserSecurityPolicyManager storeUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager, boolean maintainLock = false) {
+    GroupBasedUserSecurityPolicyManager storeUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager,
+                                                                       boolean maintainLock = false) {
         if (!userSecurityPolicyManager.isLocked()) throw new ApiInternalException('GBSPMS',
-                                                                                  'Cannot store on an unlocked GroupBasedUserSecurityPolicyManager')
+                                                                                  'Cannot store an unlocked GroupBasedUserSecurityPolicyManager')
         GrailsCache cache = getSecurityPolicyManagerCache()
         cache.put(userSecurityPolicyManager.user.emailAddress, userSecurityPolicyManager)
         maintainLock ? userSecurityPolicyManager : userSecurityPolicyManager.unlock()
@@ -250,8 +252,8 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     UserSecurityPolicyManager addUserGroupToUserSecurityPolicyManagers(User currentUser, UserGroup userGroup) {
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
-        Set<String> groupEmailAddresses = userGroup.groupMembers.collect {it.emailAddress}.toSet()
-        keys.each {key ->
+        Set<String> groupEmailAddresses = userGroup.groupMembers.collect { it.emailAddress }.toSet()
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.user.emailAddress in groupEmailAddresses) {
                 userSecurityPolicyManager.lock()
@@ -267,7 +269,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     UserSecurityPolicyManager removeUserGroupFromUserSecurityPolicyManagers(User currentUser, UserGroup userGroup) {
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.userPolicyIsManagedByGroup(userGroup)) {
                 userSecurityPolicyManager.lock()
@@ -310,7 +312,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
 
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.userPolicyIsManagedByGroup(userGroup)) {
                 storeUserSecurityPolicyManager(refreshUserSecurityPolicyManager(userSecurityPolicyManager))
@@ -320,7 +322,8 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         retrieveUserSecurityPolicyManager(currentUser)
     }
 
-    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersBySecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole, User currentUser) {
+    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersBySecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole,
+                                                                                               User currentUser) {
         refreshAllUserSecurityPolicyManagersByUserGroup(currentUser, securableResourceGroupRole.userGroup)
     }
 
@@ -328,7 +331,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
 
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.userPolicyHasApplicationRoles()) {
                 userSecurityPolicyManager.lock()
@@ -346,7 +349,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         Collection<Object> keys = cache.getAllKeys()
         // Currently only designed to handle finalised changes
         // Handles a folder change
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             userSecurityPolicyManager.lock()
             UserSecurityPolicy updatedPolicy = userSecurityPolicyService.updatePolicyForAccessToModel(userSecurityPolicyManager.userPolicy,
@@ -362,7 +365,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
         // Currently only designed to handle finalised changes
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             userSecurityPolicyManager.lock()
             UserSecurityPolicy updatedPolicy = userSecurityPolicyService.updatePolicyForAccessToVersionedFolder(userSecurityPolicyManager.userPolicy,
@@ -378,7 +381,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         if (securableResource.hasProperty('groups')) {
             if (securableResource.groups && securableResource.groups.size() > 0) {
 
-                securableResource.groups.each {group ->
+                securableResource.groups.each { group ->
                     UserGroup controlGroup = userGroupService.get(group.groupId)
                     GroupRole role = groupRoleService.get(group.groupRoleId)
 
@@ -395,13 +398,13 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         // If we're revoking any access we will rebuild the policies so no need to check for allowing accees
         if (
-        (!securableResource.readableByEveryone && changedSecurityProperties.contains('readableByEveryone')) ||
-        (!securableResource.readableByAuthenticatedUsers && changedSecurityProperties.contains('readableByAuthenticatedUsers'))
+            (!securableResource.readableByEveryone && changedSecurityProperties.contains('readableByEveryone')) ||
+            (!securableResource.readableByAuthenticatedUsers && changedSecurityProperties.contains('readableByAuthenticatedUsers'))
         ) {
             revokeReadableBy(securableResource)
         } else if (
-        (securableResource.readableByEveryone && changedSecurityProperties.contains('readableByEveryone')) ||
-        (securableResource.readableByAuthenticatedUsers && changedSecurityProperties.contains('readableByAuthenticatedUsers'))
+            (securableResource.readableByEveryone && changedSecurityProperties.contains('readableByEveryone')) ||
+            (securableResource.readableByAuthenticatedUsers && changedSecurityProperties.contains('readableByAuthenticatedUsers'))
         ) {
             allowReadableBy(securableResource, changedSecurityProperties)
         }
@@ -423,7 +426,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                    .withAccessLevel(readerRole.groupRole))
 
         if (Utils.parentClassIsAssignableFromChild(Container, securableResource.class)) {
-            ContainerService containerService = containerServices.find {it.handles(securableResource.domainType)}
+            ContainerService containerService = containerServices.find { it.handles(securableResource.domainType) }
             // Make sure contents of container are all readable as well
             virtualSecurableResourceGroupRoles.addAll(
                 userSecurityPolicyService.buildControlledAccessToContentsOfContainer(securableResource as Container,
@@ -436,7 +439,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             // Make sure the direct tree of containers are readable as well
             virtualSecurableResourceGroupRolesForParents.addAll(
                 containerService.findAllWhereDirectParentOfContainer(securableResource as Container)
-                    .collect {container ->
+                    .collect { container ->
                         virtualSecurableResourceGroupRoleService.buildForSecurableResource(container as Container)
                             .withAccessLevel(readerRole.groupRole)
                     })
@@ -447,7 +450,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             // however the contents of these folder are not to be readable
             virtualSecurableResourceGroupRolesForParents.addAll(
                 folderService.findAllWhereDirectParentOfModel(securableResource as Model)
-                    .collect {folder ->
+                    .collect { folder ->
                         virtualSecurableResourceGroupRoleService.buildForSecurableResource(folder)
                             .withAccessLevel(readerRole.groupRole)
                     })
@@ -458,7 +461,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         if (changedSecurityProperties.contains('readableByEveryone')) {
             log.debug('Changing readable by everyone to {}', securableResource.readableByEveryone)
-            keys.each {key ->
+            keys.each { key ->
                 GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
                 userSecurityPolicyManager.lock()
                 UserSecurityPolicy updatedPolicy =
@@ -470,7 +473,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         }
         if (changedSecurityProperties.contains('readableByAuthenticatedUsers')) {
             log.debug('Changing readable by authenticated users to {}', securableResource.readableByAuthenticatedUsers)
-            keys.each {key ->
+            keys.each { key ->
                 GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
                 if (userSecurityPolicyManager.isAuthenticated()) {
                     userSecurityPolicyManager.lock()
@@ -488,12 +491,13 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     private void revokeReadableBy(SecurableResource securableResource) {
         // Build the readable by xxx "false" virtual roles for the securable resource,
         // as we're limiting access we need to be careful about the roles we'll be removing as inheritance can be overridden with an expanded access
-        // therefore easiest to wipe the security and rebuild as we have no idea about other access but only do this is the policy manages the access to the SR
+        // therefore easiest to wipe the security and rebuild as we have no idea about other access but only do this is the policy manages the
+        // access to the SR
 
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
 
-        keys.each {key ->
+        keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResource)) {
                 userSecurityPolicyManager.lock()
@@ -513,7 +517,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             groupPolicyManager.withUpdatedUserPolicy(builtPolicy.withMaxLockTime(userSecurityPolicyService.getMaxLockTime()))
             storeUserSecurityPolicyManager(groupPolicyManager)
             log.debug('Async UserSecurityPolicy build and store took {}', Utils.timeTaken(st))
-        }.onError {Throwable err ->
+        }.onError { Throwable err ->
             log.error('Could not build UserSecurityPolicy', err)
         }
     }

@@ -20,13 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.converters.DataTypeValueConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping.MdmPluginDatamodelSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping.SummaryMetadataAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
 
 import grails.plugins.Plugin
 
 class MdmPluginDatamodelGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.1.7 > *'
+    def grailsVersion = '5.1.9 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         'grails-app/views/forbidden.gson',
@@ -72,6 +73,8 @@ class MdmPluginDatamodelGrailsPlugin extends Plugin {
             dataTypeValueConverter DataTypeValueConverter
 
             summaryMetadataAwareMappingContext SummaryMetadataAwareMappingContext
+
+            dataModelTypeFilter DataModelTypeFilter
         }
     }
 }

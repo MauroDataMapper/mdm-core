@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
 @CompileStatic
 class FolderJsonExporterService extends FolderExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.folder+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -46,13 +48,18 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
-    String getFileType() {
-        'text/json'
+    String getFileExtension() {
+        'json'
     }
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getContentType() {
+        CONTENT_TYPE
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
     }
 
     @Override
@@ -61,13 +68,13 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
-    ByteArrayOutputStream exportFolder(User currentUser, Folder folder) throws ApiException {
+    ByteArrayOutputStream exportFolder(User currentUser, Folder folder, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(folder, 'folder', version, exportMetadata), fileType)
+        exportModel(new ExportModel(folder, 'folder', version, exportMetadata), contentType)
     }
 
     @Override
-    ByteArrayOutputStream exportFolders(User currentUser, List<Folder> folders) throws ApiException {
+    ByteArrayOutputStream exportFolders(User currentUser, List<Folder> folders, Map<String, Object> parameters) throws ApiException {
         throw new ApiBadRequestException('FBIP04', "${name} cannot export multiple Folders")
     }
 }

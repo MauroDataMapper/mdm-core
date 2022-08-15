@@ -27,6 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.support.proxy.ProxyHandler
+import org.hibernate.SessionFactory
+
 /**
  * @since 28/04/2021
  */
@@ -37,8 +40,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     String dataModelDescription
     String dataModelVersion
 
-    DynamicJsonProfileProviderService(MetadataService metadataService, DataModel dataModel) {
-        this.metadataService = metadataService
+    DynamicJsonProfileProviderService(ProxyHandler proxyHandler, MetadataService metadataService, SessionFactory sessionFactory, DataModel dataModel) {
+        super(proxyHandler, metadataService, sessionFactory)
         this.dataModelId = dataModel.id
         this.dataModelLabel = dataModel.label
         this.dataModelDescription = dataModel.description
@@ -53,8 +56,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         jsonProfile.label = entity.label
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
-        jsonProfile.sections.each {section ->
-            section.fields.each {field ->
+        jsonProfile.each {section ->
+            section.each {field ->
                 Metadata matchingField = metadataList.find {it.key == field.getUniqueKey(section.name)}
                 if (field.derived) {
                     try {
@@ -83,7 +86,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     Set<String> getKnownMetadataKeys() {
         Set<String> knownProperties = []
         getSections().each {section ->
-            section.fields.each {field ->
+            section.each {field ->
                 knownProperties.add(field.getUniqueKey(section.name))
             }
         }
@@ -151,17 +154,14 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         DataModel.findById(dataModelId)
     }
 
-    @Override
     UUID getDefiningDataModel() {
         dataModelId
     }
 
-    @Override
     String getDefiningDataModelLabel() {
         dataModelLabel
     }
 
-    @Override
     String getDefiningDataModelDescription() {
         dataModelDescription
     }
@@ -199,7 +199,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                                 it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
                                 it.key == 'editableAfterFinalisation'
                             }
-                            md ? md.value.toBoolean() : true
+                            md ? md.value.toBoolean() : this.canBeEditedAfterFinalisation()
                         }()
                     )
                     if (!profileField.metadataPropertyName) profileField.metadataPropertyName = profileField.getUniqueKey(dataClass.label)

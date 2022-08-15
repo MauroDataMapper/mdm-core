@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+
+model {
+    AsyncJob asyncJob
+}
+
+json tmpl.asyncJob(asyncJob: asyncJob)

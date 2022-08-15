@@ -145,20 +145,29 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
             }
             .whereAuthenticatedUsers {
                 canCreate()
+                canIndex()
                 cannotSee()
             }
             .whereReaders {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
                 cannotEditDescription()
+                cannotUpdate()
             }
             .whereEditors {
                 cannotDelete()
+                cannotEditDescription()
                 cannotUpdate()
             }
             .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'softDelete', 'update')

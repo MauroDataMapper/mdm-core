@@ -59,7 +59,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.referencedatamodel+json",
     "canExportMultipleDomains": false
   },
   {
@@ -73,7 +73,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.referencedatamodel+xml",
     "canExportMultipleDomains": false
   },
   {
@@ -87,7 +87,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     ],
     "providerType": "FolderExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.folder+json",
     "canExportMultipleDomains": false
   }
 ]''')

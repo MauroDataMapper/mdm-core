@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: catalogueItem]
+
+model {
+    CatalogueItem catalogueItem
+    String profileMetadataNamespace
+}
+
+json {
+    profileFields(catalogueItem.metadata.findAll {it.namespace == profileMetadataNamespace}) {Metadata metadata ->
+        metadataPropertyName metadata.key
+        currentValue metadata.value
+    }
+}

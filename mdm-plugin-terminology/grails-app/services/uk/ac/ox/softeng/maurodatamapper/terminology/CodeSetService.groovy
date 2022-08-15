@@ -41,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -50,6 +51,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
@@ -58,6 +60,9 @@ class CodeSetService extends ModelService<CodeSet> {
     TermService termService
     CodeSetJsonImporterService codeSetJsonImporterService
     CodeSetJsonExporterService codeSetJsonExporterService
+
+    @Autowired(required = false)
+    Set<CodeSetExporterProviderService> exporterProviderServices
 
     @Override
     CodeSet get(Serializable id) {
@@ -452,7 +457,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo,
+    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToCopy,
                                          UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
@@ -464,7 +469,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot delete [${modelItem.domainType}] from CodeSet")
         }

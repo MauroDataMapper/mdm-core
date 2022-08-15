@@ -21,9 +21,12 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
@@ -93,6 +96,9 @@ abstract class ModelService<K extends Model>
     Set<MdmDomainService> domainServices
 
     @Autowired
+    FolderService folderService
+
+    @Autowired
     VersionedFolderService versionedFolderService
 
     @Autowired
@@ -118,6 +124,9 @@ abstract class ModelService<K extends Model>
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
+
+    @Autowired
+    AsyncJobService asyncJobService
 
     Class<K> getVersionLinkAwareClass() {
         getDomainClass()
@@ -168,6 +177,8 @@ abstract class ModelService<K extends Model>
                          String branchName,
                          boolean throwErrors,
                          UserSecurityPolicyManager userSecurityPolicyManager)
+
+    abstract Set<ExporterProviderService> getExporterProviderServices()
 
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
@@ -223,9 +234,14 @@ abstract class ModelService<K extends Model>
 
     List<K> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
         if (!permanent) {
-            List<K> updated = idsToDelete.collect {
+            // Use findResults rather than collect so that we don't add
+            // null values, which would happen if an unknown ID has been provided,
+            // to the updated list
+            List<K> updated = idsToDelete.findResults {
                 K dm = get(it)
-                delete(dm, permanent, false)
+                if (dm) {
+                    delete(dm, permanent, false)
+                }
                 dm
             }
             return updated
@@ -283,8 +299,8 @@ abstract class ModelService<K extends Model>
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 
-    List<PathNode> getAllReadablePathNodes(Collection<UUID> readableIds) {
-        getAll(readableIds).collect {it.path.last()}
+    List<Path> getAllReadablePaths(Collection<UUID> readableIds) {
+        getAll(readableIds).collect {it.path}
     }
 
     @Override
@@ -336,12 +352,11 @@ abstract class ModelService<K extends Model>
         // ModelItem paths are like BT treestrings then need to be updated to replace the branch with the model version
         updateModelItemPathsAfterFinalisationOfModel(model)
 
-        if(model.breadcrumbTree) {
+        if (model.breadcrumbTree) {
             // No requirement to have a breadcrumbtree
             model.breadcrumbTree.update(model)
             breadcrumbTreeService.finalise(model.breadcrumbTree)
         }
-
 
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
@@ -382,6 +397,19 @@ abstract class ModelService<K extends Model>
         copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
     }
 
+    AsyncJob asyncCreateNewDocumentationVersion(K model, User user, boolean copyPermissions,
+                                                UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${model.path}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
+            K doc = createNewDocumentationVersion(model, user, copyPermissions,
+                                                  userSecurityPolicyManager, additionalArguments) as K
+            fullValidateAndSaveOfModel(doc, user)
+        }
+    }
+
     K createNewDocumentationVersion(K model, User user, boolean copyPermissions,
                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
@@ -402,6 +430,19 @@ abstract class ModelService<K extends Model>
         newDocVersion
     }
 
+    AsyncJob asyncCreateNewForkModel(String label, K model, User user, boolean copyPermissions,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${model.path}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
+            K fork = createNewForkModel(label, model, user, copyPermissions,
+                                        userSecurityPolicyManager, additionalArguments) as K
+            fullValidateAndSaveOfModel(fork, user)
+        }
+    }
+
     K createNewForkModel(String label, K model, User user, boolean copyPermissions,
                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
@@ -415,6 +456,20 @@ abstract class ModelService<K extends Model>
             //copyTargetDataFlows(dataModel, newForkModel, user)
         }
         newForkModel
+    }
+
+    AsyncJob asyncCreateNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Branch model ${model.path} as ${branchName}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
+            K copy = createNewBranchModelVersion(branchName, model, user, copyPermissions,
+                                                 userSecurityPolicyManager, additionalArguments) as K
+
+            fullValidateAndSaveOfModel(copy, user)
+        }
     }
 
     K createNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
@@ -565,14 +620,13 @@ abstract class ModelService<K extends Model>
                                        UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
         if (!domainToCopy) {
-            log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
+            customProcessPatchIntoModelForUnfoundPath(creationPatch, targetModel)
             return
         }
-        log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
-        // Potential deletions are modelitems or facets from model or modelitem
+        log.debug('Creating [{}] into [{}]', creationPatch.path, creationPatch.relativePathToRoot.parent)
+        // Potential creations are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent,
-                                            userSecurityPolicyManager)
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot, userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
             processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent)
@@ -582,15 +636,14 @@ abstract class ModelService<K extends Model>
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
         MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
         if (!domain) {
-            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
-                     deletionPatch.relativePathToRoot)
+            customProcessPatchIntoModelForUnfoundPath(deletionPatch, targetModel)
             return
         }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem, targetModel)
+            processDeletionPatchOfModelItem(domain as ModelItem, targetModel, deletionPatch.relativePathToRoot)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
             processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
@@ -600,8 +653,7 @@ abstract class ModelService<K extends Model>
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
         MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         if (!domain) {
-            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target',
-                     modificationPatch.relativePathToRoot)
+            customProcessPatchIntoModelForUnfoundPath(modificationPatch, targetModel)
             return
         }
         String fieldName = modificationPatch.fieldName
@@ -621,7 +673,24 @@ abstract class ModelService<K extends Model>
         domainService.save(domain, flush: false, validate: false)
     }
 
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+    void customProcessPatchIntoModelForUnfoundPath(FieldPatchData fieldPatchData, K targetModel) {
+        switch (fieldPatchData.type) {
+            case 'creation':
+                log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', fieldPatchData.path)
+                break
+            case 'deletion':
+                log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
+                         fieldPatchData.relativePathToRoot)
+                break
+            case 'modification':
+                log.warn('Could not process modification patch into model at path [{}] as no such path exists in the target',
+                         fieldPatchData.relativePathToRoot)
+                break
+        }
+
+    }
+
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
         log.debug('Deleting ModelItem from Model')
@@ -659,12 +728,12 @@ abstract class ModelService<K extends Model>
         catalogueItem
     }
 
-    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo,
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
                                          UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
-        log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
-        CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
+        log.debug('Creating [{}] ModelItem into Model at [{}]', pathToCopy, pathToCopy.parent)
+        CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, pathToCopy.parent) as CatalogueItem
         if (Utils.parentClassIsAssignableFromChild(Model, parentToCopyInto.class)) parentToCopyInto = null
         ModelItem copy = modelItemService.copy(targetModel, modelItemToCopy, parentToCopyInto, userSecurityPolicyManager)
 
@@ -767,7 +836,7 @@ abstract class ModelService<K extends Model>
         // List all matching models and sort descending my model version. The first result is the latest version.
         // To get the first result, use [0] rather than .first(), because even with a safe navigation operator,
         // ?.first() throws a NoSuchElementException on an empty collection
-        getDomainClass().byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort{
+        getDomainClass().byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort {
             a, b -> b.modelVersion <=> a.modelVersion
         }[0] as K
     }
@@ -1042,16 +1111,7 @@ abstract class ModelService<K extends Model>
                                       UserSecurityPolicyManager userSecurityPolicyManager) {
         Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
                                       branchName, throwErrors, userSecurityPolicyManager)
-
-        if ((copiedModel as GormValidateable).validate()) {
-            saveModelWithContent(copiedModel)
-            if (securityPolicyManagerService) {
-                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedModel, userSecurityPolicyManager.user,
-                                                                                                         copiedModel.label)
-            }
-        } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
-                                                  (copiedModel as GormValidateable).errors, messageSource)
-        copiedModel
+        fullValidateAndSaveOfModel(copiedModel, copier)
     }
 
     /**
@@ -1130,7 +1190,29 @@ abstract class ModelService<K extends Model>
         if (!versionedFolderService.isVersionedFolderFamily(model.folder) || !versionedFolderService.isVersionedFolderFamily(otherModel.folder)) return false
         Path modelPath = getFullPathForModel(model)
         Path otherModelPath = getFullPathForModel(otherModel)
-        modelPath.getParent() == otherModelPath.getParent()
+        modelPath.first() == otherModelPath.first()
 
+    }
+
+    K fullValidateAndSaveOfModel(K model, User user) {
+        log.debug('Full validate and save of model')
+        if (model.hasErrors()) {
+            throw new ApiInvalidModelException('MSXX', 'Invalid model', model.errors, messageSource)
+        }
+        validate(model)
+        if (model.hasErrors()) {
+            throw new ApiInvalidModelException('MSXX', 'Invalid model', model.errors, messageSource)
+        }
+        saveAndAddSecurity(model, user)
+    }
+
+    K saveAndAddSecurity(K model, User user) {
+        log.debug('Saving and adding security')
+        K savedCopy = saveModelWithContent(model) as K
+        savedCopy.addCreatedEdit(user)
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, user, savedCopy.label)
+        }
+        savedCopy
     }
 }

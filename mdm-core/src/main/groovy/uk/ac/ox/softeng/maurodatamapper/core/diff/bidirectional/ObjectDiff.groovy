@@ -182,33 +182,35 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
     def <K extends Diffable> ObjectDiff<O> appendCollection(Class<K> diffableClass, String fieldName,
                                                             String context = null,
-                                                            boolean addIfEmpty = false) throws ApiDiffException {
+                                                            boolean addIfEmpty = false,
+                                                            boolean diffElements = true) throws ApiDiffException {
 
         Collection<K> lhs = lhsDiffCache.getCollection(fieldName, diffableClass)
         Collection<K> rhs = rhsDiffCache.getCollection(fieldName, diffableClass)
-        appendCollection(diffableClass, fieldName, lhs, rhs, context, addIfEmpty, true)
+        appendCollection(diffableClass, fieldName, lhs, rhs, context, addIfEmpty, true, diffElements)
     }
 
     def <K extends Diffable> ObjectDiff<O> appendCollection(Class<K> diffableClass, String fieldName,
                                                             Collection<K> appendingLhs, Collection<K> appendingRhs, String context = null,
-                                                            boolean addIfEmpty = false) throws ApiDiffException {
+                                                            boolean addIfEmpty = false,
+                                                            boolean diffElements = true) throws ApiDiffException {
         log.warn('Adding collection [{}] to [{}] without caching, this will be slower', fieldName, leftIdentifier)
         Collection<K> lhs
         Collection<K> rhs
         if (GormEntity.isAssignableFrom(diffableClass)) {
-            lhs = appendingLhs.collect {hibernateProxyHandler.unwrapIfProxy(it)} as Collection<K>
-            rhs = appendingRhs.collect {hibernateProxyHandler.unwrapIfProxy(it)} as Collection<K>
+            lhs = appendingLhs.collect { hibernateProxyHandler.unwrapIfProxy(it) } as Collection<K>
+            rhs = appendingRhs.collect { hibernateProxyHandler.unwrapIfProxy(it) } as Collection<K>
         } else {
             lhs = appendingLhs
             rhs = appendingRhs
         }
 
-        appendCollection(diffableClass, fieldName, lhs, rhs, context, addIfEmpty, false)
+        appendCollection(diffableClass, fieldName, lhs, rhs, context, addIfEmpty, false, diffElements)
     }
 
     def <K extends Diffable> ObjectDiff<O> appendCollection(Class<K> diffableClass, String fieldName,
                                                             Collection<K> lhs, Collection<K> rhs, String context,
-                                                            boolean addIfEmpty, boolean caching) throws ApiDiffException {
+                                                            boolean addIfEmpty, boolean caching, boolean diffElements) throws ApiDiffException {
 
         validateFieldNameNotNull(fieldName)
 
@@ -259,12 +261,15 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
             if (rObj) {
                 // If robj then it exists and has not been created
                 created.remove(rObj)
-                ObjectDiff od = caching ?
-                                lObj.diff(rObj, context, lhsDiffCache.getDiffCache(lObj.getPath()), rhsDiffCache.getDiffCache(rObj.getPath())) :
-                                lObj.diff(rObj, context, null, null)
-                // If not equal then objects have been modified
-                if (!od.objectsAreIdentical()) {
-                    modified.add(od)
+                // If we want to perform a diff on the actual elements themselves
+                if (diffElements) {
+                    ObjectDiff od = caching ?
+                                    lObj.diff(rObj, context, lhsDiffCache.getDiffCache(lObj.getPath()), rhsDiffCache.getDiffCache(rObj.getPath())) :
+                                    lObj.diff(rObj, context, null, null)
+                    // If not equal then objects have been modified
+                    if (!od.objectsAreIdentical()) {
+                        modified.add(od)
+                    }
                 }
             } else {
                 // If no robj then object has been deleted from lhs

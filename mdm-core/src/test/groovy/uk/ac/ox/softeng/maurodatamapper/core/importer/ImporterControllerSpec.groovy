@@ -53,71 +53,83 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
         controller.importerService = new ImporterService()
 
         String expectedJson = '''{
-    "importer": {
-        "name": "TestImporterProviderService",
-        "version": "1.0",
-        "displayName": "Test Importer",
-        "namespace": "uk.ac.ox.softeng.maurodatamapper.core.importer",
-        "allowsExtraMetadataKeys": true,
-        "knownMetadataKeys": [
-
-        ],
-        "providerType": "Importer",
-        "paramClassType": "uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterControllerSpec.TestFileImporterProviderServiceParameters",
-        "canImportMultipleDomains": true
-    },
-    "parameterGroups": [
+  "importer": {
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterControllerSpec.TestFileImporterProviderServiceParameters",
+    "knownMetadataKeys": [
+      
+    ],
+    "displayName": "Test Importer",
+    "name": "TestImporterProviderService",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.importer",
+    "allowsExtraMetadataKeys": true,
+    "canImportMultipleDomains": true,
+    "version": "1.0",
+    "providerType": "Importer"
+  },
+  "parameterGroups": [
+    {
+      "name": "DataModel",
+      "parameters": [
         {
-            "name": "DataModel",
-            "parameters": [
-                {
-                    "name": "folderId",
-                    "type": "Folder",
-                    "optional": false,
-                    "displayName": "Folder",
-                    "description": "The folder into which the DataModel/s should be imported."
-                },
-                {
-                    "name": "dataModelName",
-                    "type": "String",
-                    "optional": true,
-                    "displayName": "DataModel name",
-                    "description": "Label of DataModel, this will override any existing name provided in the imported data.\\nNote that if ''' +
-                              '''importing multiple models this will be ignored."
-                },
-                {
-                    "name": "finalised",
-                    "type": "Boolean",
-                    "optional": false,
-                    "displayName": "Finalised",
-                    "description": "Whether the new model is to be marked as finalised.\\nNote that if the model is already finalised this will ''' +
-                              '''not be overridden."
-                },
-                {
-                    "name": "importAsNewDocumentationVersion",
-                    "type": "Boolean",
-                    "optional": false,
-                    "displayName": "Import as New Documentation Version",
-                    "description": "Should the DataModel/s be imported as new Documentation Version/s.\\nIf selected then any models with the ''' +
-                              'same name will be superseded and the imported models will be given the latest documentation version ' +
-                              'of the\\nexisting DataModels.\\nIf not selected then the \'DataModel Name\' field should be used to ensure ' +
-                              '''the imported DataModel is uniquely named,\\notherwise you could get an error."
-                }
-            ]
+          "displayName": "Folder",
+          "name": "folderId",
+          "description": "The folder into which the DataModel/s should be imported.",
+          "optional": false,
+          "type": "Folder"
         },
         {
-            "name": "Source",
-            "parameters": [
-                {
-                    "name": "importFile",
-                    "type": "File",
-                    "optional": false,
-                    "displayName": "File",
-                    "description": "The file containing the data to be imported"
-                }
-            ]
+          "displayName": "DataModel name",
+          "name": "dataModelName",
+          "description": "Label of DataModel, this will override any existing name provided in the imported data.\\nNote that if importing multiple models this will be''' +
+                              ''' ignored.",
+          "optional": true,
+          "type": "String"
+        },
+        {
+          "displayName": "Finalised",
+          "name": "finalised",
+          "description": "Whether the new model is to be marked as finalised.\\nNote that if the model is already finalised this will not be overridden.",
+          "optional": false,
+          "type": "Boolean"
+        },
+        {
+          "displayName": "Import as New Documentation Version",
+          "name": "importAsNewDocumentationVersion",
+          "description": "Should the DataModel/s be imported as new Documentation Version/s.\\nIf selected then any models with the same name will be superseded and the''' +
+                              ' imported models will be given the latest documentation version of the\\nexisting DataModels.\\nIf not selected then the \'DataModel Name\' ' +
+                              'field should be used to ' +
+                              '''ensure the imported DataModel is uniquely named,\\notherwise you could get an error.",
+          "optional": false,
+          "type": "Boolean"
         }
-    ]
+      ]
+    },
+    {
+      "name": "Source",
+      "parameters": [
+        {
+          "displayName": "File",
+          "name": "importFile",
+          "description": "The file containing the data to be imported",
+          "optional": false,
+          "type": "File"
+        }
+      ]
+    },
+    {
+      "name": "Import Process",
+      "parameters": [
+        {
+          "displayName": "Import Asynchronously",
+          "name": "asynchronous",
+          "description": "Choose to start the import process asynchronously. The import process will need to checked via the returned AsyncJob to see when its completed.''' +
+                              ''' Any errors which occur whilst importing can also be seen here. Default is false.",
+          "optional": false,
+          "type": "Boolean"
+        }
+      ]
+    }
+  ]
 }'''
 
         when:
@@ -130,7 +142,7 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
         verifyJsonResponse HttpStatus.OK, expectedJson
     }
 
-    class TestFileImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+    class TestFileImporterProviderServiceParameters extends ImporterProviderServiceParameters {
 
         @ImportParameterConfig(
             displayName = 'File',
@@ -217,6 +229,11 @@ otherwise you could get an error.''',
         @Override
         String getVersion() {
             '1.0'
+        }
+
+        @Override
+        Boolean handlesContentType(String contentType) {
+            contentType.equalsIgnoreCase('application/mauro.test')
         }
     }
 }

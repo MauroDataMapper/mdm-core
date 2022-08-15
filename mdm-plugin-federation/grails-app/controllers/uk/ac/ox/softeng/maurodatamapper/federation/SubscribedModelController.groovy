@@ -22,12 +22,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
+
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 class SubscribedModelController extends EditLoggingController<SubscribedModel> {
@@ -50,17 +53,32 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
     }
 
     @Transactional
-    @Override
-    def save() {
+    def federate(SubscribedModelFederationParams subscribedModelFederationParams) {
         if (handleReadOnly()) return
 
-        def instance = createResource()
+        if (subscribedModelFederationParams.hasErrors() || !subscribedModelFederationParams.validate()) {
+            transactionStatus.setRollbackOnly()
+            respond subscribedModelFederationParams.errors // STATUS CODE 422
+            return
+        }
+
+        // Validate nested command object separately
+        if (subscribedModelFederationParams.importerProviderService &&
+            (subscribedModelFederationParams.importerProviderService.hasErrors() || !subscribedModelFederationParams.importerProviderService.validate())) {
+            transactionStatus.setRollbackOnly()
+            respond subscribedModelFederationParams.importerProviderService.errors // STATUS CODE 422
+            return
+        }
+
+        SubscribedModel instance = subscribedModelFederationParams.subscribedModel
+        instance.subscribedCatalogue = subscribedCatalogueService.get(params.subscribedCatalogueId)
+        instance.createdBy = currentUser.emailAddress
 
         if (response.isCommitted()) return
 
         if (!validateResource(instance, 'create')) return
 
-        def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
+        def federationResult = subscribedModelService.federateSubscribedModel(subscribedModelFederationParams, currentUserSecurityPolicyManager)
         if (federationResult instanceof Errors) {
             transactionStatus.setRollbackOnly()
             respond federationResult, view: 'create' // STATUS CODE 422
@@ -104,7 +122,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(
                 subscribedModel,
                 currentUser,
-                subscribedModel.subscribedModelId.toString())
+                subscribedModel.subscribedModelId)
         }
         subscribedModel
     }

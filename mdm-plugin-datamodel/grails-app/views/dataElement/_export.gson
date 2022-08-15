@@ -1,6 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 
-inherits template: '/catalogueItem/export', model: [export: dataElement]
+inherits template: '/modelItem/export_ordered', model: [export: dataElement]
 model {
     DataElement dataElement
 }

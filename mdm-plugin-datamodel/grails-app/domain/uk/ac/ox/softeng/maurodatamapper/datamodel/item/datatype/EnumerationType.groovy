@@ -61,8 +61,8 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
     def beforeValidate() {
         super.beforeValidate()
         if (enumerationValues) {
-            // If model exists and this is a new ET then sort children
-            if (model?.id && !id) fullSortOfChildren(enumerationValues)
+            // EVs might be new so sort them
+            fullSortOfChildren(enumerationValues)
             enumerationValues.each {ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
                 ev.beforeValidate()

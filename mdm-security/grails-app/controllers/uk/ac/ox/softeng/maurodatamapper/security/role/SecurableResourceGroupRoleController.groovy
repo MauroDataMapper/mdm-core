@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroupService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -65,10 +65,18 @@ class SecurableResourceGroupRoleController extends EditLoggingController<Securab
             securableResourceGroupRole.groupRole = groupRoleService.get(params.groupRoleId)
         }
         if (params.containsKey('securableResourceId')) {
-            securableResourceGroupRole.securableResource = securableResourceGroupRoleService.findSecurableResource(
-                params.securableResourceClass as Class, params.securableResourceId)
+            // If the endpoint is POST /userGroups/{userGroupId}/securableResourceGroupRoles
+            // with a body containing the securableResourceDomainType, securableResourceId and groupRole,
+            // then at this point params.securableResourceClass will be set to 'UserGroup'. So, silence the
+            // exception that would otherwise be raised, and drop into the block following this one.
+            SecurableResource r = securableResourceGroupRoleService.findSecurableResource(
+                params.securableResourceClass as Class, params.securableResourceId, true)
+            if (r) {
+                securableResourceGroupRole.securableResource = r
+            }
         }
-        // If the securable resource hasnt been loaded then try and load from whats saved in the domain
+
+        // If the securable resource hasn't been loaded then try and load from what's saved in the domain
         if (!securableResourceGroupRole.securableResource &&
             securableResourceGroupRole.securableResourceId &&
             securableResourceGroupRole.securableResourceDomainType) {

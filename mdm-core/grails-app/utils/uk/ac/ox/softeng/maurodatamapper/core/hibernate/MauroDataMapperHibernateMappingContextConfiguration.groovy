@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.hibernate
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.DynamicHibernateMappingContext
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.config.Config
 import grails.core.GrailsApplication
 import grails.util.Holders
@@ -52,6 +53,7 @@ import static uk.ac.ox.softeng.maurodatamapper.util.Utils.parentClassIsAssignabl
  * @since 31/10/2019
  */
 @SuppressWarnings('CatchNullPointerException')
+@SuppressFBWarnings('DCN_NULLPOINTER_EXCEPTION')
 @Slf4j
 class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappingContextConfiguration {
 

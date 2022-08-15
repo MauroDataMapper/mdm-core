@@ -63,8 +63,8 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
         long st = System.currentTimeMillis()
         super.beforeValidate()
         if (referenceEnumerationValues) {
-            // If model exists and this is a new ET then sort children
-            if (model?.id && !id) fullSortOfChildren(referenceEnumerationValues)
+            // REVs might be new so sort them
+            fullSortOfChildren(referenceEnumerationValues)
             referenceEnumerationValues.each {ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
                 ev.beforeValidate()

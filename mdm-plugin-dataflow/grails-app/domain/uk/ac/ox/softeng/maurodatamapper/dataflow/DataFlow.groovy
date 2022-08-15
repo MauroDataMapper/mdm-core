@@ -141,8 +141,16 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
         by().eq('target.id', dataModelId)
     }
 
+    static DetachedCriteria<DataFlow> bySourceDataModelId(UUID dataModelId) {
+        by().eq('source.id', dataModelId)
+    }
+
     static DetachedCriteria<DataFlow> byTargetDataModelIdAndId(UUID dataModelId, UUID id) {
         byTargetDataModelId(dataModelId).idEq(id)
+    }
+
+    static DetachedCriteria<DataFlow> bySourceDataModelIdAndId(UUID dataModelId, UUID id) {
+        bySourceDataModelId(dataModelId).idEq(id)
     }
 
     static DetachedCriteria<DataFlow> bySourceDataModelIdAndTargetDataModelIdInList(UUID dataModelId, List<UUID> targetDataModelIds) {

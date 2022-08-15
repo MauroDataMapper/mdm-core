@@ -1160,6 +1160,10 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
             ])
         }
 
+        // To check that deleting an unknown ID does not cause an exception
+        // See https://github.com/MauroDataMapper/mdm-core/issues/257
+        idstoDelete << UUID.randomUUID().toString()
+
         when:
         DELETE('', [
             ids      : idstoDelete,
@@ -1254,7 +1258,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                 "knownMetadataKeys": [],
                 "providerType": "CodeSetExporter",
                 "fileExtension": "json",
-                "fileType": "text/json",
+                "contentType": "application/mauro.codeset+json",
                 "canExportMultipleDomains": true
             },
             {
@@ -1266,7 +1270,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                 "knownMetadataKeys": [],
                 "providerType": "CodeSetExporter",
                 "fileExtension": "xml",
-                "fileType": "text/xml",
+                "contentType": "application/mauro.codeset+xml",
                 "canExportMultipleDomains": true
             }
         ]'''

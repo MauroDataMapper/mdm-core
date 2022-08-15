@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -35,9 +36,14 @@ abstract class ContainerExporterProviderService<C extends Container> extends Exp
 
     List<C> retrieveExportableContainers(List<UUID> containerIds) throws ApiBadRequestException {
         List<C> containers = containerService.getAll(containerIds)
-        List<UUID> cannotExport = containerIds.collect().tap { removeAll { containers*.id } }
+        List<UUID> cannotExport = containerIds.collect().tap {removeAll {containers*.id}}
         if (!containers) throw new ApiBadRequestException('CIPS01', "Cannot find ${domainType} IDs [${cannotExport}] to export")
         if (cannotExport) log.warn("Cannot find ${domainType} IDs [${cannotExport}] to export")
         containers
+    }
+
+    @Override
+    String getFileName(MdmDomain domain) {
+        "${(domain as Container).label}.${getFileExtension()}"
     }
 }

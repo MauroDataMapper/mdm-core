@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -26,15 +28,25 @@ import grails.gorm.transactions.Transactional
 @Transactional
 class ExporterService {
 
-    ByteArrayOutputStream exportDomain(User currentUser, ExporterProviderService exporterProviderService, UUID domainId) {
-        exporterProviderService.exportDomain(currentUser, domainId)
+    ByteArrayOutputStream exportDomain(User currentUser, ExporterProviderService exporterProviderService, UUID domainId, Map<String, Object> parameters) {
+        exporterProviderService.exportDomain(currentUser, domainId, parameters)
     }
 
-    ByteArrayOutputStream exportDomain(User currentUser, ExporterProviderService exporterProviderService, String domainId) {
-        exporterProviderService.exportDomain(currentUser, Utils.toUuid(domainId))
+    @Deprecated
+    ByteArrayOutputStream exportDomain(User currentUser, ExporterProviderService exporterProviderService, String domainId, Map<String, Object> parameters) {
+        exportDomain(currentUser, exporterProviderService, Utils.toUuid(domainId), parameters)
     }
 
-    ByteArrayOutputStream exportDomains(User currentUser, ExporterProviderService exporterProviderService, List<Serializable> domainIds) {
-        exporterProviderService.exportDomains(currentUser, domainIds.collect {Utils.toUuid(it)})
+    ByteArrayOutputStream exportDomains(User currentUser, ExporterProviderService exporterProviderService, List<Serializable> domainIds,
+                                        Map<String, Object> parameters = [:]) {
+        exporterProviderService.exportDomains(currentUser, domainIds.collect {Utils.toUuid(it)}, parameters)
+    }
+
+    AsyncJob asyncExportDomain(User currentUser, ExporterProviderService exporterProviderService, MdmDomain domain, Map<String, Object> parameters) {
+        exporterProviderService.asyncExportDomain(currentUser, domain, parameters)
+    }
+
+    AsyncJob asyncExportDomains(User currentUser, ExporterProviderService exporterProviderService, List<MdmDomain> domains, Map<String, Object> parameters) {
+        exporterProviderService.asyncExportDomains(currentUser, domains, parameters)
     }
 }

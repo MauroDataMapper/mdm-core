@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -36,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -54,8 +56,11 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Intersects
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.SourceTargetIntersects
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
@@ -80,6 +85,13 @@ import org.hibernate.search.mapper.orm.session.SearchSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
 
+import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.ENUMERATION_DOMAIN_TYPE
+import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.MODEL_DATA_DOMAIN_TYPE
+import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.PRIMITIVE_DOMAIN_TYPE
+import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.REFERENCE_DOMAIN_TYPE
+import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.count
+import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.get
+
 @Slf4j
 @Transactional
 @SuppressWarnings('unused')
@@ -98,6 +110,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Autowired(required = false)
     Set<ModelService> modelServices
+
+    @Autowired(required = false)
+    Set<DataModelExporterProviderService> exporterProviderServices
 
     @Override
     DataModel get(Serializable id) {
@@ -300,6 +315,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         if (dataModel.dataClasses) {
             dataClasses.addAll dataModel.dataClasses
+            // The flush below will try to save the importingDC side and as the objects havent been saved yet the flush will fail
+            dataClasses.each {dc ->
+                if (!dc.id && dc.importedDataClasses) {
+                    dc.importedDataClasses.each {idc ->
+                        idc.removeFromImportingDataClasses(dc)
+                    }
+                }
+                if (!dc.id && dc.importedDataElements) {
+                    dc.importedDataElements.each {ide ->
+                        ide.removeFromImportingDataClasses(dc)
+                    }
+                }
+            }
             dataModel.dataClasses.clear()
         }
 
@@ -352,58 +380,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         dataModel.breadcrumbTree.save(failOnError: true, validate: false, flush: false)
 
-        saveContent(ModelItemService.BATCH_SIZE,enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
+        saveContent(ModelItemService.BATCH_SIZE, enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
         log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(dataModel.id)
-    }
-
-    @Override
-    void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel) {
-        super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel)
-        if (!copiedDataModel.modelDataTypes) return
-
-        copiedDataModel.modelDataTypes.each {ModelDataType mdt ->
-
-            ModelService modelService = modelServices.find {service ->
-                service.handles(mdt.modelResourceDomainType)
-            }
-
-            if (!modelService) throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
-
-            // The model pointed to originally
-            Model originalModelResource = modelService.get(mdt.modelResourceId) as Model
-
-            Path fullContextOriginalModelResourcePath = getFullPathForModel(originalModelResource)
-            Path fullContextOriginalDataModelPath = getFullPathForModel(originalDataModel)
-
-            // Is the original model resource in the same versioned folder as the original data model?
-            PathNode originalModelResourceVersionedFolderPathNode = fullContextOriginalModelResourcePath.find {it.prefix == 'vf'}
-            PathNode originalDataModelVersionedFolderPathNode = fullContextOriginalDataModelPath.find {it.prefix == 'vf'}
-
-
-            if (originalModelResourceVersionedFolderPathNode && originalModelResourceVersionedFolderPathNode == originalDataModelVersionedFolderPathNode) {
-                log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt.path)
-
-                // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
-                // to get the copy of the model in the copied folder
-                // Note: Using a method in PathService which does not check security on the securable resource owning the model
-                PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
-                MdmDomain replacementModelResource =
-                    pathService.findResourceByPath(
-                        Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
-
-                if (!replacementModelResource) {
-                    throw new ApiInternalException('DMSXX',
-                                                   "Could not find branched model resource ${originalModelResource.label} in branch ${copiedDataModel.branchName}")
-                }
-
-                // Update the model data type to point to the copy of the model
-                mdt.modelResourceId = replacementModelResource.id
-            }
-        }
-
-        save(copiedDataModel, flush: false, validate: false)
     }
 
     void saveContent(Integer modelItemBatchSize,
@@ -455,8 +435,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (totalDts) log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        dataElements.addAll dataClassService.saveAll(dataClasses)
-       if(dataClasses) log.debug('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
+        dataElements.addAll(dataClassService.saveAll(dataClasses) as Collection<DataElement>)
+        if (dataClasses) log.debug('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataTypeService.saveAll(referenceTypes as Collection<DataType>, modelItemBatchSize)
@@ -508,12 +488,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('DataModels removed')
 
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
-
-        log.trace('Breadcrumb trees removed')
+        log.trace('Removing BreadcrumbTrees')
+        breadcrumbTreeService.deleteAllByDomainIds(idsToDelete)
 
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
@@ -647,7 +623,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             if (referenceTypes) {
                 log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())
                 dataTypeService.matchReferenceClasses(dataModel, referenceTypes,
-                                                      bindingMap.dataTypes.findAll {it.domainType == DataType.REFERENCE_DOMAIN_TYPE})
+                                                      bindingMap.dataTypes.findAll {it.domainType == REFERENCE_DOMAIN_TYPE})
             }
         }
 
@@ -754,6 +730,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         rootDataClasses.sort().each {dc ->
             dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
         }
+
+        List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(original.id)
+        copyImportedElements(copy, original, importedDataTypes, 'importedDataTypes', copier)
+
+        List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(original.id)
+        copyImportedElements(copy, original, importedDataClasses, 'importedDataClasses', copier)
+
         log.debug('Copy of datamodel took {}', Utils.timeTaken(start))
         copy
     }
@@ -778,6 +761,29 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
+    }
+
+    void copyImportedElements(DataModel copiedDataModel, DataModel originalDataModel, Collection<ModelItem> importedElements, String field, User copier) {
+        if (!importedElements) return
+
+        // Add all imported elements to the copy
+        importedElements.each {ie ->
+            copiedDataModel.addTo(field, ie)
+        }
+
+        // Find all MD which is attached to the imported elements with a key containing the original id
+        // This will get all MD which pertains to the element wrt the importing object
+        List<Metadata> importRelevantMetadata = metadataService.findAllByMultiFacetAwareItemIdInListAndNamespaceLike(importedElements*.id, "%${originalDataModel.id}%")
+        importRelevantMetadata.each {md ->
+            String newNs = md.namespace.replace(originalDataModel.id.toString(), copiedDataModel.id.toString())
+            String value = md.value
+            if (md.value == originalDataModel.path.toString()) value = copiedDataModel.path
+            else if (md.value == originalDataModel.id.toString()) value = copiedDataModel.id.toString()
+            Metadata copiedMetadata = new Metadata(namespace: newNs, key: md.key, value: value, createdBy: copier.emailAddress)
+            importedElements.find {it.id == md.multiFacetAwareItemId}.addToMetadata(copiedMetadata)
+            metadataService.save(copiedMetadata)
+
+        }
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {
@@ -966,6 +972,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
+    boolean useParentIdForSearching(UUID parentId) {
+        folderService.exists(parentId)
+    }
+
+    @Override
     void updateModelItemPathsAfterFinalisationOfModel(DataModel model) {
         updateModelItemPathsAfterFinalisationOfModel model, 'datamodel', 'data_class', 'data_element', 'data_type', 'enumeration_value'
     }
@@ -1001,6 +1012,137 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             catalogueItem.addToSummaryMetadata(summaryMetadata)
         }
+    }
+
+    @Override
+    void customProcessPatchIntoModelForUnfoundPath(FieldPatchData fieldPatchData, DataModel targetModel) {
+
+        Path fullPath = fieldPatchData.path
+        String internalPath = fullPath.toString().find(/^.+\.\[(.+?)\]\..+$/) {it[1]}
+
+        if (internalPath) {
+            String newPath = fullPath.toString().replace("[$internalPath]", 'REPLACE_ME')
+            fullPath = Path.from(newPath)
+        }
+
+        if (fullPath.last().prefix == 'md') {
+            log.debug('Custom metadata for internal path')
+            Path relativePath = fullPath.childPath
+            Path importedElementPath = Path.from(internalPath)
+            MdmDomain importingElement = pathService.findResourceByPathFromRootResource(targetModel, relativePath.parent)
+            PathNode mdNode = relativePath.last()
+            mdNode.identifier = mdNode.identifier.replace('REPLACE_ME', importingElement.id.toString())
+            Path metadataPath = importedElementPath.resolve(Path.from(mdNode))
+            Metadata metadata = pathService.findResourceByPath(metadataPath) as Metadata
+
+            switch (fieldPatchData.type) {
+                case 'creation':
+                    MdmDomain importedElement = pathService.findResourceByPath(importedElementPath)
+                    MdmDomain originalImportingElement = pathService.findResourceByPath(fullPath.parent)
+                    log.debug('Creating Metadata into Model at [{}]', importedElementPath)
+                    mdNode.identifier = mdNode.identifier.replace(importingElement.id.toString(), originalImportingElement.id.toString())
+                    metadataPath = importedElementPath.resolve(Path.from(mdNode))
+                    metadata = pathService.findResourceByPath(metadataPath) as Metadata
+                    String namespace = metadata.namespace.replace(originalImportingElement.id.toString(), importingElement.id.toString())
+                    Metadata copy = new Metadata(namespace: namespace, key: metadata.key, value: metadata.value, createdBy: metadata.createdBy)
+                    importedElement.addToMetadata(copy)
+
+                    if (!copy.validate())
+                        throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
+
+                    metadataService.save(copy, flush: false, validate: false)
+                    break
+                case 'deletion':
+                    log.debug('Deleting Metadata from path [{}]', metadataPath)
+                    metadataService.delete(metadata)
+                    break
+                case 'modification':
+                    String fieldName = fieldPatchData.fieldName
+                    log.debug('Modifying [{}] in [{}]', fieldName, metadataPath)
+                    metadata."${fieldName}" = fieldPatchData.sourceValue
+                    if (!metadata.validate())
+                        throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', metadata.errors, messageSource)
+                    metadataService.save(metadata, flush: false, validate: false)
+                    break
+            }
+        } else {
+            super.customProcessPatchIntoModelForUnfoundPath(fieldPatchData, targetModel)
+        }
+    }
+
+    @Override
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+
+        // If the path to copy endswith the model item's path being copied then the model item cannot be inside the target model as the model item would already exist
+        // and the path to copy must also therefore include a fully resolved model path after a modelitem path
+        // This is indicitive of an imported object
+        if (modelItemToCopy.path.first() != targetModel.path.first() &&
+            pathToCopy.endsWith(modelItemToCopy.path, pathToCopy.first().modelIdentifier)) {
+            Path parentToImportIntoPath = pathToCopy.remove(modelItemToCopy.path, pathToCopy.first().modelIdentifier)
+
+            if (parentToImportIntoPath.isEmpty() || parentToImportIntoPath.matches(targetModel.path)) {
+                log.debug('Importing [{}] into [{}]', modelItemToCopy.path, targetModel.path)
+                switch (modelItemToCopy.domainType) {
+                    case DataClass.simpleName:
+                        (targetModel as DataModel).addToImportedDataClasses(modelItemToCopy as DataClass)
+                        break
+
+                    case REFERENCE_DOMAIN_TYPE: case PRIMITIVE_DOMAIN_TYPE: case ENUMERATION_DOMAIN_TYPE: case MODEL_DATA_DOMAIN_TYPE:
+                        (targetModel as DataModel).addToImportedDataTypes(modelItemToCopy as DataType)
+                        break
+                }
+            } else {
+                log.debug('Importing [{}] into [{}]', modelItemToCopy.path, parentToImportIntoPath)
+                DataClass parentToImportInto = pathService.findResourceByPathFromRootResource(targetModel, parentToImportIntoPath) as DataClass
+                switch (modelItemToCopy.domainType) {
+                    case DataClass.simpleName:
+                        parentToImportInto.addToImportedDataClasses(modelItemToCopy as DataClass)
+                        break
+                    case DataElement.simpleName:
+                        parentToImportInto.addToImportedDataElements(modelItemToCopy as DataElement)
+                        break
+                }
+            }
+            return
+        }
+        super.processCreationPatchOfModelItem(modelItemToCopy, targetModel, pathToCopy, userSecurityPolicyManager, flush)
+    }
+
+    @Override
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
+        // If the path to copy endswith the model item's path being copied then the model item cannot be inside the target model as the model item would already exist
+        // and the path to copy must also therefore include a fully resolved model path after a modelitem path
+        // This is indicitive of an imported object
+        if (modelItem.path.first() != targetModel.path.first() &&
+            pathToDelete.endsWith(modelItem.path, pathToDelete.first().modelIdentifier)) {
+            Path parentToRemoveImportFromPath = pathToDelete.remove(modelItem.path, pathToDelete.first().modelIdentifier)
+            if (parentToRemoveImportFromPath.isEmpty() || parentToRemoveImportFromPath.matches(targetModel.path)) {
+                log.debug('Removing import [{}] from [{}]', modelItem.path, targetModel.path)
+                switch (modelItem.domainType) {
+                    case DataClass.simpleName:
+                        (targetModel as DataModel).removeFromImportedDataClasses(modelItem as DataClass)
+                        break
+
+                    case REFERENCE_DOMAIN_TYPE: case PRIMITIVE_DOMAIN_TYPE: case ENUMERATION_DOMAIN_TYPE: case MODEL_DATA_DOMAIN_TYPE:
+                        (targetModel as DataModel).removeFromImportedDataTypes(modelItem as DataType)
+                        break
+                }
+            } else {
+                log.debug('Removing import [{}] from [{}]', modelItem.path, parentToRemoveImportFromPath)
+                DataClass parentToImportInto = pathService.findResourceByPathFromRootResource(targetModel, parentToRemoveImportFromPath) as DataClass
+                switch (modelItem.domainType) {
+                    case DataClass.simpleName:
+                        parentToImportInto.removeFromImportedDataClasses(modelItem as DataClass)
+                        break
+                    case DataElement.simpleName:
+                        parentToImportInto.removeFromImportedDataElements(modelItem as DataElement)
+                        break
+                }
+            }
+            return
+        }
+        super.processDeletionPatchOfModelItem(modelItem, targetModel, pathToDelete)
     }
 
     @Override
@@ -1102,7 +1244,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param userSecurityPolicyManager
      * @return
      */
-    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, UserSecurityPolicyManager userSecurityPolicyManager) {
+    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId,
+                           UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()
@@ -1186,6 +1329,59 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         intersection
     }
 
+    /**
+     * Return the Data Element intersection between source and many target Data Models, checking only the list
+     * of Data Elements provided i.e. for each target model listed in intersects.targetDataModelIds, of the Data Elements listed
+     * in intersects.dataElementsIds from the sourceDataModel, which are also present (i.e. match by path) in the targetDataModel
+     * @param currentUserSecurityPolicyManager - needed to check read access on the target data models
+     * @param sourceDataModel
+     * @param intersects
+     * @return
+     */
+    Collection<UUID> intersectsMany(UserSecurityPolicyManager currentUserSecurityPolicyManager, DataModel sourceDataModel, Intersects intersects) {
+        Collection<SourceTargetIntersects> manySourceTargetIntersects = []
+
+        // Get all the data elements once. Using findByDataModelIdAndId means we are checking that data element
+        // does belong to the source data model, which is the secured item
+        Collection<DataElement> sourceDataElements = []
+        intersects.dataElementIds.each {dataElementId ->
+            DataElement sourceDataElement = dataElementService.findByDataModelIdAndId(sourceDataModel.id, dataElementId)
+
+            if (sourceDataElement) {
+                sourceDataElements << sourceDataElement
+            }
+        }
+
+        intersects.targetDataModelIds.each {targetDataModelId ->
+            // The interceptor did not check read access on the target, so check it now
+            // Note that an invalid UUID can cause userCanReadSecuredResourceId to return true, so later we
+            // check if (targetDataModel)
+            boolean canReadTarget = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, Utils.toUuid(targetDataModelId))
+            if (canReadTarget) {
+                DataModel targetDataModel = get(targetDataModelId)
+
+                if (targetDataModel) {
+                    SourceTargetIntersects sourceTargetIntersects = new SourceTargetIntersects()
+                    sourceTargetIntersects.sourceDataModelId = sourceDataModel.id
+                    sourceTargetIntersects.targetDataModelId = targetDataModelId
+
+                    sourceDataElements.each {sourceDataElement ->
+                        Path pathInSource = sourceDataElement.getPath()
+
+                        DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
+
+                        if (dataElementInTarget) {
+                            sourceTargetIntersects.intersects << sourceDataElement.id
+                        }
+                    }
+                    manySourceTargetIntersects << sourceTargetIntersects
+                }
+            }
+        }
+
+        manySourceTargetIntersects
+    }
+
     @Override
     CachedDiffable<DataModel> loadEntireModelIntoDiffCache(UUID modelId) {
         long start = System.currentTimeMillis()
@@ -1196,6 +1392,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('Loading DataType')
         List<DataType> dataTypes = dataTypeService.findAllByDataModelId(loadedModel.id)
+        List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(loadedModel.id)
+        List<Metadata> importedDataTypesMetadata = Metadata.extractMetadataForDiff(modelId, importedDataTypes)
 
         log.trace('Loading EnumerationValue')
         List<EnumerationValue> enumerationValues = enumerationValueService.findAllByDataModelId(modelId)
@@ -1203,12 +1401,36 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('Loading DataClass')
         List<DataClass> dataClasses = dataClassService.findAllByDataModelId(loadedModel.id)
+        List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(loadedModel.id)
+        List<Metadata> importedDataClassesMetadata = Metadata.extractMetadataForDiff(modelId, importedDataClasses)
         Map<UUID, List<DataClass>> dataClassesMap = dataClasses.groupBy {it.parentDataClass?.id}
+        List<DataClass> importedIntoDataClassDataClasses = dataClassService.findAllByImportingDataClassIds(dataClasses.collect {it.id})
+        Map<UUID, List<DataClass>> importedDataClassesMap = [:]
+        importedIntoDataClassDataClasses.each {ide ->
+            ide.importingDataClasses.each {idc ->
+                importedDataClassesMap.compute(idc.id, {key, dataClassList ->
+                    if (!dataClassList) return [ide]
+                    dataClassList.add(ide)
+                    dataClassList
+                })
+            }
+        }
 
 
         log.trace('Loading DataElement')
         List<DataElement> dataElements = dataElementService.findAllByDataModelId(loadedModel.id)
         Map<UUID, List<DataElement>> dataElementsMap = dataElements.groupBy {it.dataClass.id}
+        List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassIds(dataClasses.collect {it.id})
+        Map<UUID, List<DataElement>> importedDataElementsMap = [:]
+        importedDataElements.each {ide ->
+            ide.importingDataClasses.each {idc ->
+                importedDataElementsMap.compute(idc.id, {key, dataElementList ->
+                    if (!dataElementList) return [ide]
+                    dataElementList.add(ide)
+                    dataElementList
+                })
+            }
+        }
 
         log.trace('Loading Facets')
         List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
@@ -1220,14 +1442,21 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
         createDataTypeDiffCaches(diffCache, dataTypes, enumerationValuesMap, facetData)
-        createDataClassDiffCaches(diffCache, dataClassesMap, dataElementsMap, facetData, null)
+        createDataClassDiffCaches(diffCache, dataClassesMap, dataElementsMap, facetData, null,
+                                  importedDataClassesMap, importedDataElementsMap)
+        diffCache.addField('importedDataTypes', importedDataTypes)
+        diffCache.addField('importedDataClasses', importedDataClasses)
+        diffCache.addField('importedDataTypesMetadata', importedDataTypesMetadata)
+        diffCache.addField('importedDataClassesMetadata', importedDataClassesMetadata)
 
         log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
         new CachedDiffable(loadedModel, diffCache)
     }
 
-    private void createDataClassDiffCaches(DiffCache diffCache, Map<UUID, List<DataClass>> dataClassesMap, Map<UUID, List<DataElement>> dataElementsMap,
-                                           Map<String, Map<UUID, List<Diffable>>> facetData, UUID dataClassId) {
+    private void createDataClassDiffCaches(DiffCache diffCache, Map<UUID, List<DataClass>> dataClassesMap,
+                                           Map<UUID, List<DataElement>> dataElementsMap,
+                                           Map<String, Map<UUID, List<Diffable>>> facetData, UUID dataClassId,
+                                           Map<UUID, List<DataClass>> importedDataClasses, Map<UUID, List<DataElement>> importedDataElements) {
 
         List<DataClass> dataClasses = dataClassesMap[dataClassId]
         diffCache.addField('dataClasses', dataClasses)
@@ -1236,11 +1465,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataClassId) {
             addFacetDataToDiffCache(diffCache, facetData, dataClassId)
             createCatalogueItemDiffCaches(diffCache, 'dataElements', dataElementsMap[dataClassId], facetData)
+            diffCache.addField('importedDataClasses', importedDataClasses[dataClassId] ?: [])
+            diffCache.addField('importedDataElements', importedDataElements[dataClassId] ?: [])
+            List<Metadata> importedDataClassesMetadata = Metadata.extractMetadataForDiff(dataClassId, importedDataClasses[dataClassId])
+            List<Metadata> importedDataElementsMetadata = Metadata.extractMetadataForDiff(dataClassId, importedDataElements[dataClassId])
+            diffCache.addField('importedDataClassesMetadata', importedDataClassesMetadata)
+            diffCache.addField('importedDataElementsMetadata', importedDataElementsMetadata)
         }
 
         dataClasses.each {dc ->
             DiffCache dcDiffCache = createCatalogueItemDiffCache(diffCache, dc, facetData)
-            createDataClassDiffCaches(dcDiffCache, dataClassesMap, dataElementsMap, facetData, dc.id)
+            createDataClassDiffCaches(dcDiffCache, dataClassesMap, dataElementsMap, facetData, dc.id, importedDataClasses, importedDataElements)
         }
     }
 
@@ -1276,5 +1511,129 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                                    '{0} [{1}] belongs to the DataModel and cannot be removed as an import')
         }
         !instance.hasErrors()
+    }
+
+    @Override
+    void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel) {
+        super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel)
+
+        updateCopiedCrossModelDataTypeLinks(copiedDataModel, originalDataModel)
+        updateCopiedCrossModelImportedLinks(copiedDataModel, originalDataModel)
+
+        save(copiedDataModel, flush: false, validate: false)
+    }
+
+    void updateCopiedCrossModelDataTypeLinks(DataModel copiedDataModel, DataModel originalDataModel) {
+        if (!copiedDataModel.modelDataTypes) return
+        log.debug('Updating all ModelDataTypes inside copied DataModel')
+        copiedDataModel.modelDataTypes.each {ModelDataType mdt ->
+
+            ModelService modelService = modelServices.find {service ->
+                service.handles(mdt.modelResourceDomainType)
+            }
+
+            if (!modelService) throw new ApiInternalException('DMSXX',
+                                                              "No domain service to handle repointing of modelResourceDomainType " +
+                                                              "[${mdt.modelResourceDomainType}]")
+
+            // The model pointed to originally
+            Model originalModelResource = modelService.get(mdt.modelResourceId) as Model
+
+            Path fullContextOriginalModelResourcePath = getFullPathForModel(originalModelResource)
+            Path fullContextOriginalDataModelPath = getFullPathForModel(originalDataModel)
+
+            // Is the original model resource in the same versioned folder as the original data model?
+            PathNode originalModelResourceVersionedFolderPathNode = fullContextOriginalModelResourcePath.find {it.prefix == 'vf'}
+            PathNode originalDataModelVersionedFolderPathNode = fullContextOriginalDataModelPath.find {it.prefix == 'vf'}
+
+
+            if (originalModelResourceVersionedFolderPathNode && originalModelResourceVersionedFolderPathNode ==
+                originalDataModelVersionedFolderPathNode) {
+                log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt.path)
+
+                // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
+                // to get the copy of the model in the copied folder
+                // Note: Using a method in PathService which does not check security on the securable resource owning the model
+                PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
+                MdmDomain replacementModelResource =
+                    pathService.findResourceByPath(
+                        Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
+
+                if (!replacementModelResource) {
+                    throw new ApiInternalException('DMSXX',
+                                                   "Could not find branched model resource ${originalModelResource.label} in branch " +
+                                                   "${copiedDataModel.branchName}")
+                }
+
+                // Update the model data type to point to the copy of the model
+                mdt.modelResourceId = replacementModelResource.id
+            }
+        }
+    }
+
+    void updateCopiedCrossModelImportedLinks(DataModel copiedDataModel, DataModel originalDataModel) {
+        log.debug('Updating all imported elements inside copied DataModel')
+        Path copiedDataModelPath = getFullPathForModel(copiedDataModel)
+        Path originalDataModelPath = getFullPathForModel(originalDataModel)
+
+        List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(copiedDataModel.id)
+        List<DataClass> importedDataClasses = dataClassService.findAllByImportingDataModelId(copiedDataModel.id)
+
+        log.debug('Updating imported DTs')
+        importedDataTypes.each {mi ->
+            updateCopiedImportedModelItemLink(copiedDataModel, copiedDataModel, mi, copiedDataModelPath, originalDataModelPath, 'importedDataTypes')
+        }
+
+        log.debug('Updating imported DCs')
+        importedDataClasses.each {mi ->
+            updateCopiedImportedModelItemLink(copiedDataModel, copiedDataModel, mi, copiedDataModelPath, originalDataModelPath, 'importedDataClasses')
+        }
+
+        copiedDataModel.dataClasses.each {dc ->
+            importedDataClasses = dataClassService.findAllByImportingDataClassId(dc.id)
+            List<DataElement> importedDataElements = dataElementService.findAllByImportingDataClassId(dc.id)
+
+            log.debug('Updating imported DCs inside DC {}', dc.path)
+            importedDataClasses.each {mi ->
+                updateCopiedImportedModelItemLink(copiedDataModel, dc, mi, copiedDataModelPath, originalDataModelPath, 'importedDataClasses')
+            }
+            log.debug('Updating imported DEs inside DC {}', dc.path)
+            importedDataElements.each {mi ->
+                updateCopiedImportedModelItemLink(copiedDataModel, dc, mi, copiedDataModelPath, originalDataModelPath, 'importedDataElements')
+            }
+        }
+    }
+
+    void updateCopiedImportedModelItemLink(DataModel copiedDataModel,
+                                           CatalogueItem importingCatalogueItem, ModelItem importedModelItem,
+                                           Path copiedDataModelPath, Path originalDataModelPath,
+                                           String importCollectionName) {
+        // Get the model path of the imported MI
+        Path fullContextDataModelPath = getFullPathForModel(importedModelItem.model)
+        // Need to check if the CS is inside the same VF as the terminology
+        PathNode dataModelVersionedFolderPathNode = fullContextDataModelPath.find {it.prefix == 'vf'}
+        if (dataModelVersionedFolderPathNode && originalDataModelPath.any {it == dataModelVersionedFolderPathNode}) {
+            log.debug('Original DataModel is inside the same context path as DataModel for ModelItem [{}]', importedModelItem.path)
+            ModelItem branchedModelItem = pathService.findResourceByPathFromRootResource(copiedDataModel, importedModelItem.path,
+                                                                                         copiedDataModelPath.last().modelIdentifier)
+            if (branchedModelItem) {
+                importingCatalogueItem.removeFrom(importCollectionName, importedModelItem)
+                importingCatalogueItem.addTo(importCollectionName, branchedModelItem)
+
+                // Tidy up metadata
+                Set<Metadata> importedMiMetadata = importedModelItem.metadata.findAll {it.namespace.matches(/(.+\.)?${importingCatalogueItem.id}(\..+)?/)}
+                if (importedMiMetadata) {
+                    importedMiMetadata.each {md ->
+                        metadataService.delete(md)
+                        importedModelItem.removeFrom('metadata', md)
+                        branchedModelItem.addToMetadata(new Metadata(namespace: md.namespace, key: md.key, value: md.value, createdBy: md.createdBy))
+                    }
+                }
+
+
+            } else {
+                log.error('Branched ModelItem not found [{}]', importedModelItem.path.getPathString(copiedDataModelPath.last().modelIdentifier))
+            }
+        }
     }
 }

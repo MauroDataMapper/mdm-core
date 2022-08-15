@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
@@ -30,13 +31,18 @@ import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
 import java.nio.charset.Charset
 import java.time.Duration
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 
 /**
  * @since 15/03/2018
  */
 @Slf4j
 @CompileStatic
+@SuppressFBWarnings('DCN_NULLPOINTER_EXCEPTION')
 class Utils {
+
+    public static final int UUID_CHARACTER_LENGTH = 36
 
     private Utils() {
     }
@@ -190,5 +196,23 @@ class Utils {
 
     static List<UUID> gatherIds(Collection<UUID>... ids) {
         ids.collectMany {it}.findAll()
+    }
+
+    static void shutdownAndAwaitTermination(ExecutorService executorService, long timeout, TimeUnit timeUnit) {
+        executorService.shutdown() // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!executorService.awaitTermination(timeout, timeUnit)) {
+                executorService.shutdownNow() // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executorService.awaitTermination(timeout, timeUnit))
+                    log.error("Pool did not terminate")
+            }
+        } catch (InterruptedException ex) {
+            // (Re-)Cancel if current thread also interrupted
+            executorService.shutdownNow()
+            // Preserve interrupt status
+            Thread.currentThread().interrupt()
+        }
     }
 }

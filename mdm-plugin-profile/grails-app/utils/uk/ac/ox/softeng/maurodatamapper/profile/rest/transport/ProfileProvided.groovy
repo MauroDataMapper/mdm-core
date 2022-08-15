@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
@@ -28,4 +29,5 @@ import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 class ProfileProvided {
     Profile profile
     ProfileProviderService profileProviderService
+    MultiFacetAware multiFacetAware
 }

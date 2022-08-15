@@ -89,11 +89,14 @@ class ImporterFunctionalSpec extends FunctionalSpec {
     void confirmModelImporter(ModelImporterProviderService modelImporterProviderService) {
         confirmImporter(responseBody().importer as Map, modelImporterProviderService)
         assert responseBody().parameterGroups
-        assert responseBody().parameterGroups.size() == 4
-        confirmSource(responseBody().parameterGroups.find { it.name == 'Source' } as Map)
-        confirmModel(responseBody().parameterGroups.find { it.name == 'Model' } as Map)
-        confirmModelBranching(responseBody().parameterGroups.find { it.name == 'Model Branching' } as Map)
-        confirmModelInformation(responseBody().parameterGroups.find { it.name == 'Model Information' } as Map)
+        assert responseBody().parameterGroups.size() == 5
+        confirmSource(responseBody().parameterGroups.find {it.name == 'Source'} as Map)
+        confirmModel(responseBody().parameterGroups.find {it.name == 'Model'} as Map)
+        confirmModelBranching(responseBody().parameterGroups.find {it.name == 'Model Branching'} as Map)
+        confirmModelInformation(responseBody().parameterGroups.find {it.name == 'Model Information'} as Map)
+        Map importProcess = responseBody().parameterGroups.find {it.name == 'Import Process'} as Map
+        assert importProcess
+        assert importProcess.parameters.first().displayName == 'Import Asynchronously'
     }
 
     void confirmImporter(Map importer, ModelImporterProviderService modelImporterProviderService) {

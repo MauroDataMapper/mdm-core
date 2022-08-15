@@ -20,11 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,22 +40,22 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
     @Autowired
     TerminologyService terminologyService
 
-    abstract ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException
+    abstract ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology, Map<String, Object> parameters) throws ApiException
 
-    abstract ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException
+    abstract ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies, Map<String, Object> parameters) throws ApiException
 
     @Override
-    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException {
+    ByteArrayOutputStream exportDomain(User currentUser, UUID domainId, Map<String, Object> parameters) throws ApiException {
         Terminology terminology = terminologyService.get(domainId)
         if (!terminology) {
             log.error('Cannot find terminology id [{}] to export', domainId)
             throw new ApiInternalException('TEEP01', "Cannot find terminology id [${domainId}] to export")
         }
-        exportTerminology(currentUser, terminology)
+        exportTerminology(currentUser, terminology, parameters)
     }
 
     @Override
-    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
+    ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds, Map<String, Object> parameters) throws ApiException {
         List<Terminology> terminologies = []
         List<UUID> cannotExport = []
         domainIds?.unique()?.each {
@@ -63,7 +65,7 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
         }
         if (!terminologies) throw new ApiBadRequestException('TEEP01', "Cannot find Terminology IDs [${cannotExport}] to export")
         if (cannotExport) log.warn('Cannot find Terminology IDs [{}] to export', cannotExport)
-        exportTerminologies(currentUser, terminologies)
+        exportTerminologies(currentUser, terminologies, parameters)
     }
 
     @Override
@@ -74,5 +76,10 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
     @Override
     String getProviderType() {
         "Terminology${ProviderType.EXPORTER.name}"
+    }
+
+    @Override
+    String getFileName(MdmDomain domain) {
+        "${(domain as Model).label}.${getFileExtension()}"
     }
 }

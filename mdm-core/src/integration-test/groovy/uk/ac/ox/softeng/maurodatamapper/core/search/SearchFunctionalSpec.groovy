@@ -68,4 +68,56 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         responseBody().count == 0
         responseBody().items.isEmpty()
     }
+
+    void 'test date binding using POST'() {
+        given:
+        def term = 'test'
+
+        when:
+        POST('', [
+            searchTerm      : term,
+            sort            : 'label',
+            lastUpdateBefore: '2022-06-16',
+            lastUpdatedAfter: '2022-06-01',
+            createdBefore   : '2022-06-16',
+            createdAfter    : '2022-06-01'
+        ])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+
+        // Test that parsing tolerates null date fields
+        when:
+        POST('', [
+            searchTerm      : term,
+            sort            : 'label',
+            lastUpdateBefore: null,
+            lastUpdatedAfter: null,
+            createdBefore   : null,
+            createdAfter    : '2022-06-01'
+        ])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+
+        // Test that parsing tolerates invalid date fields
+        when:
+        POST('', [
+            searchTerm      : term,
+            sort            : 'label',
+            lastUpdateBefore: "iamnotadate",
+            lastUpdatedAfter: null,
+            createdBefore   : null,
+            createdAfter    : '2022-06-01'
+        ])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+    }
 }

@@ -61,10 +61,14 @@ abstract class ContainerMetadataFunctionalSpec extends UserAccessFunctionalSpec 
             .withoutAvailableActions()
             .whereEditors {
                 cannotCreate()
+                cannotDelete()
+                cannotEditDescription()
+                cannotUpdate()
                 canAction('show')
             }
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

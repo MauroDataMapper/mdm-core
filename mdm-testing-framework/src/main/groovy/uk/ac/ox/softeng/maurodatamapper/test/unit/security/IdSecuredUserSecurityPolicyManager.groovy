@@ -43,7 +43,7 @@ class IdSecuredUserSecurityPolicyManager extends AbstractBasicSecurityPolicyMana
     }
 
     @Override
-    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
+    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource>... securableResourceClass) {
         throw new ApiNotYetImplementedException('IDUSPXX', 'Listing of readable secured resource ids')
     }
 

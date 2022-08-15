@@ -12,8 +12,8 @@ buildscript {
 
     }
     dependencies {
-        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
-        classpath("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$licenseGradlePluginVersion")
+        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
+        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
     }
     configurations.all {
         // check for updates every build
@@ -24,7 +24,6 @@ buildscript {
 plugins {
     id 'maven-publish'
     id "org.sonarqube" version "3.3"
-    id "com.github.hierynomus.license" version "${licenseGradlePluginVersion}"
     // The springboot plugin is loaded in by grails and if the version of the plugin isnt right it will override all versions of imported spring boot dependencies
     // Therefore we can define it here (but not apply it to the root) and then ALL subprojects will use this version rather than another version
     id 'org.springframework.boot' version "${springBootVersion}" apply false
@@ -154,33 +153,9 @@ tasks.register('outputE2ETestShell') {
     }
 }
 
-allprojects {
-    repositories {
-        mavenLocal()
-        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
-        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
-    }
-}
-
 subprojects {
 
-    license {
-        header = file("${rootDir}/gradle/NOTICE.tmpl")
-        ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        excludes([
-            '**/*.gson',
-            '**/*.yml',
-            '**/META-INF/**',
-            '**/*.txt',
-            '**/*.json',
-            '**/*.gml',
-            '**/*.jpeg',
-            '**/*.png',
-            '**/*.xml',
-            '**/*.sql',
-            '**/*.csv',
-        ])
-    }
+    project.ext['mdmCoreVersion'] = version
 
     tasks.register("bomProperties") {
         group = 'Introspection'
@@ -212,23 +187,6 @@ subprojects {
             project.getRootProject().findProject(':mdm-bom').ext['controlledProperties'].each {k, v ->
                 project.ext[k] = v
             }
-        }
-
-        def addtlJvmArgs = ['-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8',
-                            '-XX:ReservedCodeCacheSize=128M', '-XX:+UseCodeCacheFlushing']
-        //
-        // Make sure bootRun runs with the required arguments
-        project.tasks.withType(JavaExec).configureEach {
-            jvmArgs(addtlJvmArgs)
-            minHeapSize = '1g'
-            maxHeapSize = '8g'
-        }
-
-        project.tasks.withType(Test).configureEach {testTask ->
-            ignoreFailures = System.getenv().containsKey('JENKINS')
-            jvmArgs(addtlJvmArgs)
-            minHeapSize = '1g'
-            maxHeapSize = '8g'
         }
 
         // Dont bother with mergeTestReports if running in jenkins

@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -35,16 +37,57 @@ class ProfileInterceptor extends FacetInterceptor {
 
     boolean before() {
         // Public or secured at controller as using listAll
-        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
+        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'listModelsInProfile', 'listValuesInProfile', 'emptyProfile']) return true
+        if (!params.containsKey('multiFacetAwareItemDomainType') && actionName == 'search') return true
         facetResourceChecks()
         checkActionAllowedOnFacet()
+    }
+
+    void setImportOnly() {
+        params.importOnly = true
+        if (params.dataClassId) {
+            params.importingOwnerId = Utils.toUuid(params.dataClassId)
+            params.importingOwnerDomainType = DataClass.simpleName
+            params.importOwnerClass = DataClass
+        } else {
+            params.importingOwnerId = Utils.toUuid(params.dataModelId)
+            params.importingOwnerDomainType = DataModel.simpleName
+            params.importOwnerClass = DataModel
+        }
+    }
+
+    void checkMultiFacetAwareItemParams() {
+        List<String> possibleKeyPrefixes = ['multiFacetAwareItem', 'catalogueItem', 'container', 'model', 'importedDataType', 'importedDataClass', 'importedDataElement']
+        for (String key : possibleKeyPrefixes) {
+            String idKey = "${key}Id"
+            String domainTypeKey = "${key}DomainType"
+            if (params.containsKey(idKey)) {
+                params.multiFacetAwareItemId = params[idKey]
+                switch (key) {
+                    case 'importedDataType':
+                        params.multiFacetAwareItemDomainType = 'dataTypes'
+                        setImportOnly()
+                        break
+                    case 'importedDataClass':
+                        params.multiFacetAwareItemDomainType = 'dataClasses'
+                        setImportOnly()
+                        break
+                    case 'importedDataElement':
+                        params.multiFacetAwareItemDomainType = 'dataElements'
+                        setImportOnly()
+                        break
+                    default:
+                        params.multiFacetAwareItemDomainType = params[domainTypeKey]
+                }
+                break
+            }
+        }
     }
 
     @Override
     void facetResourceChecks() {
         Utils.toUuid(params, 'id')
-        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType ?: params.catalogueItemDomainType ?: params.containerDomainType ?: params.modelDomainType
-        params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId ?: params.modelId
+        checkMultiFacetAwareItemParams()
         checkAdditionalIds()
         mapDomainTypeToClass(getOwningType(), true)
     }
@@ -58,7 +101,7 @@ class ProfileInterceptor extends FacetInterceptor {
         // Read only actions
         // ProfileController.getMany and ProfileController.validateMany must check that items requested
         // in the body of the request belong to the model that was requested
-        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'getMany', 'validateMany']) {
+        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'getMany', 'validateMany', 'search']) {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 

@@ -129,7 +129,7 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             results =
                 PrimitiveType
-                    .labelHibernateSearch(PrimitiveType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(PrimitiveType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")

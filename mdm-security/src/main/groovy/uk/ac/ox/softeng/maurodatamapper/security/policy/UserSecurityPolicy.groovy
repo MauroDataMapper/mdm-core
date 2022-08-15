@@ -213,6 +213,7 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy lock() {
+        holdForLock() // if the policy is already locked then let another process unlock it first
         locked.set(true)
         this
     }

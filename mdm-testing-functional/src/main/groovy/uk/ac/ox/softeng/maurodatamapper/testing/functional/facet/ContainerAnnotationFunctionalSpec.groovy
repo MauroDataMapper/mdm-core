@@ -57,9 +57,13 @@ abstract class ContainerAnnotationFunctionalSpec extends UserAccessWithoutUpdati
             .withoutAvailableActions()
             .whereEditors {
                 cannotCreate()
+                cannotDelete()
+                cannotEditDescription()
+                cannotUpdate()
             }
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

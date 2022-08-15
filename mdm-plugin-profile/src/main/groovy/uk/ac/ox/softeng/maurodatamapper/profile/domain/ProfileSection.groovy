@@ -17,22 +17,26 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
-import grails.validation.Validateable
-import groovy.transform.AutoClone
-import groovy.transform.stc.ClosureParams
-import groovy.transform.stc.SimpleType
 
-@AutoClone
-class ProfileSection implements Validateable {
+import grails.validation.Validateable
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.FromString
+import groovy.transform.stc.SimpleType
+import org.springframework.core.Ordered
+
+class ProfileSection implements Validateable, Ordered, Comparable<ProfileSection> {
 
     String name
     String description
     List<ProfileField> fields = []
+    int order = 0
+    Closure customFieldsValidation
 
     static constraints = {
         name blank: false
         description nullable: true, blank: false
         fields minSize: 1
+        customFieldsValidation nullable: true
     }
 
     @Override
@@ -52,6 +56,7 @@ class ProfileSection implements Validateable {
                 }
             }
         }
+        customFieldsValidation?.call(fields, this.errors)
         !hasErrors()
     }
 
@@ -80,5 +85,20 @@ class ProfileSection implements Validateable {
 
     Map<String, String> getFlatFieldMap() {
         fields.findAll {it.currentValue}.collectEntries {[it.fieldName, it.currentValue]}
+    }
+
+    ProfileSection addToFields(@DelegatesTo(value = ProfileField, strategy = Closure.DELEGATE_FIRST) Closure closure) {
+        fields.add(new ProfileField().tap(closure))
+        this
+    }
+
+    @Override
+    int compareTo(ProfileSection that) {
+        this.order <=> that.order
+    }
+
+    void customFieldsValidation(@ClosureParams(value = FromString,
+        options = ['java.util.List<uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField>,org.springframework.validation.Errors']) Closure closure) {
+        customFieldsValidation = closure
     }
 }

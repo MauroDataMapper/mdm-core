@@ -32,12 +32,13 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.core.support.proxy.ProxyHandler
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.lang.reflect.ParameterizedType
 
 @CompileStatic
-abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAware> extends MauroDataMapperService {
+abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAware> extends MauroDataMapperService implements Cloneable {
 
     @Autowired
     ProxyHandler proxyHandler
@@ -45,7 +46,19 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
     @Autowired
     MetadataService metadataService
 
-    abstract void storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised)
+    @Autowired
+    SessionFactory sessionFactory
+
+    ProfileProviderService() {
+    }
+
+    ProfileProviderService(ProxyHandler proxyHandler, MetadataService metadataService, SessionFactory sessionFactory) {
+        this.proxyHandler = proxyHandler
+        this.metadataService = metadataService
+        this.sessionFactory = sessionFactory
+    }
+
+    abstract P storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised)
 
     abstract P createProfileFromEntity(D entity)
 
@@ -111,25 +124,13 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         metadataService.findAllByMultiFacetAwareItemIdAndNamespace(multiFacetAwareItemId, this.getMetadataNamespace())
     }
 
-    UUID getDefiningDataModel() {
-        return null
-    }
-
-    String getDefiningDataModelLabel() {
-        return null
-    }
-
-    String getDefiningDataModelDescription() {
-        return null
-    }
-
     P createCleanProfileFromProfile(P submittedProfile) {
         P cleanProfile = getNewProfile()
-        cleanProfile.sections.each {section ->
-            ProfileSection submittedSection = submittedProfile.sections.find {it.name == section.name}
+        cleanProfile.each {section ->
+            ProfileSection submittedSection = submittedProfile.find {it.name == section.name}
             if (submittedSection) {
-                section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.getUniqueKey(section.name) == field.getUniqueKey(section.name)}
+                section.each {field ->
+                    ProfileField submittedField = submittedSection.find {it.getUniqueKey(section.name) == field.getUniqueKey(section.name)}
                     if (submittedField) {
                         field.currentValue = submittedField.currentValue ?: ''
                     }
@@ -137,6 +138,24 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
             }
         }
         cleanProfile
+    }
+
+    P createCleanProfileFromFlatMap(Map<String, String> profileData) {
+        P cleanProfile = getNewProfile()
+        cleanProfile.each {section ->
+            section.each {field ->
+                Map.Entry<String, String> data = profileData.find {k, v -> k == field.getUniqueKey(section.name)}
+                if (data) {
+                    field.currentValue = data.value ?: ''
+                }
+            }
+        }
+        cleanProfile
+    }
+
+    void storeFlatMapProfileInEntity(D entity, String userEmailAddress, Map<String, String> profileData) {
+        P profile = createCleanProfileFromFlatMap(profileData)
+        storeProfileInEntity(entity, profile, userEmailAddress)
     }
 
     Map<String, Collection<String>> listAllValuesInProfile(String domainType, List<String> filter, UserSecurityPolicyManager userSecurityPolicyManager) {
@@ -163,5 +182,14 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
                     profile.getAllFields().find {it.metadataPropertyName == key}.currentValue
                 }.toSet()]
             }
+    }
+
+    @Override
+    ProfileProviderService clone() throws CloneNotSupportedException {
+        (getClass().getDeclaredConstructor().newInstance() as ProfileProviderService).tap {
+            metadataService = owner.metadataService
+            proxyHandler = owner.proxyHandler
+            sessionFactory = owner.sessionFactory
+        }
     }
 }

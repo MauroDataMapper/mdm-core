@@ -25,6 +25,7 @@ interface RestClientInterface {
 
     public static final Argument<Map> MAP_ARG = Argument.of(Map)
     public static final Argument<String> STRING_ARG = Argument.of(String)
+    public static final Argument<List<Map>> LIST_MAP_ARG = Argument.listOf(Map)
 
     HttpResponse<Map> getResponse()
 

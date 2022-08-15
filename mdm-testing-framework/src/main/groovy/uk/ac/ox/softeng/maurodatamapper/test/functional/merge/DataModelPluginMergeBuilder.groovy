@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.util.logging.Slf4j
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -28,6 +30,7 @@ import static io.micronaut.http.HttpStatus.OK
 /**
  * @since 03/08/2021
  */
+@Slf4j
 class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
 
     DataModelPluginMergeBuilder(BaseFunctionalSpec functionalSpec) {
@@ -35,8 +38,55 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
     }
 
     @Override
-    TestMergeData buildComplexModelsForMerging(String folderId, String terminologyId = null) {
+    TestMergeData buildComplexModelsForMerging(String folderId) {
+        buildComplexModelsForMerging(folderId, null)
+    }
+
+    //    Checking method used to verify the imported elements all correctly existed inside the owning DC.
+    //    This was done to aid in the branching issue, this code could be deleted
+    //    @Transactional
+    //    void checkImporting(String dataClassId, int expectedImportedSize, int expectedImportableSize, int expectedImportableAddSize,
+    //                        int expectedImportableRemoveSize) {
+    //        def importingDc = dataClassService.get(dataClassId)
+    //        assert importingDc
+    //        assert importingDc.importedDataClasses.size() == expectedImportedSize
+    //        List imported = dataClassService.findAllByImportingDataClassId(Utils.toUuid(dataClassId))
+    //        assert imported.size() == expectedImportedSize
+    //        imported.each {
+    //            log.warn 'checking DC being imported {} by {}', it.path, importingDc.path
+    //            assert it.importingDataClasses.any { it.path == importingDc.path }
+    //        }
+    //        assert imported.find { it.label.endsWith('Importable') }.importingDataClasses.size() == expectedImportableSize
+    //        if (expectedImportableAddSize) {
+    //            assert imported.find { it.label.endsWith('Add') }
+    //            assert imported.find { it.label.endsWith('Add') }.importingDataClasses.size() == expectedImportableAddSize
+    //        } else assert !imported.find { it.label.endsWith('Add') }
+    //        if (expectedImportableRemoveSize) {
+    //            assert imported.find { it.label.endsWith('Remove') }
+    //            assert imported.find { it.label.endsWith('Remove') }.importingDataClasses.size() == expectedImportableRemoveSize
+    //        } else assert !imported.find { it.label.endsWith('Remove') }
+    //    }
+
+    Map buildAndAddImportableDataModelInformation(String folderId, String commonAncestorId, boolean finalise) {
+        Map basicImportData = buildImportableDataModel(folderId, finalise)
+        addImportableElementsToDataModel(commonAncestorId, basicImportData)
+        Map removeImportData = buildImportableDataModel(folderId, finalise, 'Remove')
+        addImportableElementsToDataModel(commonAncestorId, removeImportData)
+        Map addImportData = buildImportableDataModel(folderId, finalise, 'Add')
+        [basicImportableData : basicImportData,
+         removeImportableData: removeImportData,
+         addImportableData   : addImportData]
+    }
+
+    TestMergeData buildComplexModelsForMerging(String folderId, String terminologyId) {
         String ca = buildCommonAncestorDataModel(folderId, '1', terminologyId)
+
+        Map allImportData = buildAndAddImportableDataModelInformation(folderId, ca, true)
+
+        GET("dataModels/$ca/path/${Utils.safeUrlEncode('dc:existingClass')}")
+        verifyResponse OK, response
+        //        String dataClassId = responseBody().id
+        //        checkImporting(dataClassId, 2, 1, 0, 1)
 
         PUT("dataModels/$ca/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
@@ -47,13 +97,29 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse CREATED, response
         String source = responseBody().id
 
-        Map<String, Object> sourceMap = modifySourceDataModel(source)
+        //        String sourceDc = getIdFromPath(source, "dm:Functional Test DataModel 1\$source|dc:existingClass")
+        //        String targetDc = getIdFromPath(source, "dm:Functional Test DataModel 1\$main|dc:existingClass")
+        //        checkImporting(dataClassId, 2, 3, 0, 3)
+        //        checkImporting(sourceDc, 2, 3, 0, 3)
+        //        checkImporting(targetDc, 2, 3, 0, 3)
+
+        Map<String, Object> sourceMap = modifySourceDataModel(source, '1', '', null, null,
+                                                              allImportData.addImportableData,
+                                                              allImportData.removeImportableData)
+        //        checkImporting(dataClassId, 2, 3, 0, 2)
+        //        checkImporting(sourceDc, 2, 3, 1, 0)
+        //        checkImporting(targetDc, 2, 3, 0, 2)
+
         Map<String, Object> targetMap = modifyTargetDataModel(target)
 
         new TestMergeData(source: source,
                           target: target,
+                          commonAncestor: ca,
                           sourceMap: sourceMap,
-                          targetMap: targetMap
+                          targetMap: targetMap,
+                          otherMap: [importableDataModelIds: [allImportData.basicImportableData.dataModelId,
+                                                              allImportData.addImportableData.dataModelId,
+                                                              allImportData.removeImportableData.dataModelId]]
         )
     }
 
@@ -65,17 +131,6 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
      * @return ID of the built Data Model
      */
     String buildCommonAncestorDataModel(String folderId, String suffix = 1, String terminologyId = null) {
-        // Unclear why this is needed, but without it, when running the full DataModelFunctionSpec, test MI07 fails
-        // at this point because there seems to be no authenticated session.
-        GET('session/isAuthenticated')
-        verifyResponse OK, response
-        if (!responseBody().authenticatedSession) {
-            POST('authentication/login', [
-                    username: 'editor@test.com',
-                    password: 'password'
-            ])
-        }
-
         POST("folders/$folderId/dataModels", [
             label: "Functional Test DataModel ${suffix}".toString()
         ])
@@ -192,7 +247,8 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataElementId
     }
 
-    Map modifySourceDataModel(String source, String suffix = '1', String pathing = '', String simpleTerminologyId = null, String complexTerminologyId = null) {
+    Map modifySourceDataModel(String source, String suffix, String pathing, String simpleTerminologyId,
+                              String complexTerminologyId, Map addImportData = [:], Map removeImportData = [:]) {
         // Modify Source
         Map sourceMap = [
             dataModelId                         : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source"),
@@ -205,18 +261,27 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
                 getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass"),
             deleteLeftOnly                      : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteLeftOnly"),
             modifyLeftOnly                      : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyLeftOnly"),
-            deleteAndDelete                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteAndDelete"),
-            deleteAndModify                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteAndModify"),
-            modifyAndDelete                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndDelete"),
+            deleteAndDelete                     :
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteAndDelete"),
+            deleteAndModify                     :
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteAndModify"),
+            modifyAndDelete                     :
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndDelete"),
             modifyAndModifyReturningNoDifference:
                 getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndModifyReturningNoDifference"),
             modifyAndModifyReturningDifference  :
                 getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndModifyReturningDifference"),
-            metadataModifyOnSource              : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyOnSource"),
-            metadataDeleteFromSource            : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.deleteFromSource"),
-            metadataModifyAndDelete             : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyAndDelete"),
-            modelDataTypeId                     : getIdFromPathNoValidation(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type"),
-            externallyPointingModelDataTypeId   : getIdFromPathNoValidation(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type Pointing Externally")
+            metadataModifyOnSource              :
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyOnSource"),
+            metadataDeleteFromSource            :
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.deleteFromSource"),
+            metadataModifyAndDelete             :
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyAndDelete"),
+            modelDataTypeId                     :
+                getIdFromPathNoValidation(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type"),
+            externallyPointingModelDataTypeId   : getIdFromPathNoValidation(source,
+                                                                            "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional" +
+                                                                            " Test Model Data Type Pointing Externally")
         ]
 
         sourceMap.simpleTerminologyId = simpleTerminologyId
@@ -279,9 +344,13 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
 
         // Update the model data type that was pointing to the Simple Test Terminology to point to the Complex Test Terminology'
         if (sourceMap.externallyPointingModelDataTypeId && sourceMap.complexTerminologyId) {
-            PUT("dataModels/$sourceMap.dataModelId/dataTypes/$sourceMap.externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: sourceMap.complexTerminologyId])
+            PUT("dataModels/$sourceMap.dataModelId/dataTypes/$sourceMap.externallyPointingModelDataTypeId",
+                [modelResourceDomainType: 'Terminology', modelResourceId: sourceMap.complexTerminologyId])
             verifyResponse OK, response
         }
+
+        if (addImportData) addImportableElementsToDataModel(sourceMap.dataModelId, addImportData)
+        if (removeImportData) removeImportableElementsFromDataModel(sourceMap.dataModelId, removeImportData)
 
         sourceMap
     }
@@ -300,12 +369,14 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
             modifyAndDelete                     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndDelete"),
             modifyAndModifyReturningNoDifference:
                 getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndModifyReturningNoDifference"),
-            modifyAndModifyReturningDifference  : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndModifyReturningDifference"),
+            modifyAndModifyReturningDifference  :
+                getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndModifyReturningDifference"),
             deleteLeftOnly                      : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteLeftOnly"),
             modifyLeftOnly                      : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyLeftOnly"),
             deleteLeftOnlyFromExistingClass     :
-                    getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:existingClass|dc:deleteLeftOnlyFromExistingClass"),
-            metadataModifyAndDelete             : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|md:functional.test.modifyAndDelete"),
+                getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:existingClass|dc:deleteLeftOnlyFromExistingClass"),
+            metadataModifyAndDelete             :
+                getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|md:functional.test.modifyAndDelete"),
         ]
 
         DELETE("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.existingClass/dataClasses/$targetMap.deleteRightOnlyFromExistingClass")
@@ -342,5 +413,130 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse NO_CONTENT, response
 
         targetMap
+    }
+
+    Map buildImportableDataModel(String folderId, boolean finalise, String suffix = '') {
+        String fullSuffix = suffix ? " ${suffix}" : ''
+
+        POST("folders/$folderId/dataModels", [
+            label: "Functional Test DataModel Importable${fullSuffix}".toString()
+        ])
+        verifyResponse(CREATED, response)
+        String dataModelId = responseBody().id
+
+        POST("dataModels/$dataModelId/dataTypes", [
+            label     : "Functional Test DataType Importable${fullSuffix}".toString(),
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String dtId = responseBody().id
+        POST("dataModels/$dataModelId/dataTypes", [
+            label     : "Functional Test DataType Importable 2${fullSuffix}".toString(),
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String dt2Id = responseBody().id
+
+
+        POST("dataModels/$dataModelId/dataClasses", [
+            label: "Functional Test DataClass Importable${fullSuffix}".toString(),
+        ])
+        verifyResponse CREATED, response
+        String dcId = responseBody().id
+
+        POST("dataModels/$dataModelId/dataClasses", [
+            label: "Functional Test DataClass Importable 2${fullSuffix}".toString(),
+        ])
+        verifyResponse CREATED, response
+        String dc2Id = responseBody().id
+
+        POST("dataModels/$dataModelId/dataClasses/$dc2Id/dataElements", [
+            label   : "Functional Test DataElement Importable${fullSuffix}".toString(),
+            dataType: dt2Id,])
+        verifyResponse CREATED, response
+        String deId = responseBody().id
+
+        if (finalise) {
+            PUT("dataModels/$dataModelId/finalise", [versionChangeType: 'Major'])
+            verifyResponse OK, response
+        }
+        [
+            dataModelId               : dataModelId,
+            dataClassId               : dcId,
+            dataClassWithDataElementId: dc2Id,
+            dataElementId             : deId,
+            dataTypeId                : dtId,
+        ]
+    }
+
+    void addImportableElementsToDataModel(String dataModelId, Map importData) {
+        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}")
+        verifyResponse OK, response
+        String dataClassId = responseBody().id
+
+        PUT("dataModels/$dataModelId/dataTypes/" +
+            "$importData.dataModelId/$importData.dataTypeId", [:])
+        verifyResponse OK, response
+
+        PUT("dataModels/$dataModelId/dataClasses/" +
+            "$importData.dataModelId/$importData.dataClassId", [:])
+        verifyResponse OK, response
+
+        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataClasses/" +
+            "$importData.dataModelId/$importData.dataClassId", [:])
+        verifyResponse OK, response
+
+        PUT("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
+            "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId", [:])
+        verifyResponse OK, response
+    }
+
+    void removeImportableElementsFromDataModel(String dataModelId, Map importData) {
+        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}")
+        verifyResponse OK, response
+        String dataClassId = responseBody().id
+
+        DELETE("dataModels/$dataModelId/dataTypes/" +
+               "$importData.dataModelId/$importData.dataTypeId")
+        verifyResponse OK, response
+
+        DELETE("dataModels/$dataModelId/dataClasses/" +
+               "$importData.dataModelId/$importData.dataClassId")
+        verifyResponse OK, response
+
+        DELETE("dataModels/$dataModelId/dataClasses/$dataClassId/dataClasses/" +
+               "$importData.dataModelId/$importData.dataClassId")
+        verifyResponse OK, response
+
+        DELETE("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements/" +
+               "$importData.dataModelId/$importData.dataClassWithDataElementId/$importData.dataElementId")
+        verifyResponse OK, response
+    }
+
+    Map getImportedBranchedIds(String branchFolderId, String suffix) {
+        String fullSuffix = suffix ? " ${suffix}" : ''
+        GET("folders/$branchFolderId/dataModels")
+        verifyResponse(OK, response)
+        String dataModelId = responseBody().items.find {it.label == "Functional Test DataModel Importable${fullSuffix}".toString()}.id
+
+        GET("dataModels/$dataModelId/dataTypes")
+        verifyResponse(OK, response)
+        String dtId = responseBody().items.find {it.label == "Functional Test DataType Importable${fullSuffix}".toString()}.id
+
+        GET("dataModels/$dataModelId/dataClasses")
+        verifyResponse(OK, response)
+        String dcId = responseBody().items.find {it.label == "Functional Test DataClass Importable${fullSuffix}".toString()}.id
+        String dc2Id = responseBody().items.find {it.label == "Functional Test DataClass Importable 2${fullSuffix}".toString()}.id
+
+        GET("dataModels/$dataModelId/dataClasses/$dc2Id/dataElements")
+        verifyResponse(OK, response)
+        String deId = responseBody().items.find {it.label == "Functional Test DataElement Importable${fullSuffix}".toString()}.id
+
+        [
+            dataModelId               : dataModelId,
+            dataClassId               : dcId,
+            dataClassWithDataElementId: dc2Id,
+            dataElementId             : deId,
+            dataTypeId                : dtId,
+        ]
+
     }
 }

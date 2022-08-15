@@ -164,7 +164,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
             long start = System.currentTimeMillis()
             results =
                 ReferenceType
-                    .labelHibernateSearch(ReferenceType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(ReferenceType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }

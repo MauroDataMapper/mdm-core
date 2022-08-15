@@ -67,6 +67,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

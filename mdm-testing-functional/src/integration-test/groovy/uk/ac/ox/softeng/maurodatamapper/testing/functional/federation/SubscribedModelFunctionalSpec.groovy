@@ -21,14 +21,17 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Shared
@@ -58,11 +61,12 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-// Requires a connection to the CD environment, if this connection is not available
+// Requires a connection to the CD environment, running a version providing the /types endpoint
 @Requires({
-    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
-    HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
+    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/admin/subscribedCatalogues/types'
+    HttpURLConnection connection = (url).toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
+    connection.setRequestProperty('apiKey', '720e60bc-3993-48d4-a17e-c3a13f037c7e')
     connection.connect()
     connection.getResponseCode() == 200
 })
@@ -70,6 +74,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     @Shared
     UUID subscribedCatalogueId
+
+    @Shared
+    UUID atomSubscribedCatalogueId
 
     @Shared
     UUID adminApiKey
@@ -88,11 +95,21 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
                                                         apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
-                                                        label: 'Functional Test Label',
+                                                        label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
+                                                        subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
+
+        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/feeds/all',
+                                                            apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
+                                                            label: 'Functional Test Subscribed Catalogue (Atom)',
+                                                            subscribedCatalogueType: SubscribedCatalogueType.ATOM,
+                                                            description: 'Functional Test Description',
+                                                            refreshPeriod: 7,
+                                                            createdBy: FUNCTIONAL_TEST).save(flush: true).id
+        assert atomSubscribedCatalogueId
 
     }
 
@@ -114,6 +131,10 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         "subscribedCatalogues/${getSubscribedCatalogueId()}/subscribedModels"
     }
 
+    String getResourcePathForAtom() {
+        "subscribedCatalogues/${getAtomSubscribedCatalogueId()}/subscribedModels"
+    }
+
     String getValidId() {
         loginCreator()
         POST('', validJson)
@@ -123,10 +144,14 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         id
     }
 
-    void removeValidIdObjects(String id, String localModelId = null) {
+    void removeValidIdObjects(String id, String localModelId = null, boolean cleanEndpoint = false) {
         loginCreator()
         if (id) {
-            DELETE(id)
+            if (cleanEndpoint) {
+                DELETE(id, MAP_ARG, true)
+            } else {
+                DELETE(id)
+            }
             verifyResponse NO_CONTENT, response
         }
         if (localModelId) {
@@ -154,16 +179,28 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     Map getValidJson() {
         [
-            subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
-            folderId           : getFolderId(),
-            subscribedModelType: 'DataModel'
+            subscribedModel: [
+                subscribedModelId: '427d1243-4f89-46e8-8f8f-8424890b5083',
+                folderId         : getFolderId()
+            ]
+        ]
+    }
+
+    Map getValidJsonForAtom() {
+        [
+            subscribedModel: [
+                subscribedModelId: 'urn:uuid:427d1243-4f89-46e8-8f8f-8424890b5083',
+                folderId         : getFolderId()
+            ]
         ]
     }
 
     Map getInvalidJson() {
         [
-            subscribedModelId: null,
-            folderId         : getFolderId()
+            subscribedModel: [
+                subscribedModelId: null,
+                folderId         : getFolderId()
+            ]
         ]
     }
 
@@ -171,7 +208,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
       * Logged in as editor testing
       */
 
-    void 'E02 : Test the show and index action correctly renders an instance for set user (as editor)'() {
+    void 'E01 : Test the show and index action correctly renders an instance for set user (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -198,7 +235,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged out testing
      */
 
-    void 'L02 : Test the show and index action does not render an instance for set user (not logged in)'() {
+    void 'L01 : Test the show and index action does not render an instance for set user (not logged in)'() {
         given:
         String id = getValidId()
 
@@ -223,7 +260,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a no access/authenticated user
      */
-    void 'N02 : Test the show and index action correctly renders an instance for set user (as no access/authenticated)'() {
+    void 'N01 : Test the show and index action correctly renders an instance for set user (as no access/authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
@@ -249,7 +286,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a reader only user
      */
-    void 'R02 : Test the show and index action correctly renders an instance for set user (as reader)'() {
+    void 'R01 : Test the show and index action correctly renders an instance for set user (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -276,7 +313,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged in as admin testing
      */
 
-    void 'A02 : Test the show action correctly renders an instance for set user (as admin)'() {
+    void 'A01 : Test the show action correctly renders an instance for set user (as admin)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -297,24 +334,34 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged in as editor testing
      */
 
-    void 'E03 : Test the save action is ok (as editor)'() {
+    void 'E02 : Test the save action is ok (as editor) (for #catalogueType)'() {
         given:
         loginContainerAdmin()
 
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getResourcePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getResourcePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
+
         when: 'The save action is executed with no content'
-        POST('', [:])
+        POST(savePath, [:], MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
-        POST('', invalidJson)
+        POST(savePath, invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse CREATED, response
@@ -322,11 +369,14 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         String localModelId = responseBody().localModelId
 
         cleanup:
-        removeValidIdObjects(id, localModelId)
+        removeValidIdObjects(savePath + '/' + id, localModelId, true)
         cleanUpRoles(id, localModelId)
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'E04 : Test the delete action is forbidden (as editor)'() {
+    void 'E03 : Test the delete action is forbidden (as editor)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -347,29 +397,41 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Logged out testing
      */
 
-    void 'L03 : Test the save action is not found (as not logged in)'() {
+    void 'L02 : Test the save action is not found (as not logged in) (for #catalogueType)'() {
         given:
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getResourcePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getResourcePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
 
         when: 'The save action is executed with no content'
-        POST('', [:])
+        POST(savePath, [:], MAP_ARG, true)
 
         then: 'The response is not found'
         verifyResponse NOT_FOUND, response
 
         when: 'The save action is executed with invalid data'
-        POST('', invalidJson)
+        POST(savePath, invalidJson, MAP_ARG, true)
 
         then: 'The response is not found'
         verifyResponse NOT_FOUND, response
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is not found'
         verifyResponse NOT_FOUND, response
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'L04 : Test the delete action is not found (as not logged in)'() {
+    void 'L03 : Test the delete action is not found (as not logged in)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -389,32 +451,45 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Testing when logged in as a no access/authenticated user
      */
 
-    void 'N03 : Test the save action is ok (as authenticated)'() {
+    void 'N02 : Test the save action is ok (as authenticated) (for #catalogueType)'() {
         given:
         loginAuthenticated()
 
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getResourcePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getResourcePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
+
         when: 'The save action is executed with no content'
-        POST('', [:])
+        POST(savePath, [:], MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
-        POST('', invalidJson)
+        POST(savePath, invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
         responseBody().total == 1
         responseBody().errors.contains([message: 'Invalid folderId for subscribed model, user does not have the necessary permissions'])
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'N04 : Test the delete action is forbidden (as authenticated)'() {
+    void 'N03 : Test the delete action is forbidden (as authenticated)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -435,32 +510,45 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
      * Testing when logged in as a reader only user
      */
 
-    void 'R03a : Test the save action is forbidden (as reader)'() {
+    void 'R02 : Test the save action is forbidden (as reader) (for #catalogueType)'() {
         given:
         loginReader()
 
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getResourcePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getResourcePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
+
         when: 'The save action is executed with no content'
-        POST('', [:])
+        POST(savePath, [:], MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
-        POST('', invalidJson)
+        POST(savePath, invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
         responseBody().total == 1
         responseBody().errors.contains([message: 'Invalid folderId for subscribed model, user does not have the necessary permissions'])
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'R04 : Test the delete action is forbidden (as reader)'() {
+    void 'R03 : Test the delete action is forbidden (as reader)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -482,24 +570,34 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     * This proves that admin users can mess with items created by other users
     */
 
-    void 'A03 : Test the save action is ok (as admin)'() {
+    void 'A02 : Test the save action is ok (as admin) (for #catalogueType)'() {
         given:
         loginAdmin()
 
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getResourcePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getResourcePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
+
         when: 'The save action is executed with no content'
-        POST('', [:])
+        POST(savePath, [:], MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
-        POST('', invalidJson)
+        POST(savePath, invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse CREATED, response
@@ -507,11 +605,14 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         String localModelId = responseBody().localModelId
 
         cleanup:
-        removeValidIdObjects(id, localModelId)
+        removeValidIdObjects(savePath + '/' + id, localModelId, true)
         cleanUpRoles(id, localModelId)
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
-    void 'A04 : Test the delete action is ok (as admin)'() {
+    void 'A03 : Test the delete action is ok (as admin)'() {
         given:
         String id = getValidId()
         String localModelId = getSubscribedModelLocalModelId(id)
@@ -528,12 +629,22 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-    void 'A05 : Test the save action with attempted federation (as admin)'() {
+    void 'A04 : Test the save action with attempted federation (as admin) (for #catalogueType)'() {
         given:
         loginAdmin()
 
+        String savePath
+        Map validJson
+        if (SubscribedCatalogueType.findForLabel(catalogueType) == SubscribedCatalogueType.MAURO_JSON) {
+            savePath = getResourcePath()
+            validJson = getValidJson()
+        } else {
+            savePath = getResourcePathForAtom()
+            validJson = getValidJsonForAtom()
+        }
+
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is correct'
         verifyResponse CREATED, response
@@ -541,17 +652,20 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         String localModelId = responseBody().localModelId
 
         when: 'The save action is executed with existing published model id'
-        POST('', validJson)
+        POST(savePath, validJson, MAP_ARG, true)
 
         then: 'The response is unprocessable as this model is already subscribed'
         verifyResponse UNPROCESSABLE_ENTITY, response
         log.debug('responseBody().errors.first().message={}', responseBody().errors.first().message)
         responseBody().errors.first().message == 'Property [subscribedModelId] of class [class uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel] with value [' +
-        getValidJson().subscribedModelId + '] must be unique'
+        validJson.subscribedModel.subscribedModelId + '] must be unique'
 
         cleanup:
-        removeValidIdObjects(id, localModelId)
+        removeValidIdObjects(savePath + '/' + id, localModelId, true)
         cleanUpRoles(id, localModelId)
+
+        where:
+        catalogueType << SubscribedCatalogueType.labels()
     }
 
     @Transactional

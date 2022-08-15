@@ -20,8 +20,15 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.SecurableResourceInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class FolderInterceptor extends SecurableResourceInterceptor {
+
+    ApiPropertyService apiPropertyService
 
     @Override
     def <S extends SecurableResource> Class<S> getSecuredClass() {
@@ -54,13 +61,25 @@ class FolderInterceptor extends SecurableResourceInterceptor {
             UUID destinationFolderId = params.destinationFolderId == 'root' ? null : params.destinationFolderId
             boolean canReadDestinationFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, destinationFolderId)
             boolean canReadFolderBeingMoved = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, getId())
+            boolean canEditDestinationFolder = currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, destinationFolderId)
 
+            // Check api property to determine if folders can be
+            // moved to the root by a non-admin user
+            if (restrictRootRolder()
+                && !currentUserSecurityPolicyManager.isApplicationAdministrator()
+                && !destinationFolderId) {
+                log.warn("Additions to the Root folder are not allowed by this user")
+                canEditDestinationFolder = false
+            }
+
+            // Must have permission to write the folder being moved as well as to
+            // write to the destination folder
             if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(Folder, getId(), actionName)) {
                 return forbiddenOrNotFound(canReadFolderBeingMoved, Folder, getId())
             }
 
-            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, destinationFolderId)) {
-                return forbiddenOrNotFound(canReadDestinationFolder, Folder, params.destinationFolderId)
+            if (!canEditDestinationFolder) {
+                return forbiddenOrNotFound(canReadDestinationFolder, Folder, destinationFolderId)
             }
             return true
         }
@@ -72,6 +91,23 @@ class FolderInterceptor extends SecurableResourceInterceptor {
             return true
         }
 
+        if (actionName == 'save') {
+            // Check api property to determine if new root folders can be
+            // created by a non-admin user
+            if (restrictRootRolder()
+                && !currentUserSecurityPolicyManager.isApplicationAdministrator()
+                && !params.securableResourceId) {
+                log.warn("Additions to the Root folder by this user are not allowed")
+                return forbiddenOrNotFound(true, Folder, params.securableResourceId)
+            }
+        }
+
         checkActionAuthorisationOnSecuredResource(Folder, getId(), true)
+    }
+
+    private boolean restrictRootRolder() {
+        ApiProperty property = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER)
+        log.debug("The restrict root folder value {}", property?.value)
+        property?.value?.toBoolean()
     }
 }

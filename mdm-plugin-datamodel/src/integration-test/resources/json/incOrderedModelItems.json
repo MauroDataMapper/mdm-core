@@ -1,0 +1,215 @@
+{
+  "dataModel": {
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "label": "Test Authority",
+      "url": "http://localhost"
+    },
+    "childDataClasses": [
+      {
+        "id": "${json-unit.matches:id}",
+        "index": 0,
+        "label": "DC F",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "index": 1,
+        "label": "DC E",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "index": 2,
+        "label": "DC D",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "index": 3,
+        "label": "DC C",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "index": 4,
+        "label": "DC B",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "dataElements": [
+          {
+            "dataType": {
+              "description": "A piece of text",
+              "domainType": "PrimitiveType",
+              "id": "${json-unit.matches:id}",
+              "index": 1,
+              "label": "Text",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            "id": "${json-unit.matches:id}",
+            "index": 0,
+            "label": "DE F",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "dataType": {
+              "description": "A piece of text",
+              "domainType": "PrimitiveType",
+              "id": "${json-unit.matches:id}",
+              "index": 1,
+              "label": "Text",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            "id": "${json-unit.matches:id}",
+            "index": 1,
+            "label": "DE E",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "dataType": {
+              "description": "A piece of text",
+              "domainType": "PrimitiveType",
+              "id": "${json-unit.matches:id}",
+              "index": 1,
+              "label": "Text",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            "id": "${json-unit.matches:id}",
+            "index": 2,
+            "label": "DE D",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "dataType": {
+              "description": "A piece of text",
+              "domainType": "PrimitiveType",
+              "id": "${json-unit.matches:id}",
+              "index": 1,
+              "label": "Text",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            "id": "${json-unit.matches:id}",
+            "index": 3,
+            "label": "DE C",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "dataType": {
+              "description": "A piece of text",
+              "domainType": "PrimitiveType",
+              "id": "${json-unit.matches:id}",
+              "index": 1,
+              "label": "Text",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            "id": "${json-unit.matches:id}",
+            "index": 4,
+            "label": "DE B",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          },
+          {
+            "dataType": {
+              "description": "A piece of text",
+              "domainType": "PrimitiveType",
+              "id": "${json-unit.matches:id}",
+              "index": 1,
+              "label": "Text",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            "id": "${json-unit.matches:id}",
+            "index": 5,
+            "label": "DE A",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          }
+        ],
+        "id": "${json-unit.matches:id}",
+        "index": 5,
+        "label": "DC A",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "dataTypes": [
+      {
+        "description": "A timestamp",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 0,
+        "label": "Timestamp",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A piece of text",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 1,
+        "label": "Text",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A whole number",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 2,
+        "label": "Number",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A time period in arbitrary units",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 3,
+        "label": "Duration",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A decimal number",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 4,
+        "label": "Decimal",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A date with a timestamp",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 5,
+        "label": "DateTime",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A date",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 6,
+        "label": "Date",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "description": "A true or false value",
+        "domainType": "PrimitiveType",
+        "id": "${json-unit.matches:id}",
+        "index": 7,
+        "label": "Boolean",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "description": "Test DataModel with the DataTypes, DataElements and DataClasses all ordered in reverse alphabetical order by setting indices.",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "id": "${json-unit.matches:id}",
+    "label": "Ordered Test DataModel",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard"
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "name": "DataModelJsonExporterService",
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "version": "3.2"
+    }
+  }
+}

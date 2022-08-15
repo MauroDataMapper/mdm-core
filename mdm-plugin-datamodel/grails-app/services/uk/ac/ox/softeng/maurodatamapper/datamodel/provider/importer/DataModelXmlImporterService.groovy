@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -47,12 +48,17 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
     }
 
     String getVersion() {
-        '5.1'
+        '5.2'
     }
 
     @Override
     Boolean canImportMultipleDomains() {
         true
+    }
+
+    @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(DataModelXmlExporterService.CONTENT_TYPE)
     }
 
     @Override

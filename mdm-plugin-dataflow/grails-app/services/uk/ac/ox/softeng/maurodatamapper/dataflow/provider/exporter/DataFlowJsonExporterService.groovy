@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class DataFlowJsonExporterService extends DataFlowExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.dataflow+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -42,8 +44,13 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     }
 
     @Override
-    String getFileType() {
-        'text/json'
+    String getContentType() {
+        CONTENT_TYPE
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
     }
 
     @Override
@@ -57,13 +64,13 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     }
 
     @Override
-    ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow) throws ApiException {
+    ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataFlow, 'dataFlow', version, exportMetadata), fileType
+        exportModel new ExportModel(dataFlow, 'dataFlow', version, exportMetadata), contentType
     }
 
     @Override
-    ByteArrayOutputStream exportDataFlows(User currentUser, List<DataFlow> dataFlow) throws ApiException {
+    ByteArrayOutputStream exportDataFlows(User currentUser, List<DataFlow> dataFlow, Map<String, Object> parameters) throws ApiException {
         throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple DataFlows")
     }
 }

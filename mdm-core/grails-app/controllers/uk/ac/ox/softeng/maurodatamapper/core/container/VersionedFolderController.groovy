@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -37,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -59,20 +61,14 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         super(VersionedFolder)
     }
 
-    def search(SearchParams searchParams) {
-
+    def search() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
         if (searchParams.hasErrors()) {
             respond searchParams.errors
             return
         }
 
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
-        params.sort = params.sort ?: searchParams.sort ?: 'label'
-        if (searchParams.order) {
-            params.order = searchParams.order
-        }
+        searchParams.crossValuesIntoParametersMap(params, 'label')
 
         PaginatedHibernateSearchResult<CatalogueItem> result =
             mdmCoreSearchService.findAllByFolderIdByHibernateSearch(params.versionedFolderId, searchParams, params)
@@ -184,6 +180,15 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.asynchronous) {
+
+            AsyncJob asyncJob = versionedFolderService.asyncCreateNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
+                                                                                        createNewVersionData.copyPermissions,
+                                                                                        currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         VersionedFolder copy = versionedFolderService.createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
                                                                                   createNewVersionData.copyPermissions,
                                                                                   currentUserSecurityPolicyManager)
@@ -211,6 +216,16 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params.versionedFolderId)) {
             createNewVersionData.copyPermissions = false
+        }
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.asynchronous) {
+            AsyncJob asyncJob = versionedFolderService.asyncCreateNewForkModel(createNewVersionData.label,
+                                                                               instance,
+                                                                               currentUser,
+                                                                               createNewVersionData.copyPermissions,
+                                                                               currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
 
         VersionedFolder copy = versionedFolderService.createNewForkModel(createNewVersionData.label,
@@ -241,6 +256,16 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         if (!instance) return notFound(params.versionedFolderId)
 
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
+
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.asynchronous) {
+            AsyncJob asyncJob = versionedFolderService.asyncCreateNewDocumentationVersion(instance,
+                                                                                          currentUser,
+                                                                                          createNewVersionData.copyPermissions,
+                                                                                          currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
 
         VersionedFolder copy = versionedFolderService.createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
                                                                                     currentUserSecurityPolicyManager)

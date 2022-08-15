@@ -1,0 +1,39 @@
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
+
+model {
+    DomainExport domainExport
+}
+
+json {
+    id domainExport.id
+
+    exported {
+        domainType domainExport.exportedDomainType
+        if (domainExport.multiDomainExport) {
+            domainIds domainExport.exportedDomainIds.split(',')
+        } else {
+            domainId domainExport.exportedDomainId
+        }
+    }
+
+    exporter {
+        namespace domainExport.exporterNamespace
+        name domainExport.exporterName
+        version domainExport.exporterVersion
+    }
+
+    export {
+        fileName domainExport.exportFileName
+        contentType domainExport.exportContentType
+        fileSize domainExport.exportFileSize
+    }
+
+    exportedOn domainExport.lastUpdated
+    exportedBy domainExport.createdBy
+
+    links {
+        relative linkGenerator.link(domainExport.downloadLinkParams)
+        absolute linkGenerator.link(domainExport.absoluteDownloadLinkParams)
+    }
+
+}

@@ -1,0 +1,20 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
+
+inherits template: '/profileField/profileField', model: [profileField: profileField]
+
+model {
+    ProfileField profileField
+}
+
+json {
+    maxMultiplicity profileField.maxMultiplicity
+    minMultiplicity profileField.minMultiplicity
+    uneditable profileField.uneditable
+    editableAfterFinalisation profileField.editableAfterFinalisation
+    derived profileField.derived
+    if (profileField.derived) derivedFrom profileField.derivedFrom
+    if (profileField.description) description profileField.description
+    if (profileField.regularExpression) regularExpression profileField.regularExpression
+    if (profileField.defaultValue != null) defaultValue profileField.defaultValue
+
+}

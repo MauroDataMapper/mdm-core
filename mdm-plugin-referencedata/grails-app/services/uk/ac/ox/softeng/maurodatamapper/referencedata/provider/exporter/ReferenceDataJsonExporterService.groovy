@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.referencedatamodel+json'
+
     @Autowired
     JsonViewTemplateEngine templateEngine
 
@@ -39,8 +41,13 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     }
 
     @Override
-    String getFileType() {
-        'text/json'
+    String getContentType() {
+        CONTENT_TYPE
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
     }
 
     @Override
@@ -54,13 +61,13 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     }
 
     @Override
-    ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException {
+    ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(referenceDataModel, 'referenceDataModel', version, exportMetadata), fileType
+        exportModel new ExportModel(referenceDataModel, 'referenceDataModel', version, exportMetadata), contentType
     }
 
     @Override
-    ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels) throws ApiException {
+    ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels, Map<String, Object> parameters) throws ApiException {
         throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple ReferenceDataModels")
     }
 }

@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -32,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
@@ -42,8 +45,12 @@ import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
 
+import java.util.concurrent.CancellationException
+import java.util.concurrent.Future
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
+import static io.micronaut.http.HttpStatus.ACCEPTED
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -83,6 +90,8 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implements XmlComparer {
 
+    AsyncJobService asyncJobService
+
     @Shared
     UUID folderId
 
@@ -108,9 +117,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
 
-        versionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        versionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert versionedFolderId
-        otherVersionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        otherVersionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert otherVersionedFolderId
         builder = new DataModelPluginMergeBuilder(this)
     }
@@ -202,7 +213,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": true,
     "version": "${json-unit.matches:version}",
-    "fileType": "text/xml"
+    "contentType": "application/mauro.datamodel+xml"
   },
   {
     "providerType": "DataModelExporter",
@@ -216,7 +227,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": true,
     "version": "${json-unit.matches:version}",
-    "fileType": "text/json"
+    "contentType": "application/mauro.datamodel+json"
   }
 ]'''
     }
@@ -714,7 +725,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     })
     void 'VB01b : performance test creating a new main branch model version of a simple DataModel'() {
         given: 'finalised model is created'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -747,7 +758,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     })
     void 'VB01c : performance test creating a new main branch model version of a complex DataModel'() {
         given: 'finalised model is created'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -962,7 +973,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 5
-        responseBody().items.eachWithIndex{dc, i ->
+        responseBody().items.eachWithIndex {dc, i ->
             assert dc.domainType == 'DataClass'
             assert dc.label.startsWith('Root Data Class') && dc.label.endsWith((i + 1).toString())
         }
@@ -1014,7 +1025,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 5
-        responseBody().items.eachWithIndex{dc, i ->
+        responseBody().items.eachWithIndex {dc, i ->
             assert dc.domainType == 'DataClass'
             assert dc.label.startsWith('Root Data Class') && dc.label.endsWith((i + 1).toString())
         }
@@ -1226,6 +1237,580 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id)
     }
 
+    void waitForAysncToComplete(String id) {
+        log.debug('Waiting to complete {}', id)
+        Future p = asyncJobService.getAsyncJobFuture(id)
+        try {
+            p.get()
+        } catch (CancellationException ignored) {
+        }
+        log.debug('Completed')
+    }
+
+    void 'VB09 : test async creating a new main branch model version of a DataModel'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        PUT("$id/newBranchModelVersion", [asynchronous: true])
+
+        then:
+        verifyResponse(ACCEPTED, response)
+        responseBody().id
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("$id/semanticLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "SemanticLink",
+      "linkType": "Refines",
+      "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
+      "sourceMultiFacetAwareItem": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetMultiFacetAwareItem": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "VersionLink",
+      "linkType": "New Model Version Of",
+      "id": "${json-unit.matches:id}",
+      "sourceModel": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB10 : test async creating a main branch model version when one already exists'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create default main'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+
+        when: 'another main branch created'
+        PUT("$id/newBranchModelVersion", [asynchronous: true])
+
+        then:
+        verifyResponse(ACCEPTED, response)
+
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'FAILED'
+        responseBody().message == '''Invalid model
+  Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] with value [main] already exists for label [Functional Test Model]'''
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB11 : test async creating a main branch model version and cancelling it'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'another main branch created'
+        PUT("$id/newBranchModelVersion", [asynchronous: true])
+
+        then:
+        verifyResponse(ACCEPTED, response)
+
+        when:
+        String jobId = responseBody().id
+        DELETE("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'CANCELLED'
+
+        when:
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'CANCELLED'
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": [ ]
+}'''
+
+        when:
+        GET("$id/availableBranches", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": [
+    
+  ]
+}'''
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB12 : test async creating a new non-main branch model version of a DataModel'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'async-test', asynchronous: true])
+
+        then:
+        verifyResponse(ACCEPTED, response)
+        responseBody().id
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("$id/semanticLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "Refines",
+      "domainType": "SemanticLink",
+      "unconfirmed": false,
+      "sourceMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "Refines",
+      "domainType": "SemanticLink",
+      "unconfirmed": false,
+      "sourceMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetMultiFacetAwareItem": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "New Model Version Of",
+      "domainType": "VersionLink",
+      "sourceModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "linkType": "New Model Version Of",
+      "domainType": "VersionLink",
+      "sourceModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/availableBranches", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Functional Test Model",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Functional Test Model",
+      "type": "Data Standard",
+      "branchName": "async-test",
+      "documentationVersion": "1.0.0"
+    }
+  ]
+}'''
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB13 : test creating new branch with imported DataTypes'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType 2',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataTypes/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of datatypes in brach'
+        log.info 'getting list of datatypes'
+        GET("$branchId/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB14 : test creating new branch with imported DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB15 : test creating new branch with DataClasses importing DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$internalId/dataClasses/$finalisedId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.every {it.id != importableId}
+
+        when:
+        String branchInternalId = responseBody().items.first().id
+        GET("$branchId/dataClasses/${branchInternalId}/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        when:
+        GET("$id/dataClasses/${internalId}/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'VB16 : test creating new branch with DataClasses importing DataElements'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DC
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String finalisedDtId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String finalisedDcId = responseBody().id
+
+        POST("$finalisedId/dataClasses/$finalisedDcId/dataElements", [
+            label: 'Functional Test DataElement', dataType: finalisedDtId])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        // importing importable id
+        PUT("$id/dataClasses/$internalId/dataElements/$finalisedId/$finalisedDcId/$importableId", [:])
+        verifyResponse OK, response
+
+        // finalising the DM
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create main branch model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$branchId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.every {it.id != internalId}
+        responseBody().items.every {it.id != importableId}
+
+        when:
+        String branchInternalId = responseBody().items.first().id
+        GET("$branchId/dataClasses/${branchInternalId}/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        when:
+        GET("$id/dataClasses/${internalId}/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.first().id == importableId
+        responseBody().items.first().imported
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(branchId)
+        cleanUpData(finalisedId)
+    }
+
     void 'MD01 : test finding merge difference of two datamodels'() {
         given:
         String id = createNewItem(validJson)
@@ -1316,6 +1901,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MD04 : test finding merge diff with new style diff with aliases gh-112'() {
@@ -1389,6 +1977,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MI01 : test merging diff with no patch data'() {
@@ -1496,8 +2087,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         GET("$source/metadata")
         verifyResponse OK, response
-        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
-        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+        String deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
+        String modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
 
         then:
         //dataModel description
@@ -1779,7 +2370,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.size() == 17
+        responseBody().diffs.size() == 25
 
         when:
         List<Map> patches = responseBody().diffs
@@ -1798,49 +2389,68 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         responseBody().description == 'DescriptionLeft'
 
         when:
-        GET("$mergeData.target/dataClasses")
+        GET("$mergeData.target/dataClasses?all==true")
 
         then:
+        responseBody().count == 12
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
-                                              'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
+                                              'addAndAddReturningNoDifference',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
 
         then:
-        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+        responseBody().count == 4
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass',
+                                              'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add'] as Set
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable'}.imported
+        responseBody().items.find {dc -> dc.label == 'Functional Test DataClass Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement'] as Set
+        responseBody().count == 4
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement',
+                                              'Functional Test DataElement Importable', 'Functional Test DataElement Importable Add'] as Set
+        responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable'}.imported
+        responseBody().items.find {de -> de.label == 'Functional Test DataElement Importable Add'}.imported
 
         when:
         GET("$mergeData.target/dataTypes")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2'] as Set
+        responseBody().count == 5
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2',
+                                              'Functional Test DataType Importable', 'Functional Test DataType Importable Add'] as Set
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable'}.imported
+        responseBody().items.find {dt -> dt.label == 'Functional Test DataType Importable Add'}.imported
 
         when:
         GET("${mergeData.target}/metadata")
 
         then:
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
-        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
         cleanup:
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'MI08 : test merging diff with metadata creation gh-111'() {
@@ -1887,7 +2497,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                     ],
                     [
 
-                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule|rr:sql',
+                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model ' +
+                                                               'Rule|rr:sql',
                         isMergeConflict                      : false,
                         isSourceModificationAndTargetDeletion: false,
                         type                                 : 'creation',
@@ -1906,7 +2517,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("${target}/metadata")
 
         then:
-        responseBody().items.find { it.namespace == 'test.com' && it.key == 'testProperty' }
+        responseBody().items.find {it.namespace == 'test.com' && it.key == 'testProperty'}
 
         cleanup:
         cleanUpData(source)
@@ -1949,8 +2560,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
         responseBody().id == target
         responseBody().aliases.size() == 2
-        responseBody().aliases.any { it == 'mergeInto' }
-        responseBody().aliases.any { it == 'not main branch' }
+        responseBody().aliases.any {it == 'mergeInto'}
+        responseBody().aliases.any {it == 'not main branch'}
 
         cleanup:
         cleanUpData(source)
@@ -2009,7 +2620,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 4
 
         when:
         GET("$mergeData.target/dataClasses")
@@ -2018,18 +2629,21 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse(OK, response)
 
         when:
-        String addLeftOnly = responseBody().items.find { it.label == 'addLeftOnly' }.id
+        String addLeftOnly = responseBody().items.find {it.label == 'addLeftOnly'}.id
         GET("$mergeData.targetMap.dataModelId/dataClasses/$addLeftOnly/dataClasses")
 
         then:
         verifyResponse(OK, response)
         responseBody().count == 1
-        responseBody().items.any { it.label == 'addAnotherLeftToAddLeftOnly' }
+        responseBody().items.any {it.label == 'addAnotherLeftToAddLeftOnly'}
 
         cleanup:
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
         cleanUpData(mergeData.commonAncestor)
+        mergeData.otherMap.importableDataModelIds.each {
+            cleanUpData(it)
+        }
     }
 
     void 'test changing folder from DataModel context'() {
@@ -2187,8 +2801,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         //Change child DC label
         GET("$testId/dataClasses")
         verifyResponse(OK, response)
-        parentId = responseBody().items.find { it.label == 'parent' }.id
-        String contentId = responseBody().items.find { it.label == 'content' }.id
+        parentId = responseBody().items.find {it.label == 'parent'}.id
+        String contentId = responseBody().items.find {it.label == 'content'}.id
         GET("$testId/dataClasses/${parentId}/dataClasses")
         verifyResponse(OK, response)
         assert responseBody().items.first().id
@@ -2219,13 +2833,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         dataClassesDiffs.modified.size() == 2
 
         and:
-        Map contentDiff = dataClassesDiffs.modified.find { it.label == 'content' }
+        Map contentDiff = dataClassesDiffs.modified.find {it.label == 'content'}
         contentDiff.diffs.size() == 1
         contentDiff.diffs.first().description.left == 'a change to the description'
         contentDiff.diffs.first().description.right == 'some interesting content'
 
         and:
-        Map parentDiff = dataClassesDiffs.modified.find { it.label == 'parent' }
+        Map parentDiff = dataClassesDiffs.modified.find {it.label == 'parent'}
         parentDiff.diffs.size() == 1
         parentDiff.diffs.first().dataClasses.deleted.size() == 1
         parentDiff.diffs.first().dataClasses.created.size() == 1
@@ -2243,7 +2857,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -2266,7 +2880,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -2277,7 +2891,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'E02A : test export simple DataModel JSON'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2296,7 +2910,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -2307,7 +2921,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'E02B : test export simple DataModel XML'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2327,7 +2941,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when:
         HttpResponse<String> xmlResponse =
-            GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1", STRING_ARG)
+            GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.2", STRING_ARG)
 
         then:
         verifyResponse OK, xmlResponse
@@ -2339,7 +2953,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'E03A : test export complex DataModel JSON'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2358,7 +2972,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -2369,7 +2983,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'E03B : test export complex DataModel XML'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2389,7 +3003,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when:
         HttpResponse<String> xmlResponse =
-            GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1", STRING_ARG)
+            GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.2", STRING_ARG)
 
         then:
         verifyResponse OK, xmlResponse
@@ -2405,7 +3019,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
              [dataModelIds: [id, id2]], STRING_ARG)
 
         then:
@@ -2444,7 +3058,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "3.1"
+      "version": "3.2"
     }
   }
 }'''
@@ -2456,7 +3070,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'E04A : test export multiple DataModels JSON'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2477,7 +3091,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         id2
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
              [dataModelIds: [id, id2]], STRING_ARG)
 
         then:
@@ -2490,7 +3104,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'E04B : test export multiple DataModels XML'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2511,7 +3125,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         id2
 
         when:
-        HttpResponse<String> xmlResponse = POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1',
+        HttpResponse<String> xmlResponse = POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.2',
                                                 [dataModelIds: [id, id2]], STRING_ARG)
 
         then:
@@ -2523,11 +3137,338 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id2)
     }
 
+    void 'E05 : test export complex DataModel JSON async'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('complexDataModel')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
+
+        when:
+        GET('domainExports', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse(OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "exported": {
+        "domainType": "DataModel",
+        "domainId": "${json-unit.matches:id}"
+      },
+      "exporter": {
+        "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+        "name": "DataModelJsonExporterService",
+        "version": "${json-unit.matches:version}"
+      },
+      "export": {
+        "fileName": "Complex Test DataModel.json",
+        "contentType": "application/mauro.datamodel+json",
+        "fileSize": "${json-unit.any-number}"
+      },
+      "exportedOn": "${json-unit.matches:offsetDateTime}",
+      "exportedBy": "unlogged_user@mdm-core.com",
+      "links": {
+        "relative": "${json-unit.regex}/api/domainExports/[\\\\w-]+?/download",
+        "absolute": "${json-unit.regex}http://localhost:\\\\d+/api/domainExports/.+?/download"
+      }
+    }
+  ]
+}''')
+
+        when:
+        GET('domainExports', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        String deId = responseBody().items.first().id
+        GET(responseBody().items.first().links.absolute, STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        when:
+        GET("$id/domainExports")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.first().id == deId
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'E06 : test export complex DataModel JSON async twice'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
+
+        when:
+        GET('domainExports', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+
+        when: 'export again'
+        String deId = responseBody().items.first().id
+        String firstExportDateTime = responseBody().items.first().exportedOn
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2?asynchronous=true")
+
+        then:
+        verifyResponse ACCEPTED, response
+        responseBody().id != jobId
+
+        when:
+        jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download at ${baseUrl}domainExports\/.+?\/download/
+
+        when:
+        GET('domainExports', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.id == deId && it.exportedOn == firstExportDateTime}
+        responseBody().items.any {it.id != deId && it.exportedOn != firstExportDateTime}
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+
+    void 'E07 : test export multiple DataModels JSON async'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexDataModels').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexDataModels', 'json')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
+             [
+                 dataModelIds: [id, id2],
+                 asynchronous: true])
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        responseBody().message ==~ /Download \[.+?, .+?\] at ${baseUrl}domainExports\/.+?\/download/
+
+        when:
+        GET('domainExports', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.first().exported.domainIds == [id, id2]
+
+        when:
+        String deId = responseBody().items.first().id
+        GET(responseBody().items.first().links.absolute, STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'E08 : test export DataModels JSON and check domain export listings'() {
+        given: '2 models available'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexDataModels').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexDataModels', 'json')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when: 'export both models separately'
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET("${id2}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2")
+
+        then:
+        verifyResponse OK, response
+
+        when: 'export both models separately'
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.2")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET("${id2}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.2")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET('domainExports', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 4
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelXmlExporterService'}
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelXmlExporterService'}
+
+        when:
+        GET("${id}/domainExports", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelXmlExporterService'}
+
+        when:
+        GET("${id2}/domainExports", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelJsonExporterService'}
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelXmlExporterService'}
+
+        when:
+        GET("${id}/domainExports/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.exported.domainId == id && it.exporter.name == 'DataModelJsonExporterService'}
+
+        when:
+        GET("${id2}/domainExports/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService", MAP_ARG)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.exported.domainId == id2 && it.exporter.name == 'DataModelJsonExporterService'}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
     void 'I01 : test import basic DataModel'() {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2535,7 +3476,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -2574,7 +3515,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2582,7 +3523,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : true,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -2622,7 +3563,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2630,7 +3571,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : true,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -2671,7 +3612,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2679,7 +3620,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -2708,7 +3649,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                 }'''
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -2725,7 +3666,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse CREATED, response
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -2760,7 +3701,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I05 : test import DataModel with classifiers'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2782,7 +3723,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I06A : test import simple DataModel JSON'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2805,7 +3746,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I06B : test importing simple DataModel XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2828,7 +3769,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I07A : test import complex DataModel JSON'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2851,7 +3792,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I07B : test import complex DataModel XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2874,7 +3815,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I08A : test import multiple DataModels JSON'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2900,7 +3841,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'I08B : test import multiple DataModels XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2924,6 +3865,42 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id2)
     }
 
+    void 'I09 : test import complex DataModel async'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ],
+            asynchronous                   : true
+        ])
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("dataModels/path/${Utils.safeUrlEncode('dm:Complex Test DataModel$main')}")
+
+        then:
+        verifyResponse(OK, response)
+
+        cleanup:
+        cleanUpData()
+    }
+
     void 'DA : test delete multiple models'() {
         given:
         def idstoDelete = []
@@ -2933,6 +3910,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                 label : UUID.randomUUID().toString()
             ])
         }
+
+        // To check that deleting an unknown ID does not cause an exception
+        // See https://github.com/MauroDataMapper/mdm-core/issues/257
+        idstoDelete << UUID.randomUUID().toString()
 
         when:
         DELETE('', [
@@ -2993,9 +3974,43 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse NO_CONTENT, response
     }
 
+    @Rollback
+    void 'DB : test permanent delete removes BreadcrumbTree'() {
+        given:
+        int breadcrumbTreeCount = BreadcrumbTree.count()
+        String id = createNewItem(validJson)
+        POST("$id/dataClasses", [label: 'Functional Test Data Class'])
+        verifyResponse CREATED, response
+        String dcId = responseBody().id
+        POST("$id/dataTypes", [label: 'Functional Test Data Type', domainType: 'PrimitiveType'])
+        verifyResponse CREATED, response
+        String dtId = responseBody().id
+        POST("$id/dataClasses/$dcId/dataElements", [label: 'Functional Test Data Element', dataType: dtId])
+        verifyResponse CREATED, response
+        String deId = responseBody().id
+
+        expect:
+        BreadcrumbTree.count() == breadcrumbTreeCount + 4
+        BreadcrumbTree.findByDomainId(id)
+        BreadcrumbTree.findByDomainId(dcId)
+        BreadcrumbTree.findByDomainId(dtId)
+        BreadcrumbTree.findByDomainId(deId)
+
+        when:
+        DELETE("$id?permanent=true")
+        verifyResponse NO_CONTENT, response
+
+        then:
+        BreadcrumbTree.count() == breadcrumbTreeCount
+        !BreadcrumbTree.findByDomainId(id)
+        !BreadcrumbTree.findByDomainId(dcId)
+        !BreadcrumbTree.findByDomainId(dtId)
+        !BreadcrumbTree.findByDomainId(deId)
+    }
+
     void 'H01 : test getting simple DataModel hierarchy'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3069,7 +4084,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'H02 : test getting complex DataModel hierarchy'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3520,7 +4535,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'test diffing 2 complex and simple DataModels'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3533,7 +4548,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3772,7 +4787,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'test searching for label "emptyclass" in complex model'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3820,7 +4835,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'test searching for label "emptyclass" in simple model'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3932,8 +4947,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any { it.id == internalId && !it.imported }
-        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
 
         cleanup:
         cleanUpData(id)
@@ -3996,7 +5011,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any { it.id == internalId }
+        responseBody().items.any {it.id == internalId}
 
         cleanup:
         cleanUpData(id)
@@ -4080,8 +5095,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any { it.id == internalId && !it.imported }
-        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
 
         cleanup:
         cleanUpData(id)
@@ -4264,7 +5279,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         String sourceId = responseBody().id
         String deleteAndDelete = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:deleteAndDelete")
         String existingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass")
-        String deleteLeftOnlyFromExistingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
+        String deleteLeftOnlyFromExistingClass =
+            builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
         DELETE("$sourceId/dataClasses/$deleteAndDelete")
 
         then:
@@ -4322,7 +5338,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'LS01 : test get link suggestions for a model with no data elements in the target'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -4335,7 +5351,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -4365,7 +5381,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'LS02 : test get link suggestions for a model'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -4378,7 +5394,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -4411,12 +5427,16 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     void 'SUBSET01 : test subsetting the Complex Test DataModel'() {
         def source = [:]
         def target = [:]
+        def target2 = [:]
 
         given:
         target.dataModelId = createNewItem(validJson)
+        target2.dataModelId = createNewItem([
+            label: 'Functional Test Target Model 2'
+        ])
 
         and:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -4432,20 +5452,20 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         and:
         GET("/${source.dataModelId}/dataClasses")
         verifyResponse OK, response
-        source.emptyClass = response.body().items.find { it.label == 'empty' }
-        source.contentClass = response.body().items.find { it.label == 'content' }
-        source.parentClass = response.body().items.find { it.label == 'parent' }
+        source.emptyClass = response.body().items.find {it.label == 'empty'}
+        source.contentClass = response.body().items.find {it.label == 'content'}
+        source.parentClass = response.body().items.find {it.label == 'parent'}
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find { it.label == 'child' }
+        source.parentClass.childClass = response.body().items.find {it.label == 'child'}
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.contentClass.id}/dataElements")
         verifyResponse OK, response
-        source.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
-        source.contentClass.element2 = response.body().items.find { it.label == 'element2' }
+        source.contentClass.ele1 = response.body().items.find {it.label == 'ele1'}
+        source.contentClass.element2 = response.body().items.find {it.label == 'element2'}
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
@@ -4505,6 +5525,29 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().intersects.size() == 1
         response.body().intersects.contains(source.contentClass.ele1.id)
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains one intersection'
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 1
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 0
+
         /**
          * Subset delete DataElement 'ele1' which belongs to the 'content' Data Class. This should:
          * 1. Remove ele1 Data Element from targetDataModel
@@ -4537,6 +5580,29 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
         response.body().intersects.size() == 0
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains no intersections'
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 0
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 0
+
         /**
          * Subset delete DataElement 'ele1' (again) and also 'element2', and 'childde' which belongs to the parent | child Data Class.
          * This should leave us with:
@@ -4559,8 +5625,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get Data Classes on targetDataModel'
         GET("/${target.dataModelId}/dataClasses")
-        target.contentClass = response.body().items.find { it.label == 'content' }
-        target.parentClass = response.body().items.find { it.label == 'parent' }
+        target.contentClass = response.body().items.find {it.label == 'content'}
+        target.parentClass = response.body().items.find {it.label == 'parent'}
 
         then: 'There is the content Data Class and parent Data Class and child Data Class'
         verifyResponse OK, response
@@ -4570,7 +5636,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get the Data Classes of the parent Data Class'
         GET("/${target.dataModelId}/dataClasses/${target.parentClass.id}/dataClasses")
-        target.parentClass.childClass = response.body().items.find { it.label == 'child' }
+        target.parentClass.childClass = response.body().items.find {it.label == 'child'}
 
         then: 'The response is OK and includes the child Data Class'
         verifyResponse OK, response
@@ -4579,9 +5645,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get Data Elements on targetDataModel'
         GET("/${target.dataModelId}/dataElements")
-        target.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
-        target.contentClass.element2 = response.body().items.find { it.label == 'element2' }
-        target.parentClass.childClass.grandchild = response.body().items.find { it.label == 'grandchild' }
+        target.contentClass.ele1 = response.body().items.find {it.label == 'ele1'}
+        target.contentClass.element2 = response.body().items.find {it.label == 'element2'}
+        target.parentClass.childClass.grandchild = response.body().items.find {it.label == 'grandchild'}
 
         then: 'There are the ele1 and element2 Data Elements in the content Data Class'
         verifyResponse OK, response
@@ -4603,6 +5669,58 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().intersects.contains(source.contentClass.element2.id)
         response.body().intersects.contains(source.parentClass.childClass.grandchild.id)
 
+        when: 'Get the intersection between complex and target2'
+        GET("/${source.dataModelId}/intersects/${target2.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains three intersections'
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 3
+
+        and: 'The result for target2 contains no intersections'
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 0
+
+        when: 'subset ele1, element2 and child onto target2'
+        PUT("/${source.dataModelId}/subset/${target2.dataModelId}", [
+            'additions': [
+                source.contentClass.ele1.id,
+                source.contentClass.element2.id,
+                source.parentClass.childClass.grandchild.id
+            ],
+            'deletions': []
+        ])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the intersectionMany between complex and [target, target2]'
+        POST("/${source.dataModelId}/intersectsMany", [
+            targetDataModelIds: [target.dataModelId, target2.dataModelId],
+            dataElementIds    : [source.contentClass.ele1.id, source.contentClass.element2.id, source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK with two results'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+
+        and: 'The result for target contains three intersections'
+        response.body().items.find {it.targetDataModelId == target.dataModelId}.intersects.size() == 3
+
+        and: 'The result for target2 now has intersections'
+        response.body().items.find {it.targetDataModelId == target2.dataModelId}.intersects.size() == 3
+
         when: 'Delete the grandchild from the subset'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
             'additions': [],
@@ -4616,12 +5734,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("/${target.dataModelId}/dataClasses")
 
         then: 'The parent Data Classes has been deleted from the targetDataModel'
-        response.body().items.find { it.label == 'content' }
-        !response.body().items.find { it.label == 'parent' }
+        response.body().items.find {it.label == 'content'}
+        !response.body().items.find {it.label == 'parent'}
 
         cleanup:
         cleanUpData(source.dataModelId)
         cleanUpData(target.dataModelId)
+        cleanUpData(target2.dataModelId)
     }
 
     String expectedLinkSuggestions(Map<String, String> results) {
@@ -4862,7 +5981,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   "targetId": "${json-unit.matches:id}",
   "path": "dm:Functional Test DataModel 1$source",
   "label": "Functional Test DataModel 1",
-  "count": 17,
+  "count": 25,
   "diffs": [
     {
       "fieldName": "description",
@@ -4934,6 +6053,32 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "type": "modification"
     },
     {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable 2 ''' +
+        '''Add|de:Functional Test DataElement Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable 2 ''' +
+        '''Remove|de:Functional Test DataElement Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
       "fieldName": "description",
       "path": "dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
@@ -4956,6 +6101,30 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$1.0.0|dc:Functional Test DataClass Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dc:Functional Test DataClass Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Add$1.0.0|dt:Functional Test DataType Importable Add",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dm:Functional Test DataModel Importable Remove$1.0.0|dt:Functional Test DataType Importable Remove",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
     },
     {
       "path": "dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",

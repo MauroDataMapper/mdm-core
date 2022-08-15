@@ -18,11 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
-import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
-import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -50,14 +47,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     def setup() {
         log.debug('Setting up DataModelServiceSpec unit')
-        mockArtefact(MergeDiffService)
-        mockArtefact(BreadcrumbTreeService)
         mockArtefact(DataClassService)
         mockArtefact(DataElementService)
         mockArtefact(DataTypeService)
         mockArtefact(SummaryMetadataService)
-        mockArtefact(PathService)
-        mockArtefact(VersionedFolderService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType,
                     ReferenceType, EnumerationType, EnumerationValue, DataElement)
 

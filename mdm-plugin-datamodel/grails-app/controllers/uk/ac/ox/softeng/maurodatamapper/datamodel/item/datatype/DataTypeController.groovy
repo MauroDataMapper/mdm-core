@@ -29,6 +29,8 @@ import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
 
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.OK
 
@@ -126,11 +128,19 @@ class DataTypeController extends CatalogueItemController<DataType> {
 
     @Override
     protected List<DataType> listAllReadableResources(Map params) {
+        if (params.sort instanceof String) params.sort = [(params.sort): ORDER_DESC.equalsIgnoreCase(params.order) ? ORDER_DESC : ORDER_ASC]
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
+
+        DataModel dataModel = dataModelService.get(params.dataModelId)
+        if (dataModel.importedDataTypes) {
+            // Cannot sort DTs with imported using idx
+            (params.sort as Map).remove('idx')
+        }
+
         if (params.search) {
             return dataTypeService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(params.dataModelId, params.search, params)
         }
-        return dataTypeService.findAllByDataModelIdIncludingImported(params.dataModelId, params)
+        return dataTypeService.findAllByDataModelIdIncludingImported(params.dataModelId, params, params)
     }
 
     @Override

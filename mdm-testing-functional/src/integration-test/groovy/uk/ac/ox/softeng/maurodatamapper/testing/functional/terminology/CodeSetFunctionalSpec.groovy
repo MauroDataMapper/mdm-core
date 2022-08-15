@@ -244,7 +244,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.codeset+xml",
     "canExportMultipleDomains": true
   },
   {
@@ -258,7 +258,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.codeset+json",
     "canExportMultipleDomains": true
   }
 ]'''

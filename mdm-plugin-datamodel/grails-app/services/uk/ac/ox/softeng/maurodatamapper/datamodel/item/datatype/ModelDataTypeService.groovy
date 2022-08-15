@@ -138,7 +138,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             results =
                 ModelDataType
-                    .labelHibernateSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .labelHibernateSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePaths(readableIds))
                     .results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")

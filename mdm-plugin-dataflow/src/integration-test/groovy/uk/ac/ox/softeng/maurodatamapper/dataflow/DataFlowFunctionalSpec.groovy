@@ -196,7 +196,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "xml",
-    "fileType": "text/xml",
+    "contentType": "application/mauro.dataflow+xml",
     "canExportMultipleDomains": false
   },
   {
@@ -210,7 +210,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "json",
-    "fileType": "text/json",
+    "contentType": "application/mauro.dataflow+json",
     "canExportMultipleDomains": false
   }
 ]'''

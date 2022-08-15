@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class DataModelXmlExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
 
+    public static final CONTENT_TYPE = 'application/mauro.datamodel+xml'
+
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
@@ -42,12 +44,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
 
     @Override
     String getVersion() {
-        '5.1'
-    }
-
-    @Override
-    String getFileType() {
-        'text/xml'
+        '5.2'
     }
 
     @Override
@@ -56,19 +53,29 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
+    String getContentType() {
+        CONTENT_TYPE
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE + 1
+    }
+
+    @Override
     Boolean canExportMultipleDomains() {
         true
     }
 
     @Override
-    ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
+    ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.1', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.2', 'gml', exportMetadata), contentType)
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
+    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels, Map<String, Object> parameters) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.1', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.2', 'gml', exportMetadata), contentType)
     }
 }

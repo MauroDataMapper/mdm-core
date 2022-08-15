@@ -20,12 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.rest.Link
 import java.time.OffsetDateTime
 import java.util.regex.Pattern
 
 class PublishedModel implements Comparable<PublishedModel> {
 
-    UUID modelId
+    String modelId
     String modelLabel
     Version modelVersion
     String description
@@ -35,6 +36,7 @@ class PublishedModel implements Comparable<PublishedModel> {
     OffsetDateTime datePublished
     String author
     UUID previousModelId
+    List<Link> links
 
     PublishedModel() {
     }
@@ -53,17 +55,6 @@ class PublishedModel implements Comparable<PublishedModel> {
 
     String getTitle() {
         "${modelLabel} ${modelVersion}"
-    }
-
-    void setTitle(String label) {
-        Pattern titleVersionPattern = ~/ $Version.VERSION_PATTERN$/
-        String version = label.find(titleVersionPattern)
-        if (version) {
-            modelVersion = Version.from(version.trim())
-            modelLabel = (label - version).trim()
-        } else {
-            modelLabel = label
-        }
     }
 
     String getDescription() {

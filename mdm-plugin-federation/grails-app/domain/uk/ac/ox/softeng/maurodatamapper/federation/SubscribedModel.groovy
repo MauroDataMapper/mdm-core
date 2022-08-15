@@ -30,7 +30,7 @@ class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware 
     UUID id
 
     //The ID of the model on the remote (subscribed) catalogue
-    UUID subscribedModelId
+    String subscribedModelId
     String subscribedModelType
     //The folder that the model should be imported into
     UUID folderId
@@ -47,7 +47,7 @@ class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware 
         subscribedCatalogue nullable: false
         folderId nullable: false
         subscribedModelId nullable: false, unique: 'subscribedCatalogue' // Should prevent subscribing to the same modelId from same catalogue
-        subscribedModelType blank: false
+        subscribedModelType nullable: true, blank: false
         lastRead nullable: true
         localModelId nullable: true
         path nullable: true
@@ -90,7 +90,7 @@ class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware 
         by().eq('subscribedCatalogue.id', subscribedCatalogueId)
     }
 
-    static DetachedCriteria<SubscribedModel> bySubscribedCatalogueIdAndSubscribedModelId(UUID subscribedCatalogueId, UUID subscribedModelId) {
+    static DetachedCriteria<SubscribedModel> bySubscribedCatalogueIdAndSubscribedModelId(UUID subscribedCatalogueId, String subscribedModelId) {
         bySubscribedCatalogueId(subscribedCatalogueId).eq('subscribedModelId', subscribedModelId)
     }
 
@@ -98,7 +98,7 @@ class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware 
         bySubscribedCatalogueId(subscribedCatalogueId).idEq(id)
     }
 
-    static DetachedCriteria<SubscribedModel> bySubscribedModelId(UUID subscribedModelId) {
+    static DetachedCriteria<SubscribedModel> bySubscribedModelId(String subscribedModelId) {
         by()
             .eq('subscribedModelId', subscribedModelId)
     }

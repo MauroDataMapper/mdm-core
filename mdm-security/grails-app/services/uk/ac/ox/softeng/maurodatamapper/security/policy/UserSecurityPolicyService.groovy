@@ -82,7 +82,6 @@ class UserSecurityPolicyService {
             .forUser(catalogueUser)
             .inGroups(userGroups)
             .withMaxLockTime(getMaxLockTime())
-            .lock()
     }
 
     UserSecurityPolicy buildUserSecurityPolicy(CatalogueUser catalogueUser, Set<UserGroup> userGroups) {

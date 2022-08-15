@@ -19,6 +19,6 @@ json {
     if (export.modelVersion) modelVersion export.modelVersion
     authority tmpl.'/authority/export'(export.authority)
     if (export.dataTypes) dataTypes g.render(template: '/dataType/export', collection: export.dataTypes.sort(), var: 'export')
-    if (export.childDataClasses) childDataClasses tmpl.'/dataClass/export'(export.childDataClasses)
+    if (export.childDataClasses) childDataClasses tmpl.'/dataClass/export'(export.childDataClasses.sort())
     if (export.summaryMetadata) summaryMetadata tmpl.'/summaryMetadata/export'(export.summaryMetadata)
 }

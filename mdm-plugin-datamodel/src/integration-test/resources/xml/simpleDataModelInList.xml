@@ -18,77 +18,78 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
   <mdm:dataModels>
     <mdm:dataModel>
-      <mdm:id>68446996-5df6-444b-975e-e7d0dc33d982</mdm:id>
+      <mdm:id>96e9251c-eade-4571-871f-213cf018d691</mdm:id>
       <mdm:label>Simple Test DataModel</mdm:label>
-      <mdm:lastUpdated>2021-08-30T23:18:46.826Z</mdm:lastUpdated>
+      <mdm:lastUpdated>2022-07-06T15:23:40.043Z</mdm:lastUpdated>
       <mdm:classifiers>
         <mdm:classifier>
-          <mdm:id>8791db6c-b8d3-44ca-9400-39be1295056b</mdm:id>
+          <mdm:id>c2168c88-6e08-4158-ac27-65175cbcf9b3</mdm:id>
           <mdm:label>test classifier simple</mdm:label>
-          <mdm:lastUpdated>2021-08-30T23:18:46.784Z</mdm:lastUpdated>
+          <mdm:lastUpdated>2022-07-06T15:23:40.032Z</mdm:lastUpdated>
         </mdm:classifier>
       </mdm:classifiers>
       <mdm:metadata>
         <mdm:metadata>
-          <mdm:id>518de750-108a-488a-a1cd-cfddbdfcd367</mdm:id>
+          <mdm:id>304b25dd-534f-4753-ba06-4e2ec70ed9f6</mdm:id>
           <mdm:namespace>test.com/simple</mdm:namespace>
           <mdm:key>mdk1</mdm:key>
           <mdm:value>mdv1</mdm:value>
-          <mdm:lastUpdated>2021-08-30T23:18:46.821Z</mdm:lastUpdated>
+          <mdm:lastUpdated>2022-07-06T15:23:40.042Z</mdm:lastUpdated>
         </mdm:metadata>
         <mdm:metadata>
-          <mdm:id>d85db137-d436-421b-b76e-d079f8d7fc76</mdm:id>
+          <mdm:id>0fd631dc-eff0-4af0-8be7-7f2910bcdac3</mdm:id>
           <mdm:namespace>test.com</mdm:namespace>
           <mdm:key>mdk2</mdm:key>
           <mdm:value>mdv2</mdm:value>
-          <mdm:lastUpdated>2021-08-30T23:18:46.822Z</mdm:lastUpdated>
+          <mdm:lastUpdated>2022-07-06T15:23:40.042Z</mdm:lastUpdated>
         </mdm:metadata>
         <mdm:metadata>
-          <mdm:id>75c26b64-2e8d-4f64-8c4e-e440c1850a81</mdm:id>
+          <mdm:id>67ddfe20-0a18-45b9-99e0-4a64f12c6012</mdm:id>
           <mdm:namespace>test.com/simple</mdm:namespace>
           <mdm:key>mdk2</mdm:key>
           <mdm:value>mdv2</mdm:value>
-          <mdm:lastUpdated>2021-08-30T23:18:46.823Z</mdm:lastUpdated>
+          <mdm:lastUpdated>2022-07-06T15:23:40.043Z</mdm:lastUpdated>
         </mdm:metadata>
       </mdm:metadata>
       <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
       <mdm:finalised>false</mdm:finalised>
       <mdm:branchName>main</mdm:branchName>
       <mdm:authority>
-        <mdm:id>0dd3cd69-5072-47be-97a4-6813a41ee86c</mdm:id>
+        <mdm:id>44b8a28d-be7d-4e46-9485-37da3a54fa08</mdm:id>
         <mdm:label>Test Authority</mdm:label>
         <mdm:url>http://localhost</mdm:url>
-        <mdm:lastUpdated>2021-08-30T23:18:45.258Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2022-07-06T15:23:11.674Z</mdm:lastUpdated>
       </mdm:authority>
       <mdm:type>Data Standard</mdm:type>
       <mdm:childDataClasses>
         <mdm:dataClass>
-          <mdm:id>3e71b23c-bffd-4d29-8847-87faf4af70bf</mdm:id>
+          <mdm:id>ee8b346f-19a7-4e73-9735-314b28862f04</mdm:id>
           <mdm:label>simple</mdm:label>
-          <mdm:lastUpdated>2021-08-30T23:18:46.848Z</mdm:lastUpdated>
+          <mdm:lastUpdated>2022-07-06T15:23:40.048Z</mdm:lastUpdated>
           <mdm:metadata>
             <mdm:metadata>
-              <mdm:id>e0b474b6-d3c0-47b9-83e8-83e3ef9a653a</mdm:id>
+              <mdm:id>d5950ba9-84c3-4513-840f-33992c5adbc3</mdm:id>
               <mdm:namespace>test.com/simple</mdm:namespace>
               <mdm:key>mdk1</mdm:key>
               <mdm:value>mdv1</mdm:value>
-              <mdm:lastUpdated>2021-08-30T23:18:46.844Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2022-07-06T15:23:40.048Z</mdm:lastUpdated>
             </mdm:metadata>
           </mdm:metadata>
+          <mdm:index>0</mdm:index>
         </mdm:dataClass>
       </mdm:childDataClasses>
     </mdm:dataModel>
   </mdm:dataModels>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
-    <exp:exportedOn>2021-08-31T00:18:47.279170+01:00</exp:exportedOn>
+    <exp:exportedOn>2022-07-06T16:23:40.177778+01:00</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>5.1</exp:version>
+      <exp:version>5.2</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

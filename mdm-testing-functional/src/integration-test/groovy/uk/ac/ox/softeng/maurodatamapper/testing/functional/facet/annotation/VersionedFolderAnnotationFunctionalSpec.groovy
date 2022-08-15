@@ -60,9 +60,13 @@ class VersionedFolderAnnotationFunctionalSpec extends ContainerAnnotationFunctio
             .whereTestingUnsecuredResource()
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
     }
 

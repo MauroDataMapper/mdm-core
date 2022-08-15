@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
@@ -62,8 +63,10 @@ abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefi
     //        cleanUpResources()
     //    }
 
+    @Transactional
     def cleanup() {
         logout()
+        DomainExport.deleteAll(DomainExport.list())
     }
 
     @Override

@@ -19,11 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
@@ -39,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import java.sql.Driver
+import java.util.concurrent.TimeUnit
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -50,13 +53,16 @@ class BootStrap {
     ApiPropertyService apiPropertyService
     SessionService sessionService
     AuthorityService authorityService
+    EmailService emailService
+
+    AsyncJobService asyncJobService
 
     AssetResourceLocator assetResourceLocator
 
     @Autowired
     MessageSource messageSource
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         String grailsEnv = Environment.current.name
         String mdmEnv = System.getProperty('mdm.env')
@@ -111,7 +117,13 @@ class BootStrap {
             }
         }
     }
+
     def destroy = {
+        long timeout = 1
+        TimeUnit timeUnit = TimeUnit.MINUTES
+        asyncJobService.cancelAllRunningJobs(timeout, timeUnit)
+        asyncJobService.shutdownAndAwaitTermination(timeout, timeUnit)
+        emailService.shutdownAndAwaitTermination(timeout, timeUnit)
     }
 
     void loadApiProperties(String path) {

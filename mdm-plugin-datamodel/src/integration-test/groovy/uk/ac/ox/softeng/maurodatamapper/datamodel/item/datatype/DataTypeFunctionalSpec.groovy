@@ -72,6 +72,9 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     @Shared
     UUID finalisedDataClassId
 
+    @Shared
+    UUID finalisedDataTypeId
+
     @RunOnce
     @Transactional
     def setup() {
@@ -91,8 +94,11 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
                                                      folder: folder, authority: testAuthority).save(flush: true)
         finalisedDataModelId = finalisedDataModel.id
 
-        finalisedDataClassId = new DataClass(label: 'Importable Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
+        finalisedDataClassId = new DataClass(label: 'Functional Test DataClass (Importable)', createdBy: FUNCTIONAL_TEST,
                                              dataModel: finalisedDataModelId).save(flush: true).id
+
+        finalisedDataTypeId = new PrimitiveType(label: 'Functional Test DataType (Importable)', createdBy: FUNCTIONAL_TEST,
+                                                dataModel: finalisedDataModelId).save(flush: true).id
 
         sessionFactory.currentSession.flush()
     }
@@ -765,5 +771,79 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
 
         cleanup:
         cleanUpData(responseBody().id)
+    }
+
+    void 'IMI02 : test ordering of datatypes with imported datatype'() {
+        given: 'create datatypes with specified order different to label order'
+        String eId = createNewItem(getValidLabelJson('Functional Test DataType E', 0))
+        String dId = createNewItem(getValidLabelJson('Functional Test DataType D', 1))
+        String cId = createNewItem(getValidLabelJson('Functional Test DataType C', 2))
+        String bId = createNewItem(getValidLabelJson('Functional Test DataType B', 3))
+        String aId = createNewItem(getValidLabelJson('Functional Test DataType A', 4))
+
+        when:
+        GET('')
+
+        then: 'index order is default'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataType E'
+        response.body().items[1].label == 'Functional Test DataType D'
+        response.body().items[2].label == 'Functional Test DataType C'
+        response.body().items[3].label == 'Functional Test DataType B'
+        response.body().items[4].label == 'Functional Test DataType A'
+
+        when: 'add an imported dataelement'
+        PUT("dataModels/$dataModelId/dataTypes/$finalisedDataModelId/$finalisedDataTypeId", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        GET('')
+
+        then: 'label order is used'
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataType (Importable)'
+        response.body().items[1].label == 'Functional Test DataType A'
+        response.body().items[2].label == 'Functional Test DataType B'
+        response.body().items[3].label == 'Functional Test DataType C'
+        response.body().items[4].label == 'Functional Test DataType D'
+        response.body().items[5].label == 'Functional Test DataType E'
+
+        and: 'sort by idx param is discarded'
+        GET('?sort=idx')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataType (Importable)'
+        response.body().items[1].label == 'Functional Test DataType A'
+        response.body().items[2].label == 'Functional Test DataType B'
+        response.body().items[3].label == 'Functional Test DataType C'
+        response.body().items[4].label == 'Functional Test DataType D'
+        response.body().items[5].label == 'Functional Test DataType E'
+
+        and: 'sort by date created works as expected'
+        GET('?sort=dateCreated')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataType (Importable)'
+        response.body().items[1].label == 'Functional Test DataType E'
+        response.body().items[2].label == 'Functional Test DataType D'
+        response.body().items[3].label == 'Functional Test DataType C'
+        response.body().items[4].label == 'Functional Test DataType B'
+        response.body().items[5].label == 'Functional Test DataType A'
+
+        when: 'imported data element is removed'
+        DELETE("$finalisedDataModelId/$finalisedDataTypeId")
+        verifyResponse OK, response
+
+        then: 'index sorting is default again'
+        GET('')
+        verifyResponse OK, response
+        response.body().items[0].label == 'Functional Test DataType E'
+        response.body().items[1].label == 'Functional Test DataType D'
+        response.body().items[2].label == 'Functional Test DataType C'
+        response.body().items[3].label == 'Functional Test DataType B'
+        response.body().items[4].label == 'Functional Test DataType A'
+
+        cleanup:
+        cleanUpData(eId)
+        cleanUpData(dId)
+        cleanUpData(cId)
+        cleanUpData(bId)
+        cleanUpData(aId)
     }
 }
