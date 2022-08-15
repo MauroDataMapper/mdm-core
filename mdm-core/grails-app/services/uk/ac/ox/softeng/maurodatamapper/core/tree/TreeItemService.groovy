@@ -504,7 +504,7 @@ class TreeItemService {
         }
 
         def readableVersionedContainers =
-            versionedFolderService.filterAllReadableModels(versionedContainers as List<VersionedFolder>, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+            versionedFolderService.filterAllReadableContainers(versionedContainers as List<VersionedFolder>, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
 
         List<K> combined = []
         combined.addAll(nonVersionedContainers)

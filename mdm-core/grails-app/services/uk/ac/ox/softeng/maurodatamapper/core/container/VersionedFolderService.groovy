@@ -1197,8 +1197,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         savedCopy
     }
 
-    List<VersionedFolder> filterAllReadableModels(Collection<VersionedFolder> containers, boolean includeDocumentSuperseded,
-                                                  boolean includeModelSuperseded, boolean includeDeleted) {
+    List<VersionedFolder> filterAllReadableContainers(Collection<VersionedFolder> containers, boolean includeDocumentSuperseded,
+                                                      boolean includeModelSuperseded, boolean includeDeleted) {
         List<UUID> ids = containers.findAll {includeDeleted ? true : !it.deleted}.collect {it.id}
         List<UUID> constrainedIds
         // The list of ids are ALL the readable ids by the user, no matter the model status
