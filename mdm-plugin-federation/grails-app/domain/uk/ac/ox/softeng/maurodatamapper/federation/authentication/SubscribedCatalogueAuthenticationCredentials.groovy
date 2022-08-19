@@ -28,6 +28,7 @@ import grails.databinding.BindUsing
 class SubscribedCatalogueAuthenticationCredentials {
 
     UUID id
+    String test
 
     static belongsTo = [
         subscribedCatalogue: SubscribedCatalogue

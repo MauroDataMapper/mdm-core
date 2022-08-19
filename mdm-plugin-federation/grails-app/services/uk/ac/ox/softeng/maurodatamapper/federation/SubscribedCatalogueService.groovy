@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
@@ -71,6 +73,15 @@ class SubscribedCatalogueService implements AnonymisableService {
 
     SubscribedCatalogue save(SubscribedCatalogue subscribedCatalogue) {
         subscribedCatalogue.save(failOnError: true, validate: false)
+    }
+
+    SubscribedCatalogue saveOrUpdateAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
+        if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentialsType) {
+            if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials && subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.getDomainClass() ==
+                SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationCredentialsType)) {
+
+            }
+        }
     }
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
@@ -182,7 +193,7 @@ class SubscribedCatalogueService implements AnonymisableService {
     }
 
     void anonymise(String createdBy) {
-        SubscribedCatalogue.findAllByCreatedBy(createdBy).each { subscribedCatalogue ->
+        SubscribedCatalogue.findAllByCreatedBy(createdBy).each {subscribedCatalogue ->
             subscribedCatalogue.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
             subscribedCatalogue.save(validate: false)
         }

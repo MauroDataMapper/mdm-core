@@ -18,6 +18,9 @@
 
 package uk.ac.ox.softeng.maurodatamapper.federation.authentication
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 enum SubscribedCatalogueAuthenticationType {
     OAUTH_CLIENT_CREDENTIALS('OAuth (Client Credentials)'),
     API_KEY('API Key'),
@@ -45,5 +48,18 @@ enum SubscribedCatalogueAuthenticationType {
         map['subscribedCatalogueAuthenticationCredentialsType'] instanceof SubscribedCatalogueAuthenticationType ?
         map['subscribedCatalogueAuthenticationCredentialsType'] as SubscribedCatalogueAuthenticationType :
         findForLabel(map['subscribedCatalogueAuthenticationCredentialsType'] as String)
+    }
+
+    static Class findDomainClassFromType(SubscribedCatalogueAuthenticationType type) {
+        switch (type) {
+            case OAUTH_CLIENT_CREDENTIALS:
+                return OAuthClientCredentialsAuthenticationCredentials
+            case API_KEY:
+                return ApiKeyAuthenticationCredentials
+            case NO_AUTHENTICATION:
+                return null
+            default:
+                log.warn('Unknown authentication credentials type [{}]', type)
+        }
     }
 }

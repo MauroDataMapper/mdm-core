@@ -18,6 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -113,7 +116,7 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
         }
         // If the instance is valid then confirm the connection is possible,
         // i.e. there is a catalogue at the URL and the ApiKey works
-        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
+        //        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
 
         if (instance.hasErrors() || !instance.validate()) {
             transactionStatus.setRollbackOnly()
@@ -126,6 +129,21 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     @Override
     @Transactional
     protected SubscribedCatalogue saveResource(SubscribedCatalogue resource) {
+        if (resource.subscribedCatalogueAuthenticationCredentialsType) {
+            SubscribedCatalogueAuthenticationCredentials credentials =
+                SubscribedCatalogueAuthenticationType.findDomainClassFromType(resource.subscribedCatalogueAuthenticationCredentialsType).newInstance()
+            if (resource.apiKey) credentials.apiKey = resource.apiKey
+            if (resource.clientId) credentials.clientId = resource.clientId
+            if (resource.clientSecret) credentials.clientSecret = resource.clientSecret
+
+            if (!credentials.validate()) {
+                transactionStatus.setRollbackOnly()
+                respond credentials.errors
+                return
+            }
+            resource.subscribedCatalogueAuthenticationCredentials = credentials
+        }
+
         SubscribedCatalogue subscribedCatalogue = super.saveResource(resource) as SubscribedCatalogue
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(subscribedCatalogue,
@@ -138,6 +156,31 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     @Override
     @Transactional
     protected SubscribedCatalogue updateResource(SubscribedCatalogue resource) {
+        if (resource.isDirty('subscribedCatalogueAuthenticationCredentialsType')) {
+            SubscribedCatalogueAuthenticationCredentials credentials =
+                SubscribedCatalogueAuthenticationType.findDomainClassFromType(resource.subscribedCatalogueAuthenticationCredentialsType).newInstance()
+            if (resource.apiKey) credentials.apiKey = resource.apiKey
+            if (resource.clientId) credentials.clientId = resource.clientId
+            if (resource.clientSecret) credentials.clientSecret = resource.clientSecret
+
+            if (!credentials.validate()) {
+                transactionStatus.setRollbackOnly()
+                respond credentials.errors
+                return
+            }
+            resource.subscribedCatalogueAuthenticationCredentials = credentials
+        } else {
+            if (resource.apiKey) resource.subscribedCatalogueAuthenticationCredentials.apiKey = resource.apiKey
+            if (resource.clientId) resource.subscribedCatalogueAuthenticationCredentials.clientId = resource.clientId
+            if (resource.clientSecret) resource.subscribedCatalogueAuthenticationCredentials.clientSecret = resource.clientSecret
+
+            if (!resource.subscribedCatalogueAuthenticationCredentials.validate()) {
+                transactionStatus.setRollbackOnly()
+                respond resource.subscribedCatalogueAuthenticationCredentials.errors
+                return
+            }
+        }
+
         Set<String> changedProperties = resource.getDirtyPropertyNames()
         SubscribedCatalogue subscribedCatalogue = super.updateResource(resource) as SubscribedCatalogue
         if (securityPolicyManagerService) {

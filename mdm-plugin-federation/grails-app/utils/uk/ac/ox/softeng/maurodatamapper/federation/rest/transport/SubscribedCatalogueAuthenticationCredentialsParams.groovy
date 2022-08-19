@@ -16,8 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package uk.ac.ox.softeng.maurodatamapper.federation.authentication
+package uk.ac.ox.softeng.maurodatamapper.federation.rest.transport
 
-class NoAuthAuthenticationCredentials extends SubscribedCatalogueAuthenticationCredentials {
+import java.time.OffsetDateTime
+
+class SubscribedCatalogueAuthenticationCredentialsParams {
+
+    // ApiKeyAuthenticationCredentials
+//    UUID apiKey
+
+    // OAuthClientCredentialsAuthenticationCredentials
+    String clientId
+    String clientSecret
 
 }

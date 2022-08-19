@@ -18,9 +18,9 @@ json {
         refreshPeriod subscribedCatalogue.refreshPeriod
     }
 
-    if (subscribedCatalogue.apiKey) {
-        apiKey subscribedCatalogue.apiKey
-    }
+//    if (subscribedCatalogue.apiKey) {
+//        apiKey subscribedCatalogue.apiKey
+//    }
 
     if (subscribedCatalogue.connectionTimeout) {
         connectionTimeout subscribedCatalogue.connectionTimeout

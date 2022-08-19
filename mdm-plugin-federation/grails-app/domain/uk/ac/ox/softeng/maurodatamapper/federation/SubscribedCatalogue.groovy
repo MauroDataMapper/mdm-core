@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedCatalogueAuthenticationCredentialsParams
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
@@ -60,6 +61,11 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     SubscribedCatalogueAuthenticationCredentials subscribedCatalogueAuthenticationCredentials
 
+    // Transient properties for binding authentication credentials
+    UUID apiKey
+    String clientId
+    String clientSecret
+
     static hasMany = [
         subscribedModels: SubscribedModel
     ]
@@ -67,6 +73,8 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
     static hasOne = [
         subscribedCatalogueAuthenticationCredentials: SubscribedCatalogueAuthenticationCredentials
     ]
+
+    static transients = ['apiKey', 'clientId', 'clientSecret']
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
@@ -78,6 +86,9 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
         lastRead nullable: true
         connectionTimeout nullable: true
         subscribedCatalogueAuthenticationCredentials nullable: true
+        apiKey nullable: true, bindable: true
+        clientId nullable: true, bindable: true
+        clientSecret nullable: true, bindable: true
     }
 
     static mapping = {
