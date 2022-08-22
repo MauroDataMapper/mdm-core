@@ -33,4 +33,11 @@ class OAuthClientCredentialsAuthenticationCredentials extends SubscribedCatalogu
     String refreshToken
     OffsetDateTime refreshTokenExpiryTime
 
+    static constraints = {
+        accessToken nullable: true
+        accessTokenExpiryTime nullable: true
+        refreshToken nullable: true
+        refreshTokenExpiryTime nullable: true
+    }
+
 }

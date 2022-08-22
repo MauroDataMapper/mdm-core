@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
@@ -53,12 +54,12 @@ import java.util.concurrent.ThreadFactory
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> implements Closeable {
+abstract class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> implements Closeable {
 
     private HttpClient client
     private String hostUrl
     private String contextPath
-    private C subscribedCatalogueAuthenticationCredentials
+    private C authenticationCredentials
     private HttpClientConfiguration httpClientConfiguration
     private NettyClientSslBuilder nettyClientSslBuilder
     private MediaTypeCodecRegistry mediaTypeCodecRegistry
@@ -93,6 +94,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
 
         hostUrl = subscribedCatalogue.url
+        authenticationCredentials = subscribedCatalogue.subscribedCatalogueAuthenticationCredentials
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
@@ -115,29 +117,31 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         log.debug('Client created to connect to {}', hostUrl)
     }
 
+    abstract boolean handles(SubscribedCatalogueAuthenticationType authenticationType)
+
     @Override
     void close() throws IOException {
         client.close()
     }
 
-    GPathResult getSubscribedCatalogueModelsFromAtomFeed(C authenticationCredentials) {
+    GPathResult getSubscribedCatalogueModelsFromAtomFeed() {
         // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
         retrieveXmlDataFromClient(UriBuilder.of(''), authenticationCredentials)
     }
 
-    Map<String, Object> getSubscribedCatalogueModels(C authenticationCredentials) {
+    Map<String, Object> getSubscribedCatalogueModels() {
         retrieveMapFromClient(UriBuilder.of('published/models'), authenticationCredentials)
     }
 
-    List<Map<String, Object>> getAvailableExporters(C authenticationCredentials, String urlResourceType) {
+    List<Map<String, Object>> getAvailableExporters(String urlResourceType) {
         retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), authenticationCredentials)
     }
 
-    Map<String, Object> getVersionLinksForModel(C authenticationCredentials, String urlModelResourceType, String publishedModelId) {
+    Map<String, Object> getVersionLinksForModel(String urlModelResourceType, String publishedModelId) {
         retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), authenticationCredentials)
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(C authenticationCredentials, String publishedModelId) {
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(String publishedModelId) {
         retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), authenticationCredentials)
     }
 
@@ -145,8 +149,8 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         retrieveBytesFromClient(UriBuilder.of(resourceUrl), apiKey)
     }
 
-    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
-        String body = retrieveStringFromClient(uriBuilder, apiKey, params)
+    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
+        String body = retrieveStringFromClient(uriBuilder, authenticationCredentials, params)
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {
@@ -155,7 +159,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         }
     }
 
-    private Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    abstract protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
@@ -165,9 +169,9 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }
+    }*/
 
-    private String retrieveStringFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    abstract protected String retrieveStringFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
@@ -177,9 +181,9 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }
+    }*/
 
-    private List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    abstract protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
@@ -189,9 +193,9 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }
+    }*/
 
-    private byte[] retrieveBytesFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    abstract protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
                                              .header(API_KEY_HEADER, apiKey.toString()),
@@ -200,9 +204,9 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }
+    }*/
 
-    private static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
+    protected static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
         if (ex instanceof HttpClientResponseException) {
             if (ex.status == HttpStatus.NOT_FOUND) {
                 throw new ApiBadRequestException('FED02', "Requested endpoint could not be found ${fullUrl}")
@@ -218,7 +222,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
     }
 
     // TODO @josephcr check this builds the correct URLs for error messages
-    private String getFullUrl(UriBuilder uriBuilder, Map params) {
+    protected String getFullUrl(UriBuilder uriBuilder, Map params) {
         String path = uriBuilder.expand(params).toString()
         hostUrl.toURI().resolve(UriBuilder.of(contextPath).path(path).build()).toString()
     }

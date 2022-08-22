@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
@@ -53,7 +55,7 @@ import java.util.concurrent.ThreadFactory
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-class ApiKeyAuthenticatingFederationClient extends FederationClient {
+class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthenticationCredentials> {
 
     static final String API_KEY_HEADER = 'apiKey'
     private HttpClient client
@@ -88,78 +90,25 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient {
                                                  ThreadFactory threadFactory,
                                                  NettyClientSslBuilder nettyClientSslBuilder,
                                                  MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this.httpClientConfiguration = httpClientConfiguration
-        this.nettyClientSslBuilder = nettyClientSslBuilder
-        this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
-
-        hostUrl = subscribedCatalogue.url
-        // The http client resolves using URI.resolve which ignores anything in the url path,
-        // therefore we need to make sure its part of the context path.
-        URI hostUri = hostUrl.toURI()
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
-            String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
-            if (!path.endsWith('/api/')) path = path + 'api/'
-            this.contextPath = path
-        } else {
-            this.contextPath = hostUri.path
-        }
-
-        client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL().toURI()),
-                                       httpClientConfiguration,
-                                       this.contextPath,
-                                       threadFactory,
-                                       nettyClientSslBuilder,
-                                       mediaTypeCodecRegistry,
-                                       AnnotationMetadataResolver.DEFAULT,
-                                       Collections.emptyList())
-        log.debug('Client created to connect to {}', hostUrl)
+        super(subscribedCatalogue,
+              httpClientConfiguration,
+              threadFactory,
+              nettyClientSslBuilder,
+              mediaTypeCodecRegistry
+        )
     }
 
     @Override
-    void close() throws IOException {
-        client.close()
+    boolean handles(SubscribedCatalogueAuthenticationType authenticationType) {
+        authenticationType == SubscribedCatalogueAuthenticationType.API_KEY
     }
 
-    GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {
-        // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
-        retrieveXmlDataFromClient(UriBuilder.of(''), apiKey)
-    }
-
-    Map<String, Object> getSubscribedCatalogueModels(UUID apiKey) {
-        retrieveMapFromClient(UriBuilder.of('published/models'), apiKey)
-    }
-
-    List<Map<String, Object>> getAvailableExporters(UUID apiKey, String urlResourceType) {
-        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), apiKey)
-    }
-
-    Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), apiKey)
-    }
-
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), apiKey)
-    }
-
-    byte[] getBytesResourceExport(UUID apiKey, String resourceUrl) {
-        retrieveBytesFromClient(UriBuilder.of(resourceUrl), apiKey)
-    }
-
-    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
-        String body = retrieveStringFromClient(uriBuilder, apiKey, params)
-        try {
-            new XmlSlurper().parseText(body)
-        } catch (IOException | SAXException exception) {
-            throw new ApiInternalException('FED01', "Could not translate XML from endpoint [${getFullUrl(uriBuilder, params)}].\n" +
-                                                    "Exception: ${exception.getMessage()}")
-        }
-    }
-
-    private Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    @Override
+    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
                                          Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
@@ -167,11 +116,12 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient {
         }
     }
 
-    private String retrieveStringFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    @Override
+    protected String retrieveStringFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
                                          Argument.STRING)
         }
         catch (HttpException ex) {
@@ -179,11 +129,12 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient {
         }
     }
 
-    private List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    @Override
+    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
                                          Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
@@ -191,35 +142,15 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient {
         }
     }
 
-    private byte[] retrieveBytesFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    @Override
+    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
                                          Argument.of(byte[])) as byte[]
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }
-
-    private static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
-        if (ex instanceof HttpClientResponseException) {
-            if (ex.status == HttpStatus.NOT_FOUND) {
-                throw new ApiBadRequestException('FED02', "Requested endpoint could not be found ${fullUrl}")
-            } else {
-                throw new ApiBadRequestException('FED03', "Could not load resource from endpoint [${fullUrl}].\n" +
-                                                          "Response body [${ex.response.body()}]",
-                                                 ex)
-            }
-        } else if (ex instanceof HttpClientException) {
-            throw new ApiBadRequestException('FED04', "Could not load resource from endpoint [${fullUrl}]", ex)
-        }
-        throw new ApiInternalException('FED05', "Could not load resource from endpoint [${fullUrl}]", ex)
-    }
-
-    // TODO @josephcr check this builds the correct URLs for error messages
-    private String getFullUrl(UriBuilder uriBuilder, Map params) {
-        String path = uriBuilder.expand(params).toString()
-        hostUrl.toURI().resolve(UriBuilder.of(contextPath).path(path).build()).toString()
     }
 }

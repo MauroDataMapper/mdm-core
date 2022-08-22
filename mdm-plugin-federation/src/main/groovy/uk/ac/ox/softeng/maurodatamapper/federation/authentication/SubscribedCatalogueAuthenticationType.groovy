@@ -45,9 +45,9 @@ enum SubscribedCatalogueAuthenticationType {
     }
 
     static SubscribedCatalogueAuthenticationType findFromMap(def map) {
-        map['subscribedCatalogueAuthenticationCredentialsType'] instanceof SubscribedCatalogueAuthenticationType ?
-        map['subscribedCatalogueAuthenticationCredentialsType'] as SubscribedCatalogueAuthenticationType :
-        findForLabel(map['subscribedCatalogueAuthenticationCredentialsType'] as String)
+        map['subscribedCatalogueAuthenticationType'] instanceof SubscribedCatalogueAuthenticationType ?
+        map['subscribedCatalogueAuthenticationType'] as SubscribedCatalogueAuthenticationType :
+        findForLabel(map['subscribedCatalogueAuthenticationType'] as String)
     }
 
     static Class findDomainClassFromType(SubscribedCatalogueAuthenticationType type) {

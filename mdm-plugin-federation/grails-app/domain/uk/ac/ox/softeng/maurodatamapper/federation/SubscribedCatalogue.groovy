@@ -57,7 +57,7 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     // Authentication type for connection to remote catalogue
     @BindUsing({obj, source -> SubscribedCatalogueAuthenticationType.findFromMap(source)})
-    SubscribedCatalogueAuthenticationType subscribedCatalogueAuthenticationCredentialsType
+    SubscribedCatalogueAuthenticationType subscribedCatalogueAuthenticationType
 
     SubscribedCatalogueAuthenticationCredentials subscribedCatalogueAuthenticationCredentials
 
@@ -93,6 +93,7 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     static mapping = {
         subscribedModels cascade: 'all-delete-orphan'
+        subscribedCatalogueAuthenticationCredentials cascade: 'all-delete-orphan'
     }
 
     SubscribedCatalogue() {

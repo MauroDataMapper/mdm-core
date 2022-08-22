@@ -75,13 +75,29 @@ class SubscribedCatalogueService implements AnonymisableService {
         subscribedCatalogue.save(failOnError: true, validate: false)
     }
 
-    SubscribedCatalogue saveOrUpdateAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
-        if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentialsType) {
-            if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials && subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.getDomainClass() ==
-                SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationCredentialsType)) {
-
-            }
+    SubscribedCatalogue createAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
+        if (subscribedCatalogue.subscribedCatalogueAuthenticationType) {
+            SubscribedCatalogueAuthenticationCredentials credentials =
+                SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType)?.
+                    getDeclaredConstructor()?.newInstance()
+            if (subscribedCatalogue.apiKey) credentials.apiKey = subscribedCatalogue.apiKey
+            if (subscribedCatalogue.clientId) credentials.clientId = subscribedCatalogue.clientId
+            if (subscribedCatalogue.clientSecret) credentials.clientSecret = subscribedCatalogue.clientSecret
+            if (credentials) credentials.subscribedCatalogue = subscribedCatalogue
+            subscribedCatalogue.subscribedCatalogueAuthenticationCredentials = credentials
         }
+        subscribedCatalogue
+    }
+
+    SubscribedCatalogue updateAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
+        if (subscribedCatalogue.isDirty('subscribedCatalogueAuthenticationType')) {
+            createAuthenticationCredentials(subscribedCatalogue)
+        } else {
+            if (subscribedCatalogue.apiKey) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.apiKey = subscribedCatalogue.apiKey
+            if (subscribedCatalogue.clientId) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.clientId = subscribedCatalogue.clientId
+            if (subscribedCatalogue.clientSecret) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.clientSecret = subscribedCatalogue.clientSecret
+        }
+        subscribedCatalogue
     }
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
@@ -198,4 +214,5 @@ class SubscribedCatalogueService implements AnonymisableService {
             subscribedCatalogue.save(validate: false)
         }
     }
+
 }

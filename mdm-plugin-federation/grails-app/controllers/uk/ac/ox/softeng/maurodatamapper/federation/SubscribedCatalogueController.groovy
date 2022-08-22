@@ -58,6 +58,54 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
                  : notFound(params.id)
     }
 
+    /**
+     * Override save method to create nested credentials object.
+     * @return
+     */
+    @Transactional
+    @Override
+    def save() {
+        if (handleReadOnly()) return
+
+        SubscribedCatalogue instance = createResource()
+        subscribedCatalogueService.createAuthenticationCredentials(instance)
+
+        if (response.isCommitted()) return
+
+        if (!validateResource(instance, 'create')) return
+
+        saveResource instance
+
+        saveResponse instance
+    }
+
+    /**
+     * Override update method to handle nested credentials object.
+     * @return
+     */
+    @Transactional
+    @Override
+    def update() {
+        if (handleReadOnly()) return
+
+        SubscribedCatalogue instance = queryForResource(params.id)
+
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        instance.properties = getObjectToBind()
+        subscribedCatalogueService.updateAuthenticationCredentials(instance)
+
+        if (!validateResource(instance, 'update')) return
+
+        updateResource instance
+
+        updateResponse instance
+    }
+
     @Override
     void serviceDeleteResource(SubscribedCatalogue resource) {
         subscribedCatalogueService.delete(resource)
@@ -65,6 +113,10 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
 
     List<String> types() {
         respond SubscribedCatalogueType.labels()
+    }
+
+    List<String> authenticationTypes() {
+        respond SubscribedCatalogueAuthenticationType.labels()
     }
 
     /**
@@ -114,6 +166,15 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             // Dont try and test connection if the instance fails basic validation
             return false
         }
+
+        // Validate nested credentials
+        if (instance.subscribedCatalogueAuthenticationCredentials &&
+            (instance.subscribedCatalogueAuthenticationCredentials.hasErrors() || !instance.subscribedCatalogueAuthenticationCredentials.validate())) {
+            transactionStatus.setRollbackOnly()
+            respond instance.subscribedCatalogueAuthenticationCredentials.errors, view: view // STATUS CODE 422
+            return false
+        }
+
         // If the instance is valid then confirm the connection is possible,
         // i.e. there is a catalogue at the URL and the ApiKey works
         //        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
@@ -129,21 +190,6 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     @Override
     @Transactional
     protected SubscribedCatalogue saveResource(SubscribedCatalogue resource) {
-        if (resource.subscribedCatalogueAuthenticationCredentialsType) {
-            SubscribedCatalogueAuthenticationCredentials credentials =
-                SubscribedCatalogueAuthenticationType.findDomainClassFromType(resource.subscribedCatalogueAuthenticationCredentialsType).newInstance()
-            if (resource.apiKey) credentials.apiKey = resource.apiKey
-            if (resource.clientId) credentials.clientId = resource.clientId
-            if (resource.clientSecret) credentials.clientSecret = resource.clientSecret
-
-            if (!credentials.validate()) {
-                transactionStatus.setRollbackOnly()
-                respond credentials.errors
-                return
-            }
-            resource.subscribedCatalogueAuthenticationCredentials = credentials
-        }
-
         SubscribedCatalogue subscribedCatalogue = super.saveResource(resource) as SubscribedCatalogue
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(subscribedCatalogue,
@@ -156,31 +202,6 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     @Override
     @Transactional
     protected SubscribedCatalogue updateResource(SubscribedCatalogue resource) {
-        if (resource.isDirty('subscribedCatalogueAuthenticationCredentialsType')) {
-            SubscribedCatalogueAuthenticationCredentials credentials =
-                SubscribedCatalogueAuthenticationType.findDomainClassFromType(resource.subscribedCatalogueAuthenticationCredentialsType).newInstance()
-            if (resource.apiKey) credentials.apiKey = resource.apiKey
-            if (resource.clientId) credentials.clientId = resource.clientId
-            if (resource.clientSecret) credentials.clientSecret = resource.clientSecret
-
-            if (!credentials.validate()) {
-                transactionStatus.setRollbackOnly()
-                respond credentials.errors
-                return
-            }
-            resource.subscribedCatalogueAuthenticationCredentials = credentials
-        } else {
-            if (resource.apiKey) resource.subscribedCatalogueAuthenticationCredentials.apiKey = resource.apiKey
-            if (resource.clientId) resource.subscribedCatalogueAuthenticationCredentials.clientId = resource.clientId
-            if (resource.clientSecret) resource.subscribedCatalogueAuthenticationCredentials.clientSecret = resource.clientSecret
-
-            if (!resource.subscribedCatalogueAuthenticationCredentials.validate()) {
-                transactionStatus.setRollbackOnly()
-                respond resource.subscribedCatalogueAuthenticationCredentials.errors
-                return
-            }
-        }
-
         Set<String> changedProperties = resource.getDirtyPropertyNames()
         SubscribedCatalogue subscribedCatalogue = super.updateResource(resource) as SubscribedCatalogue
         if (securityPolicyManagerService) {
