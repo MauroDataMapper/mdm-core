@@ -17,28 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.web
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
-import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
-import groovy.xml.XmlSlurper
-import groovy.xml.slurpersupport.GPathResult
-import io.micronaut.core.annotation.AnnotationMetadataResolver
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.HttpClientConfiguration
-import io.micronaut.http.client.LoadBalancer
-import io.micronaut.http.client.exceptions.HttpClientException
-import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.client.netty.DefaultHttpClient
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
@@ -46,7 +34,6 @@ import io.micronaut.http.uri.UriBuilder
 import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
 import org.springframework.context.ApplicationContext
-import org.xml.sax.SAXException
 
 import java.util.concurrent.ThreadFactory
 
@@ -55,11 +42,11 @@ import java.util.concurrent.ThreadFactory
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthenticationCredentials> {
+class OAuthAuthenticatingFederationClient extends FederationClient<ApiKeyAuthenticationCredentials> {
 
     static final String API_KEY_HEADER = 'apiKey'
 
-    ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
+    OAuthAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
         this(subscribedCatalogue,
              applicationContext.getBean(HttpClientConfiguration),
              applicationContext.getBean(NettyClientSslBuilder),
@@ -67,10 +54,10 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
         )
     }
 
-    ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
-                                         HttpClientConfiguration httpClientConfiguration,
-                                         NettyClientSslBuilder nettyClientSslBuilder,
-                                         MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    OAuthAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
+                                        HttpClientConfiguration httpClientConfiguration,
+                                        NettyClientSslBuilder nettyClientSslBuilder,
+                                        MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this(subscribedCatalogue,
              httpClientConfiguration,
              new DefaultThreadFactory(MultithreadEventLoopGroup),
@@ -79,11 +66,11 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
         )
     }
 
-    protected ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
-                                                 HttpClientConfiguration httpClientConfiguration,
-                                                 ThreadFactory threadFactory,
-                                                 NettyClientSslBuilder nettyClientSslBuilder,
-                                                 MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    protected OAuthAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
+                                                  HttpClientConfiguration httpClientConfiguration,
+                                                  ThreadFactory threadFactory,
+                                                  NettyClientSslBuilder nettyClientSslBuilder,
+                                                  MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         super(subscribedCatalogue,
               httpClientConfiguration,
               threadFactory,

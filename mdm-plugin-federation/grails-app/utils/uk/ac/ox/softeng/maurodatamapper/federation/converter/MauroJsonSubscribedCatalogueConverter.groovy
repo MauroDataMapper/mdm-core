@@ -38,7 +38,7 @@ class MauroJsonSubscribedCatalogueConverter implements SubscribedCatalogueConver
 
     @Override
     Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
-        Map<String, Object> subscribedCatalogueModels = federationClient.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        Map<String, Object> subscribedCatalogueModels = federationClient.getSubscribedCatalogueModels()
 
         Authority subscribedAuthority = new Authority(label: subscribedCatalogueModels.authority.label, url: subscribedCatalogueModels.authority.url)
 

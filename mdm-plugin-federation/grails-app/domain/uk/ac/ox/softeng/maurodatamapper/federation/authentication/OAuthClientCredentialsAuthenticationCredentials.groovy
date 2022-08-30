@@ -22,6 +22,9 @@ import java.time.OffsetDateTime
 
 class OAuthClientCredentialsAuthenticationCredentials extends SubscribedCatalogueAuthenticationCredentials {
 
+    // Authorisation token endpoint
+    String tokenUrl
+
     // Client ID and secret to be set by administrator.
     String clientId
     String clientSecret
@@ -30,14 +33,9 @@ class OAuthClientCredentialsAuthenticationCredentials extends SubscribedCatalogu
     String accessToken
     OffsetDateTime accessTokenExpiryTime
 
-    String refreshToken
-    OffsetDateTime refreshTokenExpiryTime
-
     static constraints = {
         accessToken nullable: true
         accessTokenExpiryTime nullable: true
-        refreshToken nullable: true
-        refreshTokenExpiryTime nullable: true
     }
 
 }

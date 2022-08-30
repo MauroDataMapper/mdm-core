@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
+import uk.ac.ox.softeng.maurodatamapper.federation.web.ApiKeyAuthenticatingFederationClient
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 
@@ -170,7 +171,7 @@ class SubscribedCatalogueService implements AnonymisableService {
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, String publishedModelId) {
         if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, publishedModelId)
+                client.getVersionLinksForModel(urlModelType, publishedModelId)
             }
         } else {
             [:]
@@ -180,7 +181,7 @@ class SubscribedCatalogueService implements AnonymisableService {
     Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
         if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
             getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, publishedModelId)
+                client.getNewerPublishedVersionsForPublishedModel(publishedModelId)
             }
         } else {
             [:]
@@ -189,8 +190,7 @@ class SubscribedCatalogueService implements AnonymisableService {
 
     byte[] getBytesResourceExport(SubscribedCatalogue subscribedCatalogue, String resourceUrl) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getBytesResourceExport(subscribedCatalogue.apiKey, resourceUrl)
-            client.retrieveStringFromClient(null, null, null)
+            client.getBytesResourceExport(resourceUrl)
         }
     }
 
@@ -198,10 +198,19 @@ class SubscribedCatalogueService implements AnonymisableService {
         httpClientConfiguration.setReadTimeout(Duration.ofMinutes(
             subscribedCatalogue.connectionTimeout ?: grailsApplication.config.getProperty(SubscribedCatalogue.DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY, Integer)
         ))
-        new FederationClient(subscribedCatalogue,
-                             httpClientConfiguration,
-                             nettyClientSslBuilder,
-                             mediaTypeCodecRegistry)
+        if (subscribedCatalogue.subscribedCatalogueAuthenticationType == SubscribedCatalogueAuthenticationType.OAUTH_CLIENT_CREDENTIALS) {
+
+        } else if (subscribedCatalogue.subscribedCatalogueAuthenticationType = SubscribedCatalogueAuthenticationType.API_KEY) {
+            new ApiKeyAuthenticatingFederationClient(subscribedCatalogue,
+                                                     httpClientConfiguration,
+                                                     nettyClientSslBuilder,
+                                                     mediaTypeCodecRegistry)
+        } else {
+            new FederationClient(subscribedCatalogue,
+                                 httpClientConfiguration,
+                                 nettyClientSslBuilder,
+                                 mediaTypeCodecRegistry)
+        }
     }
 
     private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {

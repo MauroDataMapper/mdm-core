@@ -38,7 +38,7 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
 
     @Override
     Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
-        GPathResult subscribedCatalogueModelsFeed = federationClient.getSubscribedCatalogueModelsFromAtomFeed(subscribedCatalogue.apiKey)
+        GPathResult subscribedCatalogueModelsFeed = federationClient.getSubscribedCatalogueModelsFromAtomFeed()
 
         Authority subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name.text(), url: subscribedCatalogueModelsFeed.author.uri.text())
 

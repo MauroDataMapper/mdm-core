@@ -49,20 +49,21 @@ import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
 import java.util.concurrent.ThreadFactory
+
 /**
  * @since 14/04/2021
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-abstract class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> implements Closeable {
+class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> implements Closeable {
 
-    private HttpClient client
-    private String hostUrl
-    private String contextPath
-    private C authenticationCredentials
-    private HttpClientConfiguration httpClientConfiguration
-    private NettyClientSslBuilder nettyClientSslBuilder
-    private MediaTypeCodecRegistry mediaTypeCodecRegistry
+    protected HttpClient client
+    protected String hostUrl
+    protected String contextPath
+    protected C authenticationCredentials
+    protected HttpClientConfiguration httpClientConfiguration
+    protected NettyClientSslBuilder nettyClientSslBuilder
+    protected MediaTypeCodecRegistry mediaTypeCodecRegistry
 
     FederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
         this(subscribedCatalogue,
@@ -84,11 +85,11 @@ abstract class FederationClient<C extends SubscribedCatalogueAuthenticationCrede
         )
     }
 
-    private FederationClient(SubscribedCatalogue subscribedCatalogue,
-                             HttpClientConfiguration httpClientConfiguration,
-                             ThreadFactory threadFactory,
-                             NettyClientSslBuilder nettyClientSslBuilder,
-                             MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    protected FederationClient(SubscribedCatalogue subscribedCatalogue,
+                     HttpClientConfiguration httpClientConfiguration,
+                     ThreadFactory threadFactory,
+                     NettyClientSslBuilder nettyClientSslBuilder,
+                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.httpClientConfiguration = httpClientConfiguration
         this.nettyClientSslBuilder = nettyClientSslBuilder
         this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
@@ -117,7 +118,9 @@ abstract class FederationClient<C extends SubscribedCatalogueAuthenticationCrede
         log.debug('Client created to connect to {}', hostUrl)
     }
 
-    abstract boolean handles(SubscribedCatalogueAuthenticationType authenticationType)
+    boolean handles(SubscribedCatalogueAuthenticationType authenticationType) {
+        authenticationType == SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION
+    }
 
     @Override
     void close() throws IOException {
@@ -145,8 +148,8 @@ abstract class FederationClient<C extends SubscribedCatalogueAuthenticationCrede
         retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), authenticationCredentials)
     }
 
-    byte[] getBytesResourceExport(UUID apiKey, String resourceUrl) {
-        retrieveBytesFromClient(UriBuilder.of(resourceUrl), apiKey)
+    byte[] getBytesResourceExport(String resourceUrl) {
+        retrieveBytesFromClient(UriBuilder.of(resourceUrl), authenticationCredentials)
     }
 
     private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
@@ -159,52 +162,45 @@ abstract class FederationClient<C extends SubscribedCatalogueAuthenticationCrede
         }
     }
 
-    abstract protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
+    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest
-                                             .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }*/
+    }
 
-    abstract protected String retrieveStringFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
+    protected String retrieveStringFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest
-                                             .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.STRING)
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }*/
+    }
 
-    abstract protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
+    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest
-                                             .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }*/
+    }
 
-    abstract protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) /*{
+    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.of(byte[])) as byte[]
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
-    }*/
+    }
 
     protected static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
         if (ex instanceof HttpClientResponseException) {
