@@ -17,16 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.web
 
-
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
-import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.OAuthClientCredentialsAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.client.HttpClientConfiguration
+import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
@@ -35,16 +36,17 @@ import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
 import org.springframework.context.ApplicationContext
 
+import java.time.OffsetDateTime
 import java.util.concurrent.ThreadFactory
-
 /**
  * @since 14/04/2021
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-class OAuthAuthenticatingFederationClient extends FederationClient<ApiKeyAuthenticationCredentials> {
+class OAuthAuthenticatingFederationClient extends FederationClient<OAuthClientCredentialsAuthenticationCredentials> {
 
-    static final String API_KEY_HEADER = 'apiKey'
+    static final String OAUTH_TOKEN_HEADER = 'Authorization'
+    static final Integer OAUTH_TOKEN_EXPIRY_GRACE_SECONDS = 5
 
     OAuthAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
         this(subscribedCatalogue,
@@ -77,19 +79,21 @@ class OAuthAuthenticatingFederationClient extends FederationClient<ApiKeyAuthent
               nettyClientSslBuilder,
               mediaTypeCodecRegistry
         )
+
+        authenticationCredentials = subscribedCatalogue.subscribedCatalogueAuthenticationCredentials
     }
 
     @Override
     boolean handles(SubscribedCatalogueAuthenticationType authenticationType) {
-        authenticationType == SubscribedCatalogueAuthenticationType.API_KEY
+        authenticationType == SubscribedCatalogueAuthenticationType.OAUTH_CLIENT_CREDENTIALS
     }
 
     @Override
-    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(OAUTH_TOKEN_HEADER, getOAuthBearerToken()),
                                          Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
@@ -98,11 +102,11 @@ class OAuthAuthenticatingFederationClient extends FederationClient<ApiKeyAuthent
     }
 
     @Override
-    protected String retrieveStringFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected String retrieveStringFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(OAUTH_TOKEN_HEADER, getOAuthBearerToken()),
                                          Argument.STRING)
         }
         catch (HttpException ex) {
@@ -111,11 +115,11 @@ class OAuthAuthenticatingFederationClient extends FederationClient<ApiKeyAuthent
     }
 
     @Override
-    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(OAUTH_TOKEN_HEADER, getOAuthBearerToken()),
                                          Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
@@ -124,14 +128,57 @@ class OAuthAuthenticatingFederationClient extends FederationClient<ApiKeyAuthent
     }
 
     @Override
-    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(OAUTH_TOKEN_HEADER, getOAuthBearerToken()),
                                          Argument.of(byte[])) as byte[]
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
+        }
+    }
+
+    private Map<String, String> oAuthTokenRequestBody() {
+        [
+            grant_type   : 'client_credentials',
+            client_id    : authenticationCredentials.clientId,
+            client_secret: authenticationCredentials.clientSecret
+        ]
+    }
+
+    private String getOAuthBearerToken() {
+        OffsetDateTime expiryTime = OffsetDateTime.now().plusSeconds(OAUTH_TOKEN_EXPIRY_GRACE_SECONDS)
+
+        if (authenticationCredentials.accessToken && authenticationCredentials.accessTokenExpiryTime > expiryTime) {
+            log.debug('OAuth token is still valid, using it.')
+        } else {
+            log.debug('OAuth token is not present or expired, retrieving a new token.')
+            retrieveOAuthTokenFromClient()
+        }
+
+        'Bearer ' + authenticationCredentials.accessToken
+    }
+
+    private retrieveOAuthTokenFromClient() {
+        try {
+            Map<String, Object> tokenResponse = client.toBlocking().retrieve(HttpRequest.POST(authenticationCredentials.tokenUrl,
+                                                                                              oAuthTokenRequestBody()).contentType(MediaType.APPLICATION_FORM_URLENCODED_TYPE),
+                                                                             Argument.mapOf(String, Object))
+
+            if (!'bearer'.equalsIgnoreCase(tokenResponse?.token_type)) {
+                throw new HttpClientException('OAuth token type must be "bearer"')
+            }
+
+            OffsetDateTime expiryTime = OffsetDateTime.now().plusSeconds((Integer) tokenResponse.expires_in)
+
+            if (tokenResponse.access_token && expiryTime) {
+                authenticationCredentials.accessToken = tokenResponse.access_token
+                authenticationCredentials.accessTokenExpiryTime = expiryTime
+            }
+        }
+        catch (HttpException ex) {
+            handleHttpException(ex, authenticationCredentials.tokenUrl)
         }
     }
 }

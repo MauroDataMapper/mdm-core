@@ -32,10 +32,10 @@ trait JsonImportMapping {
     /**
      * Helps with importing json by removing any elements called 'id'
      */
-    static def slurpAndClean(byte[] content) {
+    static def slurpAndClean(byte[] content, List<String> exclude = ['id']) {
         // Declare generator and slurper
         def generator = new JsonGenerator.Options()
-            .excludeFieldsByName('id')
+            .excludeFieldsByName(exclude)
             .build()
         def slurper = new JsonSlurper()
 

@@ -86,10 +86,10 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
     }
 
     protected FederationClient(SubscribedCatalogue subscribedCatalogue,
-                     HttpClientConfiguration httpClientConfiguration,
-                     ThreadFactory threadFactory,
-                     NettyClientSslBuilder nettyClientSslBuilder,
-                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+                               HttpClientConfiguration httpClientConfiguration,
+                               ThreadFactory threadFactory,
+                               NettyClientSslBuilder nettyClientSslBuilder,
+                               MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.httpClientConfiguration = httpClientConfiguration
         this.nettyClientSslBuilder = nettyClientSslBuilder
         this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
@@ -129,31 +129,31 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
 
     GPathResult getSubscribedCatalogueModelsFromAtomFeed() {
         // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
-        retrieveXmlDataFromClient(UriBuilder.of(''), authenticationCredentials)
+        retrieveXmlDataFromClient(UriBuilder.of(''))
     }
 
     Map<String, Object> getSubscribedCatalogueModels() {
-        retrieveMapFromClient(UriBuilder.of('published/models'), authenticationCredentials)
+        retrieveMapFromClient(UriBuilder.of('published/models'))
     }
 
     List<Map<String, Object>> getAvailableExporters(String urlResourceType) {
-        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), authenticationCredentials)
+        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'))
     }
 
     Map<String, Object> getVersionLinksForModel(String urlModelResourceType, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), authenticationCredentials)
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'))
     }
 
     Map<String, Object> getNewerPublishedVersionsForPublishedModel(String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), authenticationCredentials)
+        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'))
     }
 
     byte[] getBytesResourceExport(String resourceUrl) {
-        retrieveBytesFromClient(UriBuilder.of(resourceUrl), authenticationCredentials)
+        retrieveBytesFromClient(UriBuilder.of(resourceUrl))
     }
 
-    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
-        String body = retrieveStringFromClient(uriBuilder, authenticationCredentials, params)
+    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, Map params = [:]) {
+        String body = retrieveStringFromClient(uriBuilder, params)
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {
@@ -162,7 +162,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         }
     }
 
-    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
+    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.mapOf(String, Object))
@@ -172,7 +172,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         }
     }
 
-    protected String retrieveStringFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
+    protected String retrieveStringFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.STRING)
@@ -182,7 +182,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         }
     }
 
-    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
+    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
@@ -192,7 +192,7 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         }
     }
 
-    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, C authenticationCredentials, Map params = [:]) {
+    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.of(byte[])) as byte[]

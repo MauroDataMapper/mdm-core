@@ -18,11 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.OAuthClientCredentialsAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
-import uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -68,7 +66,12 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
         if (handleReadOnly()) return
 
         SubscribedCatalogue instance = createResource()
-        subscribedCatalogueService.createAuthenticationCredentials(instance)
+        //subscribedCatalogueService.createAuthenticationCredentials(instance)
+
+        OAuthClientCredentialsAuthenticationCredentials credentials = new OAuthClientCredentialsAuthenticationCredentials()
+        bindData(credentials, getObjectToBind())
+        credentials.subscribedCatalogue = instance
+        instance.subscribedCatalogueAuthenticationCredentials = credentials
 
         if (response.isCommitted()) return
 
@@ -177,7 +180,7 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
 
         // If the instance is valid then confirm the connection is possible,
         // i.e. there is a catalogue at the URL and the ApiKey works
-        //        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
+        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
 
         if (instance.hasErrors() || !instance.validate()) {
             transactionStatus.setRollbackOnly()

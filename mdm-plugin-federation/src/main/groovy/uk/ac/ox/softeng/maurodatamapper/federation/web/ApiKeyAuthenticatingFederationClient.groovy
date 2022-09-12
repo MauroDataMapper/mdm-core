@@ -17,28 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.web
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
-import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
-import groovy.xml.XmlSlurper
-import groovy.xml.slurpersupport.GPathResult
-import io.micronaut.core.annotation.AnnotationMetadataResolver
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.HttpClientConfiguration
-import io.micronaut.http.client.LoadBalancer
-import io.micronaut.http.client.exceptions.HttpClientException
-import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.client.netty.DefaultHttpClient
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
@@ -46,7 +33,6 @@ import io.micronaut.http.uri.UriBuilder
 import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
 import org.springframework.context.ApplicationContext
-import org.xml.sax.SAXException
 
 import java.util.concurrent.ThreadFactory
 
@@ -80,10 +66,10 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
     }
 
     protected ApiKeyAuthenticatingFederationClient(SubscribedCatalogue subscribedCatalogue,
-                                                 HttpClientConfiguration httpClientConfiguration,
-                                                 ThreadFactory threadFactory,
-                                                 NettyClientSslBuilder nettyClientSslBuilder,
-                                                 MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+                                                   HttpClientConfiguration httpClientConfiguration,
+                                                   ThreadFactory threadFactory,
+                                                   NettyClientSslBuilder nettyClientSslBuilder,
+                                                   MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         super(subscribedCatalogue,
               httpClientConfiguration,
               threadFactory,
@@ -98,7 +84,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
     }
 
     @Override
-    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
@@ -111,7 +97,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
     }
 
     @Override
-    protected String retrieveStringFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected String retrieveStringFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
@@ -124,7 +110,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
     }
 
     @Override
-    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
@@ -137,7 +123,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
     }
 
     @Override
-    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, ApiKeyAuthenticationCredentials authenticationCredentials, Map params = [:]) {
+    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
                                              .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),

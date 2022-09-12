@@ -18,6 +18,10 @@
 
 package uk.ac.ox.softeng.maurodatamapper.federation.authentication
 
+import uk.ac.ox.softeng.maurodatamapper.federation.web.ApiKeyAuthenticatingFederationClient
+import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
+import uk.ac.ox.softeng.maurodatamapper.federation.web.OAuthAuthenticatingFederationClient
+
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -58,6 +62,19 @@ enum SubscribedCatalogueAuthenticationType {
                 return ApiKeyAuthenticationCredentials
             case NO_AUTHENTICATION:
                 return null
+            default:
+                log.warn('Unknown authentication credentials type [{}]', type)
+        }
+    }
+
+    static Class findFederationClientClassFromType(SubscribedCatalogueAuthenticationType type) {
+        switch (type) {
+            case OAUTH_CLIENT_CREDENTIALS:
+                return OAuthAuthenticatingFederationClient
+            case API_KEY:
+                return ApiKeyAuthenticatingFederationClient
+            case NO_AUTHENTICATION:
+                return FederationClient<Void>
             default:
                 log.warn('Unknown authentication credentials type [{}]', type)
         }

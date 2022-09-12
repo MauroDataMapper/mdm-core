@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
-import uk.ac.ox.softeng.maurodatamapper.federation.web.ApiKeyAuthenticatingFederationClient
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 
@@ -81,9 +80,7 @@ class SubscribedCatalogueService implements AnonymisableService {
             SubscribedCatalogueAuthenticationCredentials credentials =
                 SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType)?.
                     getDeclaredConstructor()?.newInstance()
-            if (subscribedCatalogue.apiKey) credentials.apiKey = subscribedCatalogue.apiKey
-            if (subscribedCatalogue.clientId) credentials.clientId = subscribedCatalogue.clientId
-            if (subscribedCatalogue.clientSecret) credentials.clientSecret = subscribedCatalogue.clientSecret
+            setAuthenticationCredentialsFromSubscribedCatalogue(subscribedCatalogue, credentials)
             if (credentials) credentials.subscribedCatalogue = subscribedCatalogue
             subscribedCatalogue.subscribedCatalogueAuthenticationCredentials = credentials
         }
@@ -94,9 +91,7 @@ class SubscribedCatalogueService implements AnonymisableService {
         if (subscribedCatalogue.isDirty('subscribedCatalogueAuthenticationType')) {
             createAuthenticationCredentials(subscribedCatalogue)
         } else {
-            if (subscribedCatalogue.apiKey) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.apiKey = subscribedCatalogue.apiKey
-            if (subscribedCatalogue.clientId) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.clientId = subscribedCatalogue.clientId
-            if (subscribedCatalogue.clientSecret) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials.clientSecret = subscribedCatalogue.clientSecret
+            setAuthenticationCredentialsFromSubscribedCatalogue(subscribedCatalogue, subscribedCatalogue.subscribedCatalogueAuthenticationCredentials)
         }
         subscribedCatalogue
     }
@@ -105,9 +100,9 @@ class SubscribedCatalogueService implements AnonymisableService {
         try {
             def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModelsWithAuthority(subscribedCatalogue)
 
-            // Check that the remote catalogue has a name (Authority label), which is mandatory for both Mauro JSON and Atom XML catalogues
-            // Check that the publishedModels list exists, however this may be empty
-            if (!subscribedAuthority.label || publishedModels == null) {
+            // For Mauro JSON catalogues, check that the remote catalogue has a name (Authority label)
+            // For both Mauro JSON and Atom catalogues, check that the publishedModels list exists, however this may be empty
+            if ((subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON && !subscribedAuthority.label) || publishedModels == null) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
                                                   'Invalid subscription to catalogue at [{0}], response from catalogue is invalid')
@@ -198,19 +193,20 @@ class SubscribedCatalogueService implements AnonymisableService {
         httpClientConfiguration.setReadTimeout(Duration.ofMinutes(
             subscribedCatalogue.connectionTimeout ?: grailsApplication.config.getProperty(SubscribedCatalogue.DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY, Integer)
         ))
-        if (subscribedCatalogue.subscribedCatalogueAuthenticationType == SubscribedCatalogueAuthenticationType.OAUTH_CLIENT_CREDENTIALS) {
 
-        } else if (subscribedCatalogue.subscribedCatalogueAuthenticationType = SubscribedCatalogueAuthenticationType.API_KEY) {
-            new ApiKeyAuthenticatingFederationClient(subscribedCatalogue,
-                                                     httpClientConfiguration,
-                                                     nettyClientSslBuilder,
-                                                     mediaTypeCodecRegistry)
-        } else {
-            new FederationClient(subscribedCatalogue,
-                                 httpClientConfiguration,
-                                 nettyClientSslBuilder,
-                                 mediaTypeCodecRegistry)
-        }
+        SubscribedCatalogueAuthenticationType.findFederationClientClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType).getDeclaredConstructor(
+            [SubscribedCatalogue.class, HttpClientConfiguration.class, NettyClientSslBuilder.class, MediaTypeCodecRegistry.class] as Class[]
+        ).
+            newInstance(subscribedCatalogue, httpClientConfiguration, nettyClientSslBuilder, mediaTypeCodecRegistry)
+    }
+
+    private SubscribedCatalogueAuthenticationCredentials setAuthenticationCredentialsFromSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue,
+                                                         SubscribedCatalogueAuthenticationCredentials authenticationCredentials) {
+        if (subscribedCatalogue.apiKey) authenticationCredentials.apiKey = subscribedCatalogue.apiKey
+        if (subscribedCatalogue.tokenUrl) authenticationCredentials.tokenUrl = subscribedCatalogue.tokenUrl
+        if (subscribedCatalogue.clientId) authenticationCredentials.clientId = subscribedCatalogue.clientId
+        if (subscribedCatalogue.clientSecret) authenticationCredentials.clientSecret = subscribedCatalogue.clientSecret
+        authenticationCredentials
     }
 
     private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
