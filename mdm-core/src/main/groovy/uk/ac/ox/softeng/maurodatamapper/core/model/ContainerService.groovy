@@ -71,7 +71,7 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
     }
 
     @Override
-    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         findByParentIdAndLabel(parentId, pathIdentifier)
     }
 

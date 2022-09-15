@@ -56,9 +56,9 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
             }
 
             // Permissions have been checked as part of the interceptor
-            pathedResource = pathService.findResourceByPathFromRootResource(resource as MdmDomain, params.path)
+            pathedResource = pathService.findResourceByPathFromRootResource(resource as MdmDomain, params.path, null, [finalised:params.finalised])
         } else {
-            pathedResource = pathService.findResourceByPathFromRootClass(params.securableResourceClass, params.path, currentUserSecurityPolicyManager)
+            pathedResource = pathService.findResourceByPathFromRootClass(params.securableResourceClass, params.path, currentUserSecurityPolicyManager, [finalised:params.finalised])
         }
 
         if (!pathedResource) return notFound(DomainClass, params.path)
