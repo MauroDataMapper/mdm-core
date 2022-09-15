@@ -101,7 +101,7 @@ class CatalogueUserService implements UserService, MdmDomainService<CatalogueUse
     }
 
     @Override
-    CatalogueUser findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    CatalogueUser findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         return null
     }
 

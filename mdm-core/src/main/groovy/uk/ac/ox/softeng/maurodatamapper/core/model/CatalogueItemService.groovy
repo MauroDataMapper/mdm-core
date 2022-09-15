@@ -357,7 +357,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     }
 
     @Override
-    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         findByParentIdAndLabel(parentId, pathIdentifier)
     }
 

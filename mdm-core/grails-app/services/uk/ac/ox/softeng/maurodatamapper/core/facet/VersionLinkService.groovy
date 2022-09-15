@@ -96,7 +96,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
     @Override
-    VersionLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    VersionLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         String[] split = pathIdentifier
         VersionLink.byModelId(parentId)
             .eq('linkType', SemanticLinkType.findForLabel(split[0]))

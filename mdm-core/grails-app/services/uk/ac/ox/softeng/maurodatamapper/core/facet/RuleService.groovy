@@ -172,7 +172,7 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
     }
 
     @Override
-    Rule findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    Rule findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         Rule.byMultiFacetAwareItemId(parentId).eq('name', pathIdentifier).get()
     }
 }

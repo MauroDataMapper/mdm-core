@@ -153,7 +153,7 @@ class ReferenceDataValueService implements MdmDomainService<ReferenceDataValue> 
     }
 
     @Override
-    ReferenceDataValue findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    ReferenceDataValue findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         ReferenceDataValue.byReferenceDataModelId(parentId).eq('rowNumber', pathIdentifier.toInteger()).get()
     }
 }

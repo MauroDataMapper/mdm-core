@@ -70,7 +70,7 @@ class RuleRepresentationService implements MdmDomainService<RuleRepresentation> 
     }
 
     @Override
-    RuleRepresentation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    RuleRepresentation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         RuleRepresentation.byRuleId(parentId).eq('language', pathIdentifier).get()
     }
 }

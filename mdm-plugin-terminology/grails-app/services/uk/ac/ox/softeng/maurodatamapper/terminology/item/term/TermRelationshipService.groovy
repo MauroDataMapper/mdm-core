@@ -214,7 +214,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    TermRelationship findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    TermRelationship findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         String[] split = pathIdentifier.split(/\./)
         if (split.size() != 3) throw new ApiBadRequestException('TRS01', "TermRelationship Path identifier is invalid [${pathIdentifier}]")
 

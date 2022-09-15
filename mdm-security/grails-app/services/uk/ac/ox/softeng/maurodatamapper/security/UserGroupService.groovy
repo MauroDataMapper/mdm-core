@@ -63,7 +63,7 @@ class UserGroupService implements MdmDomainService<UserGroup> {
     }
 
     @Override
-    UserGroup findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    UserGroup findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         findByName(pathIdentifier)
     }
 

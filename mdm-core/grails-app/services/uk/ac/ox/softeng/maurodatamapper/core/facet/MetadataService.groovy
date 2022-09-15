@@ -287,7 +287,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
     }
 
     @Override
-    Metadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    Metadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         String ns
         String key
         pathIdentifier.find(/^(.+)\.(.+)$/) {all, foundNs, foundKey ->

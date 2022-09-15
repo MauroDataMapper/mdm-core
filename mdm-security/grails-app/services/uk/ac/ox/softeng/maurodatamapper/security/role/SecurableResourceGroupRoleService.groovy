@@ -64,7 +64,7 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
     }
 
     @Override
-    SecurableResourceGroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    SecurableResourceGroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         return null
     }
 

@@ -115,7 +115,7 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
     }
 
     @Override
-    SummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    SummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         SummaryMetadata.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
     }
 }

@@ -82,7 +82,7 @@ class GroupRoleService implements MdmDomainService<GroupRole> {
     }
 
     @Override
-    GroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    GroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         getFromCache(pathIdentifier).groupRole
     }
 

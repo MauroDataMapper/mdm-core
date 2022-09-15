@@ -51,6 +51,8 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
 
     abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
 
+    abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams)
+
     K save(K domain) {
         // Default behaviours for save in GormEntity
         save(flush: false, validate: true, domain)

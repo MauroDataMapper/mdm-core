@@ -60,7 +60,7 @@ class SummaryMetadataReportService implements MdmDomainService<SummaryMetadataRe
     }
 
     @Override
-    SummaryMetadataReport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    SummaryMetadataReport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         OffsetDateTime reportDate = OffsetDateTime.parse(pathIdentifier, SummaryMetadataReport.PATH_FORMATTER)
         SummaryMetadataReport.bySummaryMetadataId(parentId).eq('reportDate', reportDate).get()
     }
