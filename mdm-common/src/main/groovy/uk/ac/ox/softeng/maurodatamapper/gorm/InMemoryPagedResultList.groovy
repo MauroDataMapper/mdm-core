@@ -28,8 +28,8 @@ class InMemoryPagedResultList<E> extends PagedResultList<E> {
         totalCount = results.size()
         this.pagination = pagination
 
-        Integer max = pagination.max ?: 10
-        Integer offset = pagination.offset ?: 0
+        Integer max = pagination.max?.toInteger() ?: 10
+        Integer offset = pagination.offset?.toInteger() ?: 0
         resultList = results.subList(Math.min(totalCount, offset), Math.min(totalCount, offset + max))
     }
 

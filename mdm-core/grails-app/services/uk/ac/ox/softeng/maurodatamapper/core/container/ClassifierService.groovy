@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
@@ -315,12 +316,19 @@ class ClassifierService extends ContainerService<Classifier> {
         }
     }
 
-    List<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
+    InMemoryPagedResultList<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                     UUID classifierId, Map pagination = [:]) {
         Classifier classifier = get(classifierId)
-        catalogueItemServices.collect {service ->
+        List<CatalogueItem> items = catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
         }.findAll().flatten()
+
+        Map paginationEdit = (Map) pagination.clone()
+        paginationEdit.max = items.size()
+        paginationEdit.offset = 0
+
+        List<CatalogueItem> itemsSorted = PaginatedHibernateSearchResult.paginateFullResultSet(items, paginationEdit).results
+        new InMemoryPagedResultList<>(itemsSorted, pagination)
     }
 
     void updateClassifierCatalogueItemsIndex(Classifier classifier) {
