@@ -11,6 +11,7 @@ json {
     if (dataElement.description) description dataElement.description
     if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
     if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+    idx dataElement.idx
     dataType {
         id dataElement.referenceDataType.id
         label dataElement.referenceDataType.label

@@ -16,4 +16,5 @@ json {
     dataType tmpl.'/dataType/dataType'(dataElement.dataType)
     if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
     if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+    idx dataElement.idx
 }
