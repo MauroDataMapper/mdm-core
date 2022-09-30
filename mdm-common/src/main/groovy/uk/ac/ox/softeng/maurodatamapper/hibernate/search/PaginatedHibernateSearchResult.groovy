@@ -59,7 +59,7 @@ class PaginatedHibernateSearchResult<K> {
 
         Integer max = pagination.max?.toInteger()
         Integer offsetAmount = pagination.offset?.toInteger()
-        String sortKey = pagination.sort
+        String sortKey = pagination.sort ?: 'label'
         String order = pagination.order ?: 'asc'
 
         List<D> sortedList = new ArrayList<>(fullResultSet)
