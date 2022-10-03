@@ -259,8 +259,8 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         treeItems.any {it.label == testFolder.label}
 
         when:
-        def tf =treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
-                                                                 true, false, false)
+        def tf = treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                  true, false, false)
         then:
         tf
         tf.size() == 3
@@ -515,7 +515,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         String searchTerm = 'test'
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
+        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null, false, false, false)
 
         then:
         treeItems.size() == 1
@@ -545,7 +545,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         String searchTerm = 'child'
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
+        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null, false, false, false)
 
         then:
         treeItems.size() == 1
@@ -585,7 +585,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         String searchTerm = 'string'
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
+        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null, false, false, false)
 
         then: 'no domain provided should not search datatypes'
         treeItems.size() == 0
@@ -606,7 +606,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         String searchTerm = 'ele'
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
+        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null, false, false, false)
 
         then: 'no domain provided should not search data elements'
         treeItems.size() == 0
@@ -635,7 +635,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         when:
         List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm,
-                                                                            'DataModel')
+                                                                            'DataModel', false, false, false)
 
         then:
         treeItems.size() == 0
@@ -648,7 +648,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         when:
         List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm,
-                                                                            'DataType')
+                                                                            'DataType', false, false, false)
 
         then: 'no domain provided should not search datatypes'
         treeItems.size() == 1
@@ -674,7 +674,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         when:
         List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm,
-                                                                            'DataElement')
+                                                                            'DataElement', false, false, false)
 
         then: 'no domain provided should not search data elements'
         treeItems.size() == 1

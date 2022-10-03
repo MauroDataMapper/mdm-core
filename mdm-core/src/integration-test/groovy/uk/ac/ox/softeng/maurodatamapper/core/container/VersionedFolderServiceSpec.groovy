@@ -18,10 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -34,7 +36,10 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 @Rollback
 class VersionedFolderServiceSpec extends BaseIntegrationSpec {
 
+    private static String VF_HISTORY_LABEL = 'VF History'
+
     UUID id
+    List<VersionedFolder> versionedContainers
     VersionedFolderService versionedFolderService
 
     Authority getTestAuthority() {
@@ -63,6 +68,23 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
 
         checkAndSave(folder)
         id = folder.id
+
+        // Setup VersionedFolder model version history
+        def vf1Version1 = new VersionedFolder(label: VF_HISTORY_LABEL, createdBy: UNIT_TEST, authority: testAuthority, modelVersion: Version.from('1'), finalised: true)
+        checkAndSave(vf1Version1)
+        def vf1Version2 = new VersionedFolder(label: VF_HISTORY_LABEL, createdBy: UNIT_TEST, authority: testAuthority, modelVersion: Version.from('2'), finalised: true)
+        checkAndSave(vf1Version2)
+        def vf1Version3Draft = new VersionedFolder(label: VF_HISTORY_LABEL, createdBy: UNIT_TEST, authority: testAuthority, finalised: false, branchName: 'main',
+                                                   deleted: true)
+        checkAndSave(vf1Version3Draft)
+
+        vf1Version2.addToVersionLinks(linkType: VersionLinkType.NEW_MODEL_VERSION_OF, createdBy: UNIT_TEST, targetModel: vf1Version1)
+        checkAndSave(vf1Version1)
+
+        vf1Version3Draft.addToVersionLinks(linkType: VersionLinkType.NEW_MODEL_VERSION_OF, createdBy: UNIT_TEST, targetModel: vf1Version2)
+        checkAndSave(vf1Version2)
+
+        versionedContainers = [vf1Version1, vf1Version2, vf1Version3Draft]
     }
 
     void 'test get'() {
@@ -89,7 +111,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         setupDomainData()
 
         expect:
-        versionedFolderService.count() == 8
+        versionedFolderService.count() == 11
     }
 
     void 'test delete'() {
@@ -97,15 +119,15 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         setupDomainData()
 
         expect:
-        versionedFolderService.count() == 8
+        versionedFolderService.count() == 11
 
         when:
         versionedFolderService.delete(id)
         sessionFactory.currentSession.flush()
 
         then:
-        VersionedFolder.countByDeleted(false) == 7
-        VersionedFolder.countByDeleted(true) == 1
+        VersionedFolder.countByDeleted(false) == 9
+        VersionedFolder.countByDeleted(true) == 2
     }
 
     void 'test findAllByUser'() {
@@ -120,7 +142,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         List<VersionedFolder> folderList = versionedFolderService.findAllByUser(testPolicy)
 
         then:
-        folderList.size() == 8
+        folderList.size() == 11
 
         when: 'using policy that can only read the id folder'
         testPolicy = Mock()
@@ -148,7 +170,7 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
         folderList = versionedFolderService.findAllByUser(PublicAccessSecurityPolicyManager.instance)
 
         then:
-        folderList.size() == 8
+        folderList.size() == 11
     }
 
     void 'test version family tree on id'() {
@@ -264,5 +286,73 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
 
         expect:
         !versionedFolderService.doesMovePlaceVersionedFolderInsideVersionedFolder(moving, moveTo)
+    }
+
+    void 'test excluding model superseded and deleted containers'() {
+        given:
+        setupDomainData()
+
+        when:
+        List<VersionedFolder> filtered = versionedFolderService.filterAllReadableContainers(versionedContainers,
+                                                                                            false,
+                                                                                            false,
+                                                                                            false)
+
+        then:
+        filtered.size() == 1
+        !filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 1}
+        filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 2}
+        !filtered.any {it.label == VF_HISTORY_LABEL && !it.finalised && it.deleted}
+    }
+
+    void 'test including model superseded containers'() {
+        given:
+        setupDomainData()
+
+        when:
+        List<VersionedFolder> filtered = versionedFolderService.filterAllReadableContainers(versionedContainers,
+                                                                                            false,
+                                                                                            true,
+                                                                                            false)
+
+        then:
+        filtered.size() == 2
+        filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 1}
+        filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 2}
+        !filtered.any {it.label == VF_HISTORY_LABEL && !it.finalised && it.deleted}
+    }
+
+    void 'test include deleted containers'() {
+        given:
+        setupDomainData()
+
+        when:
+        List<VersionedFolder> filtered = versionedFolderService.filterAllReadableContainers(versionedContainers,
+                                                                                            false,
+                                                                                            false,
+                                                                                            true)
+
+        then:
+        filtered.size() == 2
+        !filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 1}
+        filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 2}
+        filtered.any {it.label == VF_HISTORY_LABEL && !it.finalised && it.deleted}
+    }
+
+    void 'test include model superseded and deleted containers'() {
+        given:
+        setupDomainData()
+
+        when:
+        List<VersionedFolder> filtered = versionedFolderService.filterAllReadableContainers(versionedContainers,
+                                                                                            false,
+                                                                                            true,
+                                                                                            true)
+
+        then:
+        filtered.size() == 3
+        filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 1}
+        filtered.any {it.label == VF_HISTORY_LABEL && it.modelVersion?.major == 2}
+        filtered.any {it.label == VF_HISTORY_LABEL && !it.finalised && it.deleted}
     }
 }
