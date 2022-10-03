@@ -103,7 +103,9 @@ class TreeItemService {
                                                                              boolean includeDeleted) {
         log.info('Creating container only tree')
         buildContainerTreeFromContainerTreeItems(
-            getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded, includeDeleted), false)
+            getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded, includeDeleted),
+            false
+        )
     }
 
     def <K extends Container> List<ContainerTreeItem> buildModelCreatableContainerOnlyTree(Class<K> containerClass,
@@ -113,7 +115,9 @@ class TreeItemService {
                                                                                            boolean includeDeleted) {
         log.info('Creating model creatable container only tree')
         buildContainerTreeFromContainerTreeItems(
-            getAllModelCreatableContainerTreeItems(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded, includeDeleted), false)
+            getAllModelCreatableContainerTreeItems(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded, includeDeleted),
+            false
+        )
     }
 
     /**

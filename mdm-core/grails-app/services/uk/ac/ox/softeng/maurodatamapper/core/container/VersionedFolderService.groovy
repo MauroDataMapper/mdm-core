@@ -274,8 +274,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             long st = System.currentTimeMillis()
             Collection<Model> modelsInFolder = service.findAllByFolderIdInList(foldersInside)
             log.debug('Found {} {} inside VF', modelsInFolder.size(), service.getDomainClass().simpleName)
-            modelsInFolder.each {model -> service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
-            }
+            modelsInFolder.each {model -> service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)}
             log.debug('Finalisation of {} models took {}', modelsInFolder.size(), Utils.timeTaken(st))
         }
 
@@ -812,21 +811,18 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void removeBranchNameDiff(ObjectDiff diff) {
 
-        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff -> fieldDiff.fieldName == 'branchName'
-        },] as Predicate
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff -> fieldDiff.fieldName == 'branchName'}] as Predicate
 
         diff.diffs.removeIf(branchNamePredicate)
 
         ArrayDiff modelsDiff = diff.diffs.find {it.fieldName == 'models'}
         if (modelsDiff) {
-            modelsDiff.modified.each {md -> md.diffs.removeIf(branchNamePredicate)
-            }
+            modelsDiff.modified.each {md -> md.diffs.removeIf(branchNamePredicate)}
         }
 
         ArrayDiff folderDiff = diff.diffs.find {it.fieldName == 'folders'}
         if (folderDiff) {
-            folderDiff.modified.each {fd -> removeBranchNameDiff(fd)
-            }
+            folderDiff.modified.each {fd -> removeBranchNameDiff(fd)}
         }
     }
 
@@ -1110,7 +1106,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         relativePathToMergeTo.each {node ->
             if (!modelService) {
                 // Build up the path to the model
-                if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node) else modelRelativeToTargetPath.addToPathNodes(node)
+                if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node)
+                else modelRelativeToTargetPath.addToPathNodes(node)
 
                 modelService = modelServices.find {s -> s.handlesPathPrefix(node.prefix)}
             }
@@ -1121,7 +1118,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 // Make sure we repoint the path to the target model so we can use the model service code to do the copy
                 if (!modelItemToModelAbsolutePath) modelItemToModelAbsolutePath = Path.from(node).tap {
                     it.first().modelIdentifier = getModelIdentifier(targetVersionedFolder)
-                } else modelItemToModelAbsolutePath.addToPathNodes(node)
+                } else {
+                    modelItemToModelAbsolutePath.addToPathNodes(node)
+                }
             }
         }
         if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle creation of model item [${modelItemDomainType}]")
@@ -1130,9 +1129,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, modelRelativeToTargetPath,
                                                            getModelIdentifier(targetVersionedFolder)) as Model
 
-        [targetModel                 : targetModel,
-         modelService                : modelService,
-         modelItemToModelAbsolutePath: modelItemToModelAbsolutePath]
+        [
+            targetModel                 : targetModel,
+            modelService                : modelService,
+            modelItemToModelAbsolutePath: modelItemToModelAbsolutePath
+        ]
     }
 
     static String getModelIdentifier(VersionedFolder versionedFolder) {
@@ -1203,7 +1204,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         List<UUID> constrainedIds
         // The list of ids are ALL the readable ids by the user, no matter the model status
         if (includeDocumentSuperseded && includeModelSuperseded) {
-            constrainedIds = new ArrayList<>(ids)
+            constrainedIds = ids
         } else if (includeModelSuperseded) {
             constrainedIds = findAllExcludingDocumentSupersededIds(ids)
         } else if (includeDocumentSuperseded) {
