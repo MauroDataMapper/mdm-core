@@ -65,13 +65,12 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     def save() {
         if (handleReadOnly()) return
 
-        SubscribedCatalogue instance = createResource()
-        //subscribedCatalogueService.createAuthenticationCredentials(instance)
+        Map<String, Object> credentialsParams = cacheBodyIntoRequest(extractRequestBodyToMap())
 
-        OAuthClientCredentialsAuthenticationCredentials credentials = new OAuthClientCredentialsAuthenticationCredentials()
-        bindData(credentials, getObjectToBind())
-        credentials.subscribedCatalogue = instance
-        instance.subscribedCatalogueAuthenticationCredentials = credentials
+        SubscribedCatalogue instance = createResource()
+        // Create nested credentials object
+        subscribedCatalogueService.createAuthenticationCredentials(instance)
+        if (instance.subscribedCatalogueAuthenticationCredentials) bindData(instance.subscribedCatalogueAuthenticationCredentials, credentialsParams)
 
         if (response.isCommitted()) return
 
@@ -91,6 +90,8 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     def update() {
         if (handleReadOnly()) return
 
+        Map<String, Object> credentialsParams = cacheBodyIntoRequest(extractRequestBodyToMap())
+
         SubscribedCatalogue instance = queryForResource(params.id)
 
         if (instance == null) {
@@ -101,6 +102,7 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
 
         instance.properties = getObjectToBind()
         subscribedCatalogueService.updateAuthenticationCredentials(instance)
+        if (instance.subscribedCatalogueAuthenticationCredentials) bindData(instance.subscribedCatalogueAuthenticationCredentials, credentialsParams)
 
         if (!validateResource(instance, 'update')) return
 

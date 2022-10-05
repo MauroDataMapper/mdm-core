@@ -60,12 +60,6 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     SubscribedCatalogueAuthenticationCredentials subscribedCatalogueAuthenticationCredentials
 
-    // Transient properties for binding authentication credentials
-    UUID apiKey
-    String tokenUrl
-    String clientId
-    String clientSecret
-
     static hasMany = [
         subscribedModels: SubscribedModel
     ]
@@ -73,8 +67,6 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
     static hasOne = [
         subscribedCatalogueAuthenticationCredentials: SubscribedCatalogueAuthenticationCredentials
     ]
-
-    static transients = ['apiKey', 'tokenUrl', 'clientId', 'clientSecret']
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
@@ -86,10 +78,6 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
         lastRead nullable: true
         connectionTimeout nullable: true
         subscribedCatalogueAuthenticationCredentials nullable: true
-        apiKey nullable: true, bindable: true
-        tokenUrl nullable: true, bindable: true
-        clientId nullable: true, bindable: true
-        clientSecret nullable: true, bindable: true
     }
 
     static mapping = {

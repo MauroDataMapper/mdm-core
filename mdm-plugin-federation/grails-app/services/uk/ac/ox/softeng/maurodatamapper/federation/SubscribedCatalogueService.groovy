@@ -76,11 +76,10 @@ class SubscribedCatalogueService implements AnonymisableService {
     }
 
     SubscribedCatalogue createAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
+        SubscribedCatalogueAuthenticationCredentials credentials
         if (subscribedCatalogue.subscribedCatalogueAuthenticationType) {
-            SubscribedCatalogueAuthenticationCredentials credentials =
-                SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType)?.
-                    getDeclaredConstructor()?.newInstance()
-            setAuthenticationCredentialsFromSubscribedCatalogue(subscribedCatalogue, credentials)
+            credentials = SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType)?.getDeclaredConstructor()?.
+                newInstance()
             if (credentials) credentials.subscribedCatalogue = subscribedCatalogue
             subscribedCatalogue.subscribedCatalogueAuthenticationCredentials = credentials
         }
@@ -90,8 +89,6 @@ class SubscribedCatalogueService implements AnonymisableService {
     SubscribedCatalogue updateAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
         if (subscribedCatalogue.isDirty('subscribedCatalogueAuthenticationType')) {
             createAuthenticationCredentials(subscribedCatalogue)
-        } else {
-            setAuthenticationCredentialsFromSubscribedCatalogue(subscribedCatalogue, subscribedCatalogue.subscribedCatalogueAuthenticationCredentials)
         }
         subscribedCatalogue
     }
@@ -198,15 +195,6 @@ class SubscribedCatalogueService implements AnonymisableService {
             [SubscribedCatalogue.class, HttpClientConfiguration.class, NettyClientSslBuilder.class, MediaTypeCodecRegistry.class] as Class[]
         ).
             newInstance(subscribedCatalogue, httpClientConfiguration, nettyClientSslBuilder, mediaTypeCodecRegistry)
-    }
-
-    private SubscribedCatalogueAuthenticationCredentials setAuthenticationCredentialsFromSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue,
-                                                         SubscribedCatalogueAuthenticationCredentials authenticationCredentials) {
-        if (subscribedCatalogue.apiKey) authenticationCredentials.apiKey = subscribedCatalogue.apiKey
-        if (subscribedCatalogue.tokenUrl) authenticationCredentials.tokenUrl = subscribedCatalogue.tokenUrl
-        if (subscribedCatalogue.clientId) authenticationCredentials.clientId = subscribedCatalogue.clientId
-        if (subscribedCatalogue.clientSecret) authenticationCredentials.clientSecret = subscribedCatalogue.clientSecret
-        authenticationCredentials
     }
 
     private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
