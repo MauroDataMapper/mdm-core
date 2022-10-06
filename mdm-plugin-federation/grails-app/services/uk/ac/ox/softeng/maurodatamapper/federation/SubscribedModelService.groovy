@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
@@ -58,6 +59,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     SubscribedCatalogueService subscribedCatalogueService
     FolderService folderService
     ImporterService importerService
+    AuthorityService authorityService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -193,6 +195,18 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 throw new ApiInternalException('SMS02', "Domain type ${model.domainType} cannot be imported")
             }
 
+            if (!model.authority) {
+                Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
+                Authority existingRemote = authorityService.findByLabel(remote.label)
+                if (existingRemote) {
+                    model.authority = existingRemote
+                } else {
+                    remote.createdBy = userSecurityPolicyManager.user.emailAddress
+                    authorityService.save(remote)
+                    model.authority = remote
+                }
+            }
+
             log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             MdmDomainService domainService = domainServices.find {it.handles(model.domainType)}
             if (domainService.respondsTo('countByAuthorityAndLabelAndVersion') &&
@@ -203,10 +217,13 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 return subscribedModel.errors
             }
 
-            if (!model.hasProperty('folder')) {
+            if (model.hasProperty('folder')) {
+                model.folder = folder
+            } else if (model.hasProperty('parentFolder')) {
+                model.parentFolder = folder
+            } else {
                 throw new ApiInternalException('SMS03', "Domain type ${model.domainType} cannot be imported into a Folder")
             }
-            model.folder = folder
 
             domainService.validate(model)
 
@@ -215,7 +232,9 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             }
 
             MdmDomain savedModel
-            if (domainService.respondsTo('saveModelWithContent')) {
+            if (domainService.respondsTo('saveFolderHierarchy')) {
+                savedModel = domainService.saveFolderHierarchy(model)
+            } else if (domainService.respondsTo('saveModelWithContent')) {
                 savedModel = domainService.saveModelWithContent(model)
             } else {
                 savedModel = domainService.save(model)
