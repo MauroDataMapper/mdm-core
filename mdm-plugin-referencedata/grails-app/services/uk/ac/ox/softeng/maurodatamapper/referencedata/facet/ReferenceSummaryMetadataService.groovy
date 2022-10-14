@@ -106,7 +106,7 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
     }
 
     @Override
-    ReferenceSummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    ReferenceSummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         ReferenceSummaryMetadata.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
     }
 

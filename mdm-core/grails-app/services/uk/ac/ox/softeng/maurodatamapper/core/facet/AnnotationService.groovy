@@ -151,7 +151,7 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
     }
 
     @Override
-    Annotation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    Annotation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         Annotation.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
     }
 

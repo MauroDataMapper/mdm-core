@@ -112,7 +112,7 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Multi
     }
 
     @Override
-    ReferenceFile findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    ReferenceFile findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         ReferenceFile.byMultiFacetAwareItemId(parentId).eq('fileName', pathIdentifier).get()
     }
 }

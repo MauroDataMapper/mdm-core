@@ -60,7 +60,7 @@ class ReferenceSummaryMetadataReportService implements MdmDomainService<Referenc
     }
 
     @Override
-    ReferenceSummaryMetadataReport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    ReferenceSummaryMetadataReport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         OffsetDateTime reportDate = OffsetDateTime.parse(pathIdentifier, ReferenceSummaryMetadataReport.PATH_FORMATTER)
         ReferenceSummaryMetadataReport.byReferenceSummaryMetadataId(parentId).eq('reportDate', reportDate).get()
     }

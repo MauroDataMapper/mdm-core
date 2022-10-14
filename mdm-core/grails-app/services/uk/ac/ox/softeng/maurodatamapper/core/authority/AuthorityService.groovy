@@ -42,7 +42,7 @@ class AuthorityService implements SecurableResourceService<Authority>, MdmDomain
     }
 
     @Override
-    Authority findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    Authority findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         String[] pids = pathIdentifier.split('@')
         Authority.findByLabelAndUrl(pids[0], pids[1])
     }

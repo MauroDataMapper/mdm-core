@@ -72,7 +72,7 @@ class DomainExportService implements MdmDomainService<DomainExport> {
     }
 
     @Override
-    DomainExport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    DomainExport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         throw new ApiNotYetImplementedException('DES', 'findByParentIdAndPathIdentifier')
     }
 

@@ -49,7 +49,7 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
 
     abstract void delete(K domain)
 
-    abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
+    abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams)
 
     K save(K domain) {
         // Default behaviours for save in GormEntity

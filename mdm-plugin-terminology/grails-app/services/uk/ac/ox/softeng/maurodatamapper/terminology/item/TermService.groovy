@@ -407,7 +407,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         // Older code used the full term label which is not great but we should be able to handle this here
         String legacyHandlingPathIdentifier = pathIdentifier.split(':')[0]
 
