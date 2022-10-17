@@ -178,7 +178,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
         String label = split[0]
-        boolean finalisedOnly = pathParams.finalised?pathParams.finalised.toBoolean():false
+        boolean finalisedOnly = pathParams.finalised ? pathParams.finalised.toBoolean() : false
 
         // A specific identity of the model has been requested so make sure we limit to that
         if (split.size() == 2) {
@@ -198,7 +198,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
 
         // If no identity part then we can just get the latest model by the label
-        finalisedOnly?findLatestFinalisedModelByLabel(label):findLatestModelByLabel(label)
+        finalisedOnly ? findLatestFinalisedModelByLabel(label) : findLatestModelByLabel(label)
     }
 
     @Override

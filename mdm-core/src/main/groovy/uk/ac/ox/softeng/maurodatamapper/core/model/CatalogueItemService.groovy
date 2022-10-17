@@ -348,7 +348,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
      * @param label The label of the CatalogueItem being sought
      */
 
-    K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label, Map pathParams = [:]) {
+    K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findByParentIdAndLabel(parentCatalogueItem.id, label)
     }
 
