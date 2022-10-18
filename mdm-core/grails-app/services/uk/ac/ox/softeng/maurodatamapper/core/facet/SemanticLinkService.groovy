@@ -56,7 +56,7 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
     }
 
     @Override
-    SemanticLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    SemanticLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         String[] split = pathIdentifier
         SemanticLink.byMultiFacetAwareItemId(parentId)
             .eq('linkType', SemanticLinkType.findForLabel(split[0]))

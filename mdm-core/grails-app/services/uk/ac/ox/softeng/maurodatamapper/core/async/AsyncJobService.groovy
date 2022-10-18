@@ -92,7 +92,7 @@ class AsyncJobService implements MdmDomainService<AsyncJob> {
     }
 
     @Override
-    AsyncJob findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    AsyncJob findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         return null
     }
 

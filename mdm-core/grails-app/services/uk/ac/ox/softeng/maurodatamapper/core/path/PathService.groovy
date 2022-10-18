@@ -70,7 +70,7 @@ class PathService {
         }.sort() as Map<String, String>
     }
 
-    MdmDomain findResourceByPathFromRootResource(MdmDomain rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
+    MdmDomain findResourceByPathFromRootResource(MdmDomain rootResourceOfPath, Path path, String modelIdentifierOverride = null, Map pathParams = [:]) {
         log.trace('Searching for path {} inside {}:{}', path.toString(modelIdentifierOverride), rootResourceOfPath.pathPrefix,
                   rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
@@ -97,7 +97,7 @@ class PathService {
         }
 
         log.trace('Found service [{}] to handle prefix [{}]', domainService.class.simpleName, childNode.prefix)
-        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier(modelIdentifierOverride))
+        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier(modelIdentifierOverride), pathParams)
 
         if (!child) {
             log.warn('Child [{}] does not exist in root resource [{}]', childNode, Path.from(rootResourceOfPath))
@@ -105,14 +105,14 @@ class PathService {
         }
 
         // Recurse down the path for that child
-        findResourceByPathFromRootResource(child, pathToFind, modelIdentifierOverride)
+        findResourceByPathFromRootResource(child, pathToFind, modelIdentifierOverride, pathParams)
     }
 
     MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
         findResourceByPathFromRootClass(rootClass, path, null)
     }
 
-    MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager) {
+    MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager, Map pathParams = [:]) {
         if (path.isEmpty()) {
             throw new ApiBadRequestException('PS05', 'Must have a path to search')
         }
@@ -127,7 +127,7 @@ class PathService {
             throw new ApiBadRequestException('PS04', "[${rootClass.simpleName}] is not a pathable resource")
         }
 
-        MdmDomain rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+        MdmDomain rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier(), pathParams)
         if (!rootResource) return null
 
         // Confirm root resource exists and its prefix matches the pathed prefix

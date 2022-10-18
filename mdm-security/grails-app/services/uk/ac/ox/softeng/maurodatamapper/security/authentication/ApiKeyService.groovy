@@ -55,7 +55,7 @@ class ApiKeyService implements MdmDomainService<ApiKey> {
     }
 
     @Override
-    ApiKey findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    ApiKey findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         return null
     }
 
