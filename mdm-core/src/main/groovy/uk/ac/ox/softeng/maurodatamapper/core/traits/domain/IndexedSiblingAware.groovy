@@ -110,11 +110,11 @@ trait IndexedSiblingAware {
             log.trace('Before >> MI {} has idx {} sorted to {}', mi.label, mi.idx, i)
             // Reorder the index which matches the one we just added
             if (i == updatedIndex) {
-                if (updated.getPersistentValue('idx') > updated.idx) {
-                    // If `updated` was moved down the list, order the adjacent item after `updated`
+                if (updated.getPersistentValue('idx') == null || updated.getPersistentValue('idx') > updated.idx) {
+                    // If `updated` was moved up the list or newly inserted, order the adjacent item after `updated`
                     mi.idx = i + 1
                 } else {
-                    // If `updated` was moved up the list, order the adjacent item before `updated`
+                    // If `updated` was moved down the list, order the adjacent item before `updated`
                     mi.idx = i - 1
                 }
             } else if (mi.idx != i) {
