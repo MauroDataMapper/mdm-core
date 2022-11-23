@@ -1211,9 +1211,15 @@ abstract class ModelService<K extends Model>
         log.debug('Saving and adding security')
         K savedCopy = saveModelWithContent(model) as K
         savedCopy.addCreatedEdit(user)
-        if (securityPolicyManagerService) {
-            securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, user, savedCopy.label)
-        }
+        addSecurity(savedCopy, user)
         savedCopy
+    }
+
+    K addSecurity(K model, User user) {
+        log.debug('Adding security')
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.addSecurityForSecurableResource(model, user, model.label)
+        }
+        model
     }
 }
