@@ -61,6 +61,7 @@ class PaginatedHibernateSearchResult<K> {
         Integer offsetAmount = pagination.offset?.toInteger()
         String sortKey = pagination.sort ?: 'label'
         String order = pagination.order ?: 'asc'
+        Boolean ignoreCase = pagination.ignoreCase ? pagination.ignoreCase.toBoolean() : true
 
         List<D> sortedList = new ArrayList<>(fullResultSet)
         if ('distance' == sortKey) {
@@ -74,6 +75,14 @@ class PaginatedHibernateSearchResult<K> {
                     break
                 default:
                     log.warn('Unknown sortfield for distance sorting {}', sortField)
+            }
+        } else if (sortKey && ignoreCase) {
+            sortedList = fullResultSet.sort {a, b ->
+                if (order == 'asc') {
+                    a."$sortKey".compareToIgnoreCase(b."${sortKey}") ?: a."$sortKey".compareTo(b."${sortKey}")
+                } else {
+                    b."$sortKey".compareToIgnoreCase(a."${sortKey}") ?: b."$sortKey".compareTo(a."${sortKey}")
+                }
             }
         } else if (sortKey) {
             sortedList = fullResultSet.sort {a, b ->
