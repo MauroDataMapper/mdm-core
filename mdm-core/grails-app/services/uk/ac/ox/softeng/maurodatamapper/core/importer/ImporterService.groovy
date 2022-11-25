@@ -137,7 +137,7 @@ class ImporterService implements DataBinder {
                 log.info('Single model save and import complete')
             } else {
                 modelService.addSecurity(it, currentUser)
-                log.info('Added security to multiple model')
+                log.info('Added security to single model')
             }
         }
     }
