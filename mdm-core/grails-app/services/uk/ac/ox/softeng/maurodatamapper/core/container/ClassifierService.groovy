@@ -34,6 +34,7 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 
 @Transactional
 @Slf4j
@@ -41,6 +42,9 @@ class ClassifierService extends ContainerService<Classifier> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
+
+    @Autowired(required = false)
+    List<VersionLinkAwareService> versionLinkAwareServices
 
     HibernateSearchIndexingService hibernateSearchIndexingService
 
@@ -317,7 +321,10 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     InMemoryPagedResultList<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                    UUID classifierId, Map pagination = [:]) {
+                                                                    UUID classifierId,
+                                                                    boolean includeDocumentSuperseded,
+                                                                    boolean includeModelSuperseded,
+                                                                    Map pagination = [:]) {
         Classifier classifier = get(classifierId)
 
 
@@ -332,6 +339,12 @@ class ClassifierService extends ContainerService<Classifier> {
         List<CatalogueItem> items = catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
         }.findAll().flatten().unique().findAll(filterClosure)
+
+        List<UUID> excludedIds = versionLinkAwareServices.collect {service ->
+            service.findAllExcludedIds(items*.id, includeDocumentSuperseded, includeModelSuperseded)
+        }.findAll().flatten()
+
+        if (excludedIds) items.removeAll{it.id in excludedIds}
 
         Map paginationEdit = (Map) pagination.clone()
         paginationEdit.max = items.size()
