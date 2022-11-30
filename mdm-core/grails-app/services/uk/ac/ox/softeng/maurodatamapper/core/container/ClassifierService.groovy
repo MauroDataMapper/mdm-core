@@ -323,7 +323,7 @@ class ClassifierService extends ContainerService<Classifier> {
         def filterClosure = { it, param ->
             (it.label && param.label.contains(it.label))
                 ||
-            (it.description && param.description.contains(it.description))
+            (it.description && param.description?.contains(it.description))
                 ||
             (it.domainType && param.domainType.contains(it.domainType))
                 ||
