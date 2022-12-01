@@ -422,10 +422,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     private static StringBuilder addLowercaseSort(StringBuilder stringBuilder, String ciQueryPrefix, String sort, String order, boolean isDistinct, boolean isSingle) {
         StringBuilder sortedQuery = new StringBuilder()
         // Need to add the lower variant to the select query if isDistinct
-        if (isDistinct) sortedQuery.append('\n, lower(').append(ciQueryPrefix).append('.').append(sort).append(') ')
+        if (isDistinct) {
+            sortedQuery.append('\n, lower(').append(ciQueryPrefix).append('.').append(sort).append(') ')
+            sortedQuery.append(', ').append(ciQueryPrefix).append('.').append(sort)
+        }
         sortedQuery.append(stringBuilder.toString())
         if (isSingle) sortedQuery.append('\nORDER BY ')
         sortedQuery.append('lower(').append(ciQueryPrefix).append('.').append(sort).append(') ').append(order)
+        sortedQuery.append(', ').append(ciQueryPrefix).append('.').append(sort).append(' ').append(order)
     }
 
     String applyHQLFilters(String originalQuery, String ciQueryPrefix, Map filters) {
