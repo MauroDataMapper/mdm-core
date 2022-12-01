@@ -320,15 +320,20 @@ class ClassifierService extends ContainerService<Classifier> {
                                                                     UUID classifierId, Map pagination = [:]) {
         Classifier classifier = get(classifierId)
 
-        def filterClosure = { it, param ->
-            (it.label && param.label.contains(it.label))
-                ||
-            (it.description && param.description?.contains(it.description))
-                ||
-            (it.domainType && param.domainType.contains(it.domainType))
-                ||
-            (!it.label && !it.description && !it.domainType)
+
+        String filterElements = "true "
+        if (pagination.label) {
+            filterElements += "&& param.label.contains(it.label) "
         }
+        if (pagination.description)  {
+            filterElements += "&& param.description.contains(it.description) "
+        }
+
+        if (pagination.domainType)  {
+            filterElements += "&& param.domainType.contains(it.domainType) "
+        }
+        def sh = new GroovyShell()
+        def filterClosure = sh.evaluate("{it, param -> $filterElements}")
 
         List<CatalogueItem> items = catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
