@@ -326,7 +326,7 @@ class ClassifierService extends ContainerService<Classifier> {
             filterElements += "&& param.label.contains(it.label) "
         }
         if (pagination.description)  {
-            filterElements += "&& param.description.contains(it.description) "
+            filterElements += "&& param.description?.contains(it.description) "
         }
 
         if (pagination.domainType)  {
