@@ -321,23 +321,17 @@ class ClassifierService extends ContainerService<Classifier> {
         Classifier classifier = get(classifierId)
 
 
-        String filterElements = "true "
-        if (pagination.label) {
-            filterElements += "&& param.label.contains(it.label) "
+        Closure filterClosure = {CatalogueItem item ->
+            (!pagination.label || (item.label?.containsIgnoreCase(pagination.label)))
+                &&
+            (!pagination.description || (item.description?.containsIgnoreCase(pagination.description)))
+                &&
+            (!pagination.domainType || (item.domainType?.containsIgnoreCase(pagination.domainType)))
         }
-        if (pagination.description)  {
-            filterElements += "&& param.description?.contains(it.description) "
-        }
-
-        if (pagination.domainType)  {
-            filterElements += "&& param.domainType.contains(it.domainType) "
-        }
-        def sh = new GroovyShell()
-        def filterClosure = sh.evaluate("{it, param -> $filterElements}")
 
         List<CatalogueItem> items = catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
-        }.findAll().flatten().unique().findAll(filterClosure.curry(pagination))
+        }.findAll().flatten().unique().findAll(filterClosure)
 
         Map paginationEdit = (Map) pagination.clone()
         paginationEdit.max = items.size()
