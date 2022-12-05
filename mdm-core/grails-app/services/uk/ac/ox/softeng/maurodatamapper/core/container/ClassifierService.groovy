@@ -319,9 +319,19 @@ class ClassifierService extends ContainerService<Classifier> {
     InMemoryPagedResultList<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                     UUID classifierId, Map pagination = [:]) {
         Classifier classifier = get(classifierId)
+
+
+        Closure filterClosure = {CatalogueItem item ->
+            (!pagination.label || (item.label?.containsIgnoreCase(pagination.label)))
+                &&
+            (!pagination.description || (item.description?.containsIgnoreCase(pagination.description)))
+                &&
+            (!pagination.domainType || (item.domainType?.containsIgnoreCase(pagination.domainType)))
+        }
+
         List<CatalogueItem> items = catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
-        }.findAll().flatten()
+        }.findAll().flatten().unique().findAll(filterClosure)
 
         Map paginationEdit = (Map) pagination.clone()
         paginationEdit.max = items.size()
