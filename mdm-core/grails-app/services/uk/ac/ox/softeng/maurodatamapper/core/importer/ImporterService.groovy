@@ -82,23 +82,31 @@ class ImporterService implements DataBinder {
                 throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
             }
 
-            if (versionedFolderService.isVersionedFolderFamily(folder) && models.any {it.finalised}) {
-                throw new ApiBadRequestException('IS02', 'Cannot import finalised models into a VersionedFolder')
-            }
+            if (!importParams.providerHasSavedModels) {
+                if (versionedFolderService.isVersionedFolderFamily(folder) && models.any {it.finalised}) {
+                    throw new ApiBadRequestException('IS02', 'Cannot import finalised models into a VersionedFolder')
+                }
 
-            models.each {m ->
-                m.folder = folder
-                modelService.validate(m)
-            }
+                models.each {m ->
+                    m.folder = folder
+                }
 
-            if (models.any {it.hasErrors()}) {
-                Errors errors = new ValidationErrors(models, models.first().class.getName())
-                models.findAll(it.hasErrors()).each {errors.addAllErrors((it as GormValidateable).errors)}
-                throw new ApiInvalidModelException('IS03', 'Invalid models', errors, messageSource)
-            }
+                modelService.validateMultipleModels(models)
 
-            log.debug('No errors in imported models')
-            models.collect {modelService.saveAndAddSecurity(it, currentUser)}
+                if (models.any {it.hasErrors()}) {
+                    Errors errors = new ValidationErrors(models, models.first().class.getName())
+                    models.findAll(it.hasErrors()).each {errors.addAllErrors((it as GormValidateable).errors)}
+                    throw new ApiInvalidModelException('IS03', 'Invalid models', errors, messageSource)
+                }
+                log.debug('No errors in imported models')
+
+                models.collect {modelService.saveAndAddSecurity(it, currentUser)}
+
+                log.info('Multiple model save and import complete')
+            } else {
+                models.collect {modelService.addSecurity(it, currentUser)}
+                log.info('Added security to multiple models')
+            }
         }
     }
 
@@ -109,12 +117,28 @@ class ImporterService implements DataBinder {
             if (!model) {
                 throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
             }
-            if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
-                throw new ApiBadRequestException('IS02', 'Cannot import a finalised model into a VersionedFolder')
+
+            if (!importParams.providerHasSavedModels) {
+                if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
+                    throw new ApiBadRequestException('IS02', 'Cannot import a finalised model into a VersionedFolder')
+                }
+
+                model.folder = folder
+
+                modelService.validate(model)
+
+                if (model.hasErrors()) {
+                    throw new ApiInvalidModelException('IS04', 'Invalid model', (model as GormValidateable).errors, messageSource)
+                }
+                log.debug('No errors in imported model')
+
+                modelService.saveAndAddSecurity(model, currentUser)
+
+                log.info('Single model save and import complete')
+            } else {
+                modelService.addSecurity(it, currentUser)
+                log.info('Added security to single model')
             }
-            model.folder = folder
-            modelService.fullValidateAndSaveOfModel(model, currentUser)
-            log.info('Single Model Import complete')
         }
     }
 
