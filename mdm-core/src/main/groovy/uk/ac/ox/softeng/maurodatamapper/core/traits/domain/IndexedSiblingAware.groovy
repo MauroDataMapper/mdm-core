@@ -91,6 +91,8 @@ trait IndexedSiblingAware {
     void sortAndReorderAllIndexes(ModelItem updated, Collection<ModelItem> siblings) {
         int updatedIndex = updated.idx
         int maxIndex = siblings.size() - 1
+
+        // Sort the collection to set the new index for the updated ModelItem, taking account of whether it was moved up or down the list
         siblings.sort().eachWithIndex {ModelItem mi, int i ->
             //EV is the updated one, skipping any changes
             if (mi == updated) {
@@ -108,12 +110,12 @@ trait IndexedSiblingAware {
             log.trace('Before >> MI {} has idx {} sorted to {}', mi.label, mi.idx, i)
             // Reorder the index which matches the one we just added
             if (i == updatedIndex) {
-                if (i == maxIndex) {
-                    // If at end of list then move the current value back one to ensure the updated value is at then end of the list
-                    mi.idx = i - 1
-                } else {
-                    // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
+                if (updated.getPersistentValue('idx') == null || updated.getPersistentValue('idx') > updated.idx) {
+                    // If `updated` was moved up the list or newly inserted, order the adjacent item after `updated`
                     mi.idx = i + 1
+                } else {
+                    // If `updated` was moved down the list, order the adjacent item before `updated`
+                    mi.idx = i - 1
                 }
             } else if (mi.idx != i) {
                 // Sorting has got the order right so make sure the idx is set correctly
