@@ -526,6 +526,41 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
   "items": [
     {
       "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "simple",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+    void 'S05 : test searching for "simple" in the test folder using POST with pagination and offset'() {
+        given:
+        String term = 'simple'
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("${getTestFolderId()}/search", [searchTerm: term, sort: 'label', max: 2, offset: 5], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 7,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
       "domainType": "Term",
       "label": "STT01: Simple Test Term 01",
       "model": "${json-unit.matches:id}",
@@ -551,32 +586,6 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
           "finalised": false
         }
       ]
-    }
-  ]
-}'''
-    }
-
-    void 'S05 : test searching for "simple" in the test folder using POST with pagination and offset'() {
-        given:
-        String term = 'simple'
-
-        when: 'logged in as reader user'
-        loginReader()
-        POST("${getTestFolderId()}/search", [searchTerm: term, sort: 'label', max: 2, offset: 2], STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "count": 7,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataModel",
-      "label": "Second Simple Reference Data Model"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataModel",
-      "label": "Simple Reference Data Model"
     }
   ]
 }'''

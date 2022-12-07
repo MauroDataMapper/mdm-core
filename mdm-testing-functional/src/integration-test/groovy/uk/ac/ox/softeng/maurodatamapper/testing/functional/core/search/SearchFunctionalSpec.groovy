@@ -343,28 +343,19 @@ class SearchFunctionalSpec extends FunctionalSpec {
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "Term",
-      "label": "STT01: Simple Test Term 01",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Simple Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        }
-      ]
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model"
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "Term",
-      "label": "STT02: Simple Test Term 02",
+      "domainType": "DataClass",
+      "label": "simple",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "Simple Test Terminology",
-          "domainType": "Terminology",
+          "label": "Simple Test DataModel",
+          "domainType": "DataModel",
           "finalised": false
         }
       ]
@@ -388,12 +379,12 @@ class SearchFunctionalSpec extends FunctionalSpec {
     {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
-      "label": "Second Simple Reference Data Model"
+      "label": "Simple Reference Data Model"
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataModel",
-      "label": "Simple Reference Data Model"
+      "domainType": "DataModel",
+      "label": "Simple Test DataModel"
     }
   ]
 }'''
