@@ -1,0 +1,23 @@
+[
+  {
+    "sectionName": "usage",
+    "sectionDescription": "Query Builder Type options that can be mapped to the DataType. This allows Elements of the DataType to be available in teh Query Builder.",
+    "fields": [
+      {
+        "fieldName": "QueryBuilderType",
+        "metadataPropertyName": "querybuildertype",
+        "description": "What Query Builder Type should be used for this DataType",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "boolean",
+          "date",
+          "number",
+          "string",
+          "time"
+        ]
+      }
+    ]
+  }
+]

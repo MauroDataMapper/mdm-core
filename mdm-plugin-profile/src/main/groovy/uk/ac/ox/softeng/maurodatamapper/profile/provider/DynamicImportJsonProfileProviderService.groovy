@@ -58,7 +58,7 @@ abstract class DynamicImportJsonProfileProviderService extends JsonProfileProvid
     String getDisplayName() {
         if (importingPath) return "$displayNamePrefix for $importingPath"
         if (importingId) return "$displayNamePrefix for $importingDomainType:$importingId"
-        "Unassigned $displayNamePrefix"
+        "Unassigned (NIGE WAS HERE) $displayNamePrefix"
     }
 
     abstract String getDisplayNamePrefix()

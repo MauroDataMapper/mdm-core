@@ -92,6 +92,13 @@ class MdmPluginProfileGrailsPlugin extends Plugin {
                     jsonResourceFile = 'importDataTypeProfile.json'
                     profileApplicableForDomains = ['DataType', 'PrimitiveType', 'EnumerationType', 'ReferenceType', 'ModelDataType']
                 }
+                importedQueryBuilderTypeDynamicProfileProviderService(DefaultDynamicImportJsonProfileProviderService) {
+                    serviceName = 'ImportedQueryBuilderTypeDynamicProfileProviderService'
+                    displayNamePrefix = 'Query Builder Type for DataType'
+                    profileNamespace = 'functional.testing'
+                    jsonResourceFile = 'importQueryBuilderTypeProfile.json'
+                    profileApplicableForDomains = ['PrimitiveType']
+                }
             }
 
             profileSpecificationProfileService(DefaultJsonProfileProviderService) {
