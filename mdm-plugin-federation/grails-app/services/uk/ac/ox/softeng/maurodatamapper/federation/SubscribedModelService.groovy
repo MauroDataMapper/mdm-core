@@ -154,13 +154,13 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                     (importerProviderService =
                         importerService.findImporterProviderServiceByContentType(subscribedModelFederationParams.importerProviderService.namespace,
                                                                                  subscribedModelFederationParams.importerProviderService.name,
-                                                                                 subscribedModelFederationParams.importerProviderService.version, link.contentType))
+                                                                                 subscribedModelFederationParams.importerProviderService.version, link.contentType, true))
                 }
             } else {
                 exportLink = exportLinks.find {link ->
                     (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
                     (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType) &&
-                    (importerProviderService = importerService.findImporterProviderServiceByContentType(link.contentType))
+                    (importerProviderService = importerService.findImporterProviderServiceByContentType(link.contentType, true))
                 }
             }
 

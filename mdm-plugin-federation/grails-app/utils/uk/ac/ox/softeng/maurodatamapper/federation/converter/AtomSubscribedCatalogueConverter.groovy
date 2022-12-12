@@ -55,6 +55,11 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
                     new Link(LINK_RELATIONSHIP_ALTERNATE, link.@href.text()).tap {contentType = link.@type}
                 }
             }
+        }.sort {l, r ->
+            r.lastUpdated <=> l.lastUpdated ?:
+            l.modelLabel.compareToIgnoreCase(r.modelLabel) ?:
+            l.modelLabel <=> r.modelLabel ?:
+            l.modelId <=> r.modelId
         }
 
         return new Tuple2(subscribedAuthority, publishedModels)

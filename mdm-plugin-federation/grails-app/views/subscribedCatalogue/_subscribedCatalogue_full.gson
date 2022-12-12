@@ -1,7 +1,18 @@
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.OAuthClientCredentialsAuthenticationCredentials
 
 model {
     SubscribedCatalogue subscribedCatalogue
+}
+
+ApiKeyAuthenticationCredentials apiKeyAuthenticationCredentials
+OAuthClientCredentialsAuthenticationCredentials oAuthClientCredentialsAuthenticationCredentials
+
+if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials instanceof ApiKeyAuthenticationCredentials) {
+    apiKeyAuthenticationCredentials = (ApiKeyAuthenticationCredentials) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials
+} else if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials instanceof OAuthClientCredentialsAuthenticationCredentials) {
+    oAuthClientCredentialsAuthenticationCredentials = (OAuthClientCredentialsAuthenticationCredentials) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials
 }
 
 json {
@@ -9,6 +20,7 @@ json {
     url subscribedCatalogue.url
     label subscribedCatalogue.label
     subscribedCatalogueType subscribedCatalogue.subscribedCatalogueType.label
+    subscribedCatalogueAuthenticationType subscribedCatalogue.subscribedCatalogueAuthenticationType.label
 
     if (subscribedCatalogue.description) {
         description subscribedCatalogue.description
@@ -18,11 +30,17 @@ json {
         refreshPeriod subscribedCatalogue.refreshPeriod
     }
 
-//    if (subscribedCatalogue.apiKey) {
-//        apiKey subscribedCatalogue.apiKey
-//    }
-
     if (subscribedCatalogue.connectionTimeout) {
         connectionTimeout subscribedCatalogue.connectionTimeout
+    }
+
+    if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials instanceof ApiKeyAuthenticationCredentials) {
+        apiKey apiKeyAuthenticationCredentials.apiKey
+    }
+
+    if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials instanceof OAuthClientCredentialsAuthenticationCredentials) {
+        tokenUrl oAuthClientCredentialsAuthenticationCredentials.tokenUrl
+        clientId oAuthClientCredentialsAuthenticationCredentials.clientId
+        clientSecret oAuthClientCredentialsAuthenticationCredentials.clientSecret
     }
 }

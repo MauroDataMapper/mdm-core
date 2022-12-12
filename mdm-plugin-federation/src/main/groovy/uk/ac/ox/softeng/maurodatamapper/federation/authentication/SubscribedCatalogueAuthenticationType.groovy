@@ -64,6 +64,7 @@ enum SubscribedCatalogueAuthenticationType {
                 return null
             default:
                 log.warn('Unknown authentication credentials type [{}]', type)
+                return null
         }
     }
 
@@ -77,6 +78,7 @@ enum SubscribedCatalogueAuthenticationType {
                 return FederationClient<Void>
             default:
                 log.warn('Unknown authentication credentials type [{}]', type)
+                return FederationClient<Void>
         }
     }
 }
