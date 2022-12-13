@@ -47,6 +47,7 @@ class MauroJsonSubscribedCatalogueConverter implements SubscribedCatalogueConver
                 modelId = pm.modelId
                 modelLabel = pm.label
                 modelVersion = Version.from(pm.version)
+                modelVersionTag = pm.modelVersionTag
                 modelType = pm.modelType
                 lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)

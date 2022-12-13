@@ -56,6 +56,9 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     @Autowired(required = false)
     List<MdmDomainService> domainServices
 
+    @Autowired(required = false)
+    List<ModelService> modelServices
+
     SubscribedCatalogueService subscribedCatalogueService
     FolderService folderService
     ImporterService importerService
@@ -191,11 +194,12 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 subscribedModel.errors.reject('invalid.subscribedmodel.import',
                                               'Could not import SubscribedModel into local Catalogue')
                 return subscribedModel.errors
-            } else if (!Model.isAssignableFrom(model.class) && !VersionedFolder.isAssignableFrom(model.class)) {
+            } else if (model !instanceof Model && model !instanceof VersionedFolder) {
                 throw new ApiInternalException('SMS02', "Domain type ${model.domainType} cannot be imported")
             }
 
-            if (!model.authority) {
+            if (!model.authority || model.authority == authorityService.getDefaultAuthority()) {
+                log.debug 'Setting authority for subscribed model'
                 Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
                 Authority existingRemote = authorityService.findByLabel(remote.label)
                 if (existingRemote) {
@@ -204,6 +208,14 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                     remote.createdBy = userSecurityPolicyManager.user.emailAddress
                     authorityService.save(remote)
                     model.authority = remote
+                }
+
+                if (model instanceof VersionedFolder) {
+                    log.debug 'Setting authority for VersionedFolder contents'
+                    modelServices.each {service ->
+                        List<Model> models = service.findAllByContainerId(model.id) as List<Model>
+                        models.each {it.authority = existingRemote ?: remote}
+                    }
                 }
             }
 

@@ -8,6 +8,7 @@ json {
     modelId publishedModel.modelId
     label publishedModel.modelLabel
     version publishedModel.modelVersion
+    if (publishedModel.modelVersionTag) modelVersionTag publishedModel.modelVersionTag
     if (publishedModel.modelType) modelType publishedModel.modelType
     lastUpdated publishedModel.lastUpdated
     if (publishedModel.dateCreated) dateCreated publishedModel.dateCreated

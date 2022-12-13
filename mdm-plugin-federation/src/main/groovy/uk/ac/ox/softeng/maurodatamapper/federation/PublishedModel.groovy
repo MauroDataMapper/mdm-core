@@ -29,6 +29,7 @@ class PublishedModel implements Comparable<PublishedModel> {
     String modelId
     String modelLabel
     Version modelVersion
+    String modelVersionTag
     String description
     String modelType
     OffsetDateTime lastUpdated
@@ -45,6 +46,7 @@ class PublishedModel implements Comparable<PublishedModel> {
         modelId = model.id
         modelLabel = model.label
         modelVersion = model.modelVersion
+        modelVersionTag = model.modelVersionTag
         modelType = model.domainType
         lastUpdated = model.lastUpdated
         dateCreated = model.dateCreated
@@ -81,6 +83,7 @@ class PublishedModel implements Comparable<PublishedModel> {
         if (modelLabel != that.modelLabel) return false
         if (modelType != that.modelType) return false
         if (modelVersion != that.modelVersion) return false
+        if (modelVersionTag != that.modelVersionTag) return false
         previousModelId == that.previousModelId
     }
 
@@ -90,6 +93,7 @@ class PublishedModel implements Comparable<PublishedModel> {
         result = modelId.hashCode()
         result = 31 * result + modelLabel.hashCode()
         result = 31 * result + modelVersion.hashCode()
+        result = 31 * result + (modelVersionTag != null ? modelVersionTag.hashCode() : 0)
         result = 31 * result + (description != null ? description.hashCode() : 0)
         result = 31 * result + modelType.hashCode()
         result = 31 * result + lastUpdated.hashCode()
