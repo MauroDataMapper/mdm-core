@@ -86,7 +86,22 @@ trait VersionLinkAwareService<K extends VersionLinkAware> {
         // However they are only superseded if the source of this link is finalised
         modelVersionLinks.findAll {
             VersionAware sourceModel = get(it.multiFacetAwareItemId) as VersionAware
-            sourceModel.finalised
+            sourceModel?.finalised
         }.collect {it.targetModelId}
+    }
+
+    List<UUID> findAllExcludedIds(List<UUID> readableIds,
+                                  boolean includeDocumentSuperseded,
+                                  boolean includeModelSuperseded) {
+
+        if (includeDocumentSuperseded && includeModelSuperseded) {
+            new ArrayList<>()
+        } else if (includeModelSuperseded) {
+            findAllDocumentSupersededIds(readableIds)
+        } else if (includeDocumentSuperseded) {
+            findAllModelSupersededIds(readableIds)
+        } else {
+            findAllSupersededIds(readableIds)
+        }
     }
 }

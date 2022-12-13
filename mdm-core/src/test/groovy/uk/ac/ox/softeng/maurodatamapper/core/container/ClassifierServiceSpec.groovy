@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -336,7 +337,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
 
         when: 'searching for elements of a classifier and ordered'
         InMemoryPagedResultList<CatalogueItem> list = service.findAllReadableCatalogueItemsByClassifierId(
-            testPolicy, classifierId, pagination_sort)
+            testPolicy, classifierId, true, true, pagination_sort)
 
         then:
         list.size() == 2
@@ -348,7 +349,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
 
         when: 'searching for elements of a classifier and filtered'
         list = service.findAllReadableCatalogueItemsByClassifierId(
-            testPolicy, classifierId, pagination_filter)
+            testPolicy, classifierId, true, true, pagination_filter)
 
         then:
         list.size() == 1
@@ -357,4 +358,5 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         list[0].label == 'dc1'
         list[0].domainType == 'DataClass'
     }
+
 }

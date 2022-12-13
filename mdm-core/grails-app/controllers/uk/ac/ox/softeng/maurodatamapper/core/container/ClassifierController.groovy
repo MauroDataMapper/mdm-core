@@ -28,6 +28,9 @@ class ClassifierController extends EditLoggingController<Classifier> {
 
     static responseFormats = ['json', 'xml']
 
+    private static final String INCLUDE_MODEL_SUPERSEDED_PARAM = 'includeModelSuperseded'
+    private static final String INCLUDE_DOCUMENT_SUPERSEDED_PARAM = 'includeDocumentSuperseded'
+
     ClassifierService classifierService
 
     @Autowired(required = false)
@@ -38,7 +41,11 @@ class ClassifierController extends EditLoggingController<Classifier> {
     }
 
     def catalogueItems() {
-        respond catalogueItemList: classifierService.findAllReadableCatalogueItemsByClassifierId(currentUserSecurityPolicyManager, Utils.toUuid(params.classifierId), params)
+        respond catalogueItemList: classifierService.findAllReadableCatalogueItemsByClassifierId(
+            currentUserSecurityPolicyManager, Utils.toUuid(params.classifierId),
+            shouldIncludeDocumentSupersededItems(),
+            shouldIncludeModelSupersededItems(),
+            params)
     }
 
     @Transactional
@@ -131,5 +138,13 @@ class ClassifierController extends EditLoggingController<Classifier> {
                                                                                                                currentUser)
         }
         classifier
+    }
+
+    private boolean shouldIncludeModelSupersededItems() {
+        params.boolean(INCLUDE_MODEL_SUPERSEDED_PARAM)
+    }
+
+    private boolean shouldIncludeDocumentSupersededItems() {
+        params.boolean(INCLUDE_DOCUMENT_SUPERSEDED_PARAM)
     }
 }
