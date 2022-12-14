@@ -187,6 +187,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             parameters.folderId = folder.id
             parameters.finalised = true
             parameters.useDefaultAuthority = false
+            parameters.importAsNewBranchModelVersion = true
 
             MdmDomain model = importerService.importDomain(userSecurityPolicyManager.user, importerProviderService, parameters)
 
@@ -198,7 +199,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 throw new ApiInternalException('SMS02', "Domain type ${model.domainType} cannot be imported")
             }
 
-            if (!model.authority || model.authority == authorityService.getDefaultAuthority()) {
+            if (!model.authority || model.authority.id == authorityService.getDefaultAuthority().id) {
                 log.debug 'Setting authority for subscribed model'
                 Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
                 Authority existingRemote = authorityService.findByLabel(remote.label)
@@ -221,8 +222,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
             log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             MdmDomainService domainService = domainServices.find {it.handles(model.domainType)}
-            if (domainService.respondsTo('countByAuthorityAndLabelAndVersion') &&
-                domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
+            if (domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
                                               [model.authority, model.label, model.modelVersion].toArray(),
                                               'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')

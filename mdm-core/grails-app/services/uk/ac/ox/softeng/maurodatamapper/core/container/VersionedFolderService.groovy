@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
@@ -381,6 +382,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         VersionedFolder.count()
     }
 
+    int countByAuthorityAndLabel(Authority authority, String label) {
+        VersionedFolder.countByAuthorityAndLabel(authority, label)
+    }
+
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        VersionedFolder.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
+    }
+
     void delete(Serializable id) {
         delete(get(id))
     }
@@ -516,6 +525,61 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         setFolderIsNewBranchModelVersionOfFolder(newBranchModelVersion, folder, user)
 
         newBranchModelVersion
+    }
+
+    void checkBranchModelVersion(VersionedFolder folder, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
+        if (importAsNewBranchModelVersion) {
+
+            if (countByAuthorityAndLabel(folder.authority, folder.label)) {
+                // Branches need to be created from a finalised version
+                // But we can create a new branch even if existing branches
+
+                VersionedFolder latest
+
+                // If the branch name is not the default the default branch name then we need a finalised model to branch from
+                if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                    latest = findLatestFinalisedModelByLabel(folder.label)
+                    // If no finalised VersionedFolder exists then we finalise the existing default branch so we can branch from it
+                    if (!latest) {
+                        log.info('No finalised VersionedFolder to create branch from so finalising existing main branch')
+                        latest = findCurrentMainBranchByLabel(folder.label)
+                        // If there is no default branch or finalised branch then the countBy found the current imported VersionedFolder so we dont need to
+                        // do anything
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing VersionedFolders with label [{}]', folder.label)
+                            return
+                        }
+                        finaliseFolder(latest, catalogueUser, Version.from('1'), null, null)
+                        save(latest, flush: true, validate: false)
+                    }
+                } else {
+                    // If the branch name is not provided, or is the default then we would be using the default,
+                    // which would cause a unique label failure if theres already an unfinalised model with that branch
+                    // therefore we should make sure we have a clean finalised model to work from
+                    latest = findCurrentMainBranchByLabel(folder.label)
+                    if (latest && latest.id != folder.id) {
+                        log.info('Main branch exists already so finalising to ensure no conflicts')
+                        finaliseFolder(latest, catalogueUser, getNextFolderVersion(latest, null, VersionChangeType.MAJOR), null, null)
+                        save(latest, flush: true, validate: false)
+                    } else {
+                        // No main branch exists so get the latest finalised model
+                        latest = findLatestFinalisedModelByLabel(folder.label)
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing VersionedFolders with label [{}]', folder.label)
+                            return
+                        }
+                    }
+                }
+
+                // Now we have a finalised model to work from
+                setFolderIsNewBranchModelVersionOfFolder(folder, latest, catalogueUser)
+                folder.dateFinalised = null
+                folder.finalised = false
+                folder.modelVersion = null
+                folder.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
+                folder.documentationVersion = Version.from('1')
+            } else log.info('Marked as importAsNewBranchModelVersion but no existing VersionedFolders with label [{}]', folder.label)
+        }
     }
 
     AsyncJob asyncCreateNewDocumentationVersion(VersionedFolder folder, User user, boolean copyPermissions,

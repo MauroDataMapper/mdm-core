@@ -241,18 +241,18 @@ class ImporterService implements DataBinder {
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServicesByContentType(
-        String contentType, Boolean canFederate) {
-        importerProviderServices.findAll {it.handlesContentType(contentType) && it.canFederate() == canFederate}.sort()
+        String contentType, Boolean canFederate = null) {
+        importerProviderServices.findAll {it.handlesContentType(contentType) && (canFederate == null || it.canFederate() == canFederate)}.sort()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
-        String contentType, Boolean canFederate) {
+        String contentType, Boolean canFederate = null) {
         findImporterProviderServicesByContentType(contentType, canFederate)?.find()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
-        String namespace, String name, String version, String contentType, Boolean canFederate) {
-        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType) && it.canFederate() == canFederate}.sort()?.find()
+        String namespace, String name, String version, String contentType, Boolean canFederate = null) {
+        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType) && (canFederate == null || it.canFederate() == canFederate)}.sort()?.find()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace,
