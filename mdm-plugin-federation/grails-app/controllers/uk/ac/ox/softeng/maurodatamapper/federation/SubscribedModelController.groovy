@@ -30,6 +30,8 @@ import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
 
+import java.time.OffsetDateTime
+
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
@@ -96,7 +98,9 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
             return notFound(SubscribedModel, params.id)
         }
 
-        respond subscribedModelService.getNewerPublishedVersions(subscribedModel), view: 'newerVersions'
+        def (OffsetDateTime lastUpdated, List<PublishedModel> newerVersions) = subscribedModelService.getNewerPublishedVersions(subscribedModel)
+
+        respond(newerVersions, [model: [lastUpdated: lastUpdated, newerPublishedModels: newerVersions], view: '/publish/newerVersions'])
     }
 
     @Override

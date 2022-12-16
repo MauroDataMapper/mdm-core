@@ -299,7 +299,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             getVersionLinksForModel(subscribedModel.subscribedCatalogue, urlModelResourceType, subscribedModel.subscribedModelId)
     }
 
-    Map getNewerPublishedVersions(SubscribedModel subscribedModel) {
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersions(SubscribedModel subscribedModel) {
         subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedModel.subscribedCatalogue, subscribedModel.subscribedModelId)
     }
 

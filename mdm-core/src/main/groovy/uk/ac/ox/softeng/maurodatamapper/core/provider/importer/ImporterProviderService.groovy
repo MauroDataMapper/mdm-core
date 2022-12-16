@@ -41,7 +41,7 @@ abstract class ImporterProviderService<D extends MdmDomain, T extends ImporterPr
     abstract Boolean handlesContentType(String contentType)
 
     Boolean canFederate() {
-        false
+        true
     }
 
     List<String> getImportBlacklistedProperties() {

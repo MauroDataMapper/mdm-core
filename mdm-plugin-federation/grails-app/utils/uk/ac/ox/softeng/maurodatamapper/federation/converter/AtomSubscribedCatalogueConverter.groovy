@@ -43,20 +43,7 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
         Authority subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name.text() ?: subscribedCatalogue.label,
                                                       url: subscribedCatalogueModelsFeed.author.uri.text() ?: subscribedCatalogue.url)
 
-        List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {entry ->
-            new PublishedModel().tap {
-                modelId = entry.id
-                modelLabel = entry.title
-                if (entry.contentItemVersion.text()) modelVersionTag = entry.contentItemVersion.text()
-                if (entry.updated.text()) lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                if (entry.published.text()) datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                author = entry.author.name ?: subscribedCatalogueModelsFeed.author.name
-                description = entry.summary
-                links = entry.link.collect {link ->
-                    new Link(LINK_RELATIONSHIP_ALTERNATE, link.@href.text()).tap {contentType = link.@type}
-                }
-            }
-        }.sort {l, r ->
+        List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {convertEntryToPublishedModel(it)}.sort {l, r ->
             r.lastUpdated <=> l.lastUpdated ?:
             l.modelLabel.compareToIgnoreCase(r.modelLabel) ?:
             l.modelLabel <=> r.modelLabel ?:
@@ -65,4 +52,41 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
 
         return new Tuple2(subscribedAuthority, publishedModels)
     }
+
+    @Override
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue,
+                                                                                            String publishedModelId) {
+        GPathResult subscribedCatalogueModelsFeed = federationClient.getSubscribedCatalogueModelsFromAtomFeed()
+
+        List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {convertEntryToPublishedModel(it)}
+        PublishedModel publishedModel = publishedModels.find {it.modelId == publishedModelId}
+
+        List<PublishedModel> newerVersions = publishedModels.findAll {it.modelLabel == publishedModel.modelLabel && it.lastUpdated > publishedModel.lastUpdated}.sort {l, r ->
+            r.lastUpdated <=> l.lastUpdated ?:
+            l.modelLabel.compareToIgnoreCase(r.modelLabel) ?:
+            l.modelLabel <=> r.modelLabel ?:
+            l.modelId <=> r.modelId
+        }
+
+        OffsetDateTime lastUpdated = newerVersions.collect {it.lastUpdated}.max()
+
+        return new Tuple2(lastUpdated, newerVersions)
+    }
+
+    private PublishedModel convertEntryToPublishedModel(GPathResult entry) {
+        new PublishedModel().tap {
+            modelId = entry.id
+            modelLabel = entry.title
+            if (entry.contentItemVersion.text()) modelVersionTag = entry.contentItemVersion.text()
+            if (entry.updated.text()) lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            if (entry.published.text()) datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            author = entry.author.name ?: subscribedCatalogueModelsFeed.author.name
+            description = entry.summary
+            links = entry.link.collect {link ->
+                new Link(LINK_RELATIONSHIP_ALTERNATE, link.@href.text()).tap {contentType = link.@type}
+            }
+        }
+    }
+
+
 }

@@ -37,6 +37,7 @@ import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.Duration
+import java.time.OffsetDateTime
 
 @Transactional
 @Slf4j
@@ -170,13 +171,9 @@ class SubscribedCatalogueService implements AnonymisableService {
         }
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
-            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getNewerPublishedVersionsForPublishedModel(publishedModelId)
-            }
-        } else {
-            [:]
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getNewerPublishedVersionsForPublishedModel(client, subscribedCatalogue, publishedModelId)
         }
     }
 

@@ -26,6 +26,8 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.time.OffsetDateTime
+
 import static org.springframework.http.HttpStatus.OK
 
 @Slf4j
@@ -143,7 +145,9 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
 
-        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, params.publishedModelId)
+        def (OffsetDateTime lastUpdated, List<PublishedModel> newerVersions) = subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, params.publishedModelId)
+
+        respond(newerVersions, [model: [lastUpdated: lastUpdated, newerPublishedModels: newerVersions], view: '/publish/newerVersions'])
     }
 
     def testConnection() {
