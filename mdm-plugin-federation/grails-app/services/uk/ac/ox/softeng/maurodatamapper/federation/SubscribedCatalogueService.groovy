@@ -162,12 +162,8 @@ class SubscribedCatalogueService implements AnonymisableService {
     }
 
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, String publishedModelId) {
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
-            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getVersionLinksForModel(urlModelType, publishedModelId)
-            }
-        } else {
-            [:]
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getVersionLinksForPublishedModel(client, urlModelType, publishedModelId)
         }
     }
 

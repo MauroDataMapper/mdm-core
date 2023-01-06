@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -25,8 +24,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
+import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
@@ -189,6 +190,14 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             parameters.useDefaultAuthority = false
             parameters.importAsNewBranchModelVersion = true
 
+            Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
+            Authority existingRemote = authorityService.findByLabel(remote.label)
+            if (!existingRemote) {
+                remote.createdBy = userSecurityPolicyManager.user.emailAddress
+                authorityService.save(remote, flush: true)
+            }
+            parameters.providerSetAuthority = existingRemote ?: remote
+
             MdmDomain model = importerService.importDomain(userSecurityPolicyManager.user, importerProviderService, parameters)
 
             if (!model) {
@@ -201,15 +210,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
             if (!model.authority || model.authority.id == authorityService.getDefaultAuthority().id) {
                 log.debug 'Setting authority for subscribed model'
-                Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
-                Authority existingRemote = authorityService.findByLabel(remote.label)
-                if (existingRemote) {
-                    model.authority = existingRemote
-                } else {
-                    remote.createdBy = userSecurityPolicyManager.user.emailAddress
-                    authorityService.save(remote)
-                    model.authority = remote
-                }
+                model.authority = existingRemote ?: remote
 
                 if (model instanceof VersionedFolder) {
                     log.debug 'Setting authority for VersionedFolder contents'
@@ -317,7 +318,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
      * Create version links of type NEW_MODEL_VERSION_OF
      * @return
      */
-    void addVersionLinksToImportedModel(User currentUser, Map versionLinks, ModelService modelService, SubscribedModel subscribedModel) {
+    void addVersionLinksToImportedModel(User currentUser, Map versionLinks, MdmDomainService modelService, SubscribedModel subscribedModel) {
         log.debug('addVersionLinksToImportedModel')
         List matches = []
         if (versionLinks && versionLinks.items) {
@@ -345,13 +346,18 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                     if (localSourceModel && localTargetModel) {
                         //Do we alreday have a version link between these two model versions?
                         boolean exists = localSourceModel.versionLinks && localSourceModel.versionLinks.find {
-                            it.model.id == localSourceModel.id && it.targetModel.id == localTargetModel.id && it.linkType ==
+                            it.modelId == localSourceModel.id && it.targetModelId == localTargetModel.id && it.linkType ==
                             VersionLinkType.NEW_MODEL_VERSION_OF
                         }
 
                         if (!exists) {
-                            log.debug('setModelIsNewBranch')
-                            modelService.setModelIsNewBranchModelVersionOfModel(localSourceModel, localTargetModel, currentUser)
+                            if (modelService instanceof ModelService) {
+                                log.debug('setModelIsNewBranchModelVersionOfModel from addVersionLinksToImportedModel')
+                                modelService.setModelIsNewBranchModelVersionOfModel(localSourceModel, localTargetModel, currentUser)
+                            } else if (modelService instanceof VersionedFolderService) {
+                                log.debug('setFolderIsNewBranchModelVersionOfFolder from addVersionLinksToImportedModel')
+                                modelService.setFolderIsNewBranchModelVersionOfFolder(localSourceModel, localTargetModel, currentUser)
+                            }
                         }
                     }
                 }
@@ -366,7 +372,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             .sort {pm -> pm.lastUpdated}
         // Atom feeds may allow multiple versions of an entry with the same ID
 
-        if (sourcePublishedModels) {
+        if (sourcePublishedModels && !sourcePublishedModels.empty) {
             sourcePublishedModels.last().links
         } else {
             null

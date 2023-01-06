@@ -109,14 +109,13 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
         by().eq('label', label)
     }
 
-    static DetachedCriteria<VersionedFolder> byLabelAndFinalisedAndLatestModelVersion(String label) {
+    static DetachedCriteria<VersionedFolder> byLabelAndFinalised(String label) {
         byLabel(label)
             .eq('finalised', true)
-            .order('modelVersion', 'desc')
     }
 
-    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
-        byLabelAndFinalisedAndLatestModelVersion(label)
+    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndFinalised(String label, String branchName) {
+        byLabelAndFinalised(label)
             .eq('branchName', branchName)
     }
 

@@ -32,7 +32,10 @@ trait SubscribedCatalogueConverter {
 
     abstract Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue)
 
-    abstract Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue, String publishedModelId)
+    abstract Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient,
+                                                                                                     SubscribedCatalogue subscribedCatalogue, String publishedModelId)
+
+    abstract Map<String, Object> getVersionLinksForPublishedModel(FederationClient client, String urlModelType, String publishedModelId)
 
     Authority getAuthority(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
         getAuthorityAndPublishedModels(federationClient, subscribedCatalogue).v1

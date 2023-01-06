@@ -129,6 +129,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderService.getContainerPropertyNameInModel()
     }
 
+    String getUrlResourceName() {
+        'versionedFolders'
+    }
+
     Set<MdmDomainService> getDomainServices() {
         domainServices.add(this)
         domainServices
@@ -292,7 +296,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     Version getParentModelVersion(VersionedFolder currentFolder) {
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(currentFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(currentFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF) ?:
+                                  currentFolder.versionLinks?.find {it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
         if (!versionLink) return null
         VersionedFolder parent = get(versionLink.targetModelId)
         parent.modelVersion
@@ -527,10 +532,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         newBranchModelVersion
     }
 
-    void checkBranchModelVersion(VersionedFolder folder, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
+    void checkBranchModelVersion(VersionedFolder folder, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser, Authority otherAuthority = null) {
         if (importAsNewBranchModelVersion) {
 
-            if (countByAuthorityAndLabel(folder.authority, folder.label)) {
+            if (countByAuthorityAndLabel(otherAuthority ?: folder.authority, folder.label)) {
                 // Branches need to be created from a finalised version
                 // But we can create a new branch even if existing branches
 
@@ -549,8 +554,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                             log.info('Marked as importAsNewBranchModelVersion but no existing VersionedFolders with label [{}]', folder.label)
                             return
                         }
-                        finaliseFolder(latest, catalogueUser, Version.from('1'), null, null)
-                        save(latest, flush: true, validate: false)
+                        if (!latest.finalised) {
+                            finaliseFolder(latest, catalogueUser, Version.from('1'), null, null)
+                            save(latest, flush: true, validate: false)
+                        }
                     }
                 } else {
                     // If the branch name is not provided, or is the default then we would be using the default,
@@ -559,8 +566,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                     latest = findCurrentMainBranchByLabel(folder.label)
                     if (latest && latest.id != folder.id) {
                         log.info('Main branch exists already so finalising to ensure no conflicts')
-                        finaliseFolder(latest, catalogueUser, getNextFolderVersion(latest, null, VersionChangeType.MAJOR), null, null)
-                        save(latest, flush: true, validate: false)
+                        if (!latest.finalised) {
+                            finaliseFolder(latest, catalogueUser, getNextFolderVersion(latest, null, VersionChangeType.MAJOR), null, null)
+                            save(latest, flush: true, validate: false)
+                        }
                     } else {
                         // No main branch exists so get the latest finalised model
                         latest = findLatestFinalisedModelByLabel(folder.label)
@@ -609,6 +618,77 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                                           userSecurityPolicyManager,)
         setModelIsNewDocumentationVersionOfModel(newDocVersion, folder, user)
         newDocVersion
+    }
+
+    void checkDocumentationVersion(VersionedFolder folder, boolean importAsNewDocumentationVersion, User catalogueUser, Authority otherAuthority = null) {
+        if (importAsNewDocumentationVersion) {
+
+            if (countByAuthorityAndLabel(otherAuthority ?: folder.authority, folder.label)) {
+                // Doc versions must be built off finalised versions, they cannot be built of a finalised version where a branch already exists
+                // So we just get the latest model and finalise if its not finalised
+                VersionedFolder latest = findLatestModelByLabel(folder.label)
+
+                if (!latest || latest.id == folder.id) {
+                    log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', folder.label)
+                    return
+                }
+
+                if (!latest.finalised) {
+                    finaliseFolder(latest, catalogueUser, Version.from('1'), null, null)
+                    save(latest, flush: true, validate: false)
+                }
+
+                // Now we have a finalised model to work from
+                setModelIsNewDocumentationVersionOfModel(folder, latest, catalogueUser)
+                folder.documentationVersion = Version.nextMajorVersion(latest.documentationVersion)
+            } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', folder.label)
+        }
+    }
+
+    /**
+     * After importing a VersionedFolder, either force the authority to be the default authority, or otherwise create or use an existing authority
+     * @param importingUser
+     * @param folder
+     * @param useDefaultAuthority If true then any imported authority will be overwritten with the default authority
+     * @return The model with its authority checked
+     */
+    VersionedFolder checkAuthority(User importingUser, VersionedFolder folder, boolean useDefaultAuthority) {
+        if (useDefaultAuthority || !folder.authority) {
+            folder.authority = authorityService.getDefaultAuthority()
+        } else {
+            //If the authority already exists then use it, otherwise create a new one but set the createdBy property
+            Authority exists = authorityService.findByLabel(folder.authority.label)
+            if (exists) {
+                folder.authority = exists
+            } else {
+                folder.authority.createdBy = importingUser.emailAddress
+
+                //Save this new authority so that it is available later for ModelLabelValidator
+                authorityService.save(folder.authority)
+            }
+        }
+        folder
+    }
+
+    void checkFinaliseModel(VersionedFolder folder, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
+        if (finalise && (!folder.finalised || !folder.modelVersion)) {
+            // Parameter update will have set the model as finalised, but it wont have set the model version
+            // If the actual import data includes finalised data then it will also containt the model version
+            // If the model hasnt been imported as a new branch model version then we need to check if any existing models
+            // If existing models then we cant finalise as we need to link the imported model
+            if (!importAsNewBranchModelVersion && countByAuthorityAndLabel(folder.authority, folder.label)) {
+                throw new ApiBadRequestException('MSXX', 'Request to finalise import without creating newBranchModelVersion to existing folders')
+            }
+            folder.finalised = true
+        }
+        if (folder.finalised) {
+            folder.dateFinalised = folder.dateFinalised ?: OffsetDateTime.now()
+            folder.modelVersion = folder.modelVersion ?: getNextFolderVersion(folder, null, VersionChangeType.MAJOR)
+        } else {
+            // Make sure that, if after all the checking, the model is not finalised we dont have any modelVersion or date set
+            folder.dateFinalised = null
+            folder.modelVersion = null
+        }
     }
 
     boolean newVersionCreationIsAllowed(VersionedFolder folder) {
@@ -691,7 +771,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     VersionedFolder findLatestFinalisedModelByLabel(String label) {
-        VersionedFolder.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
+        List<VersionedFolder> versionedFolders = VersionedFolder.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list()
+        return versionedFolders.empty ? null : versionedFolders.sort {it.modelVersion}.last()
     }
 
     Version getLatestModelVersionByLabel(String label) {

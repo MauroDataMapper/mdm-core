@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.federation.converter
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
@@ -56,17 +57,46 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
     @Override
     Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue,
                                                                                             String publishedModelId) {
+        getNewerOrOlderPublishedVersionsForPublishedModel(federationClient, publishedModelId)
+    }
+
+    @Override
+    Map<String, Object> getVersionLinksForPublishedModel(FederationClient federationClient, String urlModelType,
+                                                         String publishedModelId) {
+        List<PublishedModel> olderVersions = getNewerOrOlderPublishedVersionsForPublishedModel(federationClient, publishedModelId, true).v2
+
+        Map<String, Object> versionLinks = [:]
+
+        versionLinks.items = olderVersions.collect {PublishedModel pm ->
+            [
+                linkType   : VersionLinkType.NEW_MODEL_VERSION_OF.label,
+                sourceModel: [id: publishedModelId],
+                targetModel: [id: pm.modelId]
+            ]
+        }
+
+        return versionLinks
+    }
+
+    private Tuple2<OffsetDateTime, List<PublishedModel>> getNewerOrOlderPublishedVersionsForPublishedModel(FederationClient federationClient, String publishedModelId,
+                                                                                                           boolean older = false) {
         GPathResult subscribedCatalogueModelsFeed = federationClient.getSubscribedCatalogueModelsFromAtomFeed()
 
         List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {convertEntryToPublishedModel(it)}
         PublishedModel publishedModel = publishedModels.find {it.modelId == publishedModelId}
 
-        List<PublishedModel> newerVersions = publishedModels.findAll {it.modelLabel == publishedModel.modelLabel && it.lastUpdated > publishedModel.lastUpdated}.sort {l, r ->
-            r.lastUpdated <=> l.lastUpdated ?:
-            l.modelLabel.compareToIgnoreCase(r.modelLabel) ?:
-            l.modelLabel <=> r.modelLabel ?:
-            l.modelId <=> r.modelId
-        }
+        List<PublishedModel> newerVersions =
+            publishedModels
+                .findAll {
+                    it.modelLabel == publishedModel.modelLabel && ((!older && it.lastUpdated > publishedModel.lastUpdated) ||
+                                                                   (older && it.lastUpdated < publishedModel.lastUpdated))
+                }
+                .sort {l, r ->
+                    r.lastUpdated <=> l.lastUpdated ?:
+                    l.modelLabel.compareToIgnoreCase(r.modelLabel) ?:
+                    l.modelLabel <=> r.modelLabel ?:
+                    l.modelId <=> r.modelId
+                }
 
         OffsetDateTime lastUpdated = newerVersions.collect {it.lastUpdated}.max()
 
@@ -87,6 +117,5 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
             }
         }
     }
-
 
 }

@@ -48,7 +48,8 @@ class MauroJsonSubscribedCatalogueConverter implements SubscribedCatalogueConver
     }
 
     @Override
-    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue,
+                                                                                            String publishedModelId) {
         Map<String, Object> newerPublishedVersions = federationClient.getNewerPublishedVersionsForPublishedModel(publishedModelId)
 
         OffsetDateTime lastUpdated = OffsetDateTime.parse(newerPublishedVersions.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -56,6 +57,16 @@ class MauroJsonSubscribedCatalogueConverter implements SubscribedCatalogueConver
         List<PublishedModel> newerVersions = (newerPublishedVersions.newerPublishedModels as List<Map<String, Object>>).collect {convertEntryToPublishedModel(it)}
 
         return new Tuple2(lastUpdated, newerVersions)
+    }
+
+    @Override
+    Map<String, Object> getVersionLinksForPublishedModel(FederationClient federationClient, String urlModelType,
+                                                         String publishedModelId) {
+        if (urlModelType) {
+            return federationClient.getVersionLinksForModel(urlModelType, publishedModelId)
+        } else {
+            return [:]
+        }
     }
 
     private PublishedModel convertEntryToPublishedModel(Map<String, Object> entry) {
