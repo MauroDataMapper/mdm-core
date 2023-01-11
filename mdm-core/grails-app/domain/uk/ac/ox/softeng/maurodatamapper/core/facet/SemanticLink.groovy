@@ -43,7 +43,9 @@ class SemanticLink implements MultiFacetItemAware {
         CallableConstraints.call(MdmDomainConstraints, delegate)
         multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (!val && !obj.multiFacetAwareItem) return ['default.null.message']
-            if (val == obj.targetMultiFacetAwareItemId && obj.multiFacetAwareItemDomainType == obj.targetMultiFacetAwareItemDomainType) {
+            if (obj.linkType != SemanticLinkType.IS_FROM &&
+                    val == obj.targetMultiFacetAwareItemId &&
+                    obj.multiFacetAwareItemDomainType == obj.targetMultiFacetAwareItemDomainType ) {
                 return ['invalid.same.property.message', 'targetMultiFacetAwareItem']
             }
         }
