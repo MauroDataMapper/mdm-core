@@ -106,7 +106,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
             log.trace('Removing {} DataFlows', dataFlowIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id in :id OR target_id in :ids')
+                .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id in :ids OR target_id in :ids')
                 .setParameter('ids', modelIds)
                 .executeUpdate()
 
