@@ -18,7 +18,6 @@ publishedModel {
     if (pm.datePublished) datePublished OffsetDateTimeConverter.toString(pm.datePublished)
     if (pm.author) author pm.author
     if (pm.description) description pm.description
-    if (pm.previousModelId) previousModelId pm.previousModelId
     links {
         pm.links.each {link ->
             layout '/link/_link.gml', link: link

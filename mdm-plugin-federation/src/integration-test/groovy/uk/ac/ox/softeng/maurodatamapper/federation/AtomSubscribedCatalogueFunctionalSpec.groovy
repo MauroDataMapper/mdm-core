@@ -40,6 +40,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
             apiKey                 : '67421316-66a5-4830-9156-b1ba77bba5d1',
             label                  : 'Functional Test Label',
             subscribedCatalogueType: 'Atom',
+            subscribedCatalogueAuthenticationType: 'API Key',
             description            : 'Functional Test Description',
             refreshPeriod          : 7
         ]
@@ -61,6 +62,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
   "subscribedCatalogueType": 'Atom',
+  "subscribedCatalogueAuthenticationType": 'API Key',
   "description": 'Functional Test Description',
   "refreshPeriod": 7,
   "apiKey": "67421316-66a5-4830-9156-b1ba77bba5d1"
@@ -74,6 +76,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
   "subscribedCatalogueType": 'Atom',
+  "subscribedCatalogueAuthenticationType": 'API Key',
   "description": 'Functional Test Description',
   "refreshPeriod": 7
 }'''
@@ -89,6 +92,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
       "url": "${json-unit.any-string}",
       "label": "Functional Test Label",
       "subscribedCatalogueType": 'Atom',
+      "subscribedCatalogueAuthenticationType": 'API Key',
       "description": "Functional Test Description",
       "refreshPeriod": 7
     }

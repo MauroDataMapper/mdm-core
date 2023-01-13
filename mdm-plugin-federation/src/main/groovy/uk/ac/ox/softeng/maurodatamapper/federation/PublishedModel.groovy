@@ -36,7 +36,6 @@ class PublishedModel implements Comparable<PublishedModel> {
     OffsetDateTime dateCreated
     OffsetDateTime datePublished
     String author
-    UUID previousModelId
     List<Link> links
 
     PublishedModel() {
@@ -84,7 +83,6 @@ class PublishedModel implements Comparable<PublishedModel> {
         if (modelType != that.modelType) return false
         if (modelVersion != that.modelVersion) return false
         if (modelVersionTag != that.modelVersionTag) return false
-        previousModelId == that.previousModelId
     }
 
     @Override
@@ -100,7 +98,6 @@ class PublishedModel implements Comparable<PublishedModel> {
         result = 31 * result + dateCreated.hashCode()
         result = 31 * result + datePublished.hashCode()
         result = 31 * result + (author != null ? author.hashCode() : 0)
-        result = 31 * result + (previousModelId != null ? previousModelId.hashCode() : 0)
         result
     }
 
