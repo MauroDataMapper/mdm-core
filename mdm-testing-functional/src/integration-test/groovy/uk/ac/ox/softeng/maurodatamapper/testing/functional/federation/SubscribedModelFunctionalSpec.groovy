@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
@@ -97,6 +99,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                                         apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                         label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
+                                                        subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
+                                                        subscribedCatalogueAuthenticationCredentials:
+                                                            new ApiKeyAuthenticationCredentials(apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e'),
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: FUNCTIONAL_TEST).save(flush: true).id
@@ -106,6 +111,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                                             apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                             label: 'Functional Test Subscribed Catalogue (Atom)',
                                                             subscribedCatalogueType: SubscribedCatalogueType.ATOM,
+                                                            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
+                                                            subscribedCatalogueAuthenticationCredentials:
+                                                                new ApiKeyAuthenticationCredentials(apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e'),
                                                             description: 'Functional Test Description',
                                                             refreshPeriod: 7,
                                                             createdBy: FUNCTIONAL_TEST).save(flush: true).id

@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -73,6 +75,9 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
                                                         apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                         label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
+                                                        subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
+                                                        subscribedCatalogueAuthenticationCredentials:
+                                                            new ApiKeyAuthenticationCredentials(apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e'),
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
@@ -82,6 +87,9 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
                                                             apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                             label: 'Functional Test Subscribed Catalogue (Atom)',
                                                             subscribedCatalogueType: SubscribedCatalogueType.ATOM,
+                                                            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
+                                                            subscribedCatalogueAuthenticationCredentials:
+                                                                new ApiKeyAuthenticationCredentials(apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e'),
                                                             description: 'Functional Test Description',
                                                             refreshPeriod: 7,
                                                             createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
@@ -209,7 +217,8 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'The response is correct'
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
-        response.body().errors.first().message == 'Property [subscribedModel] of class [class uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams] cannot be null'
+        response.body().errors.first().message ==
+        'Property [subscribedModel] of class [class uk.ac.ox.softeng.maurodatamapper.federation.rest.transport.SubscribedModelFederationParams] cannot be null'
 
         when: 'The save action is executed with invalid data'
         log.debug('Invalid content save')

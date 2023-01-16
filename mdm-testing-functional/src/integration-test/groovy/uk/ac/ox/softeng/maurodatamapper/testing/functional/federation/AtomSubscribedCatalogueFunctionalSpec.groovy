@@ -18,7 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
 
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.test.BaseSubscribedCatalogueFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
@@ -39,12 +41,13 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
     @Override
     Map getValidJson() {
         [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : UUID.randomUUID().toString(),
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : UUID.randomUUID().toString(),
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
     }
 
@@ -71,6 +74,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
     "id": "\${json-unit.matches:id}",
     "label": "Functional Test Label",
     "subscribedCatalogueType": "$subscribedCatalogueType.label",
+    "subscribedCatalogueAuthenticationType": "$SubscribedCatalogueAuthenticationType.API_KEY.label",
     "refreshPeriod": 7,
     "url": "$subscribedCatalogueUrl"
 }"""
@@ -83,6 +87,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
     "id": "\${json-unit.matches:id}",
     "label": "Functional Test Label",
     "subscribedCatalogueType": "$subscribedCatalogueType.label",
+    "subscribedCatalogueAuthenticationType": "$SubscribedCatalogueAuthenticationType.API_KEY.label",
     "refreshPeriod": 7,
     "url": "$subscribedCatalogueUrl"
 }"""
@@ -98,6 +103,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
             "url": "$subscribedCatalogueUrl",
             "label": "Functional Test Label",
             "subscribedCatalogueType": "$subscribedCatalogueType.label",
+            "subscribedCatalogueAuthenticationType": "$SubscribedCatalogueAuthenticationType.API_KEY.label",
             "description": "Functional Test Description",
             "refreshPeriod": 7
         }
@@ -143,12 +149,13 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         when:
         //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
 
@@ -165,10 +172,10 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         responseBody().items.size() == 3
 
         and:
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel 1.0.0'}, 'dataModels',
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.modelVersionTag == '1.0.0'}, 'dataModels',
                                  getDataModelExporters())
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Simple Test CodeSet 1.0.0'}, 'codeSets', getCodeSetExporters())
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Complex Test CodeSet 1.0.0'}, 'codeSets', getCodeSetExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Simple Test CodeSet' && it.modelVersionTag == '1.0.0'}, 'codeSets', getCodeSetExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Complex Test CodeSet' && it.modelVersionTag == '1.0.0'}, 'codeSets', getCodeSetExporters())
 
         cleanup:
         DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
@@ -182,12 +189,12 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
 
         when:
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
 
@@ -218,12 +225,13 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         verifyResponse CREATED, response
         String apiKey = responseBody().apiKey
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -231,11 +239,11 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
 
         when:
         String finalisedDataModelId = getFinalisedDataModelId()
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", MAP_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/urn:uuid:${finalisedDataModelId}/newerVersions", MAP_ARG, true)
 
         then:
         verifyResponse OK, response
-        !responseBody()
+        verifyBaseNewerVersionsJsonResponse(responseBody(), false)
 
         cleanup:
         DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
@@ -259,23 +267,31 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         verifyResponse CREATED, response
         String apiKey = responseBody().apiKey
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", MAP_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/urn:uuid:${finalisedDataModelId}/newerVersions", MAP_ARG, true)
 
         then:
         verifyResponse OK, response
-        !responseBody()
+        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
+        responseBody().newerPublishedModels.size() == 2
+
+        and:
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.modelVersionTag == '2.0.0'}, 'dataModels',
+                                 getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.modelVersionTag == '3.0.0'}, 'dataModels',
+                                 getDataModelExporters())
 
         cleanup:
         DELETE("dataModels/${newerId}?permanent=true", MAP_ARG, true)
@@ -296,25 +312,37 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         String newerId = tuple.v2
         loginAdmin()
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
         String subscribedCatalogueId = responseBody().id
         PUT("dataModels/${finalisedDataModelId}/readByEveryone", [:], MAP_ARG, true)
         verifyResponse OK, response
+        // 'Newer Versions' in Atom depends on the lastUpdated field being greater, so make sure it is
+        sleep(1000)
+        DELETE("dataModels/${newerPublicId}/readByEveryone", MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/${newerPublicId}/readByEveryone", [:], MAP_ARG, true)
+        verifyResponse OK, response
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", MAP_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/urn:uuid:${finalisedDataModelId}/newerVersions", MAP_ARG, true)
 
         then:
+        log.warn responseBody().toString()
         verifyResponse OK, response
-        !responseBody()
+        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
+        responseBody().newerPublishedModels.size() == 1
+
+        and:
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.modelVersionTag == '2.0.0'}, 'dataModels',
+                                 getDataModelExporters())
 
         cleanup:
         DELETE("dataModels/$newerPublicId?permanent=true", MAP_ARG, true)
@@ -330,6 +358,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
     private void verifyJsonPublishedModel(Map publishedModel, String modelEndpoint, Map<String, String> exporters) {
         assert publishedModel
         assert publishedModel.modelId ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+        assert Version.from(publishedModel.modelVersionTag)
         assert publishedModel.label
         assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)

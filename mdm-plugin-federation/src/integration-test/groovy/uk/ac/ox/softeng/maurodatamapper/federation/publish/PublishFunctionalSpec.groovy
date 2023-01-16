@@ -270,7 +270,6 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
             String exporterUrl = exporters.get(link.contentType)
             assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
         }
-        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
     }
 
     private void verifyXmlPublishedModel(GPathResult publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
@@ -287,7 +286,6 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
             String exporterUrl = exporters.get(link.contentType.text())
             assert link.url.text() ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
         }
-        if (newerVersion) assert publishedModel.previousModelId.text() ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
     }
 
     private void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {

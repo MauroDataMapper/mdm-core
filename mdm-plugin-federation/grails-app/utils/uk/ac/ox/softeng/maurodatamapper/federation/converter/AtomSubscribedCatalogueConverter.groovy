@@ -88,8 +88,8 @@ class AtomSubscribedCatalogueConverter implements SubscribedCatalogueConverter {
         List<PublishedModel> newerVersions =
             publishedModels
                 .findAll {
-                    it.modelLabel == publishedModel.modelLabel && ((!older && it.lastUpdated > publishedModel.lastUpdated) ||
-                                                                   (older && it.lastUpdated < publishedModel.lastUpdated))
+                    it.modelLabel == publishedModel?.modelLabel && ((!older && it.lastUpdated > publishedModel?.lastUpdated) ||
+                                                                   (older && it.lastUpdated < publishedModel?.lastUpdated))
                 }
                 .sort {l, r ->
                     r.lastUpdated <=> l.lastUpdated ?:
