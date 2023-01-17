@@ -106,12 +106,12 @@ environments:
         grails:
             plugins:
                 hibernatesearch:
-                    rebuildIndexOnStart: false #true
+                    rebuildIndexOnStart: false
     development:
         grails:
             plugins:
                 hibernatesearch:
-                    rebuildIndexOnStart: false
+                    rebuildIndexOnStart: true
             views:
                 markup:
                     cacheTemplates: false
