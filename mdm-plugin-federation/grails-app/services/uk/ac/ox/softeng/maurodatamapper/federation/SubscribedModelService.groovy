@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
-import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
@@ -196,7 +195,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 remote.createdBy = userSecurityPolicyManager.user.emailAddress
                 authorityService.save(remote, flush: true)
             }
-            parameters.providerSetAuthority = existingRemote ?: remote
+            parameters.authority = existingRemote ?: remote
 
             MdmDomain model = importerService.importDomain(userSecurityPolicyManager.user, importerProviderService, parameters)
 

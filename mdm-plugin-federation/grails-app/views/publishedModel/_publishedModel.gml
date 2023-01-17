@@ -11,7 +11,7 @@ publishedModel {
     modelId pm.modelId
     label pm.modelLabel
     version pm.modelVersion
-    if (pm.modelVersionTag) pm.modelVersionTag
+    if (pm.modelVersionTag) modelVersionTag pm.modelVersionTag
     if (pm.modelType) modelType pm.modelType
     lastUpdated OffsetDateTimeConverter.toString(pm.lastUpdated)
     if (pm.dateCreated) dateCreated OffsetDateTimeConverter.toString(pm.dateCreated)

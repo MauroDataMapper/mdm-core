@@ -203,7 +203,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
 
         // If no identity part then we can just get the latest model by the label
-        finalisedOnly ? findLatestFinalisedModelByLabel(label) : findLatestModelByLabel(label)
+        finalisedOnly ? findLatestFinalisedFolderByLabel(label) : findLatestFolderByLabel(label)
     }
 
     @Override
@@ -543,7 +543,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
                 // If the branch name is not the default the default branch name then we need a finalised model to branch from
                 if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
-                    latest = findLatestFinalisedModelByLabel(folder.label)
+                    latest = findLatestFinalisedFolderByLabel(folder.label)
                     // If no finalised VersionedFolder exists then we finalise the existing default branch so we can branch from it
                     if (!latest) {
                         log.info('No finalised VersionedFolder to create branch from so finalising existing main branch')
@@ -572,7 +572,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                         }
                     } else {
                         // No main branch exists so get the latest finalised model
-                        latest = findLatestFinalisedModelByLabel(folder.label)
+                        latest = findLatestFinalisedFolderByLabel(folder.label)
                         if (!latest) {
                             log.info('Marked as importAsNewBranchModelVersion but no existing VersionedFolders with label [{}]', folder.label)
                             return
@@ -626,7 +626,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             if (countByAuthorityAndLabel(otherAuthority ?: folder.authority, folder.label)) {
                 // Doc versions must be built off finalised versions, they cannot be built of a finalised version where a branch already exists
                 // So we just get the latest model and finalise if its not finalised
-                VersionedFolder latest = findLatestModelByLabel(folder.label)
+                VersionedFolder latest = findLatestFolderByLabel(folder.label)
 
                 if (!latest || latest.id == folder.id) {
                     log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', folder.label)
@@ -670,7 +670,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folder
     }
 
-    void checkFinaliseModel(VersionedFolder folder, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
+    void checkFinaliseFolder(VersionedFolder folder, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
         if (finalise && (!folder.finalised || !folder.modelVersion)) {
             // Parameter update will have set the model as finalised, but it wont have set the model version
             // If the actual import data includes finalised data then it will also containt the model version
@@ -766,17 +766,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                     targetModel: oldFolder)
     }
 
-    VersionedFolder findLatestModelByLabel(String label) {
-        findCurrentMainBranchByLabel(label) ?: findLatestFinalisedModelByLabel(label)
+    VersionedFolder findLatestFolderByLabel(String label) {
+        findCurrentMainBranchByLabel(label) ?: findLatestFinalisedFolderByLabel(label)
     }
 
-    VersionedFolder findLatestFinalisedModelByLabel(String label) {
+    VersionedFolder findLatestFinalisedFolderByLabel(String label) {
         List<VersionedFolder> versionedFolders = VersionedFolder.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list()
         return versionedFolders.empty ? null : versionedFolders.sort {it.modelVersion}.last()
     }
 
     Version getLatestModelVersionByLabel(String label) {
-        findLatestFinalisedModelByLabel(label)?.modelVersion ?: Version.from('0.0.0')
+        findLatestFinalisedFolderByLabel(label)?.modelVersion ?: Version.from('0.0.0')
     }
 
     List<VersionedFolder> findAllAvailableBranchesByLabel(String label) {

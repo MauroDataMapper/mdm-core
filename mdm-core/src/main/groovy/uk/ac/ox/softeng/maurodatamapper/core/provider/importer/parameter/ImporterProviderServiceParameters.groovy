@@ -45,5 +45,6 @@ abstract class ImporterProviderServiceParameters {
 
     boolean providerHasSavedModels = false
 
-    Authority providerSetAuthority
+    // Optional Authority parameter which may be used by importers if they set an authority themselves
+    Authority authority
 }
