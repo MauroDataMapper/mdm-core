@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.OAuthClientCredentialsAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
 import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
@@ -90,7 +91,12 @@ class SubscribedCatalogueService implements AnonymisableService {
     SubscribedCatalogue updateAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
         if (subscribedCatalogue.isDirty('subscribedCatalogueAuthenticationType')) {
             createAuthenticationCredentials(subscribedCatalogue)
+        } else if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials instanceof OAuthClientCredentialsAuthenticationCredentials) {
+            // If updating an OAuth subscribed catalogue, clear out any existing OAuth token
+            ((OAuthClientCredentialsAuthenticationCredentials) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials).accessToken = null
+            ((OAuthClientCredentialsAuthenticationCredentials) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials).accessTokenExpiryTime = null
         }
+
         subscribedCatalogue
     }
 
