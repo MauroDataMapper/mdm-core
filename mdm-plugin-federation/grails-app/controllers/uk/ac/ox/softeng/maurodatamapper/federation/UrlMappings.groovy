@@ -36,7 +36,6 @@ class UrlMappings {
                 group '/subscribedCatalogues', {
                     get '/types'(controller: 'subscribedCatalogue', action: 'types')
                     get '/authenticationTypes'(controller: 'subscribedCatalogue', action: 'authenticationTypes')
-                    post '/test'(controller: 'subscribedCatalogue', action: 'test')
                 }
             }
 

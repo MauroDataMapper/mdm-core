@@ -217,9 +217,9 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
         throw new ApiInternalException('FED05', "Could not load resource from endpoint [${fullUrl}]", ex)
     }
 
-    // TODO @josephcr check this builds the correct URLs for error messages
     protected String getFullUrl(UriBuilder uriBuilder, Map params) {
         String path = uriBuilder.expand(params).toString()
-        hostUrl.toURI().resolve(UriBuilder.of(contextPath).path(path).build()).toString()
+        URI hostUri = hostUrl.toURI()
+        UriBuilder.of(new URI(hostUri.getScheme(), hostUri.getAuthority(), null, null, null)).path(contextPath).path(path).build().toString()
     }
 }
