@@ -218,8 +218,13 @@ class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> i
     }
 
     protected String getFullUrl(UriBuilder uriBuilder, Map params) {
-        String path = uriBuilder.expand(params).toString()
-        URI hostUri = hostUrl.toURI()
-        UriBuilder.of(new URI(hostUri.getScheme(), hostUri.getAuthority(), null, null, null)).path(contextPath).path(path).build().toString()
+        URI requestUri = uriBuilder.expand(params)
+        if (requestUri.scheme && requestUri.authority) {
+            return requestUri.toString()
+        } else {
+            String path = requestUri.toString()
+            URI hostUri = hostUrl.toURI()
+            UriBuilder.of(new URI(hostUri.scheme, hostUri.authority, null, null, null)).path(contextPath).path(path).build().toString()
+        }
     }
 }
