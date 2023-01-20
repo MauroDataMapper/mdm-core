@@ -7,7 +7,9 @@
 | DELETE | /api/admin/subscribedCatalogues/${id} | delete |
 | PUT    | /api/admin/subscribedCatalogues/${id} | update |
 | GET    | /api/admin/subscribedCatalogues/${id} | show |
+| POST   | /api/admin/subscribedCatalogues/test | test |
 | GET    | /api/admin/subscribedCatalogues/types | types |
+| GET    | /api/admin/subscribedCatalogues/authenticationTypes | authenticationTypes |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${publishedModelId}/newerVersions | newerVersions |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels | publishedModels |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection | testConnection |
