@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey),
                                          Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
@@ -101,7 +101,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey),
                                          Argument.STRING)
         }
         catch (HttpException ex) {
@@ -114,7 +114,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
         try {
             client.toBlocking().retrieve(HttpRequest
                                              .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey),
                                          Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
@@ -126,7 +126,7 @@ class ApiKeyAuthenticatingFederationClient extends FederationClient<ApiKeyAuthen
     protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
             client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey.toString()),
+                                             .header(API_KEY_HEADER, authenticationCredentials.apiKey),
                                          Argument.of(byte[])) as byte[]
         }
         catch (HttpException ex) {
