@@ -135,7 +135,8 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
         log.debug('Exporting SubscribedModel')
         try {
-            List<Link> exportLinks = getExportLinksForSubscribedModel(subscribedModel)
+            PublishedModel sourcePublishedModel = getPublishedModelForSubscribedModel(subscribedModel)
+            List<Link> exportLinks = sourcePublishedModel?.links
 
             if (!exportLinks.find {link ->
                 (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
@@ -187,7 +188,12 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             parameters.folderId = folder.id
             parameters.finalised = true
             parameters.useDefaultAuthority = false
-            parameters.importAsNewBranchModelVersion = true
+            // If the subscribed catalogue format has provided a version, use that, otherwise allow importing as a new model version
+            if (sourcePublishedModel?.modelVersion) {
+                parameters.importAsNewBranchModelVersion = false
+            } else {
+                parameters.importAsNewBranchModelVersion = true
+            }
 
             Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
             Authority existingRemote = authorityService.findByLabel(remote.label)
@@ -218,6 +224,10 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                         models.each {it.authority = existingRemote ?: remote}
                     }
                 }
+            }
+
+            if (sourcePublishedModel?.modelVersion) {
+                model.modelVersion = sourcePublishedModel?.modelVersion
             }
 
             log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
@@ -365,14 +375,14 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         log.debug('exit addVersionLinksToImportedModel')
     }
 
-    private List<Link> getExportLinksForSubscribedModel(SubscribedModel subscribedModel) {
+    private PublishedModel getPublishedModelForSubscribedModel(SubscribedModel subscribedModel) {
         List<PublishedModel> sourcePublishedModels = subscribedCatalogueService.listPublishedModels(subscribedModel.subscribedCatalogue)
             .findAll {pm -> pm.modelId == subscribedModel.subscribedModelId}
             .sort {pm -> pm.lastUpdated}
         // Atom feeds may allow multiple versions of an entry with the same ID
 
         if (sourcePublishedModels && !sourcePublishedModels.empty) {
-            sourcePublishedModels.last().links
+            sourcePublishedModels.last()
         } else {
             null
         }
