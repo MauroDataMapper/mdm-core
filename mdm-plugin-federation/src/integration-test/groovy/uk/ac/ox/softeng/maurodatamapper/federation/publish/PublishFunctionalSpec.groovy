@@ -112,7 +112,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         verifyBaseXmlResponse(xmlResponse, false)
 
         and:
-        validateXml('publishedModels', '1.0', xmlResponse.body())
+        validateXml('publishedModels', '2.0', xmlResponse.body())
     }
 
     void 'P02J : Get published models when model available as JSON'() {
@@ -173,7 +173,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         publishedModel.datePublished.text() == publishedDateStr
 
         and:
-        validateXml('publishedModels', '1.0', xmlResponse.body())
+        validateXml('publishedModels', '2.0', xmlResponse.body())
     }
 
     void 'N01J : Test the newerVersions endpoint (with no newer versions) as JSON'() {
@@ -194,7 +194,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         verifyBaseNewerVersionsXmlResponse(xmlResponse, false)
 
         and:
-        validateXml('newerPublishedModels', '1.0', xmlResponse.body())
+        validateXml('newerPublishedModels', '2.0', xmlResponse.body())
     }
 
     void 'N02J : Test the newerVersions endpoint (with newer versions) as JSON'() {
@@ -247,7 +247,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         }
 
         and:
-        validateXml('newerPublishedModels', '1.0', xmlResponse.body())
+        validateXml('newerPublishedModels', '2.0', xmlResponse.body())
 
         cleanup:
         DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)

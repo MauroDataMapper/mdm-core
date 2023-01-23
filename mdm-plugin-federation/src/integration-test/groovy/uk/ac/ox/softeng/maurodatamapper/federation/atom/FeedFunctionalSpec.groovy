@@ -80,7 +80,7 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         verifyBaseAtomResponse(localResponse, false, 'localhost', "http://localhost:$serverPort")
 
         and:
-        validateXml('feed', '1.0', localResponse.body())
+        validateXml('feed', '1.1', localResponse.body())
     }
 
     void 'F02 : Test getting published models when model available'() {
