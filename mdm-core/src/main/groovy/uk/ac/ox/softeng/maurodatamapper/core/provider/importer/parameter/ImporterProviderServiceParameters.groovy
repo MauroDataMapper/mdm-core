@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 
@@ -43,4 +44,7 @@ abstract class ImporterProviderServiceParameters {
     Boolean asynchronous = false
 
     boolean providerHasSavedModels = false
+
+    // Optional Authority parameter which may be used by importers if they set an authority themselves
+    Authority authority
 }

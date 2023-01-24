@@ -284,7 +284,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         VersionedFolder source = queryForResource(params.versionedFolderId)
         if (!source) return notFound(params.versionedFolderId)
 
-        respond versionedFolderService.findLatestFinalisedModelByLabel(source.label)
+        respond versionedFolderService.findLatestFinalisedFolderByLabel(source.label)
     }
 
     def latestModelVersion() {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    XSD schema for the Mauro extensions to the Atom feed format that is returned by /api/feeds/all.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mdm="http://maurodatamapper.com/syndication/extensions/1.0" elementFormDefault="qualified"
+           targetNamespace="http://maurodatamapper.com/syndication/extensions/1.0" version="1.0">
+    <xs:simpleType name="contentItemVersion">
+        <xs:restriction base="xs:string" />
+    </xs:simpleType>
+    <xs:element name="contentItemVersion" type="mdm:contentItemVersion" />
+</xs:schema>

@@ -8,11 +8,13 @@
 | PUT    | /api/admin/subscribedCatalogues/${id} | update |
 | GET    | /api/admin/subscribedCatalogues/${id} | show |
 | GET    | /api/admin/subscribedCatalogues/types | types |
+| GET    | /api/admin/subscribedCatalogues/authenticationTypes | authenticationTypes |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${publishedModelId}/newerVersions | newerVersions |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels | publishedModels |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection | testConnection |
 | GET    | /api/subscribedCatalogues | index |
 | GET    | /api/subscribedCatalogues/types | types |
+| GET    | /api/subscribedCatalogues/authenticationTypes | authenticationTypes |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId} | show |
 | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels/${id}/newerVersions | newerVersions |
 | POST   | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels | federate |

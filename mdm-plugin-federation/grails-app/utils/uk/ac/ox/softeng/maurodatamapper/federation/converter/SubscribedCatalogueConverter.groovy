@@ -23,12 +23,19 @@ import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 
+import java.time.OffsetDateTime
+
 trait SubscribedCatalogueConverter {
     static final String LINK_RELATIONSHIP_ALTERNATE = 'alternate'
 
     abstract boolean handles(SubscribedCatalogueType type)
 
     abstract Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue)
+
+    abstract Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient,
+                                                                                                     SubscribedCatalogue subscribedCatalogue, String publishedModelId)
+
+    abstract Map<String, Object> getVersionLinksForPublishedModel(FederationClient client, String urlModelType, String publishedModelId)
 
     Authority getAuthority(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
         getAuthorityAndPublishedModels(federationClient, subscribedCatalogue).v1

@@ -241,18 +241,18 @@ class ImporterService implements DataBinder {
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServicesByContentType(
-        String contentType) {
-        importerProviderServices.findAll {it.handlesContentType(contentType)}.sort()
+        String contentType, Boolean canFederate = null) {
+        importerProviderServices.findAll {it.handlesContentType(contentType) && (canFederate == null || it.canFederate() == canFederate)}.sort()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
-        String contentType) {
-        findImporterProviderServicesByContentType(contentType)?.find()
+        String contentType, Boolean canFederate = null) {
+        findImporterProviderServicesByContentType(contentType, canFederate)?.find()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
-        String namespace, String name, String version, String contentType) {
-        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType)}.sort()?.find()
+        String namespace, String name, String version, String contentType, Boolean canFederate = null) {
+        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType) && (canFederate == null || it.canFederate() == canFederate)}.sort()?.find()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace,

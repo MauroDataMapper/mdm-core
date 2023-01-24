@@ -35,11 +35,13 @@ class UrlMappings {
                 }
                 group '/subscribedCatalogues', {
                     get '/types'(controller: 'subscribedCatalogue', action: 'types')
+                    get '/authenticationTypes'(controller: 'subscribedCatalogue', action: 'authenticationTypes')
                 }
             }
 
             group '/subscribedCatalogues', {
                 get '/types'(controller: 'subscribedCatalogue', action: 'types')
+                get '/authenticationTypes'(controller: 'subscribedCatalogue', action: 'authenticationTypes')
                 get '/'(controller: 'subscribedCatalogue', action: 'index') {
                     openAccess = true
                 }

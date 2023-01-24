@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
@@ -36,7 +38,6 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     UUID id
     String url
-    UUID apiKey
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
 
@@ -53,8 +54,18 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
     @BindUsing({obj, source -> SubscribedCatalogueType.findFromMap(source)})
     SubscribedCatalogueType subscribedCatalogueType
 
+    // Authentication type for connection to remote catalogue
+    @BindUsing({obj, source -> SubscribedCatalogueAuthenticationType.findFromMap(source)})
+    SubscribedCatalogueAuthenticationType subscribedCatalogueAuthenticationType
+
+    SubscribedCatalogueAuthenticationCredentials subscribedCatalogueAuthenticationCredentials
+
     static hasMany = [
         subscribedModels: SubscribedModel
+    ]
+
+    static hasOne = [
+        subscribedCatalogueAuthenticationCredentials: SubscribedCatalogueAuthenticationCredentials
     ]
 
     static constraints = {
@@ -65,12 +76,13 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
         label unique: true
         refreshPeriod nullable: true
         lastRead nullable: true
-        apiKey nullable: true
         connectionTimeout nullable: true
+        subscribedCatalogueAuthenticationCredentials nullable: true
     }
 
     static mapping = {
         subscribedModels cascade: 'all-delete-orphan'
+        subscribedCatalogueAuthenticationCredentials cascade: 'all-delete-orphan'
     }
 
     SubscribedCatalogue() {

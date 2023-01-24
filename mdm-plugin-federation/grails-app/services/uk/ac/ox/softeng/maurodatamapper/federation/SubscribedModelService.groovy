@@ -17,13 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -55,9 +56,13 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
     @Autowired(required = false)
     List<MdmDomainService> domainServices
 
+    @Autowired(required = false)
+    List<ModelService> modelServices
+
     SubscribedCatalogueService subscribedCatalogueService
     FolderService folderService
     ImporterService importerService
+    AuthorityService authorityService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -130,7 +135,8 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
         log.debug('Exporting SubscribedModel')
         try {
-            List<Link> exportLinks = getExportLinksForSubscribedModel(subscribedModel)
+            PublishedModel sourcePublishedModel = getPublishedModelForSubscribedModel(subscribedModel)
+            List<Link> exportLinks = sourcePublishedModel?.links
 
             if (!exportLinks.find {link ->
                 (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
@@ -152,13 +158,13 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                     (importerProviderService =
                         importerService.findImporterProviderServiceByContentType(subscribedModelFederationParams.importerProviderService.namespace,
                                                                                  subscribedModelFederationParams.importerProviderService.name,
-                                                                                 subscribedModelFederationParams.importerProviderService.version, link.contentType))
+                                                                                 subscribedModelFederationParams.importerProviderService.version, link.contentType, true))
                 }
             } else {
                 exportLink = exportLinks.find {link ->
                     (!subscribedModelFederationParams.url || subscribedModelFederationParams.url == link.href) &&
                     (!subscribedModelFederationParams.contentType || subscribedModelFederationParams.contentType == link.contentType) &&
-                    (importerProviderService = importerService.findImporterProviderServiceByContentType(link.contentType))
+                    (importerProviderService = importerService.findImporterProviderServiceByContentType(link.contentType, true))
                 }
             }
 
@@ -182,6 +188,20 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             parameters.folderId = folder.id
             parameters.finalised = true
             parameters.useDefaultAuthority = false
+            // If the subscribed catalogue format has provided a version, use that, otherwise allow importing as a new model version
+            if (sourcePublishedModel?.modelVersion) {
+                parameters.importAsNewBranchModelVersion = false
+            } else {
+                parameters.importAsNewBranchModelVersion = true
+            }
+
+            Authority remote = subscribedCatalogueService.getAuthority(subscribedModel.subscribedCatalogue)
+            Authority existingRemote = authorityService.findByLabel(remote.label)
+            if (!existingRemote) {
+                remote.createdBy = userSecurityPolicyManager.user.emailAddress
+                authorityService.save(remote, flush: true)
+            }
+            parameters.authority = existingRemote ?: remote
 
             MdmDomain model = importerService.importDomain(userSecurityPolicyManager.user, importerProviderService, parameters)
 
@@ -189,24 +209,43 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                 subscribedModel.errors.reject('invalid.subscribedmodel.import',
                                               'Could not import SubscribedModel into local Catalogue')
                 return subscribedModel.errors
-            } else if (!Model.isAssignableFrom(model.class) && !VersionedFolder.isAssignableFrom(model.class)) {
+            } else if (model !instanceof Model && model !instanceof VersionedFolder) {
                 throw new ApiInternalException('SMS02', "Domain type ${model.domainType} cannot be imported")
+            }
+
+            if (!model.authority || model.authority.id == authorityService.getDefaultAuthority().id) {
+                log.debug 'Setting authority for subscribed model'
+                model.authority = existingRemote ?: remote
+
+                if (model instanceof VersionedFolder) {
+                    log.debug 'Setting authority for VersionedFolder contents'
+                    modelServices.each {service ->
+                        List<Model> models = service.findAllByContainerId(model.id) as List<Model>
+                        models.each {it.authority = existingRemote ?: remote}
+                    }
+                }
+            }
+
+            if (sourcePublishedModel?.modelVersion) {
+                model.modelVersion = sourcePublishedModel?.modelVersion
             }
 
             log.debug('Importing domain {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             MdmDomainService domainService = domainServices.find {it.handles(model.domainType)}
-            if (domainService.respondsTo('countByAuthorityAndLabelAndVersion') &&
-                domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
+            if (domainService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
                                               [model.authority, model.label, model.modelVersion].toArray(),
                                               'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')
                 return subscribedModel.errors
             }
 
-            if (!model.hasProperty('folder')) {
+            if (model.hasProperty('folder')) {
+                model.folder = folder
+            } else if (model.hasProperty('parentFolder')) {
+                model.parentFolder = folder
+            } else {
                 throw new ApiInternalException('SMS03', "Domain type ${model.domainType} cannot be imported into a Folder")
             }
-            model.folder = folder
 
             domainService.validate(model)
 
@@ -215,7 +254,9 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             }
 
             MdmDomain savedModel
-            if (domainService.respondsTo('saveModelWithContent')) {
+            if (domainService.respondsTo('saveFolderHierarchy')) {
+                savedModel = domainService.saveFolderHierarchy(model)
+            } else if (domainService.respondsTo('saveModelWithContent')) {
                 savedModel = domainService.saveModelWithContent(model)
             } else {
                 savedModel = domainService.save(model)
@@ -268,7 +309,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
             getVersionLinksForModel(subscribedModel.subscribedCatalogue, urlModelResourceType, subscribedModel.subscribedModelId)
     }
 
-    Map getNewerPublishedVersions(SubscribedModel subscribedModel) {
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersions(SubscribedModel subscribedModel) {
         subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedModel.subscribedCatalogue, subscribedModel.subscribedModelId)
     }
 
@@ -286,7 +327,7 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
      * Create version links of type NEW_MODEL_VERSION_OF
      * @return
      */
-    void addVersionLinksToImportedModel(User currentUser, Map versionLinks, ModelService modelService, SubscribedModel subscribedModel) {
+    void addVersionLinksToImportedModel(User currentUser, Map versionLinks, MdmDomainService modelService, SubscribedModel subscribedModel) {
         log.debug('addVersionLinksToImportedModel')
         List matches = []
         if (versionLinks && versionLinks.items) {
@@ -314,13 +355,18 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
                     if (localSourceModel && localTargetModel) {
                         //Do we alreday have a version link between these two model versions?
                         boolean exists = localSourceModel.versionLinks && localSourceModel.versionLinks.find {
-                            it.model.id == localSourceModel.id && it.targetModel.id == localTargetModel.id && it.linkType ==
+                            it.modelId == localSourceModel.id && it.targetModelId == localTargetModel.id && it.linkType ==
                             VersionLinkType.NEW_MODEL_VERSION_OF
                         }
 
                         if (!exists) {
-                            log.debug('setModelIsNewBranch')
-                            modelService.setModelIsNewBranchModelVersionOfModel(localSourceModel, localTargetModel, currentUser)
+                            if (modelService instanceof ModelService) {
+                                log.debug('setModelIsNewBranchModelVersionOfModel from addVersionLinksToImportedModel')
+                                modelService.setModelIsNewBranchModelVersionOfModel(localSourceModel, localTargetModel, currentUser)
+                            } else if (modelService instanceof VersionedFolderService) {
+                                log.debug('setFolderIsNewBranchModelVersionOfFolder from addVersionLinksToImportedModel')
+                                modelService.setFolderIsNewBranchModelVersionOfFolder(localSourceModel, localTargetModel, currentUser)
+                            }
                         }
                     }
                 }
@@ -329,14 +375,14 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         log.debug('exit addVersionLinksToImportedModel')
     }
 
-    private List<Link> getExportLinksForSubscribedModel(SubscribedModel subscribedModel) {
+    private PublishedModel getPublishedModelForSubscribedModel(SubscribedModel subscribedModel) {
         List<PublishedModel> sourcePublishedModels = subscribedCatalogueService.listPublishedModels(subscribedModel.subscribedCatalogue)
             .findAll {pm -> pm.modelId == subscribedModel.subscribedModelId}
             .sort {pm -> pm.lastUpdated}
         // Atom feeds may allow multiple versions of an entry with the same ID
 
-        if (sourcePublishedModels) {
-            sourcePublishedModels.last().links
+        if (sourcePublishedModels && !sourcePublishedModels.empty) {
+            sourcePublishedModels.last()
         } else {
             null
         }

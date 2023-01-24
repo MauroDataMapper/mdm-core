@@ -72,9 +72,9 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         then:
         GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost', "http://localhost:$serverPort")
         feed.entry.size() == 3
-        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', "http://localhost:$serverPort", 'codeSets', getCodeSetExporters())
-        verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', "http://localhost:$serverPort", 'codeSets', getCodeSetExporters())
-        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
+        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet'}, 'CodeSet', '1.0.0', "http://localhost:$serverPort", 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet'}, 'CodeSet', '1.0.0', "http://localhost:$serverPort", 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel'}, 'DataModel', '1.0.0', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
     }
 
     void 'F03 : Test links render when site url property set'() {
@@ -101,9 +101,9 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
 
         and:
-        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
-        verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
-        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
+        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet'}, 'CodeSet', '1.0.0', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet'}, 'CodeSet', '1.0.0', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel'}, 'DataModel', '1.0.0', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
                     getDataModelExporters())
 
         cleanup:
@@ -145,16 +145,18 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         result
     }
 
-    private void verifyEntry(def entry, String category, String linkBaseUrl, String modelEndpoint, Map<String, String> exporters) {
+    private void verifyEntry(def entry, String category, String version, String linkBaseUrl, String modelEndpoint, Map<String, String> exporters) {
         assert entry.id.text() ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert entry.category.@term == category
+        assert entry.contentItemVersion.text() == version
 
         assert entry.link.size() == 2
         entry.link.each {it ->
             assert it.@rel == 'alternate'
             String contentType = it.@type
+            assert contentType
             String exporterUrl = exporters.get(contentType)
             assert it.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\/${exporterUrl}/
         }

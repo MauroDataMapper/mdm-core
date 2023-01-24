@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
 
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.test.BaseSubscribedCatalogueFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -40,12 +41,13 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
     @Override
     Map getValidJson() {
         [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : UUID.randomUUID().toString(),
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : UUID.randomUUID().toString(),
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
     }
 
@@ -72,6 +74,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
     "id": "\${json-unit.matches:id}",
     "label": "Functional Test Label",
     "subscribedCatalogueType": "$subscribedCatalogueType.label",
+    "subscribedCatalogueAuthenticationType": "$SubscribedCatalogueAuthenticationType.API_KEY.label",
     "refreshPeriod": 7,
     "url": "$subscribedCatalogueUrl"
 }"""
@@ -84,6 +87,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
     "id": "\${json-unit.matches:id}",
     "label": "Functional Test Label",
     "subscribedCatalogueType": "$subscribedCatalogueType.label",
+    "subscribedCatalogueAuthenticationType": "$SubscribedCatalogueAuthenticationType.API_KEY.label",
     "refreshPeriod": 7,
     "url": "$subscribedCatalogueUrl"
 }"""
@@ -99,6 +103,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
             "url": "$subscribedCatalogueUrl",
             "label": "Functional Test Label",
             "subscribedCatalogueType": "$subscribedCatalogueType.label",
+            "subscribedCatalogueAuthenticationType": "$SubscribedCatalogueAuthenticationType.API_KEY.label",
             "description": "Functional Test Description",
             "refreshPeriod": 7
         }
@@ -144,12 +149,13 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         when:
         //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
 
@@ -183,12 +189,12 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
 
         when:
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
 
@@ -219,12 +225,13 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         verifyResponse CREATED, response
         String apiKey = responseBody().apiKey
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -260,12 +267,13 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         verifyResponse CREATED, response
         String apiKey = responseBody().apiKey
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -281,9 +289,9 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
 
         and:
         verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
+                                 getDataModelExporters())
         verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
+                                 getDataModelExporters())
 
         cleanup:
         DELETE("dataModels/${newerId}?permanent=true", MAP_ARG, true)
@@ -304,12 +312,12 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         String newerId = tuple.v2
         loginAdmin()
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
         verifyResponse CREATED, response
@@ -327,7 +335,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
 
         and:
         verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
+                                 getDataModelExporters())
 
         cleanup:
         DELETE("dataModels/$newerPublicId?permanent=true", MAP_ARG, true)
@@ -340,7 +348,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         cleanUpRoles(subscribedCatalogueId)
     }
 
-    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
+    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters) {
         assert publishedModel
         assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label
@@ -354,6 +362,5 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
             String exporterUrl = exporters.get(link.contentType)
             assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
         }
-        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
     }
 }

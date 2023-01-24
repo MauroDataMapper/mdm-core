@@ -183,6 +183,18 @@ abstract class BaseSubscribedCatalogueFunctionalSpec extends ResourceFunctionalS
         ]'''
     }
 
+    void 'T03 : Test getting SubscribedCatalogue authentication types'() {
+        when:
+        GET('authenticationTypes', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+          "No Authentication",
+          "API Key",
+          "OAuth (Client Credentials)"
+        ]'''
+    }
+
     protected void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {
         if (expectEntries) {
             assert responseBody.items.size() > 0
