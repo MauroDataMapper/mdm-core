@@ -112,7 +112,7 @@ class SummaryMetadata implements MultiFacetItemAware, InformationAware, MdmDomai
     }
 
     static DetachedCriteria<SummaryMetadata> withFilter(DetachedCriteria<SummaryMetadata> criteria, Map filters) {
-        if (filters.label) criteria = criteria.ilike('label', "%${filters.name}%")
+        if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
         criteria
     }
 }
