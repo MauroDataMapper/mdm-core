@@ -101,7 +101,7 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
 
     @Override
     List<SummaryMetadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
-        SummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
+        SummaryMetadata.withFilter(SummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
     @Override
