@@ -15,9 +15,7 @@ WITH RECURSIVE valid_breadcrumb_trees AS MATERIALIZED (
 SELECT *
 FROM valid_breadcrumb_trees;
 
-ALTER TABLE core.breadcrumb_tree DISABLE TRIGGER ALL;
 DELETE FROM core.breadcrumb_tree;
-ALTER TABLE core.breadcrumb_tree ENABLE TRIGGER ALL;
 
 INSERT INTO core.breadcrumb_tree
 SELECT *

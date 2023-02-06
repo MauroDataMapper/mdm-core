@@ -7,3 +7,8 @@ DELETE
 FROM core.flyway_schema_history
 WHERE version = '2.10.0' AND
       description = 'update database metadata values';
+
+DELETE
+FROM core.flyway_schema_history
+WHERE version = '5.1.13' AND
+      description = 'delete invalid breadcrumb trees';
