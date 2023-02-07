@@ -10,5 +10,5 @@ WHERE version = '2.10.0' AND
 
 DELETE
 FROM core.flyway_schema_history
-WHERE version = '5.1.13' AND
+WHERE version = '5.1.3' AND
       description = 'delete invalid breadcrumb trees';
