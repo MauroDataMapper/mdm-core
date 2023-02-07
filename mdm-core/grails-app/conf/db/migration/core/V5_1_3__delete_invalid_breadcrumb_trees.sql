@@ -20,12 +20,10 @@ $$
 BEGIN
    IF EXISTS (SELECT aurora_version()) THEN
    	  TRUNCATE core.breadcrumb_tree CASCADE;
-	  RAISE NOTICE 'Hello world Aurora';
    ELSE
    	  ALTER TABLE core.breadcrumb_tree DISABLE TRIGGER ALL;
 	  DELETE FROM core.breadcrumb_tree;
 	  ALTER TABLE core.breadcrumb_tree ENABLE TRIGGER ALL;
-	  RAISE NOTICE 'Hello world Postgres';
    END IF;
 
    exception
@@ -33,8 +31,6 @@ BEGIN
 			ALTER TABLE core.breadcrumb_tree DISABLE TRIGGER ALL;
 		  	DELETE FROM core.breadcrumb_tree;
 		  	ALTER TABLE core.breadcrumb_tree ENABLE TRIGGER ALL;
-		  	RAISE NOTICE 'Hello world Postgres';
-
 END
 $$;
 
