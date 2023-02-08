@@ -19,7 +19,9 @@ DO
 $$
 BEGIN
    IF EXISTS (SELECT aurora_version()) THEN
-   	  TRUNCATE core.breadcrumb_tree CASCADE;
+      SET session_replication_role = replica;
+   	  DELETE FROM core.breadcrumb_tree;
+   	  SET session_replication_role = DEFAULT;
    ELSE
    	  ALTER TABLE core.breadcrumb_tree DISABLE TRIGGER ALL;
 	  DELETE FROM core.breadcrumb_tree;
