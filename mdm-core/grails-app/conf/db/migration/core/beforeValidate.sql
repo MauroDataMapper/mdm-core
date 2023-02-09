@@ -8,7 +8,7 @@ FROM core.flyway_schema_history
 WHERE version = '2.10.0' AND
       description = 'update database metadata values';
 
-DELETE
-FROM core.flyway_schema_history
+UPDATE core.flyway_schema_history
+SET checksum = -1978164369
 WHERE version = '5.1.3' AND
-      description = 'delete invalid breadcrumb trees';
+      checksum = -573557977;
