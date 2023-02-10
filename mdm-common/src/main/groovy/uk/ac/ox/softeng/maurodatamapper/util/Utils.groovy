@@ -215,4 +215,16 @@ class Utils {
             Thread.currentThread().interrupt()
         }
     }
+
+    /*
+        Batching: for partitioning collections into sets of smaller ones
+     */
+    static List<List> partition(List inputList, int partitionSize ) {
+        List<List> partitions = []
+        for (int i = 0; i < inputList.size(); i += partitionSize) {
+            partitions.add(inputList.subList(i, Math.min(i + partitionSize, inputList.size())));
+        }
+        return partitions
+    }
+
 }
