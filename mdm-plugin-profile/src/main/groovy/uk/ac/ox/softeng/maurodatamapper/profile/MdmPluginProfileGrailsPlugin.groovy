@@ -28,7 +28,7 @@ import grails.util.Environment
 class MdmPluginProfileGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.1.9 > *'
+    def grailsVersion = '5.3.0 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
     ]

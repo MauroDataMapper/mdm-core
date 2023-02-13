@@ -71,7 +71,7 @@ class MdmCoreGrailsPlugin extends Plugin {
     static String DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME = 'defaultUserSecurityPolicyManager'
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.1.9 > *'
+    def grailsVersion = '5.3.0 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         'grails-app/views/error.gsp'
@@ -107,13 +107,13 @@ This is basically the backend API.
     def scm = [url: 'https://github.com/mauroDataMapper/mdm-core']
 
     def dependsOn = [
-        hibernate      : '7.2.0 > *',
+        hibernate      : '7.3.0 > *',
         interceptors   : grailsVersion,
         services       : grailsVersion,
         controllers    : grailsVersion,
         assetPipeline  : '3.3.6 > *',
-        jsonView       : '2.2.0 > *',
-        markupView     : '2.2.0 > *',
+        jsonView       : '2.3.2 > *',
+        markupView     : '2.3.2 > *',
         hibernateSearch: '3.0.0-SNAPSHOT > *'
     ]
 

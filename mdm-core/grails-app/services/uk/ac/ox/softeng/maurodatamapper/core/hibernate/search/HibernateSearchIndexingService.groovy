@@ -30,9 +30,9 @@ import org.hibernate.search.mapper.orm.Search
 import org.hibernate.search.mapper.orm.entity.SearchIndexedEntity
 import org.hibernate.search.mapper.orm.mapping.SearchMapping
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer
-import org.hibernate.search.mapper.orm.massindexing.impl.LoggingMassIndexingMonitor
 import org.hibernate.search.mapper.orm.session.SearchSession
 import org.hibernate.search.mapper.orm.work.SearchIndexingPlan
+import org.hibernate.search.mapper.pojo.massindexing.impl.PojoMassIndexingLoggingMonitor
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.nio.file.Path
@@ -123,7 +123,7 @@ class HibernateSearchIndexingService {
 
             // All indexed classes must be added here
             MassIndexer indexer = searchSession.massIndexer(indexedEntities.collect {it.javaClass()})
-                .monitor(new LoggingMassIndexingMonitor(1))
+                .monitor(new PojoMassIndexingLoggingMonitor(1))
                 .typesToIndexInParallel(indexParameters.typesToIndexInParallel)
                 .threadsToLoadObjects(indexParameters.threadsToLoadObjects)
                 .batchSizeToLoadObjects(indexParameters.batchSizeToLoadObjects)
