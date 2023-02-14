@@ -1,4 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 
 import grails.util.Environment
 import grails.util.Holders
@@ -19,6 +21,7 @@ model {
 
 Throwable extractedException = findCoreException(exception)
 HttpStatus determinedHttpStatus = getExceptionStatus(extractedException) ?: httpStatus ?: INTERNAL_SERVER_ERROR
+boolean showExceptions = getShowExceptions()
 
 if (!errors) {
     if (extractedException instanceof ValidationException) errors = ((ValidationException) extractedException).errors
@@ -35,8 +38,10 @@ json {
     status determinedHttpStatus.value()
     reason determinedHttpStatus.reasonPhrase
 
-    errorCode errorCode ?: getExceptionErrorCode(extractedException) ?: 'JS--'
-    message message ?: getExceptionMessage(extractedException) ?: 'JS-- - Unknown error'
+    if (showExceptions) {
+        errorCode errorCode ?: getExceptionErrorCode(extractedException) ?: 'JS--'
+        message message ?: getExceptionMessage(extractedException) ?: 'JS-- - Unknown error'
+    }
     path request.getUri()
 
     if (Environment.current != Environment.PRODUCTION) environment Environment.current
@@ -47,7 +52,7 @@ json {
     if (errors) validationErrors tmpl.'/errors/errors'(errors)
     else if (errorsList) validationErrors tmpl.'/errors/errors'(errorsList)
 
-    else if (determinedHttpStatus != BAD_REQUEST) {
+    else if (showExceptions && determinedHttpStatus != BAD_REQUEST) {
         // SQL Exceptions are iterable so we need to only show the first
         if (extractedException instanceof SQLException) {
             exception tmpl.'/errors/exception'(exception: extractedException)
@@ -101,4 +106,8 @@ static HttpStatus getExceptionStatus(Throwable exception) {
     } catch (NullPointerException ignored) {
         return null
     }
+}
+
+static boolean getShowExceptions() {
+    !ApiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS)?.value?.toBoolean()
 }
