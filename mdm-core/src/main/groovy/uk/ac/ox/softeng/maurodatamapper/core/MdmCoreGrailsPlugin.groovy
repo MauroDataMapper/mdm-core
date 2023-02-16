@@ -59,6 +59,7 @@ import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.servlet.view.SitemeshLayoutViewResolver
 import org.hibernate.dialect.PostgreSQL94Dialect
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import org.springframework.util.ClassUtils
 
@@ -266,10 +267,13 @@ This is basically the backend API.
         /**
          * Remove the SitemeshLayoutViewResolver as this resolves GSP files which we dont need or use
          */
-        SitemeshLayoutViewResolver sitemeshLayoutViewResolver = applicationContext.getBean(SitemeshLayoutViewResolver)
-        if (sitemeshLayoutViewResolver) {
-            CompositeViewResolver compositeViewResolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
-            compositeViewResolver.viewResolvers.remove(sitemeshLayoutViewResolver)
+        try {
+            SitemeshLayoutViewResolver sitemeshLayoutViewResolver = applicationContext.getBean(SitemeshLayoutViewResolver)
+            if (sitemeshLayoutViewResolver) {
+                CompositeViewResolver compositeViewResolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
+                compositeViewResolver.viewResolvers.remove(sitemeshLayoutViewResolver)
+            }
+        } catch (NoSuchBeanDefinitionException ignored) {
         }
     }
 

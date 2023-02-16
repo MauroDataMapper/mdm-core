@@ -106,6 +106,9 @@ dependencies {
         api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipeline
         api "org.javassist:javassist:$javaAssist"
 
+        //io.micronaut:micronaut-aop:3.8.4
+        api group: 'io.micronaut', name: 'micronaut-aop', version: micronaut
+
         api group: 'org.slf4j', name: 'slf4j-api', version: slf4j
         api group: 'ch.qos.logback', name: 'logback-classic', version: logback
 
