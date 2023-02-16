@@ -2,5 +2,5 @@
 # Add key=value pairs of SDKs to use below
 java=17.0.6-tem
 gradle=7.3.3
-grails=5.3.0
+grails=5.3.2
 groovy=3.0.11

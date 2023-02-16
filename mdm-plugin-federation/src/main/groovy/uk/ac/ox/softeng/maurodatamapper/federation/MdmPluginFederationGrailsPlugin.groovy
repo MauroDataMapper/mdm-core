@@ -28,7 +28,7 @@ import grails.plugins.Plugin
 class MdmPluginFederationGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.3.0 > *'
+    def grailsVersion = '5.3.2 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
     ]

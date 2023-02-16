@@ -124,7 +124,6 @@ dependencies {
         api group: 'org.apache.commons', name: 'commons-rng-simple', version: commonsRng
         api group: 'org.apache.commons', name: 'commons-text', version: commonsText
         api group: 'org.apache.commons', name: 'commons-csv', version: commonsCsv
-        api group: 'com.sun.mail', name: 'jakarta.mail', version: '1.6.7'
         api group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMail
         api group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutils
 
