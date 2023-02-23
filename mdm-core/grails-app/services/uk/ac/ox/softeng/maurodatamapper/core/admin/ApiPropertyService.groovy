@@ -51,11 +51,11 @@ class ApiPropertyService {
         apiProperty.delete(flush: true)
     }
 
-    ApiProperty findByKey(String key) {
+    static ApiProperty findByKey(String key) {
         ApiProperty.findByKey(key)
     }
 
-    ApiProperty findByApiPropertyEnum(ApiPropertyEnum key) {
+    static ApiProperty findByApiPropertyEnum(ApiPropertyEnum key) {
         findByKey(key.key)
     }
 

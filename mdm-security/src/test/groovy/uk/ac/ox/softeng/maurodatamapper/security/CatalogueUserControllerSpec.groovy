@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
@@ -76,6 +77,7 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
 
         mockDomain(Edit)
         mockDomain(UserGroup)
+        mockDomain(ApiProperty)
         group = new UserGroup(name: 'testgroup', createdBy: StandardEmailAddress.UNIT_TEST).addToGroupMembers(admin)
         checkAndSave(group)
 
@@ -106,9 +108,7 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
             (isR2_3 ? 1 : 0) * sendEmailToUser(_, EMAIL_SELF_REGISTER_SUBJECT, EMAIL_SELF_REGISTER_BODY, _)
         }
 
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            (isR2_3 ? 1 : 0) * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
 
         givenParameters()
     }
@@ -613,9 +613,7 @@ json {
         controller.emailService = Mock(EmailService) {
             (expectedStatus == CREATED ? 1 : 0) * sendEmailToUser(_, EMAIL_ADMIN_REGISTER_SUBJECT, EMAIL_ADMIN_REGISTER_BODY, _)
         }
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            (expectedStatus == CREATED ? 1 : 0) * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         request.method = 'POST'
 
         when:
@@ -800,9 +798,7 @@ json {
             (expectedStatus == OK ? 1 : 0) * sendEmailToUser(_, EMAIL_ADMIN_CONFIRM_REGISTRATION_SUBJECT,
                                                              EMAIL_ADMIN_CONFIRM_REGISTRATION_BODY, _)
         }
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            (expectedStatus == OK ? 1 : 0) * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         request.method = 'PUT'
 
         when:
@@ -902,9 +898,7 @@ json {
 
     void 'test reset password with a null token after token requested'() {
         given:
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            1 * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         controller.emailService = Mock(EmailService) {
             1 * sendEmailToUser(_, EMAIL_FORGOTTEN_PASSWORD_SUBJECT,
                                 EMAIL_FORGOTTEN_PASSWORD_BODY, _, _)
@@ -991,9 +985,7 @@ json {
 
     void 'test reset password with the user after reset link sent'() {
         given:
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            1 * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         controller.emailService = Mock(EmailService) {
             1 * sendEmailToUser(_, EMAIL_FORGOTTEN_PASSWORD_SUBJECT,
                                 EMAIL_FORGOTTEN_PASSWORD_BODY, _, _)
@@ -1053,9 +1045,7 @@ json {
 
     void 'test reset password with the user logging in after reset link sent'() {
         given:
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            1 * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         controller.emailService = Mock(EmailService) {
             1 * sendEmailToUser(_, EMAIL_FORGOTTEN_PASSWORD_SUBJECT,
                                 EMAIL_FORGOTTEN_PASSWORD_BODY, _, _)
@@ -1147,9 +1137,7 @@ json {
     void 'test admin password reset for user'() {
 
         given:
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            1 * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         controller.emailService = Mock(EmailService) {
             1 * sendEmailToUser(_, EMAIL_PASSWORD_RESET_SUBJECT, EMAIL_PASSWORD_RESET_BODY, _)
         }
@@ -1210,9 +1198,7 @@ json {
         controller.emailService = Mock(EmailService) {
             1 * sendEmailToUser(_, EMAIL_ADMIN_REGISTER_SUBJECT, EMAIL_ADMIN_REGISTER_BODY, _)
         }
-        controller.apiPropertyService = Mock(ApiPropertyService) {
-            1 * findByApiPropertyEnum(SITE_URL) >> null
-        }
+        controller.apiPropertyService = Mock(ApiPropertyService)
         request.method = 'POST'
 
         when:

@@ -39,7 +39,8 @@ enum ApiPropertyEnum {
     EMAIL_PASSWORD_RESET_SUBJECT('email.password_reset.subject'),
     EMAIL_PASSWORD_RESET_BODY('email.password_reset.body'),
     SECURITY_RESTRICT_ROOT_FOLDER('security.restrict.root.folder'),
-    SECURITY_RESTRICT_CLASSIFIER_CREATE('security.restrict.classifier.create')
+    SECURITY_RESTRICT_CLASSIFIER_CREATE('security.restrict.classifier.create'),
+    SECURITY_HIDE_EXCEPTIONS('security.hide.exception')
 
     String key
 
