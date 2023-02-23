@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider
 
-import uk.ac.ox.softeng.maurodatamapper.provider.plugin.AbstractMauroDataMapperPlugin
+import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.web.controllers.ControllerUnitTest
@@ -27,8 +27,8 @@ class MauroDataMapperProviderControllerSpec extends BaseUnitSpec implements Cont
     void 'test get modules'() {
         given:
         controller.mauroDataMapperProviderService = Mock(MauroDataMapperProviderService) {
-            getModulesList() >> [[getName: 'test', getVersion: '1.0'] as AbstractMauroDataMapperPlugin,
-                                 [getName: 'test2', getVersion: '0.2'] as AbstractMauroDataMapperPlugin]
+            getModulesList() >> [[getName: { -> 'test'}, getVersion: { -> '1.0'}] as MauroDataMapperPlugin,
+                                 [getName: { -> 'test2'}, getVersion: { -> '0.2'}] as MauroDataMapperPlugin]
         }
 
         when:
