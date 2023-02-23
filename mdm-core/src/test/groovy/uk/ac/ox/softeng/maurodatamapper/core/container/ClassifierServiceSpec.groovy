@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,17 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 
 import grails.testing.services.ServiceUnitTest
 
@@ -293,4 +297,66 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         and:
         list[0].label == 'classifier1'
     }
+
+    void 'test findAllReadableCatalogueItemsByClassifierId with multiple catalogue item types'() {
+        given:
+        UserSecurityPolicyManager userSecurityPolicyManager
+        UserSecurityPolicyManager testPolicy
+        testPolicy = Mock()
+        testPolicy.getUser() >> admin
+
+        UUID classifierId = Classifier.findByLabel('classifier1').id
+
+        Map pagination_sort = [sort:'label', order:'asc']
+        Map pagination_filter = [domainType:'DataClass']
+
+        CatalogueItem basicModel = Stub()
+        basicModel.label >> 'dm1'
+        basicModel.id >> '1'
+        basicModel.domainType >> 'DataModel'
+        basicModel.description >> 'description 1'
+        basicModel.compareTo(_) >> {3146}
+        basicModel.equals(_) >> false
+
+        CatalogueItem basicClass = Stub()
+        basicClass.label >> 'dc1'
+        basicClass.id >> '2'
+        basicClass.domainType >> 'DataClass'
+        basicClass.compareTo(_) >> {3145}
+        basicClass.equals(_) >> false
+
+        CatalogueItemService basicModelService = Stub() {
+            findAllReadableByClassifier(_,_) >> {[basicModel]}
+        }
+
+        CatalogueItemService basicClassService = Stub() {
+            findAllReadableByClassifier(_,_) >> {[basicClass]}
+        }
+        service.catalogueItemServices = [basicModelService, basicClassService]
+
+
+        when: 'searching for elements of a classifier and ordered'
+        InMemoryPagedResultList<CatalogueItem> list = service.findAllReadableCatalogueItemsByClassifierId(
+            testPolicy, classifierId, true, true, pagination_sort)
+
+        then:
+        list.size() == 2
+
+        and:
+        list[0].label == 'dc1'
+        list[0].domainType == 'DataClass'
+
+
+        when: 'searching for elements of a classifier and filtered'
+        list = service.findAllReadableCatalogueItemsByClassifierId(
+            testPolicy, classifierId, true, true, pagination_filter)
+
+        then:
+        list.size() == 1
+
+        and:
+        list[0].label == 'dc1'
+        list[0].domainType == 'DataClass'
+    }
+
 }

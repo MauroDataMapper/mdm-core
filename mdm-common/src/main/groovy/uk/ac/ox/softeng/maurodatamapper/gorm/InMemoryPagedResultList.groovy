@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ class InMemoryPagedResultList<E> extends PagedResultList<E> {
         totalCount = results.size()
         this.pagination = pagination
 
-        Integer max = pagination.max ?: 10
-        Integer offset = pagination.offset ?: 0
+        Integer max = pagination.max?.toInteger() ?: 10
+        Integer offset = pagination.offset?.toInteger() ?: 0
         resultList = results.subList(Math.min(totalCount, offset), Math.min(totalCount, offset + max))
     }
 

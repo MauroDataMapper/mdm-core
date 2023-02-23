@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,24 +102,28 @@ class TermService extends ModelItemService<Term> {
         List<UUID> termIds = Term.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termIds) {
-            log.trace('Removing TermRelationships in {} Terms', termIds.size())
-            termRelationshipService.deleteAllByModelIds(modelIds)
+            List<List<UUID>> batches = Utils.partition(termIds, BATCH_SIZE)
+            batches.each { batchedIds ->
 
-            log.trace('Removing CodeSet references for {} Terms', termIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE term_id IN :ids')
-                .setParameter('ids', termIds)
-                .executeUpdate()
+                log.trace('Removing TermRelationships in {} Terms', batchedIds.size())
+                termRelationshipService.deleteAllByModelIds(modelIds)
 
-            log.trace('Removing facets for {} Terms', termIds.size())
-            deleteAllFacetsByMultiFacetAwareIds(termIds,
-                                                'delete from terminology.join_term_to_facet where term_id in :ids')
+                log.trace('Removing CodeSet references for {} Terms', batchedIds.size())
+                sessionFactory.currentSession
+                        .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE term_id IN :ids')
+                        .setParameter('ids', batchedIds)
+                        .executeUpdate()
 
+                log.trace('Removing facets for {} Terms', batchedIds.size())
+                deleteAllFacetsByMultiFacetAwareIds(batchedIds,
+                        'delete from terminology.join_term_to_facet where term_id in :ids')
+
+            }
             log.trace('Removing {} Terms', termIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
-                .setParameter('ids', modelIds)
-                .executeUpdate()
+                    .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
+                    .setParameter('ids', modelIds)
+                    .executeUpdate()
 
             log.trace('Terms removed')
         }
@@ -407,7 +411,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         // Older code used the full term label which is not great but we should be able to handle this here
         String legacyHandlingPathIdentifier = pathIdentifier.split(':')[0]
 

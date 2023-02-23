@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,9 @@ class MdmAtomPublishedModelRenderer<T> extends AtomRenderer<T> {
     public static final String CATEGORY_TAG = 'category'
     public static final String CATEGORY_TERM_ATTRIBUTE = 'term'
     public static final String SUMMARY_TAG = 'summary'
+    public static final String XMLNS_MDM_ATTRIBUTE = 'xmlns:mdm'
+    public static final String MDM_ATOM_NAMESPACE = 'http://maurodatamapper.com/syndication/extensions/1.0'
+    public static final String MDM_VERSION_TAG = 'mdm:contentItemVersion'
 
     @Autowired
     ApiPropertyService apiPropertyService
@@ -91,6 +94,7 @@ class MdmAtomPublishedModelRenderer<T> extends AtomRenderer<T> {
             writer
                 .startNode(FEED_TAG)
                 .attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
+                .attribute(XMLNS_MDM_ATTRIBUTE, MDM_ATOM_NAMESPACE)
                 .startNode(TITLE_ATTRIBUTE)
                 .characters(title)
                 .end()
@@ -265,7 +269,7 @@ class MdmAtomPublishedModelRenderer<T> extends AtomRenderer<T> {
 
         //Use model label as the title
         writer.startNode(TITLE_ATTRIBUTE)
-            .characters(publishedModel.modelLabel + " " + publishedModel.modelVersion.toString())
+            .characters(publishedModel.modelLabel)
             .end()
 
         writer.startNode(UPDATED_TAG)
@@ -297,6 +301,13 @@ class MdmAtomPublishedModelRenderer<T> extends AtomRenderer<T> {
 
         writer.startNode(CATEGORY_TAG)
             .attribute(CATEGORY_TERM_ATTRIBUTE, publishedModel.modelType)
+            .end()
+
+        /*
+        Extension fields
+         */
+        writer.startNode(MDM_VERSION_TAG)
+            .characters(publishedModel.modelVersion.toString())
             .end()
 
         publishedModel.links.each {writeLink(it, null, xml)}

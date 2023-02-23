@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,4 +265,56 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
         response.body().items[1].label == 'content'
         response.body().items[2].label == 'emptyclass'
    }
+
+    void 'OR5: Test ordering on update when moving items up and down the list'() {
+        given: 'Five resources with specified indices'
+        String aId = createNewItem(getValidLabelJson('A', 0))
+        String bId = createNewItem(getValidLabelJson('B', 1))
+        String cId = createNewItem(getValidLabelJson('C', 2))
+        String dId = createNewItem(getValidLabelJson('D', 3))
+        String eId = createNewItem(getValidLabelJson('E', 4))
+
+        when: 'All items are listed'
+        GET('?sort=idx')
+
+        then: 'They are in the order A, B, C, D, E'
+        response.body().items[0].label == 'A'
+        response.body().items[1].label == 'B'
+        response.body().items[2].label == 'C'
+        response.body().items[3].label == 'D'
+        response.body().items[4].label == 'E'
+
+        when: 'Item A is moved down to the middle of the list'
+        PUT(aId, getValidLabelJson('A', 2))
+
+        then: 'The PUT works'
+        response.status == HttpStatus.OK
+        String fId = response.body().id
+
+        when: 'All items are listed'
+        GET('?sort=idx')
+
+        then: 'They are in the order B, C, A, D, E'
+        response.body().items[0].label == 'B'
+        response.body().items[1].label == 'C'
+        response.body().items[2].label == 'A'
+        response.body().items[3].label == 'D'
+        response.body().items[4].label == 'E'
+
+        when: 'Item E is moved up to the middle of the list'
+        PUT(eId, getValidLabelJson('E', 2))
+
+        then: 'The PUT works'
+        response.status == HttpStatus.OK
+
+        when: 'All items are listed'
+        GET('?sort=idx')
+
+        then: 'They are in the order B, C, E, A, D'
+        response.body().items[0].label == 'B'
+        response.body().items[1].label == 'C'
+        response.body().items[2].label == 'E'
+        response.body().items[3].label == 'A'
+        response.body().items[4].label == 'D'
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.federation.web
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
@@ -41,7 +42,6 @@ import io.micronaut.http.client.netty.DefaultHttpClient
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
-import io.micronaut.http.uri.DefaultUriBuilder
 import io.micronaut.http.uri.UriBuilder
 import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
@@ -49,20 +49,21 @@ import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
 import java.util.concurrent.ThreadFactory
+
 /**
  * @since 14/04/2021
  */
 @Slf4j
 @SuppressFBWarnings(value = 'UPM_UNCALLED_PRIVATE_METHOD', justification = 'Calls to methods with optional params not detected')
-class FederationClient implements Closeable {
+class FederationClient<C extends SubscribedCatalogueAuthenticationCredentials> implements Closeable {
 
-    static final String API_KEY_HEADER = 'apiKey'
-    private HttpClient client
-    private String hostUrl
-    private String contextPath
-    private HttpClientConfiguration httpClientConfiguration
-    private NettyClientSslBuilder nettyClientSslBuilder
-    private MediaTypeCodecRegistry mediaTypeCodecRegistry
+    protected HttpClient client
+    protected String hostUrl
+    protected String contextPath
+    protected C authenticationCredentials
+    protected HttpClientConfiguration httpClientConfiguration
+    protected NettyClientSslBuilder nettyClientSslBuilder
+    protected MediaTypeCodecRegistry mediaTypeCodecRegistry
 
     FederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
         this(subscribedCatalogue,
@@ -84,16 +85,17 @@ class FederationClient implements Closeable {
         )
     }
 
-    private FederationClient(SubscribedCatalogue subscribedCatalogue,
-                             HttpClientConfiguration httpClientConfiguration,
-                             ThreadFactory threadFactory,
-                             NettyClientSslBuilder nettyClientSslBuilder,
-                             MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    protected FederationClient(SubscribedCatalogue subscribedCatalogue,
+                               HttpClientConfiguration httpClientConfiguration,
+                               ThreadFactory threadFactory,
+                               NettyClientSslBuilder nettyClientSslBuilder,
+                               MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.httpClientConfiguration = httpClientConfiguration
         this.nettyClientSslBuilder = nettyClientSslBuilder
         this.mediaTypeCodecRegistry = mediaTypeCodecRegistry
 
         hostUrl = subscribedCatalogue.url
+        authenticationCredentials = subscribedCatalogue.subscribedCatalogueAuthenticationCredentials
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
@@ -116,38 +118,42 @@ class FederationClient implements Closeable {
         log.debug('Client created to connect to {}', hostUrl)
     }
 
+    boolean handles(SubscribedCatalogueAuthenticationType authenticationType) {
+        authenticationType == SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION
+    }
+
     @Override
     void close() throws IOException {
         client.close()
     }
 
-    GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {
+    GPathResult getSubscribedCatalogueModelsFromAtomFeed() {
         // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
-        retrieveXmlDataFromClient(UriBuilder.of(''), apiKey)
+        retrieveXmlDataFromClient(UriBuilder.of(''))
     }
 
-    Map<String, Object> getSubscribedCatalogueModels(UUID apiKey) {
-        retrieveMapFromClient(UriBuilder.of('published/models'), apiKey)
+    Map<String, Object> getSubscribedCatalogueModels() {
+        retrieveMapFromClient(UriBuilder.of('published/models'))
     }
 
-    List<Map<String, Object>> getAvailableExporters(UUID apiKey, String urlResourceType) {
-        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'), apiKey)
+    List<Map<String, Object>> getAvailableExporters(String urlResourceType) {
+        retrieveListFromClient(UriBuilder.of(urlResourceType).path('providers/exporters'))
     }
 
-    Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'), apiKey)
+    Map<String, Object> getVersionLinksForModel(String urlModelResourceType, String publishedModelId) {
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(publishedModelId).path('versionLinks'))
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, String publishedModelId) {
-        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'), apiKey)
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(String publishedModelId) {
+        retrieveMapFromClient(UriBuilder.of('published/models').path(publishedModelId).path('newerVersions'))
     }
 
-    byte[] getBytesResourceExport(UUID apiKey, String resourceUrl) {
-        retrieveBytesFromClient(UriBuilder.of(resourceUrl), apiKey)
+    byte[] getBytesResourceExport(String resourceUrl) {
+        retrieveBytesFromClient(UriBuilder.of(resourceUrl))
     }
 
-    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
-        String body = retrieveStringFromClient(uriBuilder, apiKey, params)
+    private GPathResult retrieveXmlDataFromClient(UriBuilder uriBuilder, Map params = [:]) {
+        String body = retrieveStringFromClient(uriBuilder, params)
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {
@@ -156,11 +162,9 @@ class FederationClient implements Closeable {
         }
     }
 
-    private Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    protected Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest
-                                             .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
@@ -168,11 +172,9 @@ class FederationClient implements Closeable {
         }
     }
 
-    private String retrieveStringFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    protected String retrieveStringFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest
-                                             .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.STRING)
         }
         catch (HttpException ex) {
@@ -180,11 +182,9 @@ class FederationClient implements Closeable {
         }
     }
 
-    private List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    protected List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest
-                                             .GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
@@ -192,10 +192,9 @@ class FederationClient implements Closeable {
         }
     }
 
-    private byte[] retrieveBytesFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
+    protected byte[] retrieveBytesFromClient(UriBuilder uriBuilder, Map params = [:]) {
         try {
-            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params))
-                                             .header(API_KEY_HEADER, apiKey.toString()),
+            client.toBlocking().retrieve(HttpRequest.GET(uriBuilder.expand(params)),
                                          Argument.of(byte[])) as byte[]
         }
         catch (HttpException ex) {
@@ -203,7 +202,7 @@ class FederationClient implements Closeable {
         }
     }
 
-    private static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
+    protected static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
         if (ex instanceof HttpClientResponseException) {
             if (ex.status == HttpStatus.NOT_FOUND) {
                 throw new ApiBadRequestException('FED02', "Requested endpoint could not be found ${fullUrl}")
@@ -218,8 +217,14 @@ class FederationClient implements Closeable {
         throw new ApiInternalException('FED05', "Could not load resource from endpoint [${fullUrl}]", ex)
     }
 
-    private String getFullUrl(UriBuilder uriBuilder, Map params) {
-        String path = uriBuilder.expand(params).toString()
-        hostUrl.toURI().resolve(UriBuilder.of(contextPath).path(path).build()).toString()
+    protected String getFullUrl(UriBuilder uriBuilder, Map params) {
+        URI requestUri = uriBuilder.expand(params)
+        if (requestUri.scheme && requestUri.authority) {
+            return requestUri.toString()
+        } else {
+            String path = requestUri.toString()
+            URI hostUri = hostUrl.toURI()
+            UriBuilder.of(new URI(hostUri.scheme, hostUri.authority, null, null, null)).path(contextPath).path(path).build().toString()
+        }
     }
 }

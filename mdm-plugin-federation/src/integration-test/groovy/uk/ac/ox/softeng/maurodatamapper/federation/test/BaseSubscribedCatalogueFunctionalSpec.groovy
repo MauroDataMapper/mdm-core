@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,6 +180,18 @@ abstract class BaseSubscribedCatalogueFunctionalSpec extends ResourceFunctionalS
         verifyJsonResponse OK, '''[
           "Atom",
           "Mauro JSON"
+        ]'''
+    }
+
+    void 'T03 : Test getting SubscribedCatalogue authentication types'() {
+        when:
+        GET('authenticationTypes', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+          "No Authentication",
+          "API Key",
+          "OAuth (Client Credentials)"
         ]'''
     }
 

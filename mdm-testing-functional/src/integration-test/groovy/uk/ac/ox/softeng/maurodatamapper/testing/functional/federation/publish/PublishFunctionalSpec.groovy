@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -238,9 +238,9 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
 
         and:
         verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
+                                 getDataModelExporters())
         verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
-                                 getDataModelExporters(), true)
+                                 getDataModelExporters())
 
         cleanup:
         loginAdmin()
@@ -267,9 +267,9 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
 
         and:
         verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
-                                getDataModelExporters(), true)
+                                getDataModelExporters())
         verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
-                                getDataModelExporters(), true)
+                                getDataModelExporters())
 
         cleanup:
         loginAdmin()
@@ -279,7 +279,7 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
         verifyResponse NO_CONTENT, response
     }
 
-    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
+    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters) {
         assert publishedModel
         assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label
@@ -293,10 +293,9 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
             String exporterUrl = exporters.get(link.contentType)
             assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
         }
-        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
     }
 
-    private void verifyXmlPublishedModel(GPathResult publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
+    private void verifyXmlPublishedModel(GPathResult publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters) {
         assert publishedModel
         assert publishedModel.modelId.text() ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label.text()
@@ -310,7 +309,6 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
             String exporterUrl = exporters.get(link.contentType.text())
             assert link.url.text() ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
         }
-        if (newerVersion) assert publishedModel.previousModelId.text() ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
     }
 
     private void verifyBaseJsonResponse(Map<String, Object> responseBody, boolean expectEntries) {

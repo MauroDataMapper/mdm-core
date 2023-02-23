@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    XSD schema for Mauro /api/published/models/$publishedModelId/newerVersions?format=xml XML endpoint.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
+    <xs:element name="newerVersions" type="newerVersionsType"></xs:element>
+    <xs:simpleType name="mandatoryString">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="authorityType">
+        <xs:sequence>
+            <xs:element name="label" type="mandatoryString" />
+            <xs:element name="url" type="mandatoryString" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="link">
+        <xs:sequence>
+            <xs:element name="contentType" type="xs:string" />
+            <xs:element name="url" type="mandatoryString" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="links">
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="link" type="link" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="publishedModelType">
+        <xs:sequence>
+            <xs:element name="modelId" type="mandatoryString" />
+            <xs:element name="label" type="mandatoryString" />
+            <xs:element name="version" type="mandatoryString" />
+            <xs:element minOccurs="0" name="modelVersionTag" type="xs:string" />
+            <xs:element name="modelType" type="mandatoryString" />
+            <xs:element name="lastUpdated" type="xs:dateTime" />
+            <xs:element name="dateCreated" type="xs:dateTime" />
+            <xs:element name="datePublished" type="xs:dateTime" />
+            <xs:element minOccurs="0" name="author" type="xs:string" />
+            <xs:element minOccurs="0" name="description" type="xs:string" />
+            <xs:element name="links" type="links" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="publishedModelsType">
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="publishedModel" type="publishedModelType" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="newerVersionsType">
+        <xs:sequence>
+            <xs:element name="lastUpdated" type="xs:dateTime" />
+            <xs:element name="newerPublishedModels" type="publishedModelsType"></xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

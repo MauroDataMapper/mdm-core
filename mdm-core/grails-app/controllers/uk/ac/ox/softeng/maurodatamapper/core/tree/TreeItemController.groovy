@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,11 +62,11 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
             Container container = treeItemService.findTreeCapableContainer(params.containerClass, params.containerId)
             if (!container) return notFound(Container, params.containerId)
             respond treeItemList: treeItemService.buildDirectChildrenContainerTree(params.containerClass,
-                                                                          container,
-                                                                          currentUserSecurityPolicyManager,
-                                                                          shouldIncludeDocumentSupersededItems(),
-                                                                          shouldIncludeModelSupersededItems(),
-                                                                          shouldIncludeDeletedItems())
+                                                                                   container,
+                                                                                   currentUserSecurityPolicyManager,
+                                                                                   shouldIncludeDocumentSupersededItems(),
+                                                                                   shouldIncludeModelSupersededItems(),
+                                                                                   shouldIncludeDeletedItems())
             return
         }
         // If id provided then build the tree for that item, as we build the containers on the default we will assume this a catalogue item
@@ -86,10 +86,18 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
 
         // Only return the containers
         if (params.boolean(CONTAINERS_ONLY_PARAM) || params.boolean(FOLDERS_ONLY_PARAM)) {
-            if(params.boolean(MODEL_CREATEABLE_ONLY_PARAM)){
-                return respond(treeItemService.buildModelCreatableContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager))
+            if (params.boolean(MODEL_CREATEABLE_ONLY_PARAM)) {
+                return respond(treeItemService.buildModelCreatableContainerOnlyTree(params.containerClass,
+                                                                                    currentUserSecurityPolicyManager,
+                                                                                    shouldIncludeDocumentSupersededItems(),
+                                                                                    shouldIncludeModelSupersededItems(),
+                                                                                    shouldIncludeDeletedItems()))
             }
-            return respond(treeItemService.buildContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager))
+            return respond(treeItemService.buildContainerOnlyTree(params.containerClass,
+                                                                  currentUserSecurityPolicyManager,
+                                                                  shouldIncludeDocumentSupersededItems(),
+                                                                  shouldIncludeModelSupersededItems(),
+                                                                  shouldIncludeDeletedItems()))
         }
 
         // Default behaviour is to return the root tree of containers
@@ -102,7 +110,10 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
     def search() {
         log.debug('Call to tree search for {}', params.containerClass)
         respond treeItemService.buildContainerSearchTree(params.containerClass, currentUserSecurityPolicyManager,
-                                                         params.searchTerm as String, params.domainType as String)
+                                                         params.searchTerm as String, params.domainType as String,
+                                                         shouldIncludeDocumentSupersededItems(),
+                                                         shouldIncludeModelSupersededItems(),
+                                                         shouldIncludeDeletedItems())
     }
 
     def documentationSupersededModels() {

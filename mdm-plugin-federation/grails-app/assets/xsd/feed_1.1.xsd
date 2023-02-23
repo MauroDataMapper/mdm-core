@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    XSD schema for the subset of Atom format that is returned by Mauro /api/feeds/all endpoint.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:mdm="http://maurodatamapper.com/syndication/extensions/1.0" elementFormDefault="qualified"
+           targetNamespace="http://www.w3.org/2005/Atom" version="1.1">
+    <xs:import namespace="http://maurodatamapper.com/syndication/extensions/1.0" schemaLocation="extensions_1.0.xsd" />
+    <xs:element name="feed" type="atom:feedType" />
+    <xs:simpleType name="mandatoryString">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="mandatoryURI">
+        <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="authorType">
+        <xs:sequence>
+            <xs:element name="name" type="atom:mandatoryString" />
+            <xs:element name="uri" type="atom:mandatoryURI" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="linkType">
+        <xs:attribute name="href" type="atom:mandatoryURI" use="required" />
+        <xs:attribute name="rel" type="atom:mandatoryString" />
+        <xs:attribute name="type" type="atom:mandatoryString" />
+        <xs:attribute name="title" type="atom:mandatoryString" />
+        <xs:attribute name="hreflang" type="xs:language" />
+        <xs:attribute name="templated" type="xs:boolean" />
+        <xs:attribute name="deprecated" type="xs:boolean" />
+    </xs:complexType>
+    <xs:complexType name="categoryType">
+        <xs:attribute name="term" type="atom:mandatoryString" />
+    </xs:complexType>
+    <xs:complexType name="entryType">
+        <xs:sequence>
+            <xs:element name="id" type="atom:mandatoryString" />
+            <xs:element name="title" type="atom:mandatoryString" />
+            <xs:element name="updated" type="xs:dateTime" />
+            <xs:element name="author" type="atom:authorType" minOccurs="0" />
+            <xs:element name="summary" type="xs:string" minOccurs="0" />
+            <xs:element name="published" type="xs:dateTime" />
+            <xs:element name="category" type="atom:categoryType" />
+            <xs:element ref="mdm:contentItemVersion" minOccurs="0" />
+            <xs:element name="link" type="atom:linkType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="feedType">
+        <xs:sequence>
+           <xs:element name="title" type="atom:mandatoryString" />
+           <xs:element name="id" type="atom:mandatoryString" />
+           <xs:element name="author" type="atom:authorType" />
+           <xs:element name="updated" type="xs:dateTime" />
+           <xs:element name="link" type="atom:linkType" />
+           <xs:element name="entry" type="atom:entryType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

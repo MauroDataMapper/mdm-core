@@ -11,13 +11,13 @@ publishedModel {
     modelId pm.modelId
     label pm.modelLabel
     version pm.modelVersion
+    if (pm.modelVersionTag) modelVersionTag pm.modelVersionTag
     if (pm.modelType) modelType pm.modelType
     lastUpdated OffsetDateTimeConverter.toString(pm.lastUpdated)
     if (pm.dateCreated) dateCreated OffsetDateTimeConverter.toString(pm.dateCreated)
     if (pm.datePublished) datePublished OffsetDateTimeConverter.toString(pm.datePublished)
     if (pm.author) author pm.author
     if (pm.description) description pm.description
-    if (pm.previousModelId) previousModelId pm.previousModelId
     links {
         pm.links.each {link ->
             layout '/link/_link.gml', link: link

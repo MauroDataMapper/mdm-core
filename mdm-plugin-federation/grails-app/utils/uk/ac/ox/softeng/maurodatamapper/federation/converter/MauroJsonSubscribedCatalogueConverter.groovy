@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,25 +38,50 @@ class MauroJsonSubscribedCatalogueConverter implements SubscribedCatalogueConver
 
     @Override
     Tuple2<Authority, List<PublishedModel>> getAuthorityAndPublishedModels(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue) {
-        Map<String, Object> subscribedCatalogueModels = federationClient.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        Map<String, Object> subscribedCatalogueModels = federationClient.getSubscribedCatalogueModels()
 
         Authority subscribedAuthority = new Authority(label: subscribedCatalogueModels.authority.label, url: subscribedCatalogueModels.authority.url)
 
-        List<PublishedModel> publishedModels = (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
-            new PublishedModel().tap {
-                modelId = pm.modelId
-                modelLabel = pm.label
-                modelVersion = Version.from(pm.version)
-                modelType = pm.modelType
-                lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                author = pm.author
-                description = pm.description
-                if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
-            }
-        }
+        List<PublishedModel> publishedModels = (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {convertEntryToPublishedModel(it)}
 
         return new Tuple2(subscribedAuthority, publishedModels)
+    }
+
+    @Override
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(FederationClient federationClient, SubscribedCatalogue subscribedCatalogue,
+                                                                                            String publishedModelId) {
+        Map<String, Object> newerPublishedVersions = federationClient.getNewerPublishedVersionsForPublishedModel(publishedModelId)
+
+        OffsetDateTime lastUpdated = OffsetDateTime.parse(newerPublishedVersions.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        List<PublishedModel> newerVersions = (newerPublishedVersions.newerPublishedModels as List<Map<String, Object>>).collect {convertEntryToPublishedModel(it)}
+
+        return new Tuple2(lastUpdated, newerVersions)
+    }
+
+    @Override
+    Map<String, Object> getVersionLinksForPublishedModel(FederationClient federationClient, String urlModelType,
+                                                         String publishedModelId) {
+        if (urlModelType) {
+            return federationClient.getVersionLinksForModel(urlModelType, publishedModelId)
+        } else {
+            return [:]
+        }
+    }
+
+    private PublishedModel convertEntryToPublishedModel(Map<String, Object> entry) {
+        new PublishedModel().tap {
+            modelId = entry.modelId
+            modelLabel = entry.label
+            modelVersion = Version.from(entry.version)
+            modelVersionTag = entry.modelVersionTag
+            modelType = entry.modelType
+            lastUpdated = OffsetDateTime.parse(entry.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            dateCreated = OffsetDateTime.parse(entry.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            datePublished = OffsetDateTime.parse(entry.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            author = entry.author
+            description = entry.description
+            if (entry.links) links = entry.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
+        }
     }
 }

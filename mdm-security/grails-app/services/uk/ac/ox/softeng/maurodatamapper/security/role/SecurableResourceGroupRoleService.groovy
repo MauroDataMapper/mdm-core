@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
     }
 
     @Override
-    SecurableResourceGroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+    SecurableResourceGroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier, Map pathParams = [:]) {
         return null
     }
 

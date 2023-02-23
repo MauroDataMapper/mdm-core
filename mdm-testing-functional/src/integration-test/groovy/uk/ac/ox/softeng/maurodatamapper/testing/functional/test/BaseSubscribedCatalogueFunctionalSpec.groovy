@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -782,12 +783,13 @@ abstract class BaseSubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : apiKey,
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            apiKey                               : apiKey,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
 
@@ -820,12 +822,12 @@ abstract class BaseSubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         Map subscriptionJson = [
-            url                    : subscribedCatalogueUrl,
-            apiKey                 : '',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: subscribedCatalogueType.label,
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : subscribedCatalogueUrl,
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : subscribedCatalogueType.label,
+            subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.NO_AUTHENTICATION.label,
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
         POST('', subscriptionJson)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         verifyBaseAtomResponse(localResponse, false, 'localhost', "http://localhost:$serverPort")
 
         and:
-        validateXml('feed', '1.0', localResponse.body())
+        validateXml('feed', '1.1', localResponse.body())
     }
 
     void 'F02 : Test getting published models when model available'() {
@@ -100,10 +100,10 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         then:
         GPathResult feed = verifyBaseAtomResponse(localResponse, true, 'localhost', "http://localhost:$serverPort")
         feed.entry.size() == 1
-        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
+        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel'}, 'DataModel', '1.0.0', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
 
         and:
-        validateXml('feed', '1.0', localResponse.body())
+        validateXml('feed', '1.1', localResponse.body())
     }
 
     void 'F03 : Test links render when site url property set'() {
@@ -129,11 +129,11 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
 
         and:
-        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
+        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel'}, 'DataModel', '1.0.0', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
                     getDataModelExporters())
 
         and:
-        validateXml('feed', '1.0', xmlResponse.body())
+        validateXml('feed', '1.1', xmlResponse.body())
 
         cleanup:
         DELETE("admin/properties/$sitePropertyId", MAP_ARG, true)
@@ -154,6 +154,7 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         GPathResult result = new XmlSlurper().parseText(xmlResponse.body())
         assert result.name() == 'feed'
         assert result.namespaceURI() == 'http://www.w3.org/2005/Atom'
+        assert result.lookupNamespace('mdm') == 'http://maurodatamapper.com/syndication/extensions/1.0'
         assert result.title == 'Mauro Data Mapper - All Models'
         assert result.id == "tag:$host,2021-01-27:$contextPath/api/feeds/all"
         assert result.author.name == 'Mauro Data Mapper'
@@ -174,11 +175,12 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
         result
     }
 
-    private void verifyEntry(def entry, String category, String linkBaseUrl, String modelEndpoint, Map<String, String> exporters) {
+    private void verifyEntry(def entry, String category, String version, String linkBaseUrl, String modelEndpoint, Map<String, String> exporters) {
         assert entry.id.text() ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert entry.category.@term == category
+        assert entry.contentItemVersion.text() == version
 
         assert entry.link.size() == 2
         entry.link.each {it ->

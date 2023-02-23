@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,4 +215,16 @@ class Utils {
             Thread.currentThread().interrupt()
         }
     }
+
+    /*
+        Batching: for partitioning collections into sets of smaller ones
+     */
+    static List<List> partition(List inputList, int partitionSize ) {
+        List<List> partitions = []
+        for (int i = 0; i < inputList.size(); i += partitionSize) {
+            partitions.add(inputList.subList(i, Math.min(i + partitionSize, inputList.size())));
+        }
+        return partitions
+    }
+
 }

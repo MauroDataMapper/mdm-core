@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,12 +112,12 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
     Map getValidJsonCollection() {
         [count: 2,
          items: [
-                 [key     : 'functional.test.key.one',
-                  value   : 'Some random thing1',
-                  category: 'Functional Test'],
-                 [key     : 'functional.test.key.two',
-                  value   : 'Some random thing2',
-                  category: 'Functional Test']
+             [key     : 'functional.test.key.one',
+              value   : 'Some random thing1',
+              category: 'Functional Test'],
+             [key     : 'functional.test.key.two',
+              value   : 'Some random thing2',
+              category: 'Functional Test']
          ]
         ]
     }
@@ -217,9 +217,12 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct'
         verifyResponse OK, response
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
-                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
-                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
+            .findAll {
+                !(it in [ApiPropertyEnum.SITE_URL,
+                         ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                         ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
+                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS])
+            }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {
                     it.key == ape.key &&
@@ -233,9 +236,12 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct'
         verifyResponse OK, jsonCapableResponse
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
-                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
-                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
+            .findAll {
+                !(it in [ApiPropertyEnum.SITE_URL,
+                         ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                         ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
+                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS])
+            }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("<key>${ape.key}</key>")
             }
@@ -254,9 +260,12 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
 
         and:
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
-                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
-                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
+            .findAll {
+                !(it in [ApiPropertyEnum.SITE_URL,
+                         ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                         ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
+                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS])
+            }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("${ape.key},")
             }

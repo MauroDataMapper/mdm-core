@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,10 @@ trait JsonImportMapping {
     /**
      * Helps with importing json by removing any elements called 'id'
      */
-    static def slurpAndClean(byte[] content) {
+    static def slurpAndClean(byte[] content, List<String> exclude = ['id']) {
         // Declare generator and slurper
         def generator = new JsonGenerator.Options()
-            .excludeFieldsByName('id')
+            .excludeFieldsByName(exclude)
             .build()
         def slurper = new JsonSlurper()
 

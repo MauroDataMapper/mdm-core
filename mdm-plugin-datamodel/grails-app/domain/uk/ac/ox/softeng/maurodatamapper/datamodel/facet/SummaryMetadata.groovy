@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ class SummaryMetadata implements MultiFacetItemAware, InformationAware, MdmDomai
     }
 
     static DetachedCriteria<SummaryMetadata> withFilter(DetachedCriteria<SummaryMetadata> criteria, Map filters) {
-        if (filters.label) criteria = criteria.ilike('label', "%${filters.name}%")
+        if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
         criteria
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.OAuthClientCredentialsAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+
+import java.time.OffsetDateTime
 
 import static org.springframework.http.HttpStatus.OK
 
@@ -55,6 +58,61 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
                  : notFound(params.id)
     }
 
+    /**
+     * Override save method to create nested credentials object.
+     * @return
+     */
+    @Transactional
+    @Override
+    def save() {
+        if (handleReadOnly()) return
+
+        Map<String, Object> credentialsParams = cacheBodyIntoRequest(extractRequestBodyToMap())
+
+        SubscribedCatalogue instance = createResource()
+        // Create nested credentials object
+        subscribedCatalogueService.createAuthenticationCredentials(instance)
+        if (instance.subscribedCatalogueAuthenticationCredentials) bindData(instance.subscribedCatalogueAuthenticationCredentials, credentialsParams)
+
+        if (response.isCommitted()) return
+
+        if (!validateResource(instance, 'create')) return
+
+        saveResource instance
+
+        saveResponse instance
+    }
+
+    /**
+     * Override update method to handle nested credentials object.
+     * @return
+     */
+    @Transactional
+    @Override
+    def update() {
+        if (handleReadOnly()) return
+
+        Map<String, Object> credentialsParams = cacheBodyIntoRequest(extractRequestBodyToMap())
+
+        SubscribedCatalogue instance = queryForResource(params.id)
+
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        instance.properties = getObjectToBind()
+        subscribedCatalogueService.updateAuthenticationCredentials(instance)
+        if (instance.subscribedCatalogueAuthenticationCredentials) bindData(instance.subscribedCatalogueAuthenticationCredentials, credentialsParams)
+
+        if (!validateResource(instance, 'update')) return
+
+        updateResource instance
+
+        updateResponse instance
+    }
+
     @Override
     void serviceDeleteResource(SubscribedCatalogue resource) {
         subscribedCatalogueService.delete(resource)
@@ -62,6 +120,10 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
 
     List<String> types() {
         respond SubscribedCatalogueType.labels()
+    }
+
+    List<String> authenticationTypes() {
+        respond SubscribedCatalogueAuthenticationType.labels()
     }
 
     /**
@@ -83,7 +145,9 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
 
-        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, params.publishedModelId)
+        def (OffsetDateTime lastUpdated, List<PublishedModel> newerVersions) = subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, params.publishedModelId)
+
+        respond(newerVersions, [model: [lastUpdated: lastUpdated, newerPublishedModels: newerVersions], view: '/publish/newerVersions'])
     }
 
     def testConnection() {
@@ -111,6 +175,15 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             // Dont try and test connection if the instance fails basic validation
             return false
         }
+
+        // Validate nested credentials
+        if (instance.subscribedCatalogueAuthenticationCredentials &&
+            (instance.subscribedCatalogueAuthenticationCredentials.hasErrors() || !instance.subscribedCatalogueAuthenticationCredentials.validate())) {
+            transactionStatus.setRollbackOnly()
+            respond instance.subscribedCatalogueAuthenticationCredentials.errors, view: view // STATUS CODE 422
+            return false
+        }
+
         // If the instance is valid then confirm the connection is possible,
         // i.e. there is a catalogue at the URL and the ApiKey works
         subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)

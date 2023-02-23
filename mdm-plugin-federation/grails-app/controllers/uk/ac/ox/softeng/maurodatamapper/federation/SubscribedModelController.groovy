@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
+
+import java.time.OffsetDateTime
 
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -96,7 +98,9 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
             return notFound(SubscribedModel, params.id)
         }
 
-        respond subscribedModelService.getNewerPublishedVersions(subscribedModel), view: 'newerVersions'
+        def (OffsetDateTime lastUpdated, List<PublishedModel> newerVersions) = subscribedModelService.getNewerPublishedVersions(subscribedModel)
+
+        respond(newerVersions, [model: [lastUpdated: lastUpdated, newerPublishedModels: newerVersions], view: '/publish/newerVersions'])
     }
 
     @Override

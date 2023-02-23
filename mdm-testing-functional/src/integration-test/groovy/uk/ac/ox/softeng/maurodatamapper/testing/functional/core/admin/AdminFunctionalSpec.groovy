@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,8 @@ class AdminFunctionalSpec extends FunctionalSpec {
         'GET'  | 'status'               | null                                       || OK           | '''
 {
   "Mauro Data Mapper Version": "${json-unit.matches:version}",
-  "Grails Version": "5.1.9",
-  "Java Version": "${json-unit.matches:version}",
+  "Grails Version": "5.3.2",
+  "Java Version": "17.0.6",
   "Java Vendor": "${json-unit.any-string}",
   "OS Name": "${json-unit.any-string}",
   "OS Version": "${json-unit.matches:version}",

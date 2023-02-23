@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.OAuthClientCredentialsAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.federation.converter.SubscribedCatalogueConverter
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
@@ -35,6 +38,7 @@ import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.Duration
+import java.time.OffsetDateTime
 
 @Transactional
 @Slf4j
@@ -73,13 +77,36 @@ class SubscribedCatalogueService implements AnonymisableService {
         subscribedCatalogue.save(failOnError: true, validate: false)
     }
 
+    SubscribedCatalogue createAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
+        SubscribedCatalogueAuthenticationCredentials credentials
+        if (subscribedCatalogue.subscribedCatalogueAuthenticationType) {
+            credentials = SubscribedCatalogueAuthenticationType.findDomainClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType)?.getDeclaredConstructor()?.
+                newInstance()
+            if (credentials) credentials.subscribedCatalogue = subscribedCatalogue
+            subscribedCatalogue.subscribedCatalogueAuthenticationCredentials = credentials
+        }
+        subscribedCatalogue
+    }
+
+    SubscribedCatalogue updateAuthenticationCredentials(SubscribedCatalogue subscribedCatalogue) {
+        if (subscribedCatalogue.isDirty('subscribedCatalogueAuthenticationType')) {
+            createAuthenticationCredentials(subscribedCatalogue)
+        } else if (subscribedCatalogue.subscribedCatalogueAuthenticationCredentials instanceof OAuthClientCredentialsAuthenticationCredentials) {
+            // If updating an OAuth subscribed catalogue, clear out any existing OAuth token
+            ((OAuthClientCredentialsAuthenticationCredentials) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials).accessToken = null
+            ((OAuthClientCredentialsAuthenticationCredentials) subscribedCatalogue.subscribedCatalogueAuthenticationCredentials).accessTokenExpiryTime = null
+        }
+
+        subscribedCatalogue
+    }
+
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
             def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModelsWithAuthority(subscribedCatalogue)
 
-            // Check that the remote catalogue has a name (Authority label), which is mandatory for both Mauro JSON and Atom XML catalogues
-            // Check that the publishedModels list exists, however this may be empty
-            if (!subscribedAuthority.label || publishedModels == null) {
+            // For Mauro JSON catalogues, check that the remote catalogue has a name (Authority label)
+            // For both Mauro JSON and Atom catalogues, check that the publishedModels list exists, however this may be empty
+            if ((subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON && !subscribedAuthority.label) || publishedModels == null) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
                                                   'Invalid subscription to catalogue at [{0}], response from catalogue is invalid')
@@ -141,28 +168,20 @@ class SubscribedCatalogueService implements AnonymisableService {
     }
 
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, String publishedModelId) {
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
-            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, publishedModelId)
-            }
-        } else {
-            [:]
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getVersionLinksForPublishedModel(client, urlModelType, publishedModelId)
         }
     }
 
-    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
-        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MAURO_JSON) {
-            getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-                client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, publishedModelId)
-            }
-        } else {
-            [:]
+    Tuple2<OffsetDateTime, List<PublishedModel>> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, String publishedModelId) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            getConverterForSubscribedCatalogue(subscribedCatalogue).getNewerPublishedVersionsForPublishedModel(client, subscribedCatalogue, publishedModelId)
         }
     }
 
     byte[] getBytesResourceExport(SubscribedCatalogue subscribedCatalogue, String resourceUrl) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getBytesResourceExport(subscribedCatalogue.apiKey, resourceUrl)
+            client.getBytesResourceExport(resourceUrl)
         }
     }
 
@@ -170,10 +189,11 @@ class SubscribedCatalogueService implements AnonymisableService {
         httpClientConfiguration.setReadTimeout(Duration.ofMinutes(
             subscribedCatalogue.connectionTimeout ?: grailsApplication.config.getProperty(SubscribedCatalogue.DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY, Integer)
         ))
-        new FederationClient(subscribedCatalogue,
-                             httpClientConfiguration,
-                             nettyClientSslBuilder,
-                             mediaTypeCodecRegistry)
+
+        SubscribedCatalogueAuthenticationType.findFederationClientClassFromType(subscribedCatalogue.subscribedCatalogueAuthenticationType).getDeclaredConstructor(
+            [SubscribedCatalogue.class, HttpClientConfiguration.class, NettyClientSslBuilder.class, MediaTypeCodecRegistry.class] as Class[]
+        ).
+            newInstance(subscribedCatalogue, httpClientConfiguration, nettyClientSslBuilder, mediaTypeCodecRegistry)
     }
 
     private SubscribedCatalogueConverter getConverterForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
@@ -181,9 +201,10 @@ class SubscribedCatalogueService implements AnonymisableService {
     }
 
     void anonymise(String createdBy) {
-        SubscribedCatalogue.findAllByCreatedBy(createdBy).each { subscribedCatalogue ->
+        SubscribedCatalogue.findAllByCreatedBy(createdBy).each {subscribedCatalogue ->
             subscribedCatalogue.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
             subscribedCatalogue.save(validate: false)
         }
     }
+
 }

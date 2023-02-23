@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,13 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
     @Override
     Map getValidJson() {
         [
-            url                    : "http://localhost:$serverPort".toString(),
-            apiKey                 : '67421316-66a5-4830-9156-b1ba77bba5d1',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Mauro JSON',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : "http://localhost:$serverPort".toString(),
+            apiKey                               : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : 'Mauro JSON',
+            subscribedCatalogueAuthenticationType: 'API Key',
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
     }
 
@@ -62,6 +63,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
   "subscribedCatalogueType": 'Mauro JSON',
+  "subscribedCatalogueAuthenticationType": 'API Key',
   "description": 'Functional Test Description',
   "refreshPeriod": 7,
   "apiKey": "67421316-66a5-4830-9156-b1ba77bba5d1"
@@ -75,6 +77,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
   "subscribedCatalogueType": 'Mauro JSON',
+  "subscribedCatalogueAuthenticationType": 'API Key',
   "description": 'Functional Test Description',
   "refreshPeriod": 7
 }'''
@@ -90,6 +93,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
       "url": "${json-unit.any-string}",
       "label": "Functional Test Label",
       "subscribedCatalogueType": 'Mauro JSON',
+      "subscribedCatalogueAuthenticationType": 'API Key',
       "description": "Functional Test Description",
       "refreshPeriod": 7
     }
@@ -112,7 +116,8 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         responseBody().items.size() == 1
 
         and:
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel' && it.version == '1.0.0'}, 'DataModel', 'dataModels',
+                                 getDataModelExporters())
 
         cleanup:
         DELETE(subscribedCatalogueId)
@@ -153,10 +158,10 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         responseBody().newerPublishedModels.size() == 2
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
-                                 true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
-                                 true)
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '2.0.0'}, 'DataModel', 'dataModels',
+                                 getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.version == '3.0.0'}, 'DataModel', 'dataModels',
+                                 getDataModelExporters())
 
         cleanup:
         DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
@@ -167,7 +172,7 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
         verifyResponse NO_CONTENT, response
     }
 
-    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters, boolean newerVersion = false) {
+    private void verifyJsonPublishedModel(Map publishedModel, String modelType, String modelEndpoint, Map<String, String> exporters) {
         assert publishedModel
         assert publishedModel.modelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
         assert publishedModel.label
@@ -181,6 +186,5 @@ class MauroJsonSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogue
             String exporterUrl = exporters.get(link.contentType)
             assert link.url ==~ /http:\/\/localhost:$serverPort\/api\/$modelEndpoint\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\\/$exporterUrl/
         }
-        if (newerVersion) assert publishedModel.previousModelId ==~ /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
     }
 }

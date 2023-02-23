@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueService
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModelService
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.ApiKeyAuthenticationCredentials
+import uk.ac.ox.softeng.maurodatamapper.federation.authentication.SubscribedCatalogueAuthenticationType
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -81,10 +83,14 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends MdmDomain> ex
         checkAndSave(folder)
 
         //Mock a subscription to a remote catalogue
+        UUID apiKey = UUID.randomUUID()
+
         subscribedCatalogue = new SubscribedCatalogue(url: 'http://remote.example.com',
                                                       apiKey: UUID.randomUUID(),
                                                       label: 'Test Remote Catalogue',
                                                       subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
+                                                      subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
+                                                      subscribedCatalogueAuthenticationCredentials: new ApiKeyAuthenticationCredentials(apiKey: apiKey),
                                                       createdBy: StandardEmailAddress.ADMIN)
         checkAndSave(subscribedCatalogue)
 
@@ -92,6 +98,8 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends MdmDomain> ex
                                                        apiKey: UUID.randomUUID(),
                                                        label: 'Test Remote Catalogue 2',
                                                        subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
+                                                       subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
+                                                       subscribedCatalogueAuthenticationCredentials: new ApiKeyAuthenticationCredentials(apiKey: apiKey),
                                                        createdBy: editor.emailAddress)
         checkAndSave(subscribedCatalogue2)
 

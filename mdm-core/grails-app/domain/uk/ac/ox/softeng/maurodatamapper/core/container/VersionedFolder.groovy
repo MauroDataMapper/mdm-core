@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,14 +109,13 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
         by().eq('label', label)
     }
 
-    static DetachedCriteria<VersionedFolder> byLabelAndFinalisedAndLatestModelVersion(String label) {
+    static DetachedCriteria<VersionedFolder> byLabelAndFinalised(String label) {
         byLabel(label)
             .eq('finalised', true)
-            .order('modelVersion', 'desc')
     }
 
-    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
-        byLabelAndFinalisedAndLatestModelVersion(label)
+    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndFinalised(String label, String branchName) {
+        byLabelAndFinalised(label)
             .eq('branchName', branchName)
     }
 

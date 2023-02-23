@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,21 +102,21 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
     Map getValidJsonCollection() {
         [count: 2,
          items: [
-                 [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
-                  key     : 'functional.test.key.one',
-                  value   : 'Some random thing1',
-                  category: 'Functional Test',
-                  publiclyVisible: false,
-                  lastUpdatedBy: 'hello@example.com',
-                  lastUpdated: '2021-10-27T11:02:32.682Z'],
-                 [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
-                  key     : 'functional.test.key.two',
-                  value   : 'Some random thing2',
-                  category: 'Functional Test',
-                  publiclyVisible: false,
-                  lastUpdatedBy: 'hello@example.com',
-                  lastUpdated: '2021-10-27T11:02:32.682Z']
-                ]
+             [id             : 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
+              key            : 'functional.test.key.one',
+              value          : 'Some random thing1',
+              category       : 'Functional Test',
+              publiclyVisible: false,
+              lastUpdatedBy  : 'hello@example.com',
+              lastUpdated    : '2021-10-27T11:02:32.682Z'],
+             [id             : 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
+              key            : 'functional.test.key.two',
+              value          : 'Some random thing2',
+              category       : 'Functional Test',
+              publiclyVisible: false,
+              lastUpdatedBy  : 'hello@example.com',
+              lastUpdated    : '2021-10-27T11:02:32.682Z']
+         ]
         ]
     }
 
@@ -124,20 +124,20 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
     Map getInvalidJsonCollection() {
         [count: 2,
          items: [
-             [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
-              key     : 'functional.test.key.ten',
-              value   : 'Some random thing1',
-              category: 'Functional Test',
+             [id             : 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
+              key            : 'functional.test.key.ten',
+              value          : 'Some random thing1',
+              category       : 'Functional Test',
               publiclyVisible: false,
-              lastUpdatedBy: 'hello@example.com',
-              lastUpdated: '2021-10-27T11:02:32.682Z'],
-             [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
-              key     : 'functional.test.key.ten',
-              value   : 'Some random thing2',
-              category: 'Functional Test',
+              lastUpdatedBy  : 'hello@example.com',
+              lastUpdated    : '2021-10-27T11:02:32.682Z'],
+             [id             : 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
+              key            : 'functional.test.key.ten',
+              value          : 'Some random thing2',
+              category       : 'Functional Test',
               publiclyVisible: false,
-              lastUpdatedBy: 'hello@example.com',
-              lastUpdated: '2021-10-27T11:02:32.682Z']
+              lastUpdatedBy  : 'hello@example.com',
+              lastUpdated    : '2021-10-27T11:02:32.682Z']
          ]
         ]
     }
@@ -223,10 +223,13 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         assert responseBody().count == 15
 
         ApiPropertyEnum.values()
-            .findAll {!(it in [ApiPropertyEnum.SITE_URL,
-                               ApiPropertyEnum.EMAIL_FROM_ADDRESS,
-                               ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
-                               ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER])}
+            .findAll {
+                !(it in [ApiPropertyEnum.SITE_URL,
+                         ApiPropertyEnum.EMAIL_FROM_ADDRESS,
+                         ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
+                         ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
+                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS])
+            }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {
                     it.key == ape.key &&
@@ -256,7 +259,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 }'''
     }
 
-    def 'check public api property endpoint with no additional properties'(){
+    def 'check public api property endpoint with no additional properties'() {
         when:
         GET('properties', MAP_ARG, true)
 
@@ -266,11 +269,11 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
     }
 
-    def 'check public api property endpoint with public additional property'(){
+    def 'check public api property endpoint with public additional property'() {
         given:
         Map publicProperty = getValidJson()
         publicProperty.publiclyVisible = true
-        POST('',publicProperty)
+        POST('', publicProperty)
         verifyResponse(HttpStatus.CREATED, response)
         assert responseBody().publiclyVisible
         String id = responseBody().id
@@ -315,7 +318,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void 'check index and show endpoints for CSV'(){
+    void 'check index and show endpoints for CSV'() {
         when:
         GET('?format=csv', STRING_ARG)
 
@@ -338,7 +341,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         assert lines2[0] == 'id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated'
     }
 
-    void 'check index endpoint for XML'(){
+    void 'check index endpoint for XML'() {
         given:
         Path expectedIndexPath = xmlResourcesPath.resolve('apiProperties.xml')
         if (!Files.exists(expectedIndexPath)) {
@@ -355,7 +358,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         assert compareXml(expectedIndexXml, actualIndexXml)
     }
 
-    void 'check show endpoint for XML'(){
+    void 'check show endpoint for XML'() {
         given:
         Path expectedShowPath = xmlResourcesPath.resolve('apiProperty.xml')
         if (!Files.exists(expectedShowPath)) {

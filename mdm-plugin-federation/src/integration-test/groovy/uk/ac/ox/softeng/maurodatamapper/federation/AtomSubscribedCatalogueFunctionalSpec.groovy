@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.federation.test.BaseSubscribedCatalogueFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
@@ -36,12 +37,13 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
     @Override
     Map getValidJson() {
         [
-            url                    : "http://localhost:$serverPort/api/feeds/all".toString(),
-            apiKey                 : '67421316-66a5-4830-9156-b1ba77bba5d1',
-            label                  : 'Functional Test Label',
-            subscribedCatalogueType: 'Atom',
-            description            : 'Functional Test Description',
-            refreshPeriod          : 7
+            url                                  : "http://localhost:$serverPort/api/feeds/all".toString(),
+            apiKey                               : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            label                                : 'Functional Test Label',
+            subscribedCatalogueType              : 'Atom',
+            subscribedCatalogueAuthenticationType: 'API Key',
+            description                          : 'Functional Test Description',
+            refreshPeriod                        : 7
         ]
     }
 
@@ -61,6 +63,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
   "subscribedCatalogueType": 'Atom',
+  "subscribedCatalogueAuthenticationType": 'API Key',
   "description": 'Functional Test Description',
   "refreshPeriod": 7,
   "apiKey": "67421316-66a5-4830-9156-b1ba77bba5d1"
@@ -74,6 +77,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
   "url": "${json-unit.any-string}",
   "label": 'Functional Test Label',
   "subscribedCatalogueType": 'Atom',
+  "subscribedCatalogueAuthenticationType": 'API Key',
   "description": 'Functional Test Description',
   "refreshPeriod": 7
 }'''
@@ -89,6 +93,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
       "url": "${json-unit.any-string}",
       "label": "Functional Test Label",
       "subscribedCatalogueType": 'Atom',
+      "subscribedCatalogueAuthenticationType": 'API Key',
       "description": "Functional Test Description",
       "refreshPeriod": 7
     }
@@ -111,7 +116,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         responseBody().items.size() == 1
 
         and:
-        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel 1.0.0'}, 'dataModels', getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().items.find {it.label == 'Finalised Example Test DataModel'}, 'dataModels', getDataModelExporters())
 
         cleanup:
         DELETE(subscribedCatalogueId)
@@ -125,11 +130,11 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/urn:uuid:${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
 
-        then: 'newer versions not supported using Atom catalogues'
+        then:
         verifyResponse OK, response
-        !responseBody()
+        verifyBaseNewerVersionsJsonResponse(responseBody(), false)
 
         cleanup:
         DELETE(subscribedCatalogueId)
@@ -144,11 +149,18 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/urn:uuid:${finalisedSimpleDataModelId}/newerVersions", MAP_ARG, true)
 
-        then: 'newer versions not supported using Atom catalogues'
+        then:
         verifyResponse OK, response
-        !responseBody()
+        verifyBaseNewerVersionsJsonResponse(responseBody(), true)
+        responseBody().newerPublishedModels.size() == 2
+
+        and:
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.modelVersionTag == '2.0.0'}, 'dataModels',
+                                 getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.label == 'Finalised Example Test DataModel' && it.modelVersionTag == '3.0.0'}, 'dataModels',
+                                 getDataModelExporters())
 
         cleanup:
         DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
@@ -162,6 +174,7 @@ class AtomSubscribedCatalogueFunctionalSpec extends BaseSubscribedCatalogueFunct
     private void verifyJsonPublishedModel(Map publishedModel, String modelEndpoint, Map<String, String> exporters) {
         assert publishedModel
         assert publishedModel.modelId ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+        assert Version.from(publishedModel.modelVersionTag)
         assert publishedModel.label
         assert OffsetDateTime.parse(publishedModel.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         assert OffsetDateTime.parse(publishedModel.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,5 +171,70 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends CatalogueItemF
 
         cleanup:
         cleanUpData(id)
+    }
+
+    void 'CISM02: test filtering of summaryMetadata'() {
+        given: 'Create new summaryMetadata items'
+        def id1 = createNewItem([
+            label              : 'Summary the first',
+            summaryMetadataType: SummaryMetadataType.NUMBER
+        ])
+        def id2 = createNewItem([
+            label              : 'Summary the second',
+            summaryMetadataType: SummaryMetadataType.NUMBER
+        ])
+
+        when: 'No filter used'
+        GET('')
+
+        then: 'Check all summaryMetadata returned'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().count == 2
+
+        when: 'Filter by label'
+        GET('?label=sec')
+
+        then: 'Check filtered summaryMetadata returned'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().count == 1
+        response.body().items[0].id == id2
+
+        cleanup:
+        cleanUpData(id1)
+        cleanUpData(id2)
+    }
+
+    void 'CISM03: test sorting of summaryMetadata'() {
+        given: 'Create new summaryMetadata items'
+        def id1 = createNewItem([
+            label              : 'A summaryMetadata',
+            summaryMetadataType: SummaryMetadataType.NUMBER
+        ])
+        def id2 = createNewItem([
+            label              : 'B summaryMetadata',
+            summaryMetadataType: SummaryMetadataType.NUMBER
+        ])
+
+        when: 'Default sorting by label'
+        GET('')
+
+        then: 'Check summaryMetadata returned in ascending label order'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().count == 2
+        response.body().items[0].id == id1
+        response.body().items[1].id == id2
+
+        when: 'Sort by label descending'
+        GET('?sort=label&order=desc')
+
+        then: 'Check summaryMetadata returned in descending label order'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().count == 2
+        response.body().items[0].id == id2
+        response.body().items[1].id == id1
+
+        cleanup:
+        cleanUpData(id1)
+        cleanUpData(id2)
     }
 }
