@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.search.searchparamfilter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.mapper.pojo.bridge.MetadataBridge
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
@@ -36,13 +37,33 @@ class ProfileFilter implements SearchParamFilter {
     @Override
     Closure getClosure(SearchParams searchParams) {
         List<Map<String, String>> profileFields = searchParams.getValue('profileFields')
+        profileFields.each {field ->
+            if (field.type && field.type !in ['phrase', 'query', 'contains']) throw new ApiBadRequestException('PF01',
+                                                                                                               'profileField type must be either \'phrase\', \'query\' or ' +
+                                                                                                               '\'contains\'')
+        }
         HibernateSearchApi.defineSearchQuery {
             must {
                 profileFields.each {field ->
                     String namespace = field.metadataNamespace
                     String key = field.metadataPropertyName
                     String value = field.filterTerm
-                    phrase(MetadataBridge.makeSafeFieldName("${namespace}|${key}"), value)
+                    String type = field.type
+
+                    switch (type) {
+                        case 'query':
+                            simpleQueryString(value, MetadataBridge.makeSafeFieldName("${namespace}|${key}"))
+                            break
+                        case 'contains':
+                            value.split(' ').each {word ->
+                                String containsWildcard = '*' + word.replace(['\\': '\\\\', '*': '\\*', '?': '\\?']) + '*'
+                                wildcard(MetadataBridge.makeSafeFieldName("${namespace}|${key}"), containsWildcard)
+                            }
+                            break
+                        case 'phrase':
+                        default:
+                            phrase(MetadataBridge.makeSafeFieldName("${namespace}|${key}"), value)
+                    }
                 }
             }
         }

@@ -96,7 +96,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         // In test S04 we expect to see search results from both models. In test S05 we expect to see only results
         // from the complex test data model.
         DataModel subsetDataModel = new DataModel(createdBy: FUNCTIONAL_TEST, label: 'Subset Data Model', organisation: 'brc', author: 'admin person',
-                                              folder: folder, authority: testAuthority)
+                                                  folder: folder, authority: testAuthority)
 
         checkAndSave(subsetDataModel)
 
@@ -227,7 +227,124 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         responseBody().items.any {it.label == 'ele1'}
     }
 
-    void 'S03 : test searching to include profile fields in results'() {
+    void 'S03 : test searching using profile filter with "contains" type'() {
+        when: 'search for one result'
+        POST("dataModels/${complexDataModelId}/search", [
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    type                : 'contains',
+                    filterTerm          : 'val 2'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.size() == 1
+        responseBody().items.any {it.label == 'element2'}
+
+        when: 'search for one result with terms out of order'
+        POST("dataModels/${complexDataModelId}/search", [
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    type                : 'contains',
+                    filterTerm          : '2 val '
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.size() == 1
+        responseBody().items.any {it.label == 'element2'}
+
+        when: 'search for multiple results'
+        POST("dataModels/${complexDataModelId}/search", [
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    type                : 'contains',
+                    filterTerm          : 'val'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 3
+        responseBody().items.size() == 3
+        responseBody().items.any {it.label == 'child'}
+        responseBody().items.any {it.label == 'ele1'}
+        responseBody().items.any {it.label == 'element2'}
+    }
+
+    void 'S04 : test searching using profile filter with "query" type'() {
+        when: 'search for one result'
+        POST("dataModels/${complexDataModelId}/search", [
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    type                : 'query',
+                    filterTerm          : 'val* + 2'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.size() == 1
+        responseBody().items.any {it.label == 'element2'}
+
+        when: 'search for multiple results using implied OR'
+        POST("dataModels/${complexDataModelId}/search", [
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    type                : 'query',
+                    filterTerm          : 'val* type'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 3
+        responseBody().items.size() == 3
+        responseBody().items.any {it.label == 'child'}
+        responseBody().items.any {it.label == 'ele1'}
+        responseBody().items.any {it.label == 'element2'}
+
+        when: 'search for multiple results using NOT'
+        POST("dataModels/${complexDataModelId}/search", [
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    type                : 'query',
+                    filterTerm          : 'value + -type'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.size() == 2
+        responseBody().items.any {it.label == 'element2'}
+        responseBody().items.any {it.label == 'child'}
+    }
+
+    void 'S05 : test searching to include profile fields in results'() {
         when:
         POST("dataModels/${complexDataModelId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
             searchTerm   : "ele*",
@@ -407,7 +524,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
 
     }
 
-    void 'S04 : test searching using profile filter for results inside dataclass'() {
+    void 'S06 : test searching using profile filter for results inside dataclass'() {
         when:
         POST("dataClasses/${dataClassId}/search", [
             searchTerm   : "ele*",
@@ -448,7 +565,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         responseBody().items.any {it.label == 'ele1'}
     }
 
-    void 'S05 : test searching to include profile fields in results from dataclasses'() {
+    void 'S07 : test searching to include profile fields in results from dataclasses'() {
         when:
         POST("dataClasses/${dataClassId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
             searchTerm   : "ele*",
@@ -696,7 +813,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
 
     }
 
-    void 'S06 : test searching to include profile fields in results from dataclasses with no search term'() {
+    void 'S08 : test searching to include profile fields in results from dataclasses with no search term'() {
         when:
         POST("dataClasses/${dataClassId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
             searchTerm   : "*",
