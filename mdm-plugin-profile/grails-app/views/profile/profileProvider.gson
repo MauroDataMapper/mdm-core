@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
+
+model {
+    ProfileProviderService profileProviderService
+}
+
+json tmpl.'/profileProviderService/profileProviderService'(profileProviderService)
