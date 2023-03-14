@@ -25,6 +25,7 @@ class UrlMappings {
             group '/profiles', {
                 get '/providers'(controller: 'profile', action: 'profileProviders')
                 get '/providers/dynamic'(controller: 'profile', action: 'dynamicProfileProviders')
+                get "/providers/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'profileProvider')
 
                 group "/$profileNamespace/$profileName", {
 

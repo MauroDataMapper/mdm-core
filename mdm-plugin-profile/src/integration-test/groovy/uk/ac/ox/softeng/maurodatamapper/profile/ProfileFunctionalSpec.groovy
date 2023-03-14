@@ -200,6 +200,32 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
   }]'''
     }
 
+    void '01.1 : test getting single profile provider'() {
+        when:
+        GET('profiles/providers/uk.ac.ox.softeng.maurodatamapper.profile/ProfileSpecificationProfileService', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''
+{
+    "name": "ProfileSpecificationProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Profile Specification Profile (Data Model)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "metadataNamespace",
+      "domainsApplicable",
+      "editableAfterFinalisation"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "domains": [
+      "DataModel"
+    ],
+    "editableAfterFinalisation": false
+}'''
+    }
+
     void '02 : test get all models in profile which doesnt exist'() {
         when:
         GET("profiles/${getProfilePath()}/DataModel")

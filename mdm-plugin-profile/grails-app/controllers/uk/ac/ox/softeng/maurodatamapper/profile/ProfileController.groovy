@@ -49,7 +49,17 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
 
     def profileProviders() {
-        respond profileProviderServices: profileService.getAllProfileProviderServices(false)
+        respond profileProviderServices: profileService.getAllProfileProviderServices(params.boolean('latestVersionByMetadataNamespace', false))
+    }
+
+    def profileProvider() {
+        List<ProfileProviderService> allProviders = profileService.getAllProfileProviderServices(false)
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(allProviders, params.profileNamespace, params.profileName, params.profileVersion)
+        if (!profileProviderService) {
+            return notFound(ProfileProviderService, getProfileProviderServiceId(params))
+        }
+
+        respond profileProviderService: profileProviderService
     }
 
     def dynamicProfileProviders() {

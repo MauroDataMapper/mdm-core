@@ -1,5 +1,6 @@
 | GET    | /api/profiles/providers/dynamic | dynamicProfileProviders |
 | GET    | /api/profiles/providers | profileProviders |
+| GET    | /api/profiles/providers/${profileNamespace}/${profileName}/${profileVersion}? | profileProvider |
 | GET    | /api/profiles/${profileNamespace}/${profileName} | emptyProfile |
 | POST   | /api/profiles/${profileNamespace}/${profileName}/search | search |
 | GET    | /api/profiles/${profileNamespace}/${profileName}/${multiFacetAwareItemDomainType}/values | listValuesInProfile |
