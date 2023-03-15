@@ -86,14 +86,18 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         saveResource instance
 
         saveResponse instance
+
+        instance
     }
 
     @Transactional
     @Override
-    def update() {
+    def update(Object instance = null) {
         if (handleReadOnly()) return
 
-        T instance = queryForResource(params.id)
+        if (!instance) {
+            instance = queryForResource(params.id)
+        }
 
         if (instance == null) {
             transactionStatus.setRollbackOnly()
@@ -108,16 +112,21 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         updateResource instance
 
         updateResponse instance
+
+        instance
     }
 
     @Transactional
     @Override
-    def delete() {
+    def delete(Object instance = null) {
         if (handleReadOnly()) {
             return
         }
 
-        def instance = queryForResource(params.id)
+        if (!instance) {
+            instance = queryForResource(params.id)
+        }
+
         if (instance == null) {
             transactionStatus.setRollbackOnly()
             notFound(params.id)
@@ -129,6 +138,8 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         deleteResource instance
 
         deleteResponse instance
+
+        instance
     }
 
     @Override
@@ -157,9 +168,14 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
 
     @Override
     protected T saveResource(T resource) {
-        log.trace('save resource')
-        resource.save flush: true, validate: false
-        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
+        try {
+            log.trace('save resource')
+            resource.save flush: true, validate: false
+            if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
+        } catch (Exception e) {
+            String error = e.message;
+            throw e;
+        }
         resource
     }
 

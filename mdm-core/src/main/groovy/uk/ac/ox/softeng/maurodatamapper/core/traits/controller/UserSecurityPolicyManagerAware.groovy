@@ -25,6 +25,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN
 import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.UNAUTHORIZED
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @since 25/11/2019

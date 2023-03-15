@@ -154,6 +154,7 @@
 | GET    | /api/tree/${containerDomainType}/${containerId} | show |
 | GET    | /api/tree/${containerDomainType}/${catalogueItemDomainType}/${catalogueItemId} | show |
 | GET    | /api/userImageFiles/${id} | show |
+| GET    | /api/themeImageFiles/${id} | show |
 | POST   | /api/${modelDomainType}/${modelId}/versionLinks | save |
 | GET    | /api/${modelDomainType}/${modelId}/versionLinks | index |
 | DELETE | /api/${modelDomainType}/${modelId}/versionLinks/${id} | delete |

@@ -50,6 +50,10 @@ class UrlMappings {
                 }
             }
 
+            group '/theme', {
+                '/image'(single: 'themeImageFile', excludes: DEFAULT_EXCLUDES)
+            }
+
             group '/catalogueUsers', {
                 post '/search'(controller: 'catalogueUser', action: 'search') // Only available if logged in
                 get '/search'(controller: 'catalogueUser', action: 'search') // Only available if logged in

@@ -21,12 +21,19 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import asset.pipeline.grails.AssetResourceLocator
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
+
+import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
+
+import static java.awt.RenderingHints.KEY_INTERPOLATION
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC
 
 @Slf4j
 @Transactional
@@ -84,10 +91,19 @@ class UserImageFileService implements CatalogueFileService<UserImageFile> {
         uif
     }
 
-    @Override
-    UserImageFile resizeImage(UserImageFile catalogueFile, int size) {
-        UserImageFile uif = resizeImageBase(catalogueFile, size)
-        uif.userId = catalogueFile.userId
+    UserImageFile resizeImage(UserImageFile imageFile, int size) {
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageFile.fileContents))
+        if (!image) return imageFile
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+        def resize = new BufferedImage(size, size, image.type)
+        resize.createGraphics().with {
+            setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BICUBIC)
+            drawImage(image, 0, 0, size, size, null)
+            dispose()
+        }
+        ImageIO.write(resize, 'png', outputStream)
+        UserImageFile uif = createNewFileBase(imageFile.fileName, outputStream.toByteArray(), 'image/png', (imageFile as MdmDomain).createdBy)
+        uif.userId = imageFile.userId
         uif
     }
 

@@ -59,6 +59,10 @@ class ApiPropertyService {
         findByKey(key.key)
     }
 
+    static ApiProperty findById(UUID id) {
+        ApiProperty.findById(id)
+    }
+
     List<ApiProperty> findAllByPubliclyVisible(Map pagination) {
         ApiProperty.byPubliclyVisible().list(pagination)
     }

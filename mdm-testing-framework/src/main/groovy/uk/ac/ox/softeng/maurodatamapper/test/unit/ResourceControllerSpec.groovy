@@ -118,7 +118,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         controller.save()
 
         then:
-        verifyJsonResponse UNPROCESSABLE_ENTITY, getExpectedInvalidSavedJson(), Option.IGNORING_EXTRA_FIELDS
+        verifyR22SaveInvalidIdResponse()
     }
 
     void 'R2.3 - Test the save action correctly persists'() {
@@ -265,6 +265,10 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyR53DeleteActionWithAnInstanceResponse()
     }
 
+    void verifyR22SaveInvalidIdResponse() {
+        verifyJsonResponse UNPROCESSABLE_ENTITY, getExpectedInvalidSavedJson(), Option.IGNORING_EXTRA_FIELDS
+    }
+
     void verifyR32ShowInvalidIdResponse() {
         verifyJsonResponse NOT_FOUND, getNotFoundIdJson()
     }
@@ -280,6 +284,8 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
     void verifyR53DeleteActionWithAnInstanceResponse() {
         verifyResponse NO_CONTENT
     }
+
+
 
     String getNotFoundNullJson(Class clazz = domain.class) {
         """{
