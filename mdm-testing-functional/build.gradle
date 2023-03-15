@@ -109,7 +109,6 @@ grails {
         implementation project(':mdm-security')
         implementation project(':mdm-plugin-dataflow')
         implementation project(':mdm-plugin-profile')
-        runtimeOnly 'uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-explorer:1.0.0-SNAPSHOT'
     }
 }
 
