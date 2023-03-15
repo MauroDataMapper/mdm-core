@@ -168,12 +168,15 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
     }
 
     void deleteAllFacetsByMultiFacetAwareIds(List<UUID> multiFacetAwareIds, String queryToDeleteFromJoinTable) {
-        sessionFactory.currentSession
-            .createSQLQuery(queryToDeleteFromJoinTable)
-            .setParameter('ids', multiFacetAwareIds)
-            .executeUpdate()
 
-        deleteAllFacetDataByMultiFacetAwareIds multiFacetAwareIds
+        Utils.executeInBatches(multiFacetAwareIds, {ids ->
+            sessionFactory.currentSession
+                .createSQLQuery(queryToDeleteFromJoinTable)
+                .setParameter('ids', ids)
+                .executeUpdate()
+
+            deleteAllFacetDataByMultiFacetAwareIds ids
+        })
     }
 
     void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> multiFacetAwareIds) {

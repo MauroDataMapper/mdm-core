@@ -133,10 +133,13 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id IN :ids')
-                .setParameter('ids', dataModelIds)
-                .executeUpdate()
+            Utils.executeInBatches(dataModelIds as List, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id IN :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+
+            })
 
             log.trace('DataTypes removed')
         }

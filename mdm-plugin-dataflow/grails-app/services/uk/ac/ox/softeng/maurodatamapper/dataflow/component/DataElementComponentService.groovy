@@ -106,25 +106,29 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         if (dataElementComponentIds) {
 
             log.trace('Removing links to DataElements in {} DataElementComponents', dataElementComponentIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('delete from dataflow.join_data_element_component_to_source_data_element where data_element_component_id in :ids')
-                .setParameter('ids', dataElementComponentIds)
-                .executeUpdate()
+            Utils.executeInBatches(dataElementComponentIds, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('delete from dataflow.join_data_element_component_to_source_data_element where data_element_component_id in :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
 
-            sessionFactory.currentSession
-                .createSQLQuery('delete from dataflow.join_data_element_component_to_target_data_element where data_element_component_id in :ids')
-                .setParameter('ids', dataElementComponentIds)
-                .executeUpdate()
+                sessionFactory.currentSession
+                    .createSQLQuery('delete from dataflow.join_data_element_component_to_target_data_element where data_element_component_id in :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+            })
 
             log.trace('Removing facets for {} DataElementComponents', dataElementComponentIds.size())
             deleteAllFacetsByMultiFacetAwareIds(dataElementComponentIds,
                                                 'delete from dataflow.join_dataelementcomponent_to_facet where dataelementcomponent_id in :ids')
 
             log.trace('Removing {} DataElementComponents', dataElementComponentIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('delete from dataflow.data_element_component where id in :ids')
-                .setParameter('ids', dataElementComponentIds)
-                .executeUpdate()
+            Utils.executeInBatches(dataElementComponentIds, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('delete from dataflow.data_element_component where id in :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+            })
 
             log.trace('DataElementComponents removed')
         }

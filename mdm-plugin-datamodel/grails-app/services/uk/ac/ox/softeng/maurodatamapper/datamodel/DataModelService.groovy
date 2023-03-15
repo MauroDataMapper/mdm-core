@@ -481,10 +481,12 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from datamodel.join_datamodel_to_facet where datamodel_id in :ids')
 
         log.trace('Content removed')
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM datamodel.data_model WHERE id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
+        Utils.executeInBatches(idsToDelete as List, {ids ->
+            sessionFactory.currentSession
+                .createSQLQuery('DELETE FROM datamodel.data_model WHERE id IN :ids')
+                .setParameter('ids', ids)
+                .executeUpdate()
+        })
 
         log.trace('DataModels removed')
 

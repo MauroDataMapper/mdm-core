@@ -22,6 +22,8 @@ import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import groovy.transform.CompileStatic
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.slf4j.Logger
@@ -226,5 +228,20 @@ class Utils {
         }
         return partitions
     }
+
+    public final static Integer BATCH_SIZE = 10000
+
+/*
+    This method executes a closure in batches to ensure that we don't inadvertently call with too many ids and
+    break Postgres: Tried to send an out-of-range integer as a 2-byte value
+ */
+
+    static void executeInBatches(List items, @ClosureParams(value= SimpleType.class, options="java.util.List") Closure closure) {
+        List<List> partitions = partition(items, BATCH_SIZE)
+        partitions.each { partition ->
+            closure.call(partition)
+        }
+    }
+
 
 }

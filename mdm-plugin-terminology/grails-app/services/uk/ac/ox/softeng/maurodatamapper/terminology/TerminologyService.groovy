@@ -357,10 +357,12 @@ class TerminologyService extends ModelService<Terminology> {
         deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from terminology.join_terminology_to_facet where terminology_id in :ids')
 
         log.trace('Content removed')
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM terminology.terminology WHERE id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
+        Utils.executeInBatches(idsToDelete as List, {ids ->
+            sessionFactory.currentSession
+                .createSQLQuery('DELETE FROM terminology.terminology WHERE id IN :ids')
+                .setParameter('ids', ids)
+                .executeUpdate()
+        })
 
         log.trace('Terminologies removed')
 
