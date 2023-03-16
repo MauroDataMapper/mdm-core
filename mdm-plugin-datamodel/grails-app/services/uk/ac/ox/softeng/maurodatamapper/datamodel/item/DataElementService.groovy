@@ -116,7 +116,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         }.id().list() as List<UUID>
 
         if (dataElementIds) {
-            log.trace('Removing facets for {} DataElements', ids.size())
+            log.trace('Removing facets for {} DataElements', dataElementIds.size())
             deleteAllFacetsByMultiFacetAwareIds(dataElementIds,
                                             'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
 
