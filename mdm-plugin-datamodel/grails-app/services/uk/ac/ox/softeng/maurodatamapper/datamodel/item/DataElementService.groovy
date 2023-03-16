@@ -117,11 +117,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
         if (dataElementIds) {
             log.trace('Removing facets for {} DataElements', ids.size())
-            deleteAllFacetsByMultiFacetAwareIds(ids,
+            deleteAllFacetsByMultiFacetAwareIds(dataElementIds,
                                             'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
 
 
-            log.trace('Removing {} DataElements', ids.size())
+            log.trace('Removing {} DataElements', dataElementIds.size())
             Utils.executeInBatches(dataElementIds, {ids ->
                 sessionFactory.currentSession
                     .createSQLQuery('DELETE FROM datamodel.data_element WHERE id IN :ids')
