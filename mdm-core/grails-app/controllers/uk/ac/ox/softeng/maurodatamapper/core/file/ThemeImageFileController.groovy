@@ -42,8 +42,8 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
     @Override
     def show() {
         ThemeImageFile resource = null
-        if (params.apiPropertyId && themeImageFileService.apiPropertyHasImage(Utils.toUuid(params.apiPropertyId))) {
-            resource = themeImageFileService.findByApiPropertyId(params.apiPropertyId)
+        if (params.apiPropertyId) {
+            resource = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
         }
         else {
             resource = queryForResource(params.id)
@@ -52,6 +52,11 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         if (resource) {
             return render(file: resource.fileContents, fileName: resource.fileName, contentType: resource.contentType)
         }
+
+        if (params.apiPropertyId) {
+            return notFound(params.apiPropertyId)
+        }
+
         return notFound(params.id)
     }
 
@@ -61,13 +66,14 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         // Allow the UI to use PUT to create the image
         // This allows them to not have to have various additional computations to determine if they have an actual image
         if (params.apiPropertyId && !apiPropertyService.findById(Utils.toUuid(params.apiPropertyId))) {
-            notFound(params.id)
-            return
+            return notFound(params.apiPropertyId)
         }
-        if (params.apiPropertyId && themeImageFileService.apiPropertyHasImage(Utils.toUuid(params.apiPropertyId)))
+        if (params.apiPropertyId)
         {
             ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
-            return super.update(themeImageFile)
+            if (themeImageFile) {
+                return super.update(themeImageFile)
+            }
         }
         if (params.id) return super.update()
 
@@ -84,14 +90,15 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
     def save() {
         // If the apiPropertyId refers to a non existent property, do not proceed
         if (params.apiPropertyId && !apiPropertyService.findById(Utils.toUuid(params.apiPropertyId))) {
-            notFound(params.id)
-            return
+            return notFound(params.apiPropertyId)
         }
 
         // Ensure that if the user already has an image then we update rather than add another
-        if (params.apiPropertyId && themeImageFileService.apiPropertyHasImage(Utils.toUuid(params.apiPropertyId))) {
-            ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(params.apiPropertyId)
-            return super.update(themeImageFile)
+        if (params.apiPropertyId) {
+            ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
+            if (themeImageFile) {
+                return super.update(themeImageFile)
+            }
         }
 
         Object saveResult = super.save()
@@ -109,21 +116,21 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
         // If the apiPropertyId refers to a non existent property, do not proceed
         if (params.apiPropertyId && !apiPropertyService.findById(Utils.toUuid(params.apiPropertyId))) {
-            notFound(params.id)
-            return
+            return notFound(params.apiPropertyId)
         }
 
         // Make sure we use the id of the image for deletion
-        if (params.apiPropertyId && themeImageFileService.apiPropertyHasImage(Utils.toUuid(params.apiPropertyId))) {
-            ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(params.apiPropertyId)
-            deleteResult = super.delete(themeImageFile)
+        if (params.apiPropertyId) {
+            ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
+            if (themeImageFile) {
+                deleteResult = super.delete(themeImageFile)
+                if (deleteResult) {
+                    saveApiProperty(params.apiPropertyId.toString())
+                }
+            }
         }
         else {
             deleteResult = super.delete()
-        }
-
-        if (deleteResult && params.apiPropertyId) {
-            saveApiProperty(params.apiPropertyId.toString())
         }
 
         deleteResult
@@ -147,10 +154,8 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
     @Override
     protected List<ThemeImageFile> listAllReadableResources(Map params) {
-        themeImageFileService.listWithPagination(params)
+        themeImageFileService.list(params)
     }
-
-
 
     @Override
     protected void serviceDeleteResource(ThemeImageFile resource) {
@@ -160,7 +165,7 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
     @Override
     protected ThemeImageFile createResource() {
         ThemeImageFile themeImageFile = super.createResource() as ThemeImageFile
-        if (params.containsKey('apiPropertyId')) {
+        if (params.apiPropertyId) {
             themeImageFile.apiPropertyId = params.apiPropertyId
         }
         themeImageFile

@@ -168,14 +168,9 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
 
     @Override
     protected T saveResource(T resource) {
-        try {
-            log.trace('save resource')
-            resource.save flush: true, validate: false
-            if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
-        } catch (Exception e) {
-            String error = e.message;
-            throw e;
-        }
+        log.trace('save resource')
+        resource.save flush: true, validate: false
+        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
         resource
     }
 

@@ -41,19 +41,6 @@ trait CatalogueFile implements EditHistoryAware {
     String fileName
     Long fileSize
     String fileType
-    /*
-        static constraints = {
-            createdBy email: true
-            fileContents maxSize: 200000000
-            fileName blank: false
-            fileType blank: false
-        }
-
-        def beforeValidate() {
-
-            determineFileType()
-        }
-    */
 
     def determineFileType() {
         fileSize = fileContents?.size()
@@ -74,6 +61,7 @@ trait CatalogueFile implements EditHistoryAware {
         if (fileType.toLowerCase().contains('png')) return 'image/png'
         if (fileType.toLowerCase().contains('jpg') || fileType.contains('jpeg')) return 'image/jpeg'
         if (fileType.toLowerCase().contains('gif')) return 'image/gif'
+        if (fileType.toLowerCase().contains('svg+xml')) return 'image/svg+xml'
         'application/octet-stream'
     }
 

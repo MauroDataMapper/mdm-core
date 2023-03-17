@@ -114,40 +114,25 @@ class ThemeImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<
         themeImageFile.id != null
     }
 
-    /*
-        ThemeImageFile findByApiPropertyId(UUID apiPropertyId)
-
-    ThemeImageFile findByApiProperty(ApiProperty apiProperty)
-
-    boolean apiPropertyHasImage(UUID apiPropertyId)
-    ThemeImageFile> findAllThemeImages(Map pagination = [:])
-     */
     void 'test findByApiPropertyId'() {
         when:
         ThemeImageFile themeImageFile = service.findByApiPropertyId(apiProperty.id)
+        ThemeImageFile themeImageFile_Missing = service.findByApiPropertyId(null)
 
         then:
         themeImageFile.id.toString() == apiProperty.value
+        themeImageFile_Missing == null
     }
 
     void 'test findByApiProperty'() {
         when:
         ThemeImageFile themeImageFile = service.findByApiProperty(apiProperty)
+        ThemeImageFile themeImageFile_Missing = service.findByApiProperty(null)
 
         then:
         themeImageFile.id.toString() == apiProperty.value
+        themeImageFile_Missing == null
     }
 
-    void 'test apiPropertyHasImage'() {
-        when:
-        boolean ThemeHasImageCheck1 = service.apiPropertyHasImage(apiProperty.id)
-        boolean ThemeHasImageCheck2 = service.apiPropertyHasImage(apiProperty_defaultImage.id)
-
-        then:
-        ThemeHasImageCheck1 == true
-
-        and:
-        ThemeHasImageCheck2 == false
-    }
 
 }

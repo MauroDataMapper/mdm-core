@@ -33,12 +33,8 @@ class ThemeImageFileService implements CatalogueFileService<ThemeImageFile> {
         ThemeImageFile.get(id)
     }
 
-    List<ThemeImageFile> list(Map args) {
+    List<ThemeImageFile> list(Map args = [:]) {
         ThemeImageFile.list(args)
-    }
-
-    List<ThemeImageFile> listWithPagination(Map pagination = [:]) {
-        ThemeImageFile.list(pagination)
     }
 
     Long count() {
@@ -60,12 +56,8 @@ class ThemeImageFileService implements CatalogueFileService<ThemeImageFile> {
 
     ThemeImageFile findByApiProperty(ApiProperty apiProperty) {
         if (!apiProperty) return null
-        if (!apiProperty.value.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")) return null
+        if (!Utils.toUuid(apiProperty.value)) return null
         ThemeImageFile.findById(Utils.toUuid(apiProperty.value))
-    }
-
-    boolean apiPropertyHasImage(UUID apiPropertyId) {
-        return findByApiPropertyId(apiPropertyId) != null
     }
 
     @Override

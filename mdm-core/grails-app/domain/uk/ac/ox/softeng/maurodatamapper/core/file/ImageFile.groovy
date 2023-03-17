@@ -32,7 +32,7 @@ import java.util.regex.Pattern
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ImageFile implements CatalogueFile, MdmDomain {
 
-    private static final Pattern PRECUSOR = ~/^data:image\/[^;]*;base64,?/
+    private static final Pattern PRECURSOR = ~/^data:image\/[^;]*;base64,?/
 
     @Override
     String getDomainType() {
@@ -59,7 +59,7 @@ class ImageFile implements CatalogueFile, MdmDomain {
     }
 
     void setImage(String image) {
-        fileContents = image?.replaceFirst(PRECUSOR, '')?.decodeBase64()
+        fileContents = image?.replaceFirst(PRECURSOR, '')?.decodeBase64()
     }
 
     void setType(String type) {

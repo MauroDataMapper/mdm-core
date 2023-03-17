@@ -146,10 +146,7 @@ class ThemeImageFileControllerSpec extends ResourceControllerSpec<ThemeImageFile
 
     @Override
     void verifyR53DeleteActionWithAnInstanceResponse() {
-        verifyJsonResponse HttpStatus.NOT_FOUND, """{
-    "id":"",
-    "resource":"ThemeImageFile"
-}""", Option.IGNORING_VALUES
+        verifyResponse HttpStatus.OK
     }
 
     void verifyR42UpdateInvalidInstanceResponse() {
@@ -229,7 +226,6 @@ class ThemeImageFileControllerSpec extends ResourceControllerSpec<ThemeImageFile
       "domainType": "ThemeImageFile",
       "fileSize": 5094,
       "id": "\${json-unit.matches:id}",
-      "userId": null,
       "fileType": "image/png"
     }""".toString()
     }
@@ -259,7 +255,6 @@ class ThemeImageFileControllerSpec extends ResourceControllerSpec<ThemeImageFile
       "domainType": "ThemeImageFile",
       "fileSize": 5094,
       "id": "\${json-unit.matches:id}",
-      "userId": null,
       "fileType": "image/png"
     }""".toString()
     }
