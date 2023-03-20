@@ -105,11 +105,13 @@ class DataFlowService extends ModelItemService<DataFlow> {
                                                 'delete from dataflow.join_dataflow_to_facet where dataflow_id in :ids')
 
             log.trace('Removing {} DataFlows', dataFlowIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id in :ids OR target_id in :ids')
-                .setParameter('ids', modelIds)
-                .executeUpdate()
 
+            Utils.executeInBatches(modelIds, { ids ->
+                sessionFactory.currentSession
+                        .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id in :ids OR target_id in :ids')
+                        .setParameter('ids', ids)
+                        .executeUpdate()
+            })
             log.trace('DataFlows removed')
         }
     }

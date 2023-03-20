@@ -102,28 +102,26 @@ class TermService extends ModelItemService<Term> {
         List<UUID> termIds = Term.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termIds) {
-            List<List<UUID>> batches = Utils.partition(termIds, BATCH_SIZE)
-            batches.each { batchedIds ->
-
-                log.trace('Removing TermRelationships in {} Terms', batchedIds.size())
+            Utils.executeInBatches(modelIds as List, {ids ->
+                log.trace('Removing TermRelationships in {} Terms', ids.size())
                 termRelationshipService.deleteAllByModelIds(modelIds)
-
-                log.trace('Removing CodeSet references for {} Terms', batchedIds.size())
+                log.trace('Removing CodeSet references for {} Terms', ids.size())
                 sessionFactory.currentSession
                         .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE term_id IN :ids')
-                        .setParameter('ids', batchedIds)
+                        .setParameter('ids', ids)
                         .executeUpdate()
 
-                log.trace('Removing facets for {} Terms', batchedIds.size())
-                deleteAllFacetsByMultiFacetAwareIds(batchedIds,
+                log.trace('Removing facets for {} Terms', ids.size())
+                deleteAllFacetsByMultiFacetAwareIds(ids,
                         'delete from terminology.join_term_to_facet where term_id in :ids')
 
-            }
-            log.trace('Removing {} Terms', termIds.size())
-            sessionFactory.currentSession
-                    .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
-                    .setParameter('ids', modelIds)
-                    .executeUpdate()
+
+                log.trace('Removing {} Terms', termIds.size())
+                sessionFactory.currentSession
+                        .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
+                        .setParameter('ids', modelIds)
+                        .executeUpdate()
+            })
 
             log.trace('Terms removed')
         }

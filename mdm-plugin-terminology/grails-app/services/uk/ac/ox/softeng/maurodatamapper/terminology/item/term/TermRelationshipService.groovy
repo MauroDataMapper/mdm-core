@@ -96,10 +96,12 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
                                                 'delete from terminology.join_term_to_facet where term_id in :ids')
 
             log.trace('Removing {} TermRelationships', termRelationshipIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term_relationship WHERE id IN :ids')
-                .setParameter('ids', termRelationshipIds)
-                .executeUpdate()
+            Utils.executeInBatches(termRelationshipIds, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('DELETE FROM terminology.term_relationship WHERE id IN :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+            })
 
             log.trace('TermRelationships removed')
         }

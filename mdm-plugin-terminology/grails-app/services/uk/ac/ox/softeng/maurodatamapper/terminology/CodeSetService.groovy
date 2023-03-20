@@ -144,26 +144,28 @@ class CodeSetService extends ModelService<CodeSet> {
         GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
 
         log.trace('Removing Term relationships to {} CodeSets', idsToDelete.size())
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE codeset_id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
+        Utils.executeInBatches(idsToDelete as List, {ids ->
+            sessionFactory.currentSession
+                .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE codeset_id IN :ids')
+                .setParameter('ids', ids)
+                .executeUpdate()
 
-        log.trace('Removing facets')
-        deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from terminology.join_codeset_to_facet where codeset_id in :ids')
+            log.trace('Removing facets')
+            deleteAllFacetsByMultiFacetAwareIds(ids as List, 'delete from terminology.join_codeset_to_facet where codeset_id in :ids')
 
-        log.trace('Content removed')
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM terminology.code_set WHERE id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
+            log.trace('Content removed')
+            sessionFactory.currentSession
+                .createSQLQuery('DELETE FROM terminology.code_set WHERE id IN :ids')
+                .setParameter('ids', ids)
+                .executeUpdate()
 
-        log.trace('CodeSets removed')
+            log.trace('CodeSets removed')
 
-        sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
-            .setParameter('ids', idsToDelete)
-            .executeUpdate()
+            sessionFactory.currentSession
+                .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
+                .setParameter('ids', ids)
+                .executeUpdate()
+        })
 
         log.trace('Breadcrumb trees removed')
 

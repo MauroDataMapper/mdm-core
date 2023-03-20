@@ -98,10 +98,12 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
                                                 'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
 
             log.trace('Removing {} ReferenceTypes', referenceTypeIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.data_type WHERE id IN :ids')
-                .setParameter('ids', referenceTypeIds)
-                .executeUpdate()
+            Utils.executeInBatches(referenceTypeIds, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('DELETE FROM datamodel.data_type WHERE id IN :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+            })
 
             log.trace('ReferenceTypes removed')
         }

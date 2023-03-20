@@ -116,20 +116,18 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         }.id().list() as List<UUID>
 
         if (dataElementIds) {
-            List<List<UUID>> batches = Utils.partition(dataElementIds, BATCH_SIZE)
-            batches.each { ids ->
+            log.trace('Removing facets for {} DataElements', dataElementIds.size())
+            deleteAllFacetsByMultiFacetAwareIds(dataElementIds,
+                                            'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
 
-                log.trace('Removing facets for {} DataElements', ids.size())
 
-                deleteAllFacetsByMultiFacetAwareIds(ids,
-                                                    'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
-
-                log.trace('Removing {} DataElements', ids.size())
+            log.trace('Removing {} DataElements', dataElementIds.size())
+            Utils.executeInBatches(dataElementIds, {ids ->
                 sessionFactory.currentSession
                     .createSQLQuery('DELETE FROM datamodel.data_element WHERE id IN :ids')
                     .setParameter('ids', ids)
                     .executeUpdate()
-            }
+            })
         }
         log.trace('DataElements removed')
     }

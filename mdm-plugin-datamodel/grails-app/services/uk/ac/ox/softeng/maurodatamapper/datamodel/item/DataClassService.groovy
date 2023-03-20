@@ -215,10 +215,13 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                                                 'delete from datamodel.join_dataclass_to_facet where dataclass_id in :ids')
 
             log.trace('Removing {} DataClasses', dataClassIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.data_class WHERE data_model_id IN :ids')
-                .setParameter('ids', dataModelIds)
-                .executeUpdate()
+
+            Utils.executeInBatches(dataModelIds as List, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('DELETE FROM datamodel.data_class WHERE data_model_id IN :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+            })
 
             log.trace('DataClasses removed')
         }

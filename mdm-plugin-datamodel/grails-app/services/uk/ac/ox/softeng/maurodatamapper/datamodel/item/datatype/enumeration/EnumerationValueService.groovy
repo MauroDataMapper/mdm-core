@@ -91,11 +91,13 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
                                                 'delete from datamodel.join_enumerationvalue_to_facet where enumerationvalue_id in :ids')
 
             log.trace('Removing {} EnumerationValues', enumerationValueIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.enumeration_value WHERE id IN :ids')
-                .setParameter('ids', enumerationValueIds)
-                .executeUpdate()
 
+            Utils.executeInBatches(enumerationValueIds, {ids ->
+                sessionFactory.currentSession
+                        .createSQLQuery('DELETE FROM datamodel.enumeration_value WHERE id IN :ids')
+                        .setParameter('ids', ids)
+                        .executeUpdate()
+            })
             log.trace('EnumerationValues removed')
         }
     }

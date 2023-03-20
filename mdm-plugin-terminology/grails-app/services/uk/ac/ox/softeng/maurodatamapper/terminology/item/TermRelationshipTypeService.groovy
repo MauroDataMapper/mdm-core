@@ -141,10 +141,12 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
                                                 'delete from terminology.join_termrelationshiptype_to_facet where termrelationshiptype_id in :ids')
 
             log.trace('Removing {} TermRelationshipTypes', termRelationshipTypeIds.size())
-            sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id IN :ids')
-                .setParameter('ids', modelIds)
-                .executeUpdate()
+            Utils.executeInBatches(modelIds as List, {ids ->
+                sessionFactory.currentSession
+                    .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id IN :ids')
+                    .setParameter('ids', ids)
+                    .executeUpdate()
+            })
 
             log.trace('TermRelationshipTypes removed')
 
