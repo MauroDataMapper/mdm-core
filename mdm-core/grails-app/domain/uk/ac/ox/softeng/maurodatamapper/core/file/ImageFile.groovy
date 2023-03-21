@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,13 @@ import java.util.regex.Pattern
  * @since 07/02/2020
  */
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ImageFile implements CatalogueFile, MdmDomain {
+abstract class ImageFile implements CatalogueFile, MdmDomain {
 
     private static final Pattern PRECURSOR = ~/^data:image\/[^;]*;base64,?/
 
     @Override
     String getDomainType() {
         ImageFile.simpleName
-    }
-
-    @Override
-    String getPathPrefix() {
-        'if'
     }
 
     UUID id

@@ -87,7 +87,7 @@ class ThemeImageFileControllerSpec extends ResourceControllerSpec<ThemeImageFile
 
             save(_,_) >> { ApiProperty apiPropertyInput, User updatedBy ->
                 apiProperty = apiPropertyInput
-                apiProperty.lastUpdatedBy = updatedBy
+                apiProperty.lastUpdatedBy = updatedBy.emailAddress
                 checkAndSave(apiProperty)
             }
         }

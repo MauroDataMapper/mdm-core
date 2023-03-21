@@ -86,18 +86,14 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         saveResource instance
 
         saveResponse instance
-
-        instance
     }
 
     @Transactional
     @Override
-    def update(Object instance = null) {
+    def update() {
         if (handleReadOnly()) return
 
-        if (!instance) {
-            instance = queryForResource(params.id)
-        }
+        def instance = queryForResource(params.id)
 
         if (instance == null) {
             transactionStatus.setRollbackOnly()
@@ -112,20 +108,16 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         updateResource instance
 
         updateResponse instance
-
-        instance
     }
 
     @Transactional
     @Override
-    def delete(Object instance = null) {
+    def delete() {
         if (handleReadOnly()) {
             return
         }
 
-        if (!instance) {
-            instance = queryForResource(params.id)
-        }
+        def instance = queryForResource(params.id)
 
         if (instance == null) {
             transactionStatus.setRollbackOnly()
@@ -138,8 +130,6 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         deleteResource instance
 
         deleteResponse instance
-
-        instance
     }
 
     @Override

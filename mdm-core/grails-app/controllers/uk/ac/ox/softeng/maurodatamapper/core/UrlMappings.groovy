@@ -46,7 +46,9 @@ class UrlMappings {
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)
 
                 '/properties'(resources: 'apiProperty', excludes: DEFAULT_EXCLUDES) {
-                    '/image'(single: 'themeImageFile', excludes: DEFAULT_EXCLUDES)
+                    '/image'(single: 'themeImageFile', excludes: DEFAULT_EXCLUDES) {
+                        openAccess = true
+                    }
                 }
                 post '/properties/apply'(controller: 'apiProperty', action: 'apply')
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.file
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.core.Ordered
 
 class ThemeImageFileInterceptor implements MdmInterceptor {
@@ -30,11 +31,7 @@ class ThemeImageFileInterceptor implements MdmInterceptor {
 
     boolean before() {
         Utils.toUuid(params, 'apiPropertyId')
-        // Interception should be done by the user providing plugin
-        if (params.apiPropertyId) {
-            return true
-        }
-
-        isShow()
+        if (isShow() && (params as GrailsParameterMap).boolean('openAccess')) return true
+        currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
     }
 }

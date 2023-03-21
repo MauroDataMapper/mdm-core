@@ -1,7 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.core.file.ThemeImageFile
-
-model {
-    ThemeImageFile themeImageFile
-}
-
-json tmpl.themeImageFile(themeImageFile)

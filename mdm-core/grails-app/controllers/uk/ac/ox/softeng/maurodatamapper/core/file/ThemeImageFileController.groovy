@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         }
 
         if (params.apiPropertyId) {
-            return notFound(params.apiPropertyId)
+            return notFound(ApiProperty, params.apiPropertyId)
         }
 
         return notFound(params.id)
@@ -66,19 +66,19 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         // Allow the UI to use PUT to create the image
         // This allows them to not have to have various additional computations to determine if they have an actual image
         if (params.apiPropertyId && !apiPropertyService.findById(Utils.toUuid(params.apiPropertyId))) {
-            return notFound(params.apiPropertyId)
+            return notFound(ApiProperty, params.apiPropertyId)
         }
         if (params.apiPropertyId)
         {
             ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
             if (themeImageFile) {
-                return super.update(themeImageFile)
+                return updateInstance(themeImageFile)
             }
         }
-        if (params.id) return super.update()
+        if (params.id) return updateInstance()
 
-        Object saveResult = super.save()
-        if (saveResult && saveResult.Id && params.apiPropertyId) {
+        Object saveResult = saveInstance()
+        if (saveResult && saveResult.id && params.apiPropertyId) {
             saveApiProperty(params.apiPropertyId.toString(), saveResult.id.toString())
         }
 
@@ -90,19 +90,19 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
     def save() {
         // If the apiPropertyId refers to a non existent property, do not proceed
         if (params.apiPropertyId && !apiPropertyService.findById(Utils.toUuid(params.apiPropertyId))) {
-            return notFound(params.apiPropertyId)
+            return notFound(ApiProperty, params.apiPropertyId)
         }
 
         // Ensure that if the user already has an image then we update rather than add another
         if (params.apiPropertyId) {
             ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
             if (themeImageFile) {
-                return super.update(themeImageFile)
+                return updateInstance(themeImageFile)
             }
         }
 
-        Object saveResult = super.save()
-        if (saveResult && saveResult.Id && params.apiPropertyId) {
+        Object saveResult = saveInstance()
+        if (saveResult && saveResult.id && params.apiPropertyId) {
             saveApiProperty(params.apiPropertyId.toString(), saveResult.id.toString())
         }
 
@@ -116,21 +116,21 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
         // If the apiPropertyId refers to a non existent property, do not proceed
         if (params.apiPropertyId && !apiPropertyService.findById(Utils.toUuid(params.apiPropertyId))) {
-            return notFound(params.apiPropertyId)
+            return notFound(ApiProperty, params.apiPropertyId)
         }
 
         // Make sure we use the id of the image for deletion
         if (params.apiPropertyId) {
             ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
             if (themeImageFile) {
-                deleteResult = super.delete(themeImageFile)
+                deleteResult = deleteInstance(themeImageFile)
                 if (deleteResult) {
                     saveApiProperty(params.apiPropertyId.toString())
                 }
             }
         }
         else {
-            deleteResult = super.delete()
+            deleteResult = deleteInstance()
         }
 
         deleteResult
@@ -173,12 +173,7 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
     @Override
     protected ThemeImageFile saveResource(ThemeImageFile resource) {
-        try {
-            resource.save flush: true, validate: false
-        } catch(Exception e) {
-            String errorMessage = e.message
-            throw e
-        }
+        resource.save flush: true, validate: false
     }
 
     @Override
@@ -199,6 +194,73 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         ApiProperty apiProperty = apiPropertyService.findById(Utils.toUuid(apiPropertyId))
         apiProperty.value = value
         apiPropertyService.save(apiProperty, currentUser)
+    }
+
+    @Transactional
+    private def saveInstance() {
+        if (handleReadOnly()) return
+
+        def instance = createResource()
+
+        if (response.isCommitted()) return
+
+        if (!validateResource(instance, 'create')) return
+
+        saveResource instance
+
+        saveResponse instance
+
+        instance
+    }
+
+    @Transactional
+    private def updateInstance(Object instance = null) {
+        if (handleReadOnly()) return
+
+        if (!instance) {
+            instance = queryForResource(params.id)
+        }
+
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        instance.properties = getObjectToBind()
+
+        if (!validateResource(instance, 'update')) return
+
+        updateResource instance
+
+        updateResponse instance
+
+        instance
+    }
+
+    @Transactional
+    private def deleteInstance(Object instance = null) {
+        if (handleReadOnly()) {
+            return
+        }
+
+        if (!instance) {
+            instance = queryForResource(params.id)
+        }
+
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        if (!validateResourceDeletion(instance, 'delete')) return
+
+        deleteResource instance
+
+        deleteResponse instance
+
+        instance
     }
 
 }

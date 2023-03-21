@@ -15,15 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.security.file
+package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.file
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
-import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
-import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -31,7 +29,6 @@ import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
-import org.spockframework.util.Assert
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -42,7 +39,7 @@ import static io.micronaut.http.HttpStatus.OK
 
 @Integration
 @Slf4j
-class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements SecurityUsers {
+class ThemeImageFileFunctionalSpec extends FunctionalSpec {
 
     String PROPERTY_KEY = "theme.image";
     String USE_DEFAULT_IMAGE = "USE DEFAULT IMAGE";
@@ -83,34 +80,14 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        implementSecurityUsers('functionalTest')
         getOrCreateApiProperties()
-        assert CatalogueUser.count() == 9
-        assert ApiProperty.count() == 16
+        assert CatalogueUser.count() == 10
+        assert ApiProperty.count() == 45
         sessionFactory.currentSession.flush()
         userId = CatalogueUser.findByEmailAddress(UnloggedUser.UNLOGGED_EMAIL_ADDRESS).id
         assert userId
         apiPropertyId = ApiProperty.findByKey(PROPERTY_KEY).id
         assert apiPropertyId
-    }
-
-    @Transactional
-    def cleanupSpec() {
-        CatalogueUser.list().findAll {
-            !(it.emailAddress in [UnloggedUser.UNLOGGED_EMAIL_ADDRESS, StandardEmailAddress.ADMIN])
-        }.each { it.delete(flush: true) }
-        if (CatalogueUser.count() != 2) {
-            Assert.fail("Resource Class ${CatalogueUser.simpleName} has not been emptied")
-        }
-    }
-
-    void loginAdmin() {
-        log.trace('Logging in as {}', 'admin@maurodatamapper.com')
-        POST('authentication/login', [
-            username: 'admin@maurodatamapper.com',
-            password: 'password'
-        ], MAP_ARG, true)
-        verifyResponse(OK, response)
     }
 
     void getOrCreateApiProperties() {
@@ -151,18 +128,17 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
         0
     }
 
-    void assertDefaultStatus(ApiProperty apiProperty) {
-        int checkValueCount = 0
-        while (checkValueCount < 10) {
-            sleep(100)
-            apiProperty.refresh()
-            checkValueCount = (apiProperty.value === USE_DEFAULT_IMAGE) ? 10 : checkValueCount + 1;
+    void assertDefaultStatus(UUID apiPropertyId, Boolean defaultExpected) {
+        GET("admin/properties/${apiPropertyId.toString()}", MAP_ARG, true)
+        if (defaultExpected) {
+            assert responseBody().value == USE_DEFAULT_IMAGE
         }
-        assert apiProperty.value === USE_DEFAULT_IMAGE
+        else {
+            assert responseBody().value != USE_DEFAULT_IMAGE
+        }
     }
 
-    void 'R1 : Test the show action correctly returns not found if none has been saved using apiPropertyId'() {
-
+    void 'R1 : Test the show action correctly returns #expected if admin login is #loginAsAdmin and no image has been saved using apiPropertyId'() {
         when: 'When the show action is called to retrieve a resource'
         GET("${apiPropertyId}/image")
 
@@ -182,8 +158,8 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
         response.body().total >= 1
         response.body().errors.size() == response.body().total
-        apiProperty.refresh()
-        apiProperty.value == USE_DEFAULT_IMAGE
+
+        assertDefaultStatus(apiProperty.id, true)
 
         when: 'The save action is executed with invalid data'
         POST(resourceEndPoint, invalidJson)
@@ -192,8 +168,7 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
         verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
         response.body().total >= 1
         response.body().errors.size() == response.body().total
-        apiProperty.refresh()
-        apiProperty.value == USE_DEFAULT_IMAGE
+        assertDefaultStatus(apiProperty.id, true)
 
         when: 'The save action is executed with valid data'
         createNewItem(resourceEndPoint, validJson)
@@ -207,13 +182,12 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
         responseBody().fileName == "${apiPropertyId}-theme".toString()
         responseBody().userId == null
         !responseBody().fileContents
-        apiProperty.refresh()
-        apiProperty.value != USE_DEFAULT_IMAGE
+        assertDefaultStatus(apiProperty.id, false)
 
         cleanup:
         DELETE(resourceEndPoint)
         assert response.status() == HttpStatus.NO_CONTENT
-        assertDefaultStatus(apiProperty)
+        assertDefaultStatus(apiProperty.id, true)
     }
 
     @Transactional
@@ -246,7 +220,7 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
         cleanup:
         DELETE(resourceEndPoint)
         assert response.status() == HttpStatus.NO_CONTENT
-        assertDefaultStatus(apiProperty)
+        assertDefaultStatus(apiProperty.id, true)
     }
 
     @Transactional
@@ -269,26 +243,24 @@ class ThemeImageFileFunctionalSpec extends BaseFunctionalSpec implements Securit
         cleanup:
         DELETE(resourceEndPoint)
         assert response.status() == HttpStatus.NO_CONTENT
-        assertDefaultStatus(apiProperty)
+        assertDefaultStatus(apiProperty.id, true)
     }
 
     @Transactional
     void 'R5 : Test the delete action correctly deletes an instance'() {
         String resourceEndPoint = "${apiPropertyId}/image"
         ApiProperty apiProperty = ApiProperty.findByKey(PROPERTY_KEY)
-        apiProperty.refresh()
-        assert apiProperty.value === USE_DEFAULT_IMAGE
+        assertDefaultStatus(apiProperty.id, true)
 
         given: 'The save action is executed with valid data'
         createNewItem(resourceEndPoint, validJson)
-        apiProperty.refresh()
-        assert apiProperty.value !== USE_DEFAULT_IMAGE
+        assertDefaultStatus(apiProperty.id, false)
 
         when: 'When the delete action is executed on an existing instance'
         DELETE(resourceEndPoint)
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
-        assertDefaultStatus(apiProperty)
+        assertDefaultStatus(apiProperty.id, true)
     }
 }
