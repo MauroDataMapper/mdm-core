@@ -21,8 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 
 trait SecurityUsers extends SecurityDefinition {
 
-    void implementSecurityUsers(String creatorKey, Boolean includeAdmin = false) {
-        createModernSecurityUsers(creatorKey, includeAdmin)
+    void implementSecurityUsers(String creatorKey) {
+        createModernSecurityUsers(creatorKey)
         checkAndSave(admin)
         checkAndSave(editor)
         checkAndSave(pending)

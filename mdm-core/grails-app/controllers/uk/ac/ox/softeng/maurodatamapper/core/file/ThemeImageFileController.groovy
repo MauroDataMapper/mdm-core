@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
@@ -26,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
-
 @Slf4j
 class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
@@ -34,6 +34,7 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
     ThemeImageFileService themeImageFileService
     ApiPropertyService apiPropertyService
+    UUID themeImageFileId
 
     ThemeImageFileController() {
         super(ThemeImageFile)
@@ -77,12 +78,7 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         }
         if (params.id) return updateInstance()
 
-        Object saveResult = saveInstance()
-        if (saveResult && saveResult.id && params.apiPropertyId) {
-            saveApiProperty(params.apiPropertyId.toString(), saveResult.id.toString())
-        }
-
-        saveResult
+        saveInstance()
     }
 
     @Transactional
@@ -101,12 +97,7 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
             }
         }
 
-        Object saveResult = saveInstance()
-        if (saveResult && saveResult.id && params.apiPropertyId) {
-            saveApiProperty(params.apiPropertyId.toString(), saveResult.id.toString())
-        }
-
-        saveResult
+        saveInstance()
     }
 
     @Transactional
@@ -123,17 +114,16 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         if (params.apiPropertyId) {
             ThemeImageFile themeImageFile = themeImageFileService.findByApiPropertyId(Utils.toUuid(params.apiPropertyId))
             if (themeImageFile) {
-                deleteResult = deleteInstance(themeImageFile)
-                if (deleteResult) {
-                    saveApiProperty(params.apiPropertyId.toString())
-                }
+                return deleteInstance(themeImageFile)
             }
+            else {
+                return notFound(ThemeImageFile, null)
+            }
+
         }
         else {
-            deleteResult = deleteInstance()
+            return deleteInstance()
         }
-
-        deleteResult
     }
 
     @Override
@@ -208,9 +198,16 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
         saveResource instance
 
-        saveResponse instance
+        try {
+            if (instance.id && params.apiPropertyId) {
+                saveApiProperty(params.apiPropertyId.toString(), instance.id.toString())
+            }
+        }
+        catch (Exception ignored) {
+            throw new ApiInternalException('TIFC01', 'An error occurred when trying to update the Property value')
+        }
 
-        instance
+        saveResponse instance
     }
 
     @Transactional
@@ -234,8 +231,6 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
         updateResource instance
 
         updateResponse instance
-
-        instance
     }
 
     @Transactional
@@ -258,9 +253,16 @@ class ThemeImageFileController extends EditLoggingController<ThemeImageFile> {
 
         deleteResource instance
 
-        deleteResponse instance
+        try {
+            if (params.apiPropertyId) {
+                saveApiProperty(params.apiPropertyId.toString())
+            }
+        }
+        catch (Exception ignored) {
+            throw new ApiInternalException('TIFC02', 'An error occurred when trying to update the Property value')
+        }
 
-        instance
+        deleteResponse instance
     }
 
 }
