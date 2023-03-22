@@ -138,7 +138,7 @@ class ThemeImageFileFunctionalSpec extends FunctionalSpec {
         }
     }
 
-    void 'R1 : Test the show action correctly returns #expected if admin login is #loginAsAdmin and no image has been saved using apiPropertyId'() {
+    void 'R1 : Test the show action correctly returns not found if no image has been saved using apiPropertyId'() {
         when: 'When the show action is called to retrieve a resource'
         GET("${apiPropertyId}/image")
 

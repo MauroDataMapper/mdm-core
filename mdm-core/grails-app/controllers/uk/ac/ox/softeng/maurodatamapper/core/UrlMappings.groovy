@@ -46,9 +46,7 @@ class UrlMappings {
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)
 
                 '/properties'(resources: 'apiProperty', excludes: DEFAULT_EXCLUDES) {
-                    '/image'(single: 'themeImageFile', excludes: DEFAULT_EXCLUDES) {
-                        openAccess = true
-                    }
+                    '/image'(single: 'themeImageFile', excludes: DEFAULT_EXCLUDES)
                 }
                 post '/properties/apply'(controller: 'apiProperty', action: 'apply')
 
@@ -290,7 +288,9 @@ class UrlMappings {
             /*
             Theme Images
              */
-            get "/themeImageFiles/$id"(controller: 'themeImageFile', action: 'show')
+            get "/themeImageFiles/$id"(controller: 'themeImageFile', action: 'show') {
+                openAccess = true
+            }
         }
     }
 }
