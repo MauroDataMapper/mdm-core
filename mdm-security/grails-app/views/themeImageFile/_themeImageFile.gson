@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.file.ThemeImageFile
+
+model {
+    ThemeImageFile themeImageFile
+}
+
+inherits template: '/catalogueFile/catalogueFile', model: [catalogueFile: themeImageFile]
+
+json {
+
+}
