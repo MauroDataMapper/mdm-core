@@ -45,7 +45,9 @@ class UrlMappings {
                 get '/activeSessions'(controller: 'session', action: 'activeSessions')
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)
 
-                '/properties'(resources: 'apiProperty', excludes: DEFAULT_EXCLUDES)
+                '/properties'(resources: 'apiProperty', excludes: DEFAULT_EXCLUDES) {
+                    '/image'(single: 'themeImageFile', excludes: DEFAULT_EXCLUDES)
+                }
                 post '/properties/apply'(controller: 'apiProperty', action: 'apply')
 
                 group "/tree/$containerDomainType/$modelDomainType", {
@@ -282,6 +284,13 @@ class UrlMappings {
             User Images
              */
             get "/userImageFiles/$id"(controller: 'userImageFile', action: 'show')
+
+            /*
+            Theme Images
+             */
+            get "/themeImageFiles/$id"(controller: 'themeImageFile', action: 'show') {
+                openAccess = true
+            }
         }
     }
 }

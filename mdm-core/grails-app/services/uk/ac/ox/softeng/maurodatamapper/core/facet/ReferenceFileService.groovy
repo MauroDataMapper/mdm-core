@@ -84,14 +84,6 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Multi
     }
 
     @Override
-    ReferenceFile resizeImage(ReferenceFile catalogueFile, int size) {
-        ReferenceFile referenceFile = resizeImageBase(catalogueFile, size)
-        referenceFile.multiFacetAwareItemDomainType = catalogueFile.multiFacetAwareItemDomainType
-        referenceFile.multiFacetAwareItemId = catalogueFile.multiFacetAwareItemId
-        referenceFile
-    }
-
-    @Override
     ReferenceFile findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
         ReferenceFile.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }

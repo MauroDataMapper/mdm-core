@@ -17,41 +17,47 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
-import grails.gorm.DetachedCriteria
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.CatalogueFileConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFile
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+
 import grails.rest.Resource
+
+import java.util.regex.Pattern
 
 /**
  * @since 07/02/2020
  */
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class UserImageFile extends ImageFile {
+abstract class ImageFile implements CatalogueFile, MdmDomain {
 
-    public static final String NO_PROFILE_IMAGE_FILE_NAME = 'no_profile_image.png'
-
-    UUID userId
+    private static final Pattern PRECURSOR = ~/^data:image\/[^;]*;base64,?/
 
     @Override
     String getDomainType() {
-        UserImageFile.simpleName
+        ImageFile.simpleName
+    }
+
+    UUID id
+
+    static constraints = {
+        CallableConstraints.call(CatalogueFileConstraints, delegate)
+    }
+
+    ImageFile() {
     }
 
     @Override
-    String getPathPrefix() {
-        'uif'
+    String getPathIdentifier() {
+        fileName
     }
 
-    def beforeValidate() {
-        if (!fileName) fileName = "${userId}-profile"
-        fileSize = fileContents?.size()
+    void setImage(String image) {
+        fileContents = image?.replaceFirst(PRECURSOR, '')?.decodeBase64()
     }
 
-    static DetachedCriteria<UserImageFile> byUserId(UUID catalogueUserId) {
-        new DetachedCriteria<UserImageFile>(UserImageFile).eq('userId', catalogueUserId)
-    }
-
-    static DetachedCriteria<UserImageFile> withFilter(DetachedCriteria<UserImageFile> criteria, Map filters) {
-        criteria = withBaseFilter(criteria, filters)
-        if (filters.userId) criteria = criteria.ilike('userId', "%${filters.userId}%")
-        criteria
+    void setType(String type) {
+        fileType = type
     }
 }

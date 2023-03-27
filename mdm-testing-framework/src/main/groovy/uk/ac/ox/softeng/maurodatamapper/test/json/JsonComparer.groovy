@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.json.matcher.ErrorMessageMatcher
 import uk.ac.ox.softeng.maurodatamapper.test.json.matcher.FileContentsMatcher
 import uk.ac.ox.softeng.maurodatamapper.test.json.matcher.IdMatcher
 import uk.ac.ox.softeng.maurodatamapper.test.json.matcher.OffsetDateTimeMatcher
+import uk.ac.ox.softeng.maurodatamapper.test.json.matcher.ThemeImageFileNameMatcher
 import uk.ac.ox.softeng.maurodatamapper.test.json.matcher.VersionMatcher
 
 import groovy.json.JsonOutput
@@ -48,6 +49,7 @@ trait JsonComparer {
             .withMatcher('version', new VersionMatcher())
             .withMatcher('errorMessage', new ErrorMessageMatcher())
             .withMatcher('fileContents', new FileContentsMatcher())
+            .withMatcher('themeImageFileName', new ThemeImageFileNameMatcher())
 
         Set<Option> optionsWith = new HashSet<>()
         if (!exactOrder) optionsWith.add(Option.IGNORING_ARRAY_ORDER)

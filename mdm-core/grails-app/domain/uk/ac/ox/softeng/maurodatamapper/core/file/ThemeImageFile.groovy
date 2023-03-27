@@ -17,41 +17,37 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
-import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 /**
- * @since 07/02/2020
+ * @since 15/03/2023
  */
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class UserImageFile extends ImageFile {
+class ThemeImageFile extends ImageFile {
 
-    public static final String NO_PROFILE_IMAGE_FILE_NAME = 'no_profile_image.png'
+    UUID apiPropertyId
 
-    UUID userId
+    static transients = ['apiPropertyId']
 
     @Override
     String getDomainType() {
-        UserImageFile.simpleName
+        ThemeImageFile.simpleName
     }
 
     @Override
     String getPathPrefix() {
-        'uif'
+        'tif'
     }
 
     def beforeValidate() {
-        if (!fileName) fileName = "${userId}-profile"
+        UUID propertyId
+        if (apiPropertyId) {
+            propertyId = apiPropertyId
+        }
+        else {
+            propertyId = UUID.randomUUID()
+        }
+        if (!fileName) fileName = "${propertyId}-theme"
         fileSize = fileContents?.size()
-    }
-
-    static DetachedCriteria<UserImageFile> byUserId(UUID catalogueUserId) {
-        new DetachedCriteria<UserImageFile>(UserImageFile).eq('userId', catalogueUserId)
-    }
-
-    static DetachedCriteria<UserImageFile> withFilter(DetachedCriteria<UserImageFile> criteria, Map filters) {
-        criteria = withBaseFilter(criteria, filters)
-        if (filters.userId) criteria = criteria.ilike('userId', "%${filters.userId}%")
-        criteria
     }
 }

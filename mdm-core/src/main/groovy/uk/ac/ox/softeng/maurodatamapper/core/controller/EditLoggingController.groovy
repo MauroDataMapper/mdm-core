@@ -93,7 +93,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     def update() {
         if (handleReadOnly()) return
 
-        T instance = queryForResource(params.id)
+        def instance = queryForResource(params.id)
 
         if (instance == null) {
             transactionStatus.setRollbackOnly()
@@ -118,6 +118,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         }
 
         def instance = queryForResource(params.id)
+
         if (instance == null) {
             transactionStatus.setRollbackOnly()
             notFound(params.id)

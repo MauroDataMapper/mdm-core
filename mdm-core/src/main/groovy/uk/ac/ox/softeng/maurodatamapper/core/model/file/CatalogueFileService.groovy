@@ -17,30 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.file
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
 
-import java.awt.image.BufferedImage
 import java.lang.reflect.ParameterizedType
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import javax.imageio.ImageIO
-
-import static java.awt.RenderingHints.KEY_INTERPOLATION
-import static java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC
 
 @Slf4j
 trait CatalogueFileService<T> {
 
     abstract T createNewFile(String name, byte[] contents, String type, User user)
-
-    abstract T resizeImage(T catalogueFile, int size)
 
     def <K extends CatalogueFile> Class<K> getCatalogueFileClass() {
         ParameterizedType parameterizedType = (ParameterizedType) getClass().genericInterfaces.find {genericInterface ->
@@ -49,15 +38,6 @@ trait CatalogueFileService<T> {
         }
 
         (Class<K>) parameterizedType?.actualTypeArguments[0]
-    }
-
-    void writeToFile(CatalogueFile file, String filePath) throws ApiException {
-        Path path = Paths.get(filePath, file.fileName)
-        try {
-            Files.write(path, file.fileContents)
-        } catch (IOException e) {
-            throw new ApiInternalException('CFS01', "Cannot output file to ${path}", e)
-        }
     }
 
     T createNewFile(File file, String type, User user) {
@@ -79,17 +59,4 @@ trait CatalogueFileService<T> {
         instance as T
     }
 
-    def <K extends CatalogueFile> T resizeImageBase(K catalogueFile, int size) {
-        BufferedImage image = ImageIO.read(new ByteArrayInputStream(catalogueFile.fileContents))
-        if (!image) return catalogueFile as T
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
-        def resize = new BufferedImage(size, size, image.type)
-        resize.createGraphics().with {
-            setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BICUBIC)
-            drawImage(image, 0, 0, size, size, null)
-            dispose()
-        }
-        ImageIO.write(resize, 'png', outputStream)
-        createNewFileBase(catalogueFile.fileName, outputStream.toByteArray(), 'image/png', (catalogueFile as MdmDomain).createdBy)
-    }
 }
