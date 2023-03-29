@@ -13,6 +13,7 @@ json {
     label treeItem.label
     hasChildren treeItem.hasChildren()
     availableActions treeItem.availableActions
+    if (treeItem.path) path treeItem.path
 
     if (treeItem instanceof ContainerTreeItem) {
         ContainerTreeItem cti = (ContainerTreeItem) treeItem

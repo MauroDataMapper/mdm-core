@@ -1,7 +1,7 @@
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: 'classifier'
+inherits template: '/classifier/classifier'
 model {
     Classifier classifier
     UserSecurityPolicyManager userSecurityPolicyManager

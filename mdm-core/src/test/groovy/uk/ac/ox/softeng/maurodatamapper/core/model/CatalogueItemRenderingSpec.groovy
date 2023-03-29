@@ -62,7 +62,8 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
         verifyJson('''{
   "id": "${json-unit.matches:id}",
   "domainType": "BasicModel",
-  "label": "test"
+  "label": "test",
+  "path":"bm:test$main"
 }''', json.jsonText)
     }
 
@@ -83,7 +84,8 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
       "domainType": "BasicModel",
       "finalised": false
     }
-  ]
+  ],
+  "path":"bm:test$main|bmi:content"
 }''', json.jsonText)
     }
 
@@ -96,7 +98,8 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
   "id": "${json-unit.matches:id}",
   "domainType": "BasicModel",
   "label": "test",
-  "description": "a very basic model"
+  "description": "a very basic model",
+  "path":"bm:test$main"
 }''', json.jsonText)
     }
 
@@ -118,7 +121,8 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
       "domainType": "BasicModel",
       "finalised": false
     }
-  ]
+  ],
+  "path":"bm:test$main|bmi:content"
 }''', json.jsonText)
     }
 
@@ -135,7 +139,8 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
   "label": "test",
   "description": "a very basic model",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "availableActions": ["delete", "show", "update"]
+  "availableActions": ["delete", "show", "update"],
+  "path":"bm:test$main"
 }''', json.jsonText)
     }
 
@@ -161,7 +166,8 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
       "domainType": "BasicModel",
       "finalised": false
     }
-  ]
+  ],
+  "path":"bm:test$main|bmi:content"
 }''', json.jsonText)
     }
 }

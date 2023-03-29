@@ -11,4 +11,5 @@ json {
     lastUpdated folder.lastUpdated
     domainType folder.domainType
     hasChildFolders folder.hasChildFolders()
+    if (folder.path) path folder.path
 }

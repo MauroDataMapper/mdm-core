@@ -8,4 +8,5 @@ json {
     id classifier.id
     label classifier.label
     lastUpdated classifier.lastUpdated
+    if (classifier.path) path classifier.path
 }

@@ -9,6 +9,7 @@ json {
     id catalogueItem.id
     domainType catalogueItem.domainType
     label catalogueItem.label
+    if (catalogueItem.path) path catalogueItem.path
 
     // Model items should render their model and breadcrumbs to allow link rebuilding in the UI
     if (catalogueItem instanceof ModelItem) {

@@ -180,7 +180,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "url": "http://localhost",
     "label": "Test Authority",
     "defaultAuthority": true
-  }
+  },
+  "path":"dm:Functional Test Model$main"
 }'''
     }
 
@@ -430,7 +431,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel reader",')
+            .replace("Functional Test Model", "Functional Test DataModel reader")
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -488,7 +489,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel editor",')
+            .replace("Functional Test Model", "Functional Test DataModel editor")
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -1526,6 +1527,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "Functional Test Model",
+      "path": "dm:Functional Test Model$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0"
@@ -1534,6 +1536,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "Functional Test Model",
+      "path": "dm:Functional Test Model$async-test",
       "type": "Data Standard",
       "branchName": "async-test",
       "documentationVersion": "1.0.0"
@@ -3496,6 +3499,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Import",
+                      "path": "dm:Functional Test Import$main",
                       "type": "Data Standard",
                       "branchName": "main",
                       "documentationVersion": "1.0.0"
@@ -3543,6 +3547,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Model",
+                      "path": "dm:Functional Test Model$1.0.0",
                       "type": "Data Standard",
                       "branchName": "main",
                       "documentationVersion": "2.0.0",
@@ -3592,6 +3597,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Model",
+                      "path": "dm:Functional Test Model$2.0.0",
                       "type": "Data Standard",
                       "branchName": "main",
                       "documentationVersion": "1.0.0",
@@ -3641,6 +3647,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Model",
+                      "path": "dm:Functional Test Model$main",
                       "type": "Data Standard",
                       "branchName": "main",
                       "documentationVersion": "1.0.0"
@@ -3688,6 +3695,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Model",
+                      "path": "dm:Functional Test Model$functionalTest",
                       "type": "Data Standard",
                       "branchName": "functionalTest",
                       "documentationVersion": "1.0.0"
@@ -3907,7 +3915,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         (1..4).each {n ->
             idstoDelete << createNewItem([
                 folder: folderId,
-                label : UUID.randomUUID().toString()
+                label : "model${n}".toString()
             ])
         }
 
@@ -3928,7 +3936,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "${json-unit.matches:id}",
+      "label": "model1",
+      "path": "dm:model1$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -3937,7 +3946,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "${json-unit.matches:id}",
+      "label": "model2",
+      "path": "dm:model2$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -3946,7 +3956,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "${json-unit.matches:id}",
+      "label": "model3",
+      "path": "dm:model3$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -3955,7 +3966,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "${json-unit.matches:id}",
+      "label": "model4",
+      "path": "dm:model4$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -4039,8 +4051,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "domainType": "DataClass",
       "availableActions": ["delete","show","update"],
       "model": "${json-unit.matches:id}",
-      "id": "${json-unit.matches:id}",
+      "id": "${json-unit.matches:id}",      
       "label": "simple",
+      "path": "dm:Simple Test DataModel$main|dc:simple",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -4066,6 +4079,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     },
   "id": "${json-unit.matches:id}",
   "label": "Simple Test DataModel",
+  "path": "dm:Simple Test DataModel$main",
   "type": "Data Standard",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
@@ -4073,7 +4087,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier simple",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "path": "cl:test classifier simple"
     }
   ]
 }'''
@@ -4108,6 +4123,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   "id": "${json-unit.matches:id}",
   "domainType": "DataModel",
   "label": "Complex Test DataModel",
+  "path": "dm:Complex Test DataModel$main",
   "availableActions": [
     "delete",
     "show",
@@ -4119,12 +4135,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier2",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "path": "cl:test classifier2"
     },
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "path": "cl:test classifier"
     }
   ],
   "type": "Data Standard",
@@ -4145,6 +4163,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "EnumerationType",
       "label": "yesnounknown",
+      "path": "dm:Complex Test DataModel$main|dt:yesnounknown",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4188,6 +4207,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
       "label": "integer",
+      "path": "dm:Complex Test DataModel$main|dt:integer",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4208,6 +4228,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
       "label": "string",
+      "path": "dm:Complex Test DataModel$main|dt:string",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4228,6 +4249,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceType",
       "label": "child",
+      "path": "dm:Complex Test DataModel$main|dt:child",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4247,6 +4269,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         "id": "${json-unit.matches:id}",
         "domainType": "DataClass",
         "label": "child",
+        "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -4270,6 +4293,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "content",
+      "path": "dm:Complex Test DataModel$main|dc:content",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4296,6 +4320,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
           "label": "element2",
+          "path": "dm:Complex Test DataModel$main|dc:content|de:element2",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -4321,6 +4346,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             "id": "${json-unit.matches:id}",
             "domainType": "PrimitiveType",
             "label": "integer",
+            "path": "dm:Complex Test DataModel$main|dt:integer",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
               {
@@ -4338,6 +4364,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
           "label": "ele1",
+          "path": "dm:Complex Test DataModel$main|dc:content|de:ele1",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -4363,6 +4390,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             "id": "${json-unit.matches:id}",
             "domainType": "PrimitiveType",
             "label": "string",
+            "path": "dm:Complex Test DataModel$main|dt:string",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
               {
@@ -4382,6 +4410,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "emptyclass",
+      "path": "dm:Complex Test DataModel$main|dc:emptyclass",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4409,6 +4438,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "parent",
+      "path": "dm:Complex Test DataModel$main|dc:parent",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -4431,6 +4461,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
           "id": "${json-unit.matches:id}",
           "domainType": "DataClass",
           "label": "child",
+          "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -4466,6 +4497,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
           "label": "child",
+          "path": "dm:Complex Test DataModel$main|dc:parent|de:child",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -4491,6 +4523,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             "id": "${json-unit.matches:id}",
             "domainType": "ReferenceType",
             "label": "child",
+            "path": "dm:Complex Test DataModel$main|dt:child",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
               {
@@ -4504,6 +4537,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
               "id": "${json-unit.matches:id}",
               "domainType": "DataClass",
               "label": "child",
+              "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
               "model": "${json-unit.matches:id}",
               "breadcrumbs": [
                 {
@@ -4817,6 +4851,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                           "description": "dataclass with desc",
                           "id": "${json-unit.matches:id}",
                           "label": "emptyclass",
+                          "path": "dm:Complex Test DataModel$main|dc:emptyclass",
                           "model": "${json-unit.matches:id}",
                           "breadcrumbs": [
                             {
@@ -5755,6 +5790,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                               "model": "${json-unit.matches:id}",
                               "id": "${json-unit.matches:id}",
                               "label": "child",
+                              "path": "dm:Complex Test DataModel$main|dt:child",
                               "breadcrumbs": [
                                 {
                                   "domainType": "DataModel",
@@ -5769,6 +5805,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                                 "parentDataClass": "${json-unit.matches:id}",
                                 "id": "${json-unit.matches:id}",
                                 "label": "child",
+                                "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
                                 "breadcrumbs": [
                                   {
                                     "domainType": "DataModel",
@@ -5788,6 +5825,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                             "maxMultiplicity": 1,
                             "id": "${json-unit.matches:id}",
                             "label": "child",
+                            "path": "dm:Complex Test DataModel$main|dc:parent|de:child",
                             "minMultiplicity": 1,
                             "breadcrumbs": [
                               {
@@ -5816,6 +5854,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                               "model": "${json-unit.matches:id}",
                               "id": "${json-unit.matches:id}",
                               "label": "string",
+                              "path": "dm:Complex Test DataModel$main|dt:string",
                               "breadcrumbs": [
                                 {
                                   "domainType": "DataModel",
@@ -5829,6 +5868,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                             "maxMultiplicity": 20,
                             "id": "${json-unit.matches:id}",
                             "label": "ele1",
+                            "path": "dm:Complex Test DataModel$main|dc:content|de:ele1",
                             "minMultiplicity": 0,
                             "breadcrumbs": [
                               {
@@ -5857,6 +5897,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                               "model": "${json-unit.matches:id}",
                               "id": "${json-unit.matches:id}",
                               "label": "integer",
+                              "path": "dm:Complex Test DataModel$main|dt:integer",
                               "breadcrumbs": [
                                 {
                                   "domainType": "DataModel",
@@ -5870,6 +5911,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
                             "maxMultiplicity": 1,
                             "id": "${json-unit.matches:id}",
                             "label": "element2",
+                            "path": "dm:Complex Test DataModel$main|dc:content|de:element2",
                             "minMultiplicity": 1,
                             "breadcrumbs": [
                               {
@@ -5901,6 +5943,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             "id": "${json-unit.matches:id}",
             "domainType": "DataElement",
             "label": "ele1",
+            "path": "dm:Simple Test DataModel$main|dc:simple|de:ele1",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
               {
@@ -5921,6 +5964,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
               "id": "${json-unit.matches:id}",
               "domainType": "PrimitiveType",
               "label": "string",
+              "path": "dm:Simple Test DataModel$main|dt:string",
               "model": "${json-unit.matches:id}",
               "breadcrumbs": [
                 {
@@ -5939,6 +5983,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             "id": "${json-unit.matches:id}",
             "domainType": "DataElement",
             "label": "ele2",
+            "path": "dm:Simple Test DataModel$main|dc:simple|de:ele2",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
               {
@@ -5959,6 +6004,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
               "id": "${json-unit.matches:id}",
               "domainType": "PrimitiveType",
               "label": "string",
+              "path": "dm:Simple Test DataModel$main|dt:string",
               "model": "${json-unit.matches:id}",
               "breadcrumbs": [
                 {
