@@ -146,7 +146,7 @@ class PathService {
             return null
         }
 
-        findResourceByPathFromRootResource(rootResource, path)
+        findResourceByPathFromRootResource(rootResource, path, null, pathParams)
     }
 
     /**
