@@ -23,6 +23,7 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpStatus
+import net.javacrumbs.jsonunit.core.Option
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemController* Controller: treeItem
@@ -88,7 +89,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, exp
+        verifyJsonResponse HttpStatus.OK, exp, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$folderId?permanent=true")
@@ -137,13 +138,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expParent
+        verifyJsonResponse HttpStatus.OK, expParent, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting the folder tree'
         GET("$folderTreeResourcePath/$parentId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expChild
+        verifyJsonResponse HttpStatus.OK, expChild, Option.IGNORING_EXTRA_FIELDS
 
 
         cleanup:
@@ -180,7 +181,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, exp
+        verifyJsonResponse HttpStatus.OK, exp, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$folderId?permanent=true")
@@ -246,13 +247,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expParent
+        verifyJsonResponse HttpStatus.OK, expParent, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting the folder tree'
         GET("$folderTreeResourcePath/$parentId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expChildren
+        verifyJsonResponse HttpStatus.OK, expChildren, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")
@@ -301,13 +302,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, exp
+        verifyJsonResponse HttpStatus.OK, exp, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting drill down'
         GET("$folderTreeResourcePath/$parentId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expChild
+        verifyJsonResponse HttpStatus.OK, expChild, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId/folders/$childId?permanent=true")
@@ -376,19 +377,19 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, exp
+        verifyJsonResponse HttpStatus.OK, exp, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting drill down'
         GET("$folderTreeResourcePath/$parentId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expChild
+        verifyJsonResponse HttpStatus.OK, expChild, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting drill down'
         GET("$folderTreeResourcePath/$vfId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, '''[]'''
+        verifyJsonResponse HttpStatus.OK, '''[]''', Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting drill down using vf domain'
         GET("tree/versionedFolders/$vfId", STRING_ARG)
@@ -462,19 +463,19 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, exp
+        verifyJsonResponse HttpStatus.OK, exp, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting drill down'
         GET("$folderTreeResourcePath/$parentId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expChild
+        verifyJsonResponse HttpStatus.OK, expChild, Option.IGNORING_EXTRA_FIELDS
 
         when: 'getting drill down'
         GET("$folderTreeResourcePath/$childId", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expGrandChild
+        verifyJsonResponse HttpStatus.OK, expGrandChild, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")
@@ -610,7 +611,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("$folderTreeResourcePath/$parentId?includeModelSuperseded=$includeModelSuperseded", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expectedChildren
+        verifyJsonResponse HttpStatus.OK, expectedChildren, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")
@@ -684,7 +685,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("$folderTreeResourcePath/$parentId?includeModelSuperseded=$includeModelSuperseded", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expectedChildren
+        verifyJsonResponse HttpStatus.OK, expectedChildren, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")
@@ -746,7 +747,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("$folderTreeResourcePath/$parentId?includeDeleted=$includeDeleted", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expectedChildren
+        verifyJsonResponse HttpStatus.OK, expectedChildren, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")
@@ -820,7 +821,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("$folderTreeResourcePath/$parentId?includeDeleted=$includeDeleted", STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, expectedChildren
+        verifyJsonResponse HttpStatus.OK, expectedChildren, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")

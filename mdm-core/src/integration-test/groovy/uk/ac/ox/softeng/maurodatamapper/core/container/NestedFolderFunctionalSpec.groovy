@@ -102,7 +102,7 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "domainType": "Folder",
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder",
-  "path": "fo:Functional Test Folder",
+  "path": "fo:Parent Functional Test Folder|fo:Functional Test Folder",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["update","delete","show"]
@@ -130,7 +130,8 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "readableByAuthenticatedUsers": false,
   "availableActions": ["update","delete","show"],
   "id": "${json-unit.matches:id}",
-  "label": "Parent Functional Test Folder"
+  "label": "Parent Functional Test Folder",
+  "path": "fo:Parent Functional Test Folder"
 }''')
 
         cleanup:
@@ -193,7 +194,8 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "readableByAuthenticatedUsers": false,
   "availableActions": ["update","delete","show"],
   "id": "${json-unit.matches:id}",
-  "label": "Functional Test Folder"
+  "label": "Functional Test Folder",
+  "path": "fo:Parent Functional Test Folder|fo:Functional Test Folder"
 }''')
 
         cleanup:

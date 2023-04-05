@@ -87,7 +87,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         '''{
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder",
-  "path": "vf:Functional Test Folder",
+  "path": "vf:Functional Test Folder$main",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "VersionedFolder",
   "hasChildFolders": false,
@@ -186,6 +186,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         verifyJsonResponse(HttpStatus.OK, '''{
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder",
+  "path": "vf:Functional Test Folder$main",
   "deleted": true,
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "VersionedFolder",
