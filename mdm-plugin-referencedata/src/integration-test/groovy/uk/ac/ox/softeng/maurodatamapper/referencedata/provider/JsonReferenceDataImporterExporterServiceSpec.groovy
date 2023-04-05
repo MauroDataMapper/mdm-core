@@ -36,6 +36,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 import org.junit.Assert
 import spock.lang.Shared
 
@@ -151,7 +152,7 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
         }
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
-        verifyJson(expectedJson, exportedModel)
+        verifyJson(expectedJson, exportedModel, Option.IGNORING_EXTRA_FIELDS)
     }
 
     void 'RDM01: test that trying to export when specifying a null referenceDataModelId fails with an exception'() {

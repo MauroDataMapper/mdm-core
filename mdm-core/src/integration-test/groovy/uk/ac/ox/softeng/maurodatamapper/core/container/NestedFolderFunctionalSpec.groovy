@@ -102,6 +102,7 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "domainType": "Folder",
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder",
+  "path": "fo:Functional Test Folder",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["update","delete","show"]
