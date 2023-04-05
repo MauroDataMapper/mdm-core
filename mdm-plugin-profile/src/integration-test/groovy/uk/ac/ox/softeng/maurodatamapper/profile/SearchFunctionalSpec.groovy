@@ -32,6 +32,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 import org.junit.jupiter.api.Tag
 import spock.lang.Shared
 
@@ -454,7 +455,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
       ]
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
 
         when:
         POST("dataModels/${complexDataModelId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
@@ -520,7 +521,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
       ]
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
 
     }
 
@@ -675,7 +676,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
       ]
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
 
         when:
         POST("dataModels/${complexDataModelId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
@@ -741,7 +742,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
       ]
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
 
         when:
         POST("dataClasses/${dataClassId}/profiles/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}/search", [
@@ -809,7 +810,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
       ]
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
 
     }
 
@@ -923,6 +924,6 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
       ]
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
     }
 }

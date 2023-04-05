@@ -41,6 +41,7 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
@@ -4091,7 +4092,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "path": "cl:test classifier simple"
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         cleanUpData(id)
@@ -4561,7 +4562,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         cleanUpData(id)

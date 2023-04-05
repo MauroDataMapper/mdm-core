@@ -123,6 +123,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
   "id": "${json-unit.matches:id}",
   "domainType": "DataFlow",
   "label": "Functional Test DataFlow",
+  "path": "dm:TargetFlowDataModel$main|df:Functional Test DataFlow",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -143,6 +144,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "id": "${json-unit.matches:id}",
     "domainType": "DataModel",
     "label": "SourceFlowDataModel",
+    "path": "dm:SourceFlowDataModel$main",
     "type": "Data Asset",
     "branchName": "main",
     "documentationVersion": "1.0.0"
@@ -151,6 +153,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "id": "${json-unit.matches:id}",
     "domainType": "DataModel",
     "label": "TargetFlowDataModel",
+    "path": "dm:TargetFlowDataModel$main",
     "type": "Data Asset",
     "branchName": "main",
     "documentationVersion": "1.0.0"
@@ -372,6 +375,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
       "id": "${json-unit.matches:id}",
       "domainType": "DataFlow",
       "label": "Functional Test Import",
+      "path": "dm:TargetFlowDataModel$main|df:Functional Test Import",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -385,6 +389,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "SourceFlowDataModel",
+        "path": "dm:SourceFlowDataModel$main",
         "type": "Data Asset",
         "branchName": "main",
         "documentationVersion": "1.0.0"
@@ -393,6 +398,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "TargetFlowDataModel",
+        "path": "dm:TargetFlowDataModel$main",
         "type": "Data Asset",
         "branchName": "main",
         "documentationVersion": "1.0.0"
