@@ -143,6 +143,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
       "id": "${json-unit.matches:id}",
       "domainType": "DataElement",
       "label": "ele1",
+      "path": "dm:Complex Test DataModel$main|dc:content|de:ele1",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -162,6 +163,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         "id": "${json-unit.matches:id}",
         "domainType": "PrimitiveType",
         "label": "string",
+        "path": "dm:Complex Test DataModel$main|dt:string",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -179,6 +181,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
       "id": "${json-unit.matches:id}",
       "domainType": "DataElement",
       "label": "element2",
+      "path": "dm:Complex Test DataModel$main|dc:content|de:element2",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -198,6 +201,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         "id": "${json-unit.matches:id}",
         "domainType": "PrimitiveType",
         "label": "integer",
+        "path": "dm:Complex Test DataModel$main|dt:integer",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -226,6 +230,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "string",
+    "path": "dm:Complex Test DataModel$main|dt:string",
     "breadcrumbs": [
       {
         "domainType": "DataModel",
@@ -239,6 +244,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "dm:Complex Test DataModel$main|dc:content|de:Functional Test DataElement",
   "minMultiplicity": 0,
   "breadcrumbs": [
     {

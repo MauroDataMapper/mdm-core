@@ -154,6 +154,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClassComponent",
       "label": "aToD",
+      "path": "dm:TargetFlowDataModel$main|df:Sample DataFlow|dcc:aToD",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -174,6 +175,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "DataClass",
           "label": "tableA",
+          "path": "dm:SourceFlowDataModel$main|dc:tableA",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -190,6 +192,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "DataClass",
           "label": "tableD",
+          "path": "dm:TargetFlowDataModel$main|dc:tableD",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -206,6 +209,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClassComponent",
       "label": "bAndCToE",
+      "path": "dm:TargetFlowDataModel$main|df:Sample DataFlow|dcc:bAndCToE",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -226,6 +230,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "DataClass",
           "label": "tableB",
+          "path": "dm:SourceFlowDataModel$main|dc:tableB",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -240,6 +245,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "DataClass",
           "label": "tableC",
+          "path": "dm:SourceFlowDataModel$main|dc:tableC",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -256,6 +262,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "DataClass",
           "label": "tableE",
+          "path": "dm:TargetFlowDataModel$main|dc:tableE",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -278,6 +285,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
   "id": "${json-unit.matches:id}",
   "domainType": "DataClassComponent",
   "label": "Functional Test DataClassComponent",
+  "path": "dm:TargetFlowDataModel$main|df:Sample DataFlow|dcc:Functional Test DataClassComponent",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -303,6 +311,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "tableC",
+      "path": "dm:SourceFlowDataModel$main|dc:tableC",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -319,6 +328,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "tableE",
+      "path": "dm:TargetFlowDataModel$main|dc:tableE",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

@@ -32,6 +32,7 @@ import grails.testing.mixin.integration.Integration
 import grails.web.mime.MimeType
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 import org.spockframework.util.Assert
 
 import java.util.concurrent.CancellationException
@@ -172,6 +173,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "Finalised Example Test DataModel",
+      "path": "dm:Finalised Example Test DataModel$1.0.0",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -181,6 +183,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "TargetFlowDataModel",
+      "path": "dm:TargetFlowDataModel$main",
       "type": "Data Asset",
       "branchName": "main",
       "documentationVersion": "1.0.0"
@@ -189,6 +192,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "Complex Test DataModel",
+      "path": "dm:Complex Test DataModel$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -196,12 +200,16 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier"
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier2",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier2"
         }
       ],
       "author": "admin person",
@@ -211,6 +219,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "SourceFlowDataModel",
+      "path": "dm:SourceFlowDataModel$main",
       "type": "Data Asset",
       "branchName": "main",
       "documentationVersion": "1.0.0"
@@ -219,6 +228,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
       "label": "Simple Test DataModel",
+      "path": "dm:Simple Test DataModel$main",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -226,7 +236,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier simple",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier simple"
         }
       ]
     }
@@ -240,6 +252,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "id": "${json-unit.matches:id}",
   "domainType": "DataModel",
   "label": "Functional Test DataModel",
+  "path": "dm:Functional Test DataModel$main",
   "finalised": false,
   "type": "Data Standard",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -574,7 +587,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         GET("${id}/hierarchy", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expectedJson
+        verifyJsonResponse OK, expectedJson, Option.IGNORING_EXTRA_FIELDS
 
         where:
         prefix | name             | actions
@@ -973,7 +986,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         GET("${id}/hierarchy", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expectedJson
+        verifyJsonResponse OK, expectedJson, Option.IGNORING_EXTRA_FIELDS
 
         where:
         prefix | name             | actions
@@ -1020,7 +1033,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "version": "3.2"
     }
   }
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
         }
 
         cleanup:
@@ -1093,7 +1106,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       }
     }
   ]
-}''')
+}''', Option.IGNORING_EXTRA_FIELDS)
 
             when:
             GET('domainExports', MAP_ARG, true)
@@ -1129,7 +1142,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "version": "3.2"
     }
   }
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
             when:
             GET("$id/domainExports")
 
@@ -1252,7 +1265,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "version": "3.2"
     }
   }
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
         }
 
         cleanup:

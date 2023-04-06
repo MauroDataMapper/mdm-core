@@ -102,6 +102,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
       "label": "string",
+      "path": "dm:Complex Test DataModel$main|dt:string",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -116,6 +117,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
       "label": "integer",
+      "path": "dm:Complex Test DataModel$main|dt:integer",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -130,6 +132,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
       "id": "${json-unit.matches:id}",
       "domainType": "EnumerationType",
       "label": "yesnounknown",
+      "path": "dm:Complex Test DataModel$main|dt:yesnounknown",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -167,6 +170,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceType",
       "label": "child",
+      "path": "dm:Complex Test DataModel$main|dt:child",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -180,6 +184,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         "id": "${json-unit.matches:id}",
         "domainType": "DataClass",
         "label": "child",
+        "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -207,6 +212,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
   "id": "${json-unit.matches:id}",
   "domainType": "PrimitiveType",
   "label": "Functional Data Type",
+  "path": "dm:Complex Test DataModel$main|dt:Functional Data Type",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -272,6 +278,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
   "id": "${json-unit.matches:id}",
   "domainType": "EnumerationType",
   "label": "Functional Enumeration Type",
+  "path": "dm:Complex Test DataModel$main|dt:Functional Enumeration Type",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -336,6 +343,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
   "id": "${json-unit.matches:id}",
   "domainType": "ReferenceType",
   "label": "Functional Reference Type",
+  "path": "dm:Complex Test DataModel$main|dt:Functional Reference Type",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -353,6 +361,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     "id": "${json-unit.matches:id}",
     "domainType": "DataClass",
     "label": "parent",
+    "path": "dm:Complex Test DataModel$main|dc:parent",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -401,6 +410,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
   "id": "${json-unit.matches:id}",
   "domainType": "ModelDataType",
   "label": "Functional ModelData Type",
+  "path": "dm:Complex Test DataModel$main|dt:Functional ModelData Type",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {

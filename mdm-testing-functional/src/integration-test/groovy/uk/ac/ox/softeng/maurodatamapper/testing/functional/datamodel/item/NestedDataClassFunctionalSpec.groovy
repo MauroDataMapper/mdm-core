@@ -107,6 +107,7 @@ class NestedDataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunc
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "child",
+      "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -133,6 +134,7 @@ class NestedDataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunc
   "id": "${json-unit.matches:id}",
   "domainType": "DataClass",
   "label": "A new DataClass",
+  "path": "dm:Complex Test DataModel$main|dc:parent|dc:A new DataClass",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
