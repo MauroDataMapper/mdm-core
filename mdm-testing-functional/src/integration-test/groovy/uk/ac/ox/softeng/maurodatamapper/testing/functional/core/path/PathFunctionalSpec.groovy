@@ -747,6 +747,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
           "label": "Simple Test Terminology",
+          "path": "te:Simple Test Terminology$main",
           "availableActions": [
             "show"
           ],
@@ -755,7 +756,9 @@ class PathFunctionalSpec extends FunctionalSpec {
             {
               "id": "${json-unit.matches:id}",
               "label": "test classifier simple",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "Classifier",
+              "path": "cl:test classifier simple"
             }
           ],
           "type": "Terminology",
@@ -780,6 +783,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
           "label": "Complex Test Terminology",
+          "path": "te:Complex Test Terminology$main",
           "availableActions": [
             "show"
           ],
@@ -788,12 +792,16 @@ class PathFunctionalSpec extends FunctionalSpec {
             {
               "id": "${json-unit.matches:id}",
               "label": "test classifier",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "Classifier",
+              "path": "cl:test classifier"
             },
             {
               "id": "${json-unit.matches:id}",
               "label": "test classifier2",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "Classifier",
+              "path": "cl:test classifier2"
             }
           ],
           "type": "Terminology",
@@ -818,6 +826,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "CodeSet",
           "label": "Simple Test CodeSet",
+          "path": "cs:Simple Test CodeSet$1.0.0",
           "availableActions": [
             "show",
             "createNewVersions",
@@ -829,7 +838,9 @@ class PathFunctionalSpec extends FunctionalSpec {
             {
               "id": "${json-unit.matches:id}",
               "label": "test classifier",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "Classifier",
+              "path": "cl:test classifier"
             }
           ],
           "type": "CodeSet",
@@ -856,6 +867,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           "id": "${json-unit.matches:id}",
           "domainType": "Term",
           "label": "STT01: Simple Test Term 01",
+          "path": "te:Simple Test Terminology$main|tm:STT01",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
               {
@@ -879,6 +891,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "id": "${json-unit.matches:id}",
             "domainType": "DataModel",
             "label": "Complex Test DataModel",
+            "path": "dm:Complex Test DataModel$main",
             "availableActions": [
               "show"
             ],
@@ -887,12 +900,16 @@ class PathFunctionalSpec extends FunctionalSpec {
               {
                 "id": "${json-unit.matches:id}",
                 "label": "test classifier",
-                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "domainType": "Classifier",
+                "path": "cl:test classifier"
               },
               {
                 "id": "${json-unit.matches:id}",
                 "label": "test classifier2",
-                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "domainType": "Classifier",
+                "path": "cl:test classifier2"
               }
             ],
             "type": "Data Standard",
@@ -917,6 +934,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "id": "${json-unit.matches:id}",
             "domainType": "DataClass",
             "label": "parent",
+            "path": "dm:Complex Test DataModel$main|dc:parent",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
                 {
@@ -967,6 +985,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "id": "${json-unit.matches:id}",
             "domainType": "DataElement",
             "label": "ele1",
+            "path": "dm:Complex Test DataModel$main|dc:content|de:ele1",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
                 {
@@ -990,6 +1009,7 @@ class PathFunctionalSpec extends FunctionalSpec {
               "id": "${json-unit.matches:id}",
               "domainType": "PrimitiveType",
               "label": "string",
+              "path": "dm:Complex Test DataModel$main|dt:string",
               "model": "${json-unit.matches:id}",
               "breadcrumbs": [
                 {
@@ -1010,6 +1030,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "id": "${json-unit.matches:id}",
             "domainType": "PrimitiveType",
             "label": "integer",
+            "path": "dm:Complex Test DataModel$main|dt:integer",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
                 {
@@ -1031,6 +1052,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "id": "${json-unit.matches:id}",
             "domainType": "EnumerationType",
             "label": "yesnounknown",
+            "path": "dm:Complex Test DataModel$main|dt:yesnounknown",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
                 {
@@ -1075,6 +1097,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "id": "${json-unit.matches:id}",
             "domainType": "ReferenceType",
             "label": "child",
+            "path": "dm:Complex Test DataModel$main|dt:child",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
                 {
@@ -1092,6 +1115,7 @@ class PathFunctionalSpec extends FunctionalSpec {
               "id": "${json-unit.matches:id}",
               "domainType": "DataClass",
               "label": "child",
+              "path": "dm:Complex Test DataModel$main|dc:parent|dc:child",
               "model": "${json-unit.matches:id}",
               "breadcrumbs": [
                 {

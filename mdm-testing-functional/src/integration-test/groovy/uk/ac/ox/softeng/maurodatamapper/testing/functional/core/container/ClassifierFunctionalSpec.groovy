@@ -134,21 +134,29 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test Classifier",
+      "domainType": "Classifier",
+      "path": "cl:Functional Test Classifier",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier",
+      "domainType": "Classifier",
+      "path": "cl:test classifier",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier simple",
+      "domainType": "Classifier",
+      "path": "cl:test classifier simple",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier2",
+      "domainType": "Classifier",
+      "path": "cl:test classifier2",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ]
@@ -165,7 +173,9 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "id": "${json-unit.matches:id}",
+  "domainType": "Classifier",
   "label": "Functional Test Classifier 2",
+  "path": "cl:Functional Test Classifier 2",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show"]
@@ -220,7 +230,8 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     {
       "id": "${json-unit.matches:id}",
       "domainType": "Terminology",
-      "label": "Simple Test Terminology"
+      "label": "Simple Test Terminology",
+      "path": "te:Simple Test Terminology$main"
     }
   ]
 }'''

@@ -103,7 +103,9 @@ class NestedClassifierFunctionalSpec extends UserAccessFunctionalSpec {
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "id": "${json-unit.matches:id}",
+  "domainType": "Classifier",
   "label": "Nested Functional Test Classifier",
+  "path": "cl:Functional Test Classifier|cl:Nested Functional Test Classifier",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show"]

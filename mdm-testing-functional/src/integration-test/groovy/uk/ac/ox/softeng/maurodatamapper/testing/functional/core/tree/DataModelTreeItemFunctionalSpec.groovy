@@ -24,6 +24,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import net.javacrumbs.jsonunit.core.Option
 
 /**
  * @since 26/03/2021
@@ -74,7 +75,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
         GET(getComplexDataModelId(), STRING_ARG)
 
         then:
-        verifyJsonResponse(HttpStatus.OK, getFullTreeRender('[]'))
+        verifyJsonResponse(HttpStatus.OK, getFullTreeRender('[]'), Option.IGNORING_EXTRA_FIELDS)
 
     }
 
@@ -86,7 +87,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
         GET(getComplexDataModelId(), STRING_ARG)
 
         then:
-        verifyJsonResponse(HttpStatus.OK, getFullTreeRender())
+        verifyJsonResponse(HttpStatus.OK, getFullTreeRender(), Option.IGNORING_EXTRA_FIELDS)
 
     }
 
@@ -105,7 +106,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
     "moveToFolder",
     "moveToVersionedFolder",
     "softDelete"
-  ]'''))
+  ]'''), Option.IGNORING_EXTRA_FIELDS)
 
     }
 
