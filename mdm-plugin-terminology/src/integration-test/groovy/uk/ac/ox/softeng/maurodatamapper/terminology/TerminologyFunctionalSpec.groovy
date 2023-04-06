@@ -41,6 +41,7 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -162,6 +163,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
   "id": "${json-unit.matches:id}",
   "domainType": "Terminology",
   "label": "Functional Test Model",
+  "path": "te:Functional Test Model$main",
   "availableActions": ["delete","show","update"],
   "branchName": "main",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -302,7 +304,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test Terminology reader",')
+            .replaceAll(/Functional Test Model/, 'Functional Test Terminology reader')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -360,7 +362,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test Terminology editor",')
+            .replaceAll(/Functional Test Model/, 'Functional Test Terminology editor')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -1345,7 +1347,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     }
   ]
 }
-'''
+''', Option.IGNORING_EXTRA_FIELDS
 
         when:
         DELETE('', [
@@ -1764,6 +1766,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                     "domainType": "Terminology",
                     "id": "${json-unit.matches:id}",
                     "label": "Functional Test Import",
+                    "path": "te:Functional Test Import$main",
                     "branchName": "main",
                     "documentationVersion": "1.0.0",
                     "authority": {
@@ -1816,6 +1819,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                     "domainType": "Terminology",
                     "id": "${json-unit.matches:id}",
                     "label": "Functional Test Model",
+                    "path": "te:Functional Test Model$1.0.0",
                     "branchName": "main",
                     "documentationVersion": "2.0.0",
                     "modelVersion": "1.0.0",

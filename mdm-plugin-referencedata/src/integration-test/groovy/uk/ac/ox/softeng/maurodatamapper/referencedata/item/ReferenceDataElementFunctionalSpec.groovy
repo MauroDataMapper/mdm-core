@@ -161,6 +161,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "string",
+    "path": "rdm:Functional Test ReferenceDataModel$main|rdt:string",
     "breadcrumbs": [
       {
         "domainType": "ReferenceDataModel",
@@ -174,6 +175,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "rdm:Functional Test ReferenceDataModel$main|rde:Functional Test DataElement",
   "minMultiplicity": 0,
   "breadcrumbs": [
     {
@@ -241,6 +243,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType",
+    "path": "rdm:Functional Test ReferenceDataModel$main|rdt:Functional Test DataType",
     "breadcrumbs": [
       {
         "domainType": "ReferenceDataModel",
@@ -254,6 +257,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "rdm:Functional Test ReferenceDataModel$main|rde:Functional Test DataElement",
   "minMultiplicity": 1,
   "breadcrumbs": [
     {
@@ -294,6 +298,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType 2",
+    "path": "rdm:Functional Test ReferenceDataModel$main|rdt:Functional Test DataType 2",
     "breadcrumbs": [
       {
         "domainType": "ReferenceDataModel",
@@ -307,6 +312,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "rdm:Functional Test ReferenceDataModel$main|rde:Functional Test DataElement",
   "minMultiplicity": 0,
   "breadcrumbs": [
     {
@@ -349,6 +355,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType 3",
+    "path": "rdm:Functional Test ReferenceDataModel$main|rdt:Functional Test DataType 3",
     "breadcrumbs": [
       {
         "domainType": "ReferenceDataModel",
@@ -362,6 +369,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "rdm:Functional Test ReferenceDataModel$main|rde:Functional Test DataElement",
   "minMultiplicity": 1,
   "breadcrumbs": [
     {

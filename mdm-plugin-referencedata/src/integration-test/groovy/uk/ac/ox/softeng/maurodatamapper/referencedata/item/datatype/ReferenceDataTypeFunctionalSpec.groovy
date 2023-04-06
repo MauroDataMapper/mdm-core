@@ -130,6 +130,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
   "label": "date",
+  "path": "rdm:Functional Test ReferenceDataModel$main|rdt:date",
   "breadcrumbs": [
     {
       "domainType": "ReferenceDataModel",
@@ -159,6 +160,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceEnumerationType",
       "label": "functional enumeration",
+      "path": "rdm:Functional Test ReferenceDataModel$main|rdt:functional enumeration",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

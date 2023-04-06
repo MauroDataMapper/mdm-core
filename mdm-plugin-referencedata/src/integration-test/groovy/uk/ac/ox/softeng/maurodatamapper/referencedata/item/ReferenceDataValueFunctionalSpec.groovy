@@ -115,6 +115,7 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         "id": "${json-unit.matches:id}",
         "domainType": "ReferenceDataElement",
         "label": "Functional Test ReferenceDataElement",
+        "path": "rdm:Functional Test ReferenceDataModel$main|rde:Functional Test ReferenceDataElement",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
             {
@@ -129,6 +130,7 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
             "id": "${json-unit.matches:id}",
             "domainType": "ReferencePrimitiveType",
             "label": "Functional Test ReferenceDataType",
+            "path": "rdm:Functional Test ReferenceDataModel$main|rdt:Functional Test ReferenceDataType",
             "model": "${json-unit.matches:id}",
             "breadcrumbs": [
                 {

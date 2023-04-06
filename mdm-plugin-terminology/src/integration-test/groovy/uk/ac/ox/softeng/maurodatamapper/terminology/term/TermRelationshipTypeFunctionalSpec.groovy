@@ -106,6 +106,7 @@ class TermRelationshipTypeFunctionalSpec extends ResourceFunctionalSpec<TermRela
   "id": "${json-unit.matches:id}",
   "domainType": "TermRelationshipType",
   "label": "is-a",
+  "path": "te:Functional Test Terminology$main|trt:is-a",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {

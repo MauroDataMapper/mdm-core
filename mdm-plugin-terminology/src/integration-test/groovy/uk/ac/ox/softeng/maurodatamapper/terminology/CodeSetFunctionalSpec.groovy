@@ -42,6 +42,7 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -178,6 +179,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
   "id": "${json-unit.matches:id}",
   "domainType": "CodeSet",
   "label": "Functional Test Model",
+  "path": "cs:Functional Test Model$main",
   "availableActions": [
     "delete",
     "show",
@@ -337,7 +339,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test CodeSet reader",')
+            .replaceAll(/Functional Test Model/, 'Functional Test CodeSet reader')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -395,7 +397,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test CodeSet editor",')
+            .replaceAll(/Functional Test Model/, 'Functional Test CodeSet editor')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -1231,7 +1233,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
       }
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
 
         when:
         DELETE('', [
@@ -1757,6 +1759,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                     "domainType": "CodeSet",
                     "id": "${json-unit.matches:id}",
                     "label": "Functional Test Import",
+                    "path": "cs:Functional Test Import$main",
                     "branchName": "main",
                     "documentationVersion": "1.0.0",
                     "authority": {
@@ -1809,6 +1812,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                     "domainType": "CodeSet",
                     "id": "${json-unit.matches:id}",
                     "label": "Functional Test Model",
+                    "path": "cs:Functional Test Model$1.0.0",
                     "branchName": "main",
                     "documentationVersion": "2.0.0",
                     "modelVersion": "1.0.0",
