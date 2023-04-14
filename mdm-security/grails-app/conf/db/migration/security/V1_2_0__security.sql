@@ -97,7 +97,7 @@ CREATE INDEX userGroup_created_by_idx ON security.user_group(created_by);
 ALTER TABLE IF EXISTS security.user_group
     ADD CONSTRAINT UK_kas9w8ead0ska5n3csefp2bpp UNIQUE (name);
 ALTER TABLE IF EXISTS security.catalogue_user
-    ADD CONSTRAINT FKrvd4rw9ujjx4ca9b4dkps3jyt FOREIGN KEY (profile_picture_id) REFERENCES core.user_image_file;
+    ADD CONSTRAINT FKrvd4rw9ujjx4ca9b4dkps3jyt FOREIGN KEY (profile_picture_id) REFERENCES core.image_file;
 ALTER TABLE IF EXISTS security.group_role
     ADD CONSTRAINT FK9y8ew5lpksnila4b7g56xcl1n FOREIGN KEY (parent_id) REFERENCES security.group_role;
 ALTER TABLE IF EXISTS security.join_catalogue_user_to_user_group
