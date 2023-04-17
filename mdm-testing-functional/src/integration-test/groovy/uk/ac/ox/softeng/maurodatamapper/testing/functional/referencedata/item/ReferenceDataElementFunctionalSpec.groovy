@@ -108,6 +108,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
   "id": "${json-unit.matches:id}",
   "domainType": "ReferenceDataElement",
   "label": "Functional Test DataElement",
+  "path": "rdm:Simple Reference Data Model$main|rde:Functional Test DataElement",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -126,6 +127,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "ReferencePrimitiveType",
     "label": "string",
+    "path": "rdm:Simple Reference Data Model$main|rdt:string",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -150,6 +152,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataElement",
       "label": "Organisation name",
+      "path": "rdm:Simple Reference Data Model$main|rde:Organisation name",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -164,6 +167,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "ReferencePrimitiveType",
         "label": "string",
+        "path": "rdm:Simple Reference Data Model$main|rdt:string",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -179,6 +183,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataElement",
       "label": "Organisation code",
+      "path": "rdm:Simple Reference Data Model$main|rde:Organisation code",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -193,6 +198,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "ReferencePrimitiveType",
         "label": "string",
+        "path": "rdm:Simple Reference Data Model$main|rdt:string",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {

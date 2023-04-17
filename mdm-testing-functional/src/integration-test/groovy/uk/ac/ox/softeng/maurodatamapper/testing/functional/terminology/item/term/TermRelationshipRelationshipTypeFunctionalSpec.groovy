@@ -86,6 +86,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
   "id": "${json-unit.matches:id}",
   "domainType": "TermRelationship",
   "label": "broaderThan",
+  "path": "te:Complex Test Terminology$main|tm:CTT11|tr:CTT11.broaderThan.CTT12",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -108,6 +109,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
     "id": "${json-unit.matches:id}",
     "domainType": "TermRelationshipType",
     "label": "broaderThan",
+    "path": "te:Complex Test Terminology$main|trt:broaderThan",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -123,6 +125,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT11: Complex Test Term 11",
+    "path": "te:Complex Test Terminology$main|tm:CTT11",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -139,6 +142,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT12: Complex Test Term 12",
+    "path": "te:Complex Test Terminology$main|tm:CTT12",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -163,138 +167,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "broaderThan",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "CTT11: Complex Test Term 11",
-          "domainType": "Term"
-        }
-      ],
-      "relationshipType": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "TermRelationshipType",
-        "label": "broaderThan",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "displayLabel": "Broader Than"
-      },
-      "sourceTerm": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Term",
-        "label": "CTT11: Complex Test Term 11",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "code": "CTT11",
-        "definition": "Complex Test Term 11"
-      },
-      "targetTerm": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Term",
-        "label": "CTT12: Complex Test Term 12",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "code": "CTT12",
-        "definition": "Complex Test Term 12"
-      }
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "TermRelationship",
-      "label": "broaderThan",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "CTT12: Complex Test Term 12",
-          "domainType": "Term"
-        }
-      ],
-      "relationshipType": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "TermRelationshipType",
-        "label": "broaderThan",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "displayLabel": "Broader Than"
-      },
-      "sourceTerm": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Term",
-        "label": "CTT12: Complex Test Term 12",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "code": "CTT12",
-        "definition": "Complex Test Term 12"
-      },
-      "targetTerm": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Term",
-        "label": "CTT13: Complex Test Term 13",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "code": "CTT13",
-        "definition": "Complex Test Term 13"
-      }
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "TermRelationship",
-      "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT13|tr:CTT13.broaderThan.CTT14",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -313,6 +186,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -328,6 +202,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT13: Complex Test Term 13",
+        "path": "te:Complex Test Terminology$main|tm:CTT13",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -344,6 +219,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT14: Complex Test Term 14",
+        "path": "te:Complex Test Terminology$main|tm:CTT14",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -361,6 +237,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT12|tr:CTT12.broaderThan.CTT13",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -371,7 +248,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         },
         {
           "id": "${json-unit.matches:id}",
-          "label": "CTT14: Complex Test Term 14",
+          "label": "CTT12: Complex Test Term 12",
           "domainType": "Term"
         }
       ],
@@ -379,6 +256,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -393,7 +271,8 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
       "sourceTerm": {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
-        "label": "CTT14: Complex Test Term 14",
+        "label": "CTT12: Complex Test Term 12",
+        "path": "te:Complex Test Terminology$main|tm:CTT12",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -403,13 +282,14 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
             "finalised": false
           }
         ],
-        "code": "CTT14",
-        "definition": "Complex Test Term 14"
+        "code": "CTT12",
+        "definition": "Complex Test Term 12"
       },
       "targetTerm": {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
-        "label": "CTT15: Complex Test Term 15",
+        "label": "CTT13: Complex Test Term 13",
+        "path": "te:Complex Test Terminology$main|tm:CTT13",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -419,14 +299,85 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
             "finalised": false
           }
         ],
-        "code": "CTT15",
-        "definition": "Complex Test Term 15"
+        "code": "CTT13",
+        "definition": "Complex Test Term 13"
       }
     },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT11|tr:CTT11.broaderThan.CTT12",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "CTT11: Complex Test Term 11",
+          "domainType": "Term"
+        }
+      ],
+      "relationshipType": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "TermRelationshipType",
+        "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "displayLabel": "Broader Than"
+      },
+      "sourceTerm": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Term",
+        "label": "CTT11: Complex Test Term 11",
+        "path": "te:Complex Test Terminology$main|tm:CTT11",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "code": "CTT11",
+        "definition": "Complex Test Term 11"
+      },
+      "targetTerm": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Term",
+        "label": "CTT12: Complex Test Term 12",
+        "path": "te:Complex Test Terminology$main|tm:CTT12",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "code": "CTT12",
+        "definition": "Complex Test Term 12"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "TermRelationship",
+      "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT15|tr:CTT15.broaderThan.CTT16",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -445,6 +396,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -460,6 +412,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT15: Complex Test Term 15",
+        "path": "te:Complex Test Terminology$main|tm:CTT15",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -476,6 +429,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT16: Complex Test Term 16",
+        "path": "te:Complex Test Terminology$main|tm:CTT16",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -493,6 +447,77 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT14|tr:CTT14.broaderThan.CTT15",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "CTT14: Complex Test Term 14",
+          "domainType": "Term"
+        }
+      ],
+      "relationshipType": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "TermRelationshipType",
+        "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "displayLabel": "Broader Than"
+      },
+      "sourceTerm": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Term",
+        "label": "CTT14: Complex Test Term 14",
+        "path": "te:Complex Test Terminology$main|tm:CTT14",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "code": "CTT14",
+        "definition": "Complex Test Term 14"
+      },
+      "targetTerm": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Term",
+        "label": "CTT15: Complex Test Term 15",
+        "path": "te:Complex Test Terminology$main|tm:CTT15",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "code": "CTT15",
+        "definition": "Complex Test Term 15"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "TermRelationship",
+      "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT16|tr:CTT16.broaderThan.CTT17",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -511,6 +536,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -526,6 +552,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT16: Complex Test Term 16",
+        "path": "te:Complex Test Terminology$main|tm:CTT16",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -542,6 +569,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT17: Complex Test Term 17",
+        "path": "te:Complex Test Terminology$main|tm:CTT17",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -559,72 +587,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "broaderThan",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "CTT17: Complex Test Term 17",
-          "domainType": "Term"
-        }
-      ],
-      "relationshipType": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "TermRelationshipType",
-        "label": "broaderThan",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "displayLabel": "Broader Than"
-      },
-      "sourceTerm": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Term",
-        "label": "CTT17: Complex Test Term 17",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "code": "CTT17",
-        "definition": "Complex Test Term 17"
-      },
-      "targetTerm": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Term",
-        "label": "CTT18: Complex Test Term 18",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "domainType": "Terminology",
-            "finalised": false
-          }
-        ],
-        "code": "CTT18",
-        "definition": "Complex Test Term 18"
-      }
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "TermRelationship",
-      "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT18|tr:CTT18.broaderThan.CTT19",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -643,6 +606,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -658,6 +622,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT18: Complex Test Term 18",
+        "path": "te:Complex Test Terminology$main|tm:CTT18",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -674,6 +639,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT19: Complex Test Term 19",
+        "path": "te:Complex Test Terminology$main|tm:CTT19",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -685,6 +651,76 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         ],
         "code": "CTT19",
         "definition": "Complex Test Term 19"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "TermRelationship",
+      "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|tm:CTT17|tr:CTT17.broaderThan.CTT18",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "CTT17: Complex Test Term 17",
+          "domainType": "Term"
+        }
+      ],
+      "relationshipType": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "TermRelationshipType",
+        "label": "broaderThan",
+        "path": "te:Complex Test Terminology$main|trt:broaderThan",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "displayLabel": "Broader Than"
+      },
+      "sourceTerm": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Term",
+        "label": "CTT17: Complex Test Term 17",
+        "path": "te:Complex Test Terminology$main|tm:CTT17",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "code": "CTT17",
+        "definition": "Complex Test Term 17"
+      },
+      "targetTerm": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Term",
+        "label": "CTT18: Complex Test Term 18",
+        "path": "te:Complex Test Terminology$main|tm:CTT18",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+          }
+        ],
+        "code": "CTT18",
+        "definition": "Complex Test Term 18"
       }
     }
   ]

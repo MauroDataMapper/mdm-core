@@ -104,6 +104,7 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
   "id": "${json-unit.matches:id}",
   "domainType": "ReferencePrimitiveType",
   "label": "date",
+  "path": "rdm:Simple Reference Data Model$main|rdt:date",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -129,6 +130,7 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferencePrimitiveType",
       "label": "string",
+      "path": "rdm:Simple Reference Data Model$main|rdt:string",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -143,6 +145,7 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferencePrimitiveType",
       "label": "integer",
+      "path": "rdm:Simple Reference Data Model$main|rdt:integer",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

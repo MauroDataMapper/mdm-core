@@ -28,6 +28,7 @@ import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -170,6 +171,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Second Simple Reference Data Model",
+      "path": "rdm:Second Simple Reference Data Model$main",
       "type": "ReferenceDataModel",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -177,7 +179,9 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier simple",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier simple"
         }
       ]
     },
@@ -185,6 +189,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model",
+      "path": "rdm:Simple Reference Data Model$main",
       "type": "ReferenceDataModel",
       "branchName": "main",
       "documentationVersion": "1.0.0",
@@ -192,7 +197,9 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier simple",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier simple"
         }
       ]
     }
@@ -207,6 +214,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
   "id": "${json-unit.matches:id}",
   "domainType": "ReferenceDataModel",
   "label": "Functional Test ReferenceDataModel",
+  "path": "rdm:Functional Test ReferenceDataModel$main",
   "availableActions": [
     "show"
   ],
@@ -681,43 +689,43 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/4.0", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedExport.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedExport.json')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValues.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValues.json')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues?max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax.json')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues?asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows.json')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6.json')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json')), Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         logout()

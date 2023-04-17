@@ -150,6 +150,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
   "id": "${json-unit.matches:id}",
   "domainType": "TermRelationship",
   "label": "broaderThan",
+  "path": "te:Complex Test Terminology$main|tm:CTT00|tr:CTT00.broaderThan.CTT100",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -172,6 +173,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "TermRelationshipType",
     "label": "broaderThan",
+    "path": "te:Complex Test Terminology$main|trt:broaderThan",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -187,6 +189,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
+    "path": "te:Complex Test Terminology$main|tm:CTT00",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -205,6 +208,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
+    "path": "te:Complex Test Terminology$main|tm:CTT100",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -229,6 +233,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT1|tr:CTT1.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -247,6 +252,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -262,6 +268,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT1: Complex Test Term 1",
+        "path": "te:Complex Test Terminology$main|tm:CTT1",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -278,6 +285,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -297,6 +305,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT2|tr:CTT2.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -315,6 +324,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -330,6 +340,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT2: Complex Test Term 2",
+        "path": "te:Complex Test Terminology$main|tm:CTT2",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -346,6 +357,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -365,6 +377,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT3|tr:CTT3.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -383,6 +396,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -398,6 +412,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT3: Complex Test Term 3",
+        "path": "te:Complex Test Terminology$main|tm:CTT3",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -414,6 +429,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -433,6 +449,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT4|tr:CTT4.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -451,6 +468,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -466,6 +484,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT4: Complex Test Term 4",
+        "path": "te:Complex Test Terminology$main|tm:CTT4",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -482,6 +501,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -501,6 +521,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT5|tr:CTT5.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -519,6 +540,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -534,6 +556,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT5: Complex Test Term 5",
+        "path": "te:Complex Test Terminology$main|tm:CTT5",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -550,6 +573,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -569,6 +593,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT6|tr:CTT6.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -587,6 +612,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -602,6 +628,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT6: Complex Test Term 6",
+        "path": "te:Complex Test Terminology$main|tm:CTT6",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -618,6 +645,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -637,6 +665,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT7|tr:CTT7.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -655,6 +684,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -670,6 +700,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT7: Complex Test Term 7",
+        "path": "te:Complex Test Terminology$main|tm:CTT7",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -686,6 +717,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -705,6 +737,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT8|tr:CTT8.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -723,6 +756,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -738,6 +772,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT8: Complex Test Term 8",
+        "path": "te:Complex Test Terminology$main|tm:CTT8",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -754,6 +789,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -773,6 +809,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT9|tr:CTT9.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -791,6 +828,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -806,6 +844,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT9: Complex Test Term 9",
+        "path": "te:Complex Test Terminology$main|tm:CTT9",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -822,6 +861,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -841,6 +881,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|tm:CTT10|tr:CTT10.is-a-part-of.CTT00",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -859,6 +900,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a-part-of",
+        "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -874,6 +916,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT10: Complex Test Term 10",
+        "path": "te:Complex Test Terminology$main|tm:CTT10",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -890,6 +933,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "CTT00: Complex Test Term 00",
+        "path": "te:Complex Test Terminology$main|tm:CTT00",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {

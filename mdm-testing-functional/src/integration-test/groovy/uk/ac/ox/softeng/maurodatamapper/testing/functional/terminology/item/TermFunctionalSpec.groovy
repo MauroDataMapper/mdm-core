@@ -110,6 +110,7 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
   "id": "${json-unit.matches:id}",
   "domainType": "Term",
   "label": "FTT01: A new Term",
+  "path": "te:Simple Test Terminology$main|tm:FTT01",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -137,6 +138,7 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "Term",
       "label": "STT01: Simple Test Term 01",
+      "path": "te:Simple Test Terminology$main|tm:STT01",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -153,6 +155,7 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "Term",
       "label": "STT02: Simple Test Term 02",
+      "path": "te:Simple Test Terminology$main|tm:STT02",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

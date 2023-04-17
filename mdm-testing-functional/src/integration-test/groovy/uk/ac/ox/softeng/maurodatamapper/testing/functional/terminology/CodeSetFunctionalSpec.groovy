@@ -140,6 +140,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",
       "label": "Unfinalised Simple Test CodeSet",
+      "path": "cs:Unfinalised Simple Test CodeSet$main",
       "branchName": "main",
       "documentationVersion": "1.0.0",
       "author": "Test Bootstrap",
@@ -155,6 +156,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",
       "label": "Simple Test CodeSet",
+      "path": "cs:Simple Test CodeSet$1.0.0",
       "branchName": "main",
       "documentationVersion": "1.0.0",
       "modelVersion": "1.0.0",
@@ -162,7 +164,9 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier"
         }
       ],
       "author": "Test Bootstrap",
@@ -178,6 +182,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",
       "label": "Complex Test CodeSet",
+      "path": "cs:Complex Test CodeSet$1.0.0",
       "branchName": "main",
       "documentationVersion": "1.0.0",
       "modelVersion": "1.0.0",
@@ -185,7 +190,9 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier"
         }
       ],
       "author": "Test Bootstrap",
@@ -207,6 +214,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
   "id": "${json-unit.matches:id}",
   "domainType": "CodeSet",
   "label": "Functional Test CodeSet",
+  "path": "cs:Functional Test CodeSet$main",
   "finalised": false,
   "type": "CodeSet",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
