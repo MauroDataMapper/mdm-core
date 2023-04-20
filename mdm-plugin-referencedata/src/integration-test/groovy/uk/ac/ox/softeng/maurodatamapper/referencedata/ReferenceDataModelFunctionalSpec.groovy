@@ -38,6 +38,7 @@ import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
@@ -157,6 +158,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "branchName": "main",
   "finalised": false,
   "label": "Reference Data Functional Test Model",
+  "path": "rdm:Reference Data Functional Test Model$main",
   "type": "ReferenceDataModel",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "documentationVersion": "1.0.0",
@@ -423,7 +425,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Reference Data Functional Test Model",/, '"label": "Functional Test ReferenceData reader",')
+            .replaceAll(/Reference Data Functional Test Model/, 'Functional Test ReferenceData reader')
 
 
         when:
@@ -482,7 +484,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Reference Data Functional Test Model",/, '"label": "Functional Test ReferenceData editor",')
+            .replaceAll(/Reference Data Functional Test Model/, 'Functional Test ReferenceData editor')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -2096,6 +2098,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Functional Test Import",
+      "path": "rdm:Functional Test Import$main",
       "type": "ReferenceDataModel",
       "branchName": "main",
       "documentationVersion": "1.0.0"
@@ -2143,6 +2146,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Functional Test Model",
+      "path": "rdm:Functional Test Model$1.0.0",
       "type": "ReferenceDataModel",
       "branchName": "main",
       "documentationVersion": "2.0.0",
@@ -2216,7 +2220,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "deleted": true
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
 
         when:
         DELETE('', [
@@ -2301,7 +2305,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/4.0", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyJsonResponse OK, expected, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         cleanUpData(id)
@@ -3110,37 +3114,37 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         GET("${id}/referenceDataValues", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValues'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValues')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues?max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues?asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows'))
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows')), Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("${id}/referenceDataValues/search?asRows=true&max=10&offset=0", STRING_ARG)

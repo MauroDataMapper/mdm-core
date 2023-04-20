@@ -186,6 +186,7 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
   "id": "${json-unit.matches:id}",
   "domainType": "DataElementComponent",
   "label": "Functional Test DataElementComponent",
+  "path": "dm:Functional Test DataModel Target$main|df:Functional Test DataFlow|dcc:Functional Test DataClassComponent|dec:Functional Test DataElementComponent",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -218,6 +219,7 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
       "id": "${json-unit.matches:id}",
       "domainType": "DataElement",
       "label": "Functional Test DataElement Source",
+      "path": "dm:Functional Test DataModel Source$main|dc:Functional Test DataClass Source|de:Functional Test DataElement Source",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -241,6 +243,7 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
       "id": "${json-unit.matches:id}",
       "domainType": "DataElement",
       "label": "Functional Test DataElement Target",
+      "path": "dm:Functional Test DataModel Target$main|dc:Functional Test DataClass Target|de:Functional Test DataElement Target",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

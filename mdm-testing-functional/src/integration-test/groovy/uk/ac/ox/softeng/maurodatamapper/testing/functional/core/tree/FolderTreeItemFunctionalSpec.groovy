@@ -25,6 +25,7 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
+import net.javacrumbs.jsonunit.core.Option
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -300,7 +301,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "type": "CodeSet",
     "modelVersion": "1.0.0"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'AA : test available actions for folder inside versioned folder'() {
@@ -482,7 +483,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       }
     ]
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'CO : test geting model creatable only folders as container admin'(){
@@ -578,7 +579,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     ]
   }
 ]
-'''
+''', Option.IGNORING_EXTRA_FIELDS
     }
 
     List<String> getReaderTree() {

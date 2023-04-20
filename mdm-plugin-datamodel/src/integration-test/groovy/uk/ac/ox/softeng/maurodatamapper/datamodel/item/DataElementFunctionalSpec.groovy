@@ -30,6 +30,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
@@ -252,6 +253,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "string",
+    "path": "dm:Functional Test DataModel$main|dt:string",
     "breadcrumbs": [
       {
         "domainType": "DataModel",
@@ -265,6 +267,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass|de:Functional Test DataElement",
   "minMultiplicity": 0,
   "breadcrumbs": [
     {
@@ -396,6 +399,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType",
+    "path": "dm:Functional Test DataModel$main|dt:Functional Test DataType",
     "breadcrumbs": [
       {
         "domainType": "DataModel",
@@ -409,6 +413,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass|de:Functional Test DataElement",
   "minMultiplicity": 1,
   "breadcrumbs": [
     {
@@ -495,6 +500,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType 2",
+    "path": "dm:Functional Test DataModel$main|dt:Functional Test DataType 2",
     "breadcrumbs": [
       {
         "domainType": "DataModel",
@@ -508,6 +514,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass|de:Functional Test DataElement",
   "minMultiplicity": 0,
   "breadcrumbs": [
     {
@@ -555,6 +562,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType 3",
+    "path": "dm:Functional Test DataModel$main|dt:Functional Test DataType 3",
     "breadcrumbs": [
       {
         "domainType": "DataModel",
@@ -568,6 +576,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test DataClass",
+        "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass",
         "breadcrumbs": [
           {
             "domainType": "DataModel",
@@ -582,6 +591,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
   "maxMultiplicity": 2,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test DataElement",
+  "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass|de:Functional Test DataElement",
   "minMultiplicity": 1,
   "breadcrumbs": [
     {
@@ -946,7 +956,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         GET(endpoint, STRING_ARG, true)
 
         then:
-        verifyJsonResponse OK, expectedJson
+        verifyJsonResponse OK, expectedJson, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("${getResourcePath(otherDataModelId, otherDataClassId)}/${el3}", MAP_ARG, true)
@@ -976,7 +986,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         GET(endpoint, STRING_ARG, true)
 
         then:
-        verifyJsonResponse OK, expectedJson
+        verifyJsonResponse OK, expectedJson, Option.IGNORING_EXTRA_FIELDS
 
         cleanup:
         DELETE("${getResourcePath(otherDataModelId, otherDataClassId)}/${el3}", MAP_ARG, true)

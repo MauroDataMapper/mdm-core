@@ -234,6 +234,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test VersionedFolder",
+      "path": "vf:Functional Test VersionedFolder$main",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false,
@@ -243,6 +244,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test VersionedFolder 2",
+      "path": "vf:Functional Test VersionedFolder 2$main",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false,
@@ -261,6 +263,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
   "domainType": "VersionedFolder",
   "id": "${json-unit.matches:id}",
   "label": "Functional Test VersionedFolder 3",
+  "path": "vf:Functional Test VersionedFolder 3$main",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show"],

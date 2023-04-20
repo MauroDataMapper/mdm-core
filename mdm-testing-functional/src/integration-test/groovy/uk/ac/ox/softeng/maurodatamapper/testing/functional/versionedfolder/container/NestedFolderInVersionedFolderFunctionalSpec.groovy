@@ -128,6 +128,7 @@ class NestedFolderInVersionedFolderFunctionalSpec extends UserAccessFunctionalSp
   "domainType": "Folder",
   "id": "${json-unit.matches:id}",
   "label": "Nested Functional Test Folder",
+  "path": "vf:Functional Test VersionedFolder$main|fo:Nested Functional Test Folder",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show"]

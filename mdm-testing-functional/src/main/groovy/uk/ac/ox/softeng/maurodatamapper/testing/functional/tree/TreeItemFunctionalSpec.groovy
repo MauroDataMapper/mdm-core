@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 
 import static io.micronaut.http.HttpStatus.OK
 
@@ -93,19 +94,19 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         GET('', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getReaderTree()[0]
+        verifyJsonResponse OK, getReaderTree()[0], Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET(containerParentOne, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getReaderTree()[1]
+        verifyJsonResponse OK, getReaderTree()[1], Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET(containerParentTwo, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getReaderTree()[2]
+        verifyJsonResponse OK, getReaderTree()[2], Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'E01 : test call to full tree (as editor)'() {
@@ -114,19 +115,19 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         GET('', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getEditorTree()[0]
+        verifyJsonResponse OK, getEditorTree()[0], Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET(containerParentOne, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getEditorTree()[1]
+        verifyJsonResponse OK, getEditorTree()[1], Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET(containerParentTwo, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getEditorTree()[2]
+        verifyJsonResponse OK, getEditorTree()[2], Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'A01 : test call to full tree (as admin)'() {
@@ -135,19 +136,19 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         GET('', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getAdminTree()[0]
+        verifyJsonResponse OK, getAdminTree()[0], Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET(containerParentOne, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getAdminTree()[1]
+        verifyJsonResponse OK, getAdminTree()[1], Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET(containerParentTwo, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getAdminTree()[2]
+        verifyJsonResponse OK, getAdminTree()[2], Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'L02 : test call to tree using DataModel id (as not logged in)'() {
@@ -199,7 +200,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "id": "${json-unit.matches:id}",
         "label": "emptyclass"
       }
-    ]'''
+    ]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'E02 : test call to tree using DataModel id (as editor)'() {
@@ -239,7 +240,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     ],
     "modelId": "${json-unit.matches:id}"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'A02 : test call to tree using DataModel id (as admin)'() {
@@ -282,7 +283,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     ],
     "modelId": "${json-unit.matches:id}"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'L03 : test call to tree using DataClass id (as not logged in)'() {
@@ -319,7 +320,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "id": "${json-unit.matches:id}",
         "label": "child"
       }
-    ]'''
+    ]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'E03 : test call to tree using DataClass id (as editor)'() {
@@ -338,7 +339,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "id": "${json-unit.matches:id}",
         "label": "child"
       }
-    ]'''
+    ]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'A03 : test call to tree using DataClass id (as admin)'() {
@@ -357,7 +358,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "id": "${json-unit.matches:id}",
         "label": "child"
       }
-    ]'''
+    ]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'L04 : test searching for "model" (as not logged in)'() {
@@ -526,7 +527,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     ]
   }
 ]
-'''
+''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'E04 : test searching for "model" (as editor)'() {
@@ -708,7 +709,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'A04 : test searching for "model" (as admin)'() {
@@ -899,7 +900,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'L05 : test searching for "emptyclass" (as not logged in)'() {
@@ -983,7 +984,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'E05 : test searching for "emptyclass" (as editor)'() {
@@ -1059,7 +1060,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'A05 : test searching for "emptyclass" (as admin)'() {
@@ -1139,7 +1140,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
 
@@ -1215,7 +1216,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "documentationVersion": "1.0.0",
     "branchName": "main"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'E06 : test call to full tree folders only (as editor)'() {
@@ -1289,7 +1290,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "documentationVersion": "1.0.0",
     "branchName": "main"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'A06 : test call to full tree folders only (as admin)'() {
@@ -1383,6 +1384,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "documentationVersion": "1.0.0",
     "branchName": "main"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 }

@@ -206,6 +206,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
   "label": "A new DataClass",
+  "path": "dm:Functional Test DataModel$main|dc:A new DataClass",
   "breadcrumbs": [
     {
       "domainType": "DataModel",
@@ -710,6 +711,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
           "id": "${json-unit.matches:id}",
           "model": "${json-unit.matches:id}",
           "label": "ele1",
+          "path": "dm:Complex Test DataModel$main|dc:content|de:ele1",
           "breadcrumbs": [
             {
               "domainType": "DataModel",

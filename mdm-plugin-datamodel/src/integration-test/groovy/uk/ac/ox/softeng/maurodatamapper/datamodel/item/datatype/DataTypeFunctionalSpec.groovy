@@ -185,6 +185,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
   "label": "date",
+  "path": "dm:Functional Test DataModel$main|dt:date",
   "breadcrumbs": [
     {
       "domainType": "DataModel",
@@ -233,6 +234,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       ],
       "id": "${json-unit.matches:id}",
       "label": "functional enumeration",
+      "path": "dm:Functional Test DataModel$main|dt:functional enumeration",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -263,6 +265,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       "model": "${json-unit.matches:id}",
       "id": "${json-unit.matches:id}",
       "label": "functional dataclass reference",
+      "path": "dm:Functional Test DataModel$main|dt:functional dataclass reference",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -276,6 +279,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test DataClass",
+        "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass",
         "breadcrumbs": [
           {
             "domainType": "DataModel",
@@ -306,6 +310,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       "model": "${json-unit.matches:id}",
       "id": "${json-unit.matches:id}",
       "label": "Reference to Functional Test DataClass",
+      "path": "dm:Functional Test DataModel$main|dt:Reference to Functional Test DataClass",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -319,6 +324,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test DataClass",
+        "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass",
         "breadcrumbs": [
           {
             "domainType": "DataModel",
@@ -349,6 +355,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       "model": "${json-unit.matches:id}",
       "id": "${json-unit.matches:id}",
       "label": "Reference to Functional Test DataClass",
+      "path": "dm:Functional Test DataModel$main|dt:Reference to Functional Test DataClass",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -362,6 +369,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test DataClass",
+        "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass",
         "breadcrumbs": [
           {
             "domainType": "DataModel",
@@ -389,6 +397,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       "model": "${json-unit.matches:id}",
       "id": "${json-unit.matches:id}",
       "label": "Reference to Functional Test DataClass (1)",
+      "path": "dm:Functional Test DataModel$main|dt:Reference to Functional Test DataClass (1)",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -402,6 +411,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test DataClass",
+        "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass",
         "breadcrumbs": [
           {
             "domainType": "DataModel",
@@ -432,6 +442,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       "model": "${json-unit.matches:id}",
       "id": "${json-unit.matches:id}",
       "label": "functional modeldata",
+      "path": "dm:Functional Test DataModel$main|dt:functional modeldata",
       "breadcrumbs": [
         {
           "domainType": "DataModel",
@@ -461,6 +472,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       "model": "${json-unit.matches:id}",
       "id": "${json-unit.matches:id}",
       "label": "Reference to Functional Test DataModel 2",
+      "path": "dm:Functional Test DataModel$main|dt:Reference to Functional Test DataModel 2",
       "breadcrumbs": [
         {
           "domainType": "DataModel",

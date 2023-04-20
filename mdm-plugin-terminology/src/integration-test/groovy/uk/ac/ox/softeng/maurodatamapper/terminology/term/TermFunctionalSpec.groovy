@@ -32,6 +32,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -136,6 +137,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
   "id": "${json-unit.matches:id}",
   "domainType": "Term",
   "label": "FT01: Functional Test 01",
+  "path": "te:Functional Test Terminology$main|tm:FT01",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -206,7 +208,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "hasChildren": false,
     "availableActions": [],
     "id": "${json-unit.matches:id}",
-    "label": "CTT21: Complex Test Term 21"
+    "label": "CTT21: Complex Test Term 21"    
   },
   {
     "domainType": "Term",
@@ -272,7 +274,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "id": "${json-unit.matches:id}",
     "label": "CTT29: Complex Test Term 29"
   }
-]'''
+]''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'T06 : test getting the tree for empty terminology'() {
@@ -307,6 +309,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
+    "path": "te:Complex Test Terminology$main|tm:CTT100",
     "hasChildren": false,
     "availableActions": [],
     "modelId": "${json-unit.matches:id}"
@@ -315,6 +318,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT101",
+    "path": "te:Complex Test Terminology$main|tm:CTT101",
     "hasChildren": false,
     "availableActions": [],
     "modelId": "${json-unit.matches:id}"
@@ -323,6 +327,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
+    "path": "te:Complex Test Terminology$main|tm:CTT00",
     "hasChildren": true,
     "availableActions": [],
     "modelId": "${json-unit.matches:id}"
@@ -343,6 +348,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT101",
+    "path": "te:Complex Test Terminology$main|tm:CTT101",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
         {
@@ -529,6 +535,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
       "definition": "Complex Test Term 17"
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 }

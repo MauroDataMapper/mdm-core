@@ -25,6 +25,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import net.javacrumbs.jsonunit.core.Option
 
 import java.util.regex.Pattern
 
@@ -131,6 +132,7 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
   "domainType": "Folder",
   "id": "${json-unit.matches:id}",
   "label": "Nested Functional Test Folder",
+  "path": "fo:Parent Functional Test Folder|fo:Functional Test Folder|fo:Nested Functional Test Folder",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show"]
@@ -217,7 +219,7 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
 }

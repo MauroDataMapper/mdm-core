@@ -55,7 +55,9 @@ class ClassifierFunctionalSpec extends ResourceFunctionalSpec<Classifier> {
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "availableActions": ["delete", "show", "update"],
   "id": "${json-unit.matches:id}",
+  "domainType": "Classifier",
   "label": "Functional Testing Classifier",
+  "path": "cl:Functional Testing Classifier",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false
 }'''

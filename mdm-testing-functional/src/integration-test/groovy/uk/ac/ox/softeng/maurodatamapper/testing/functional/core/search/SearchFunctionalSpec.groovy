@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import net.javacrumbs.jsonunit.core.Option
 
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -211,7 +212,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'R04 : test searching for "simple" using POST'() {
@@ -289,7 +290,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'S05 : test searching for "simple" limited to DataModel'() {
@@ -361,7 +362,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'S07 : test searching for "simple" using POST with pagination and offset'() {
@@ -387,7 +388,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       "label": "Simple Test DataModel"
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'S08 : test searching for "simple" using POST with pagination and classifier'() {
@@ -412,7 +413,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       "label": "test simple A"
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
         cleanup:
         loginAdmin()
         DELETE("dataModels/${ids.dm1Id}?permanent=true", MAP_ARG, true)

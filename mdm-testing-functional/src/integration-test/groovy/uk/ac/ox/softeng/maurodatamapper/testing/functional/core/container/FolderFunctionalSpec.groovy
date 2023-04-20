@@ -28,6 +28,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import net.javacrumbs.jsonunit.core.Option
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -198,6 +199,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test VersionedFolder",
+      "path": "vf:Functional Test VersionedFolder$main",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false
@@ -205,6 +207,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test Folder",
+      "path": "fo:Parent Functional Test Folder|fo:Functional Test Folder",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "Folder",
       "hasChildFolders": false
@@ -212,6 +215,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test VersionedFolder 2",
+      "path": "vf:Functional Test VersionedFolder 2$main",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false
@@ -220,7 +224,8 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "hasChildFolders": true,
       "domainType": "Folder",
-      "label": "Parent Functional Test Folder"
+      "label": "Parent Functional Test Folder",
+      "path": "fo:Parent Functional Test Folder"
     }
   ]
 }'''
@@ -235,25 +240,29 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "hasChildFolders": true,
       "domainType": "Folder",
-      "label": "Parent Functional Test Folder"
+      "label": "Parent Functional Test Folder",
+      "path": "fo:Parent Functional Test Folder"
     },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "id": "${json-unit.matches:id}",
       "hasChildFolders": false,
       "domainType": "Folder",
-      "label": "Functional Test Folder"
+      "label": "Functional Test Folder",
+      "path": "fo:Parent Functional Test Folder|fo:Functional Test Folder"
     },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "id": "${json-unit.matches:id}",
       "hasChildFolders": false,
       "domainType": "Folder",
-      "label": "Functional Test Folder 2"
+      "label": "Functional Test Folder 2",
+      "path": "fo:Functional Test Folder 2"
     },
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test VersionedFolder",
+      "path": "vf:Functional Test VersionedFolder$main",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false
@@ -261,6 +270,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     {
       "id": "${json-unit.matches:id}",
       "label": "Functional Test VersionedFolder 2",
+      "path": "vf:Functional Test VersionedFolder 2$main",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false
@@ -278,6 +288,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
   "domainType": "Folder",
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder 3",
+  "path": "fo:Functional Test Folder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show"]
@@ -403,7 +414,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'S03 : test searching for "simple" in the test folder using POST'() {
@@ -494,7 +505,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       ]
     }
   ]
-}'''
+}''', Option.IGNORING_EXTRA_FIELDS
     }
 
     void 'S03 : test searching for "simple" in the test folder limited to DataModel'() {
@@ -527,12 +538,14 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
-      "label": "Second Simple Reference Data Model"
+      "label": "Second Simple Reference Data Model",
+      "path": "rdm:Second Simple Reference Data Model$main"
     },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "simple",
+      "path": "dm:Simple Test DataModel$main|dc:simple",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -563,6 +576,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "domainType": "Term",
       "label": "STT01: Simple Test Term 01",
+      "path": "te:Simple Test Terminology$main|tm:STT01",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -577,6 +591,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "domainType": "Term",
       "label": "STT02: Simple Test Term 02",
+      "path": "te:Simple Test Terminology$main|tm:STT02",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

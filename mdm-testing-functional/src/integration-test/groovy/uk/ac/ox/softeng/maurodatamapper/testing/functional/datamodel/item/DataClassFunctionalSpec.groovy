@@ -141,6 +141,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
   "label": "A new DataClass",
+  "path": "dm:Complex Test DataModel$main|dc:A new DataClass",
   "breadcrumbs": [
     {
       "domainType": "DataModel",
@@ -164,6 +165,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "emptyclass",
+      "path": "dm:Complex Test DataModel$main|dc:emptyclass",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -179,6 +181,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "parent",
+      "path": "dm:Complex Test DataModel$main|dc:parent",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -195,6 +198,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
       "label": "content",
+      "path": "dm:Complex Test DataModel$main|dc:content",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

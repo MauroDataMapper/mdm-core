@@ -121,6 +121,7 @@ class NestedVersionedFolderInFolderFunctionalSpec extends UserAccessFunctionalSp
         '''{
   "id": "${json-unit.matches:id}",
   "label": "Nested Functional Test VersionedFolder",
+  "path": "fo:Parent Functional Test Folder|fo:Functional Test Folder|vf:Nested Functional Test VersionedFolder$main",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "VersionedFolder",
   "hasChildFolders": false,

@@ -96,6 +96,7 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
   "id": "${json-unit.matches:id}",
   "domainType": "TermRelationshipType",
   "label": "is-part-of",
+  "path": "te:Complex Test Terminology$main|trt:is-part-of",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -124,6 +125,7 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationshipType",
       "label": "is-a",
+      "path": "te:Complex Test Terminology$main|trt:is-a",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -139,6 +141,7 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationshipType",
       "label": "is-a-part-of",
+      "path": "te:Complex Test Terminology$main|trt:is-a-part-of",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -154,6 +157,7 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationshipType",
       "label": "broaderThan",
+      "path": "te:Complex Test Terminology$main|trt:broaderThan",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -169,6 +173,7 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationshipType",
       "label": "narrowerThan",
+      "path": "te:Complex Test Terminology$main|trt:narrowerThan",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

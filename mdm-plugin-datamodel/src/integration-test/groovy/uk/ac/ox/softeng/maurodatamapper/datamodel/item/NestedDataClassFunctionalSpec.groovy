@@ -146,6 +146,7 @@ class NestedDataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
   "parentDataClass": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
   "label": "A new DataClass",
+  "path": "dm:Functional Test DataModel$main|dc:Functional Test DataClass|dc:A new DataClass",
   "breadcrumbs": [
     {
       "domainType": "DataModel",

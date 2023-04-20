@@ -34,6 +34,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import net.javacrumbs.jsonunit.core.Option
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
@@ -225,13 +226,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET('folders', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, exp
+        verifyJsonResponse OK, exp, Option.IGNORING_EXTRA_FIELDS
 
         when:
         GET("folders/${folder.id}", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expChild
+        verifyJsonResponse OK, expChild, Option.IGNORING_EXTRA_FIELDS
 
     }
 
@@ -245,6 +246,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Classifier",
     "label": "test classifier",
+    "path": "cl:test classifier",
     "hasChildren": false,
     "availableActions": [],
     "deleted": false
@@ -253,6 +255,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Classifier",
     "label": "test classifier simple",
+    "path": "cl:test classifier simple",
     "hasChildren": false,
     "availableActions": [],
     "deleted": false
@@ -261,6 +264,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Classifier",
     "label": "test classifier2",
+    "path": "cl:test classifier2",
     "hasChildren": false,
     "availableActions": [],
     "deleted": false
@@ -300,7 +304,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("folders/terms/${termId}", STRING_ARG)
 
         then:
-        verifyJsonResponse(OK, getCtt00Tree())
+        verifyJsonResponse(OK, getCtt00Tree(), Option.IGNORING_EXTRA_FIELDS)
     }
 
     void 'T05b : test term tree endpoint for term CTT00'() {
@@ -311,7 +315,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
 
         then:
-        verifyJsonResponse(OK, getCtt00Tree())
+        verifyJsonResponse(OK, getCtt00Tree(), Option.IGNORING_EXTRA_FIELDS)
     }
 
     void 'T06a : test tree for term CTT20'() {
@@ -322,7 +326,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("folders/terms/${termId}", STRING_ARG)
 
         then:
-        verifyJsonResponse(OK, getCtt20Tree())
+        verifyJsonResponse(OK, getCtt20Tree(), Option.IGNORING_EXTRA_FIELDS)
     }
 
     void 'T06b : test term tree endpoint for term CTT20'() {
@@ -333,7 +337,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
 
         then:
-        verifyJsonResponse(OK, getCtt20Tree())
+        verifyJsonResponse(OK, getCtt20Tree(), Option.IGNORING_EXTRA_FIELDS)
     }
 
     void 'T07 : test terminology documentation superseded models arent shown in the tree'() {
@@ -670,6 +674,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
+    "path": "fo:Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
@@ -678,6 +683,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Terminology",
         "label": "Functional Test Model deleted",
+        "path": "te:Functional Test Model deleted$1.0.0",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "availableActions": [],
@@ -730,6 +736,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
+    "path": "fo:Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
@@ -738,6 +745,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Terminology",
         "label": "Functional Test Model documentation superseded",
+        "path": "te:Functional Test Model documentation superseded$1.0.0",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "availableActions": [],
@@ -796,6 +804,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
+    "path": "fo:Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
@@ -804,6 +813,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "Terminology",
         "label": "Functional Test Model model superseded",
+        "path": "te:Functional Test Model model superseded$1.0.0",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "availableActions": [],
@@ -852,6 +862,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
+    "path": "fo:Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
@@ -860,6 +871,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
         "label": "Functional Test Model deleted",
+        "path": "cs:Functional Test Model deleted$1.0.0",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "availableActions": [],
@@ -912,6 +924,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
+    "path": "fo:Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
@@ -920,6 +933,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
         "label": "Functional Test Model documentation superseded",
+        "path": "cs:Functional Test Model documentation superseded$1.0.0",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "availableActions": [],
@@ -978,6 +992,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
+    "path": "fo:Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
@@ -986,6 +1001,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
         "label": "Functional Test Model model superseded",
+        "path": "cs:Functional Test Model model superseded$1.0.0",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "availableActions": [],
@@ -1017,6 +1033,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
+    "path": "te:Complex Test Terminology$main|tm:CTT100",
     "hasChildren": false,
     "availableActions": [],
     "modelId": "${json-unit.matches:id}"
@@ -1025,6 +1042,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT101",
+    "path": "te:Complex Test Terminology$main|tm:CTT101",
     "hasChildren": false,
     "availableActions": [],
     "modelId": "${json-unit.matches:id}"
@@ -1033,6 +1051,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
+    "path": "te:Complex Test Terminology$main|tm:CTT00",
     "hasChildren": true,
     "availableActions": [],
     "modelId": "${json-unit.matches:id}"

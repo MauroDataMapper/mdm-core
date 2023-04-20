@@ -130,6 +130,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
   "id": "${json-unit.matches:id}",
   "domainType": "TermRelationship",
   "label": "is-a",
+  "path": "te:Functional Test Terminology$main|tm:FT01|tr:FT01.is-a.FT02",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -154,6 +155,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     "id": "${json-unit.matches:id}",
     "domainType": "TermRelationshipType",
     "label": "is-a",
+    "path": "te:Functional Test Terminology$main|trt:is-a",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -169,6 +171,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "FT01: Functional Test 01",
+    "path": "te:Functional Test Terminology$main|tm:FT01",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -185,6 +188,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "FT02: Functional Test 02",
+    "path": "te:Functional Test Terminology$main|tm:FT02",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -216,6 +220,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a",
+      "path": "te:Functional Test Terminology$main|tm:FT01|tr:FT01.is-a.FT02",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -234,6 +239,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a",
+        "path": "te:Functional Test Terminology$main|trt:is-a",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -249,6 +255,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "FT01: Functional Test 01",
+        "path": "te:Functional Test Terminology$main|tm:FT01",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -265,6 +272,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "FT02: Functional Test 02",
+        "path": "te:Functional Test Terminology$main|tm:FT02",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -314,6 +322,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
       "id": "${json-unit.matches:id}",
       "domainType": "TermRelationship",
       "label": "is-a",
+      "path": "te:Functional Test Terminology$main|tm:FT01|tr:FT01.is-a.FT02",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -332,6 +341,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "id": "${json-unit.matches:id}",
         "domainType": "TermRelationshipType",
         "label": "is-a",
+        "path": "te:Functional Test Terminology$main|trt:is-a",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -347,6 +357,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "FT01: Functional Test 01",
+        "path": "te:Functional Test Terminology$main|tm:FT01",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -363,6 +374,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "id": "${json-unit.matches:id}",
         "domainType": "Term",
         "label": "FT02: Functional Test 02",
+        "path": "te:Functional Test Terminology$main|tm:FT02",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {

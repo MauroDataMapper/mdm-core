@@ -142,18 +142,23 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
       "id": "${json-unit.matches:id}",
       "domainType": "Terminology",
       "label": "Complex Test Terminology",
+      "path": "te:Complex Test Terminology$main",
       "branchName": "main",
       "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier"
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier2",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier2"
         }
       ],
       "author": "Test Bootstrap",
@@ -169,13 +174,16 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
       "id": "${json-unit.matches:id}",
       "domainType": "Terminology",
       "label": "Simple Test Terminology",
+      "path": "te:Simple Test Terminology$main",
       "branchName": "main",
       "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier simple",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "domainType": "Classifier",
+          "path": "cl:test classifier simple"
         }
       ],
       "author": "Test Bootstrap",
@@ -197,6 +205,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
   "id": "${json-unit.matches:id}",
   "domainType": "Terminology",
   "label": "Functional Test Terminology",
+  "path": "te:Functional Test Terminology$main",
   "finalised": false,
   "type": "Terminology",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
