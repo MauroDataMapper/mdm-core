@@ -14,5 +14,5 @@ json {
     modelName dataModelFileImporterProviderServiceParameters.modelName
     folderId dataModelFileImporterProviderServiceParameters.folderId
     importAsNewDocumentationVersion dataModelFileImporterProviderServiceParameters.importAsNewDocumentationVersion
-    importAsNewBanchModelVersion dataModelFileImporterProviderServiceParameters.importAsNewBranchModelVersion
+    importAsNewBranchModelVersion dataModelFileImporterProviderServiceParameters.importAsNewBranchModelVersion
 }
