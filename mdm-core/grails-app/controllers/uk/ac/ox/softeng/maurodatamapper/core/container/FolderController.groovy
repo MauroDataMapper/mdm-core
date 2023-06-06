@@ -17,14 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExport
 import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExportService
+import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.FolderImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.parameter.FolderImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
+import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
@@ -32,9 +38,11 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -50,6 +58,7 @@ class FolderController extends EditLoggingController<Folder> {
     SearchService mdmCoreSearchService
     VersionedFolderService versionedFolderService
     ExporterService exporterService
+    ImporterService importerService
     DomainExportService domainExportService
 
     @Autowired(required = false)
@@ -108,7 +117,7 @@ class FolderController extends EditLoggingController<Folder> {
             }
 
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -200,6 +209,65 @@ class FolderController extends EditLoggingController<Folder> {
         DomainExport domainExport = domainExportService.createAndSaveNewDomainExport(exporter, instance, exporter.getFileName(instance), outputStream, currentUser)
 
         render(file: domainExport.exportData, fileName: domainExport.exportFileName, contentType: domainExport.exportContentType)
+    }
+
+    @Transactional
+    def importFolder() throws ApiException {
+        FolderImporterProviderService importer =
+            mauroDataMapperServiceProviderService.findImporterProvider(params.importerNamespace, params.importerName, params.importerVersion) as FolderImporterProviderService
+
+        if (!importer) {
+            notFound(ImporterProviderService, "${params.importerNamespace}:${params.importerName}:${params.importerVersion}")
+            return
+        }
+
+        FolderImporterProviderServiceParameters importerProviderServiceParameters
+
+        if (request.contentType.startsWith(MimeType.MULTIPART_FORM.name)) {
+            importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(
+                importer, request as AbstractMultipartHttpServletRequest)
+        } else {
+            importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(importer, request)
+        }
+
+        def errors = importerService.validateParameters(importerProviderServiceParameters as FolderImporterProviderServiceParameters,
+                                                        importer.importerProviderServiceParametersClass)
+
+        if (errors.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond errors
+            return
+        }
+
+        if (!currentUserSecurityPolicyManager.userCanCreateResourceId(resource, null, Folder, importerProviderServiceParameters.parentFolderId)) {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.parentFolderId)) {
+                notFound(Folder, importerProviderServiceParameters.parentFolderId)
+                return
+            }
+            forbiddenDueToPermissions()
+            return
+        }
+        Folder parentFolder = folderService.get(importerProviderServiceParameters.parentFolderId)
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (importerProviderServiceParameters.asynchronous) {
+            AsyncJob asyncJob = importerService.asyncImportDomain(currentUser, importer, importerProviderServiceParameters, getFolderService(),
+                                                                  parentFolder)
+            respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+            return
+        }
+
+        Folder folder = importer.importDomain(currentUser, importerProviderServiceParameters) as Folder
+        if (!folder) {
+            transactionStatus.setRollbackOnly()
+            errorResponse(UNPROCESSABLE_ENTITY, 'No folder imported')
+            return
+        }
+
+        Folder savedFolder
+
+
+
     }
 
     @Override

@@ -649,4 +649,10 @@ class FolderService extends ContainerService<Folder> {
         if (parentCache) parentCache.addDiffCache(folder.path, fDiffCache)
         fDiffCache
     }
+
+    void checkImportedFolderAssociations(User importingUser, Folder folder) {
+        folder.createdBy = importingUser.emailAddress
+        checkFacetsAfterImportingMultiFacetAware(folder)
+        log.debug('Folder associations checked')
+    }
 }

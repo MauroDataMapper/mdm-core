@@ -91,6 +91,13 @@ class FolderInterceptor extends SecurableResourceInterceptor {
             return true
         }
 
+        if (actionName == 'importFolder') {
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, id)) {
+                return forbiddenOrNotFound(false, Folder, id)
+            }
+            return true
+        }
+
         if (actionName == 'save') {
             // Check api property to determine if new root folders can be
             // created by a non-admin user
