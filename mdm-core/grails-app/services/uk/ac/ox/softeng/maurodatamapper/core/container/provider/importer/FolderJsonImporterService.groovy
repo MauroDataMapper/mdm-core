@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2023 University of Oxford and NHS England
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter.FolderJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.parameter.FolderFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -44,7 +46,15 @@ class FolderJsonImporterService extends DataBindFolderImporterProviderService<Fo
     }
 
     @Override
+    Boolean handlesContentType(String contentType) {
+        contentType.equalsIgnoreCase(FolderJsonExporterService.CONTENT_TYPE)
+    }
+
+    @Override
     Folder importFolder(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import folder')
+        if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
+
         log.debug('Parsing in file content using JsonSlurper')
         Map folder = slurpAndClean(content).folder
         if (!folder) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as folder is not present')
