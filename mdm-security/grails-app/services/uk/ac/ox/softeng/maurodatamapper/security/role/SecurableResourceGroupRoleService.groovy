@@ -82,7 +82,7 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
             securableResource: securableResource,
             createdBy: createdBy.emailAddress
         )
-        userGroup.addToSecurableResourceGroupRoles(securableResourceGroupRole)
+        securableResourceGroupRole.userGroup = userGroup
         updateAndSaveSecurableResourceGroupRole(securableResourceGroupRole, groupRole)
     }
 
