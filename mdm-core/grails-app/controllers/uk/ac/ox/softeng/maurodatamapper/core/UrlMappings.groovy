@@ -98,6 +98,7 @@ class UrlMappings {
                 put "/folder/$destinationFolderId"(controller: 'folder', action: 'changeFolder')
 
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'folder', action: 'exportFolder')
+                post "/import/$importerNamespace/$importerName/$importerVersion"(controller: 'folder', action: 'importFolder')
             }
 
             '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {

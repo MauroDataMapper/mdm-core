@@ -653,6 +653,9 @@ class FolderService extends ContainerService<Folder> {
     void checkImportedFolderAssociations(User importingUser, Folder folder) {
         folder.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingMultiFacetAware(folder)
+        if (folder.childFolders) {
+            folder.childFolders.each {checkImportedFolderAssociations(importingUser, it)}
+        }
         log.debug('Folder associations checked')
     }
 }

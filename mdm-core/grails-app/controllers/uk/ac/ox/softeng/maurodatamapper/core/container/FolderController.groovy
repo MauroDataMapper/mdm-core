@@ -266,8 +266,32 @@ class FolderController extends EditLoggingController<Folder> {
 
         Folder savedFolder
 
+        if (!importerProviderServiceParameters.providerHasSavedModels) {
+            savedFolder.parentFolder = parentFolder
 
+            getFolderService().validate(folder)
 
+            if (folder.hasErrors()) {
+                transactionStatus.setRollbackOnly()
+                respond folder.errors
+                return
+            }
+
+            log.debug('No errors in imported folder')
+
+            savedFolder = folderService.saveFolderHierarchy(folder)
+            savedFolder = addSecurity(savedFolder)
+        } else {
+            savedFolder = addSecurity(folder)
+        }
+
+        log.info('Single Folder import complete')
+
+        if (params.boolean('returnList')) {
+            respond([savedFolder], status: CREATED, view: 'index')
+        } else {
+            respond savedFolder, status: CREATED, view: 'show'
+        }
     }
 
     @Override
@@ -363,5 +387,12 @@ class FolderController extends EditLoggingController<Folder> {
             return false
         }
         true
+    }
+
+    protected Folder addSecurity(Folder folder) {
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(folder, currentUser, folder.label)
+        }
+        folder
     }
 }
