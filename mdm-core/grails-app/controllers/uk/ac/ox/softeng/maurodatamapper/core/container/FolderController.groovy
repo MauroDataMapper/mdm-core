@@ -267,9 +267,21 @@ class FolderController extends EditLoggingController<Folder> {
         Folder savedFolder
 
         if (!importerProviderServiceParameters.providerHasSavedModels) {
-            savedFolder.parentFolder = parentFolder
+            folder.parentFolder = parentFolder
+
+            // Prevent validation cascade issues
+//            forAllChildFolders(folder, {Folder it -> it.parentFolder = null})
 
             getFolderService().validate(folder)
+
+//            folder.childFolders.each {
+//                it.parentFolder = folder
+//            }
+//            forAllChildFolders(folder, {Folder parent -> parent.childFolders.each {it.parentFolder = parent}})
+//
+//
+//            folder.validate(deepValidate: false)
+//            forAllChildFolders(folder, {Folder it -> it.validate(deepValidate: false)})
 
             if (folder.hasErrors()) {
                 transactionStatus.setRollbackOnly()
@@ -279,7 +291,7 @@ class FolderController extends EditLoggingController<Folder> {
 
             log.debug('No errors in imported folder')
 
-            savedFolder = folderService.saveFolderHierarchy(folder)
+            savedFolder = folderService.saveFolderHierarchy(null, folder)
             savedFolder = addSecurity(savedFolder)
         } else {
             savedFolder = addSecurity(folder)
@@ -290,7 +302,7 @@ class FolderController extends EditLoggingController<Folder> {
         if (params.boolean('returnList')) {
             respond([savedFolder], status: CREATED, view: 'index')
         } else {
-            respond savedFolder, status: CREATED, view: 'show'
+            respond savedFolder, [status: CREATED, view: 'show', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager, folder: savedFolder]]
         }
     }
 
@@ -392,6 +404,14 @@ class FolderController extends EditLoggingController<Folder> {
     protected Folder addSecurity(Folder folder) {
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(folder, currentUser, folder.label)
+        }
+        folder
+    }
+
+    private Folder forAllChildFolders(Folder folder, Closure closure) {
+        folder.childFolders.each {Folder childFolder ->
+            closure(childFolder)
+            forAllChildFolders(childFolder, closure)
         }
         folder
     }

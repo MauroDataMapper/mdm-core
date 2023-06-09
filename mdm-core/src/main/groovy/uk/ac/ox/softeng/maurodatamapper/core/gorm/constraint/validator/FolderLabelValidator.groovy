@@ -36,7 +36,12 @@ class FolderLabelValidator extends LabelValidator {
         def res = super.isValid(value)
         if (res !instanceof Boolean) return res
         //parentFolder is nullable, and id may be null at this point
-        if (Folder.countByLabelAndParentFolderAndIdNotEqual(value, folder.parentFolder, folder.id)) return ['default.not.unique.message']
+        if (folder.parentFolder.ident()) {
+            if (Folder.countByLabelAndParentFolderAndIdNotEqual(value, folder.parentFolder, folder.id)) return ['default.not.unique.message']
+        } else {
+            // parentFolder is transient, so check label within siblings
+            if (folder.parentFolder.childFolders.find {it.label == value && it != folder}) return ['default.not.unique.message']
+        }
         true
     }
 }
