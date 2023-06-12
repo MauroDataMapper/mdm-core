@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -74,7 +75,7 @@ class ImporterService implements DataBinder {
         model
     }
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportDomains(
+    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportModels(
         User currentUser, T importer, P importParams, ModelService modelService, Folder folder) {
         asyncJobService.createAndSaveAsyncJob("Import domains using ${importer.displayName}", currentUser.emailAddress) {
             List<M> models = importer.importDomains(currentUser, importParams).findAll()
@@ -110,7 +111,7 @@ class ImporterService implements DataBinder {
         }
     }
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportDomain(
+    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportModel(
         User currentUser, T importer, P importParams, ModelService modelService, Folder folder) {
         asyncJobService.createAndSaveAsyncJob("Import domain using ${importer.displayName}", currentUser.emailAddress) {
             M model = importer.importDomain(currentUser, importParams)
@@ -136,13 +137,39 @@ class ImporterService implements DataBinder {
 
                 log.info('Single model save and import complete')
             } else {
-                modelService.addSecurity(it, currentUser)
+                modelService.addSecurity(model, currentUser)
                 log.info('Added security to single model')
             }
         }
     }
 
+    public <F extends Folder, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<F, P>> AsyncJob asyncImportFolder(
+        User currentUser, T importer, P importParams, FolderService folderService, Folder parentFolder) {
+        asyncJobService.createAndSaveAsyncJob("Import folder using ${importer.displayName}", currentUser.emailAddress) {
+            F folder = importer.importDomain(currentUser, importParams)
 
+            if (!folder) {
+                throw new ApiBadRequestException('IS01', "Failed to import folder using ${importer.name} importer")
+            }
+
+            if (!importParams.providerHasSavedModels) {
+                folder.parentFolder = parentFolder
+
+                folderService.validate(folder)
+
+                if (folder.hasErrors()) {
+                    throw new ApiInvalidModelException('IS04', 'Invalid folder', folder.errors, messageSource)
+                }
+                log.debug('No errors in imported folder')
+
+                folderService.saveFolderHierarchy(null, folder)
+                folderService.addSecurity(folder, currentUser)
+            } else {
+                folderService.addSecurity(folder, currentUser)
+                log.info('Added security to single folder')
+            }
+        }
+    }
 
     List<ImportParameterGroup> describeImporterParams(ImporterProviderService importer) {
         /* The following steps reduce the fields of the parameter class
@@ -254,7 +281,8 @@ class ImporterService implements DataBinder {
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> T findImporterProviderServiceByContentType(
         String namespace, String name, String version, String contentType, Boolean canFederate = null) {
-        findImporterProviderServices(namespace, name, version).findAll {it.handlesContentType(contentType) && (canFederate == null || it.canFederate() == canFederate)}.sort()?.find()
+        findImporterProviderServices(namespace, name, version)
+            .findAll {it.handlesContentType(contentType) && (canFederate == null || it.canFederate() == canFederate)}.sort()?.find()
     }
 
     public <M extends MdmDomain, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<T> findImporterProviderServices(String namespace,

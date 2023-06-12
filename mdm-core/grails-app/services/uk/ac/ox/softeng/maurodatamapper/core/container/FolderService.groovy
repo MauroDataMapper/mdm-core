@@ -195,6 +195,9 @@ class FolderService extends ContainerService<Folder> {
 
     Folder saveFolderHierarchy(Map args, Folder folder) {
         log.trace('Saving Folder Hierarchy')
+        // Save parent folders first
+        save(args ?: [validate: false, flush: false], folder)
+
         // Saves folders and the models but not the model contents
         folder.childFolders.each {cf ->
             saveFolderHierarchy(cf, validate: false, flush: false)
@@ -207,7 +210,10 @@ class FolderService extends ContainerService<Folder> {
             }
         }
 
-        save(args ?: [validate: false, flush: true], folder)
+        if (!args?.containsKey('flush') || args?.flush) {
+            sessionFactory.currentSession.flush()
+        }
+        folder
     }
 
     /**
@@ -654,8 +660,17 @@ class FolderService extends ContainerService<Folder> {
         folder.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingMultiFacetAware(folder)
         if (folder.childFolders) {
+            folder.childFolders.each {it.parentFolder = folder}
             folder.childFolders.each {checkImportedFolderAssociations(importingUser, it)}
         }
         log.debug('Folder associations checked')
+    }
+
+    Folder addSecurity(Folder folder, User user) {
+        log.debug('Adding security')
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.addSecurityForSecurableResource(folder, user, folder.label)
+        }
+        folder
     }
 }

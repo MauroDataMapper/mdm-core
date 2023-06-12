@@ -30,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
@@ -251,8 +250,8 @@ class FolderController extends EditLoggingController<Folder> {
 
         // Run as async job returns ACCEPTED and the async job which was created
         if (importerProviderServiceParameters.asynchronous) {
-            AsyncJob asyncJob = importerService.asyncImportDomain(currentUser, importer, importerProviderServiceParameters, getFolderService(),
-                                                                  parentFolder)
+            AsyncJob asyncJob = importerService.asyncImportFolder(currentUser, importer, importerProviderServiceParameters, getFolderService(),
+                                                                 parentFolder)
             respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
             return
         }
@@ -269,19 +268,7 @@ class FolderController extends EditLoggingController<Folder> {
         if (!importerProviderServiceParameters.providerHasSavedModels) {
             folder.parentFolder = parentFolder
 
-            // Prevent validation cascade issues
-//            forAllChildFolders(folder, {Folder it -> it.parentFolder = null})
-
             getFolderService().validate(folder)
-
-//            folder.childFolders.each {
-//                it.parentFolder = folder
-//            }
-//            forAllChildFolders(folder, {Folder parent -> parent.childFolders.each {it.parentFolder = parent}})
-//
-//
-//            folder.validate(deepValidate: false)
-//            forAllChildFolders(folder, {Folder it -> it.validate(deepValidate: false)})
 
             if (folder.hasErrors()) {
                 transactionStatus.setRollbackOnly()

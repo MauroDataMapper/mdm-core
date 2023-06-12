@@ -614,8 +614,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         // Run as async job returns ACCEPTED and the async job which was created
         if (importerProviderServiceParameters.asynchronous) {
-            AsyncJob asyncJob = importerService.asyncImportDomain(currentUser, importer, importerProviderServiceParameters, getModelService(),
-                                                                  folder)
+            AsyncJob asyncJob = importerService.asyncImportModel(currentUser, importer, importerProviderServiceParameters, getModelService(),
+                                                                 folder)
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
 
@@ -705,8 +705,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         // Run as async job returns ACCEPTED and the async job which was created
         if (importerProviderServiceParameters.asynchronous) {
-            AsyncJob asyncJob = importerService.asyncImportDomains(currentUser, importer, importerProviderServiceParameters, getModelService(),
-                                                                   folder)
+            AsyncJob asyncJob = importerService.asyncImportModels(currentUser, importer, importerProviderServiceParameters, getModelService(),
+                                                                  folder)
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
 
