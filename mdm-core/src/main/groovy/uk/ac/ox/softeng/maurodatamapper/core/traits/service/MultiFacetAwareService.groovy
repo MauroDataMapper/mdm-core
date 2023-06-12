@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
@@ -127,31 +128,36 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
     K checkFacetsAfterImportingMultiFacetAware(K multiFacetAware) {
         if (multiFacetAware.metadata) {
             multiFacetAware.metadata.each {
-                it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItem = multiFacetAware
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }
         if (multiFacetAware.rules) {
             multiFacetAware.rules.each {
-                it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItem = multiFacetAware
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
+                if (it.ruleRepresentations) {
+                    it.ruleRepresentations.each {RuleRepresentation representation ->
+                        representation.createdBy = representation.createdBy ?: it.createdBy ?: multiFacetAware.createdBy
+                    }
+                }
             }
         }
         if (multiFacetAware.annotations) {
             multiFacetAware.annotations.each {
-                it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItem = multiFacetAware
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }
         if (multiFacetAware.semanticLinks) {
             multiFacetAware.semanticLinks.each {
-                it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItem = multiFacetAware
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }
         if (multiFacetAware.referenceFiles) {
             multiFacetAware.referenceFiles.each {
-                it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItem = multiFacetAware
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }
