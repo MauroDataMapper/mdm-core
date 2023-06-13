@@ -48,4 +48,12 @@ if (add) {
             }
         }
     }
+
+    if (export.rules) {
+        'mdm:rules' {
+            export.rules.each {rule ->
+                layout '/rule/_export.gml', rule: rule
+            }
+        }
+    }
 }

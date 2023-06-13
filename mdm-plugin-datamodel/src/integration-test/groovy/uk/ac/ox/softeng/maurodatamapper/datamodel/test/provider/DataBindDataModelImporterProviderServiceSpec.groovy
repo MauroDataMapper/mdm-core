@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
@@ -255,6 +256,38 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
         ann.multiFacetAwareItemId == dm.id
+    }
+
+    void 'I06a : test inc rule data import'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('incRule'))
+
+        then:
+        !dm.annotations
+        !dm.classifiers
+        !dm.summaryMetadata
+        !dm.dataTypes
+        !dm.dataClasses
+        !dm.metadata
+
+        and:
+        dm.rules.size() == 1
+
+        when:
+        Rule rule = dm.rules[0]
+
+        then:
+        rule.name == 'test rule'
+        rule.multiFacetAwareItemId == dm.id
+        rule.ruleRepresentations.size() == 1
+        rule.ruleRepresentations[0].language == 'test-lang'
+        rule.ruleRepresentations[0].representation == 'test representation'
     }
 
     void 'I07 : test inc single primitive type data import'() {

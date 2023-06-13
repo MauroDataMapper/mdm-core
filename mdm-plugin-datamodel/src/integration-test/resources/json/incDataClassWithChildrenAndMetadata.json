@@ -183,6 +183,22 @@
             "lastUpdated": "${json-unit.matches:offsetDateTime}"
           }
         ],
+        "rules": [
+          {
+            "id": "${json-unit.matches:id}",
+            "createdBy": "development@test.com",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "name": "test rule",
+            "ruleRepresentations": [
+              {
+                "id": "${json-unit.matches:id}",
+                "language": "test-lang",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "representation": "test representation"
+              }
+            ]
+          }
+        ],
         "dataElements": [
           {
             "id": "${json-unit.matches:id}",

@@ -1,0 +1,60 @@
+<?xml version='1.0'?>
+<!--
+  ~ Copyright 2020-2023 University of Oxford and NHS England
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
+	<mdm:dataModel>
+		<mdm:id>ef8c5cef-d457-491f-aef7-74e1c2a45489</mdm:id>
+		<mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
+		<mdm:lastUpdated>2023-06-13T14:51:26.781Z</mdm:lastUpdated>
+		<mdm:rules>
+			<mdm:rule>
+				<mdm:id>85cac337-1d5c-4cc8-87c7-cbcec71a626c</mdm:id>
+				<mdm:createdBy>development@test.com</mdm:createdBy>
+				<mdm:lastUpdated>2023-06-13T14:51:26.788Z</mdm:lastUpdated>
+				<mdm:name>test rule</mdm:name>
+				<mdm:ruleRepresentations>
+					<mdm:ruleRepresentation>
+						<mdm:id>7beb1b03-dc53-4f31-8d45-9c8bfb89b92a</mdm:id>
+						<mdm:language>test-lang</mdm:language>
+						<mdm:representation>test representation</mdm:representation>
+						<mdm:lastUpdated>2023-06-13T14:51:26.79Z</mdm:lastUpdated>
+					</mdm:ruleRepresentation>
+				</mdm:ruleRepresentations>
+			</mdm:rule>
+		</mdm:rules>
+		<mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+		<mdm:finalised>false</mdm:finalised>
+		<mdm:branchName>main</mdm:branchName>
+		<mdm:authority>
+			<mdm:id>3e7514f2-e2a1-4ce8-ab70-f9e98df7a895</mdm:id>
+			<mdm:label>Mauro Data Mapper</mdm:label>
+			<mdm:url>http://localhost</mdm:url>
+			<mdm:lastUpdated>2023-06-12T09:54:05.59Z</mdm:lastUpdated>
+		</mdm:authority>
+		<mdm:type>Data Standard</mdm:type>
+	</mdm:dataModel>
+	<exp:exportMetadata>
+		<exp:exportedBy>Admin User</exp:exportedBy>
+		<exp:exportedOn>2023-06-13T15:51:42.280768+01:00</exp:exportedOn>
+		<exp:exporter>
+			<exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
+			<exp:name>DataModelXmlExporterService</exp:name>
+			<exp:version>5.2</exp:version>
+		</exp:exporter>
+	</exp:exportMetadata>
+</exp:exportModel>

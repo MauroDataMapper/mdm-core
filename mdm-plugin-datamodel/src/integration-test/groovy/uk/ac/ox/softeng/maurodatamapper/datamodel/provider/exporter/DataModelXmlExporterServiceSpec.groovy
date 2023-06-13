@@ -100,6 +100,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
             'IncAliases',
             'IncMetadata',
             'IncAnnotation',
+            'IncRule',
             'IncSinglePrimitiveType',
             'IncSinglePrimitiveTypeAndMetadata',
             'IncSinglePrimitiveTypeAndAnnotation',
