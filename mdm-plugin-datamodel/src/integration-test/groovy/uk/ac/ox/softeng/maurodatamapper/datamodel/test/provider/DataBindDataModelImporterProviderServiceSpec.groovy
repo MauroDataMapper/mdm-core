@@ -123,10 +123,10 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
         List<DataModel> dataModels = modelIds.collect {
             DataModel dataModel = dataModelService.get(it)
-            removeRule(dataModel)
-            ['dataClasses', 'allDataElements', 'dataTypes'].each {
-                dataModel.getProperty(it)?.each(removeRule)
-            }
+//            removeRule(dataModel)
+//            ['dataClasses', 'allDataElements', 'dataTypes'].each {
+//                dataModel.getProperty(it)?.each(removeRule)
+//            }
             dataModel
         }
         sessionFactory.currentSession.clear()

@@ -83,10 +83,12 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
             String targetCode = tr.targetTerm?.trim()
             String relationshipType = tr.relationshipType?.trim()
             Term sourceTerm = terminology.findTermByCode(sourceCode)
-            sourceTerm.addToSourceTermRelationships(new TermRelationship(
+            TermRelationship termRelationship = new TermRelationship(
                 relationshipType: terminology.findRelationshipTypeByLabel(relationshipType),
                 targetTerm: terminology.findTermByCode(targetCode)
-            ))
+            )
+            DataBindingUtils.bindObjectToInstance(termRelationship, tr, null, getImportBlacklistedProperties() + ['relationshipType', 'sourceTerm', 'targetTerm'], null)
+            sourceTerm.addToSourceTermRelationships(termRelationship)
         }
     }
 }

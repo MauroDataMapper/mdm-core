@@ -492,7 +492,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   },
   {
     "name": "DataModelXmlImporterService",
-    "version": "5.2",
+    "version": "5.3",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,

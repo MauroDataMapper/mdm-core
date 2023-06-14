@@ -1,5 +1,7 @@
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
+inherits template: '/catalogueItem/export', model: [export: export]
+
 model {
     TermRelationship export
 }

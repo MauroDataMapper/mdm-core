@@ -114,6 +114,15 @@
           "description": "with description"
         }
       ],
+      "rules": [
+        {
+          "id": "${json-unit.matches:id}",
+          "createdBy": "development@test.com",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "name": "Bootstrapped Functional Test Rule",
+          "description": "Functional Test Description"
+        }
+      ],
       "type": "Data Standard",
       "author": "admin person",
       "organisation": "brc",
@@ -166,6 +175,15 @@
           "id": "${json-unit.matches:id}",
           "label": "string",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "rules": [
+            {
+              "id": "${json-unit.matches:id}",
+              "createdBy": "development@test.com",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "name": "Bootstrapped Functional Test Rule",
+              "description": "Functional Test Description"
+            }
+          ],
           "index": 2,
           "domainType": "PrimitiveType"
         },
@@ -201,6 +219,15 @@
               "key": "mdcl1",
               "value": "mdcl1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }
+          ],
+          "rules": [
+            {
+              "id": "${json-unit.matches:id}",
+              "createdBy": "development@test.com",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "name": "Bootstrapped Functional Test Rule",
+              "description": "Functional Test Description"
             }
           ],
           "index": 1,
@@ -259,11 +286,29 @@
               "id": "${json-unit.matches:id}",
               "label": "ele1",
               "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "rules": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "createdBy": "development@test.com",
+                  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                  "name": "Bootstrapped Functional Test Rule",
+                  "description": "Functional Test Description"
+                }
+              ],
               "index": 0,
               "dataType": {
                 "id": "${json-unit.matches:id}",
                 "label": "string",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "rules": [
+                  {
+                    "id": "${json-unit.matches:id}",
+                    "createdBy": "development@test.com",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "name": "Bootstrapped Functional Test Rule",
+                    "description": "Functional Test Description"
+                  }
+                ],
                 "index": 2,
                 "domainType": "PrimitiveType"
               },

@@ -18,126 +18,144 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.2" xmlns:mdm="http://maurodatamapper.com/dataModel/4.2">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.3" xmlns:mdm="http://maurodatamapper.com/dataModel/4.3">
   <mdm:dataModel>
-    <mdm:id>76408db8-efff-4c0e-b739-f7e2ccfc0564</mdm:id>
+    <mdm:id>723d5609-45cd-4bb9-9176-ca4368e9bb10</mdm:id>
     <mdm:label>Complex Test DataModel</mdm:label>
-    <mdm:lastUpdated>2022-07-07T15:36:24.782Z</mdm:lastUpdated>
+    <mdm:lastUpdated>2023-06-14T13:20:40.203Z</mdm:lastUpdated>
     <mdm:classifiers>
       <mdm:classifier>
-        <mdm:id>6e140b84-ec7f-4673-b8a8-4102af6f613c</mdm:id>
+        <mdm:id>92e0aa2d-1610-418d-8e0a-13e0e743ab0d</mdm:id>
         <mdm:label>test classifier</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.688Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.124Z</mdm:lastUpdated>
       </mdm:classifier>
       <mdm:classifier>
-        <mdm:id>f212aa43-3717-4578-a7e9-6db167863ca6</mdm:id>
+        <mdm:id>95e9cc73-4877-45fd-84c2-f5898b6f3426</mdm:id>
         <mdm:label>test classifier2</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.689Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.125Z</mdm:lastUpdated>
       </mdm:classifier>
     </mdm:classifiers>
     <mdm:metadata>
       <mdm:metadata>
-        <mdm:id>67dbde89-0fc9-4b9a-92b7-63753b4bc8cb</mdm:id>
+        <mdm:id>a8f41a4a-9daf-49c2-a141-ec5bd8bed08f</mdm:id>
         <mdm:namespace>test.com</mdm:namespace>
         <mdm:key>mdk1</mdm:key>
         <mdm:value>mdv1</mdm:value>
-        <mdm:lastUpdated>2022-07-07T15:36:24.723Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.147Z</mdm:lastUpdated>
       </mdm:metadata>
       <mdm:metadata>
-        <mdm:id>c8314ebf-89b2-4bba-be51-be21d84b72b2</mdm:id>
+        <mdm:id>ff6905ec-ae48-4602-92f8-39844c7a8b9c</mdm:id>
         <mdm:namespace>test.com</mdm:namespace>
         <mdm:key>mdk2</mdm:key>
         <mdm:value>mdv2</mdm:value>
-        <mdm:lastUpdated>2022-07-07T15:36:24.722Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.148Z</mdm:lastUpdated>
       </mdm:metadata>
       <mdm:metadata>
-        <mdm:id>24fbdd6b-861e-4045-bb1c-16f81c1f1ceb</mdm:id>
+        <mdm:id>0fad19ad-2cbe-4262-91d1-66d29d27d436</mdm:id>
         <mdm:namespace>test.com/test</mdm:namespace>
         <mdm:key>mdk1</mdm:key>
         <mdm:value>mdv2</mdm:value>
-        <mdm:lastUpdated>2022-07-07T15:36:24.723Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.148Z</mdm:lastUpdated>
       </mdm:metadata>
     </mdm:metadata>
     <mdm:annotations>
       <mdm:annotation>
-        <mdm:id>3c504f69-5d2f-4ec5-8ceb-88574ff30d25</mdm:id>
+        <mdm:id>9b8d48cd-fec7-4308-b7b0-05f4a9369030</mdm:id>
         <mdm:createdBy>development@test.com</mdm:createdBy>
-        <mdm:lastUpdated>2022-07-07T15:36:24.721Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.141Z</mdm:lastUpdated>
         <mdm:label>test annotation 1</mdm:label>
       </mdm:annotation>
       <mdm:annotation>
-        <mdm:id>3dc785c5-7e9f-413b-85c7-74716ea8c7ab</mdm:id>
+        <mdm:id>9d39c0d7-0e28-4080-a5dc-d8bc827762e4</mdm:id>
         <mdm:createdBy>development@test.com</mdm:createdBy>
-        <mdm:lastUpdated>2022-07-07T15:36:24.722Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.142Z</mdm:lastUpdated>
         <mdm:label>test annotation 2</mdm:label>
         <mdm:description>with description</mdm:description>
       </mdm:annotation>
     </mdm:annotations>
+    <mdm:rules>
+      <mdm:rule>
+        <mdm:id>a7a12e79-2a3c-43ce-9817-d57a61de8328</mdm:id>
+        <mdm:createdBy>development@test.com</mdm:createdBy>
+        <mdm:lastUpdated>2023-06-14T13:20:40.161Z</mdm:lastUpdated>
+        <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+        <mdm:description>Functional Test Description</mdm:description>
+      </mdm:rule>
+    </mdm:rules>
     <mdm:author>admin person</mdm:author>
     <mdm:organisation>brc</mdm:organisation>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
     <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
-      <mdm:id>df56571a-3b51-4f9c-a8d4-ca8ddf730360</mdm:id>
+      <mdm:id>6b2df7cd-8c94-45b2-a767-c02062f3576f</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
-      <mdm:lastUpdated>2022-07-07T15:35:52.016Z</mdm:lastUpdated>
+      <mdm:lastUpdated>2023-06-14T13:20:07.296Z</mdm:lastUpdated>
     </mdm:authority>
     <mdm:type>Data Standard</mdm:type>
     <mdm:dataTypes>
       <mdm:dataType>
-        <mdm:id>6b26c5b9-cc84-4369-bc01-2b08627999cc</mdm:id>
+        <mdm:id>90ed6a07-725d-4350-a0e2-8cf3ebc00df3</mdm:id>
         <mdm:label>yesnounknown</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.712Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.144Z</mdm:lastUpdated>
         <mdm:index>0</mdm:index>
         <mdm:domainType>EnumerationType</mdm:domainType>
         <mdm:enumerationValues>
           <mdm:enumerationValue>
-            <mdm:id>4605ccdc-0731-415f-9559-a1a9c7a94af3</mdm:id>
+            <mdm:id>3af550e6-3275-447a-83d5-2b276c7b492d</mdm:id>
             <mdm:index>0</mdm:index>
             <mdm:key>Y</mdm:key>
             <mdm:value>Yes</mdm:value>
-            <mdm:lastUpdated>2022-07-07T15:36:24.719Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.15Z</mdm:lastUpdated>
           </mdm:enumerationValue>
           <mdm:enumerationValue>
-            <mdm:id>b0e774de-fcdb-4b6b-87e5-ac4d2e93a0fb</mdm:id>
+            <mdm:id>dedc7ec3-0cbf-4ffd-9ceb-dd54463c9aa9</mdm:id>
             <mdm:index>1</mdm:index>
             <mdm:key>N</mdm:key>
             <mdm:value>No</mdm:value>
-            <mdm:lastUpdated>2022-07-07T15:36:24.72Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.15Z</mdm:lastUpdated>
           </mdm:enumerationValue>
           <mdm:enumerationValue>
-            <mdm:id>96eefa5f-9362-4d0e-9482-29f11a5ddb23</mdm:id>
+            <mdm:id>c26fafbc-0731-4cd0-977f-ecc6b7dab5ba</mdm:id>
             <mdm:index>2</mdm:index>
             <mdm:key>U</mdm:key>
             <mdm:value>Unknown</mdm:value>
-            <mdm:lastUpdated>2022-07-07T15:36:24.721Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.151Z</mdm:lastUpdated>
           </mdm:enumerationValue>
         </mdm:enumerationValues>
       </mdm:dataType>
       <mdm:dataType>
-        <mdm:id>d9dbcdfc-5d32-404d-8d7c-32472b412511</mdm:id>
+        <mdm:id>ba3fd2f0-059a-4cdf-a005-468b87601130</mdm:id>
         <mdm:label>integer</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.782Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.204Z</mdm:lastUpdated>
         <mdm:index>1</mdm:index>
         <mdm:domainType>PrimitiveType</mdm:domainType>
       </mdm:dataType>
       <mdm:dataType>
-        <mdm:id>1e7b9bd5-f74a-4c63-8f33-6c11d5cf05ff</mdm:id>
+        <mdm:id>99379768-9aae-46c5-88af-aa06ed98b1d4</mdm:id>
         <mdm:label>string</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.783Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.203Z</mdm:lastUpdated>
+        <mdm:rules>
+          <mdm:rule>
+            <mdm:id>520b230d-40d3-4f90-90f0-87e37592d8c5</mdm:id>
+            <mdm:createdBy>development@test.com</mdm:createdBy>
+            <mdm:lastUpdated>2023-06-14T13:20:40.161Z</mdm:lastUpdated>
+            <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+            <mdm:description>Functional Test Description</mdm:description>
+          </mdm:rule>
+        </mdm:rules>
         <mdm:index>2</mdm:index>
         <mdm:domainType>PrimitiveType</mdm:domainType>
       </mdm:dataType>
       <mdm:dataType>
-        <mdm:id>13eba5cd-aeb3-43e9-bb6a-57444b78d869</mdm:id>
+        <mdm:id>0a96fb1b-a8a6-488b-ac0a-8a5d1325f40e</mdm:id>
         <mdm:label>child</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.745Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.17Z</mdm:lastUpdated>
         <mdm:index>3</mdm:index>
         <mdm:domainType>ReferenceType</mdm:domainType>
         <mdm:referenceClass>
-          <mdm:id>288f0acd-a89a-41c2-87ed-397f6eef4389</mdm:id>
+          <mdm:id>2217898a-2bba-46cd-bdbe-da26022de062</mdm:id>
           <mdm:label>child</mdm:label>
           <mdm:dataClassPath>parent|child</mdm:dataClassPath>
         </mdm:referenceClass>
@@ -145,59 +163,68 @@
     </mdm:dataTypes>
     <mdm:childDataClasses>
       <mdm:dataClass>
-        <mdm:id>37b3f38c-c7ac-4e34-812e-77fbb173853e</mdm:id>
+        <mdm:id>c4ff497f-3def-47a2-ad1d-88042f44fb6c</mdm:id>
         <mdm:label>emptyclass</mdm:label>
         <mdm:description>dataclass with desc</mdm:description>
-        <mdm:lastUpdated>2022-07-07T15:36:24.714Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.146Z</mdm:lastUpdated>
         <mdm:index>0</mdm:index>
       </mdm:dataClass>
       <mdm:dataClass>
-        <mdm:id>495ddd49-4b16-4d2d-a4af-568e7bb376fc</mdm:id>
+        <mdm:id>44c42454-04c1-4099-847a-d97985f9c9f3</mdm:id>
         <mdm:label>parent</mdm:label>
-        <mdm:lastUpdated>2022-07-07T15:36:24.752Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.177Z</mdm:lastUpdated>
         <mdm:metadata>
           <mdm:metadata>
-            <mdm:id>17800d02-58cd-4c38-b7c1-19612c7907d1</mdm:id>
+            <mdm:id>7444a880-b46f-4f5f-81fb-63708893207b</mdm:id>
             <mdm:namespace>test.com</mdm:namespace>
             <mdm:key>mdcl1</mdm:key>
             <mdm:value>mdcl1</mdm:value>
-            <mdm:lastUpdated>2022-07-07T15:36:24.748Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.172Z</mdm:lastUpdated>
           </mdm:metadata>
         </mdm:metadata>
+        <mdm:rules>
+          <mdm:rule>
+            <mdm:id>7e788d4f-82b3-410a-9ae1-d5a653cb95e8</mdm:id>
+            <mdm:createdBy>development@test.com</mdm:createdBy>
+            <mdm:lastUpdated>2023-06-14T13:20:40.161Z</mdm:lastUpdated>
+            <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+            <mdm:description>Functional Test Description</mdm:description>
+          </mdm:rule>
+        </mdm:rules>
         <mdm:index>1</mdm:index>
         <mdm:maxMultiplicity>-1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>1</mdm:minMultiplicity>
         <mdm:dataClasses>
           <mdm:dataClass>
-            <mdm:id>288f0acd-a89a-41c2-87ed-397f6eef4389</mdm:id>
+            <mdm:id>2217898a-2bba-46cd-bdbe-da26022de062</mdm:id>
             <mdm:label>child</mdm:label>
-            <mdm:lastUpdated>2022-07-07T15:36:24.751Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.176Z</mdm:lastUpdated>
             <mdm:index>0</mdm:index>
           </mdm:dataClass>
         </mdm:dataClasses>
         <mdm:dataElements>
           <mdm:dataElement>
-            <mdm:id>6f2ca307-e60c-4251-b5f2-c2ca6868987c</mdm:id>
+            <mdm:id>c7659ea4-4534-4f1f-ab93-ac9592910a83</mdm:id>
             <mdm:label>child</mdm:label>
-            <mdm:lastUpdated>2022-07-07T15:36:24.758Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.181Z</mdm:lastUpdated>
             <mdm:metadata>
               <mdm:metadata>
-                <mdm:id>6f1ca1a3-06b1-4a1c-9edc-3fa4454e66f2</mdm:id>
+                <mdm:id>74de03e0-81a7-4378-ace9-f7acab5517e7</mdm:id>
                 <mdm:namespace>test.com</mdm:namespace>
                 <mdm:key>mdel1</mdm:key>
                 <mdm:value>mdel1</mdm:value>
-                <mdm:lastUpdated>2022-07-07T15:36:24.757Z</mdm:lastUpdated>
+                <mdm:lastUpdated>2023-06-14T13:20:40.181Z</mdm:lastUpdated>
               </mdm:metadata>
             </mdm:metadata>
             <mdm:index>0</mdm:index>
             <mdm:dataType>
-              <mdm:id>13eba5cd-aeb3-43e9-bb6a-57444b78d869</mdm:id>
+              <mdm:id>0a96fb1b-a8a6-488b-ac0a-8a5d1325f40e</mdm:id>
               <mdm:label>child</mdm:label>
-              <mdm:lastUpdated>2022-07-07T15:36:24.745Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2023-06-14T13:20:40.17Z</mdm:lastUpdated>
               <mdm:index>3</mdm:index>
               <mdm:domainType>ReferenceType</mdm:domainType>
               <mdm:referenceClass>
-                <mdm:id>288f0acd-a89a-41c2-87ed-397f6eef4389</mdm:id>
+                <mdm:id>2217898a-2bba-46cd-bdbe-da26022de062</mdm:id>
                 <mdm:label>child</mdm:label>
                 <mdm:dataClassPath>parent|child</mdm:dataClassPath>
               </mdm:referenceClass>
@@ -208,23 +235,41 @@
         </mdm:dataElements>
       </mdm:dataClass>
       <mdm:dataClass>
-        <mdm:id>7f467b04-0b66-4948-95e1-b5cb2db0eef0</mdm:id>
+        <mdm:id>7b4db930-8c6b-46ca-9623-32076d450040</mdm:id>
         <mdm:label>content</mdm:label>
         <mdm:description>A dataclass with elements</mdm:description>
-        <mdm:lastUpdated>2022-07-07T15:36:24.81Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2023-06-14T13:20:40.229Z</mdm:lastUpdated>
         <mdm:index>2</mdm:index>
         <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>0</mdm:minMultiplicity>
         <mdm:dataElements>
           <mdm:dataElement>
-            <mdm:id>ebff9faf-1a0a-4ce0-adb9-f959758f30ca</mdm:id>
+            <mdm:id>ff8210c9-4279-4f1e-9aed-03584ed93b2f</mdm:id>
             <mdm:label>ele1</mdm:label>
-            <mdm:lastUpdated>2022-07-07T15:36:24.796Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.215Z</mdm:lastUpdated>
+            <mdm:rules>
+              <mdm:rule>
+                <mdm:id>55927595-db0a-40c3-adba-3105ab5468ba</mdm:id>
+                <mdm:createdBy>development@test.com</mdm:createdBy>
+                <mdm:lastUpdated>2023-06-14T13:20:40.215Z</mdm:lastUpdated>
+                <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+                <mdm:description>Functional Test Description</mdm:description>
+              </mdm:rule>
+            </mdm:rules>
             <mdm:index>0</mdm:index>
             <mdm:dataType>
-              <mdm:id>1e7b9bd5-f74a-4c63-8f33-6c11d5cf05ff</mdm:id>
+              <mdm:id>99379768-9aae-46c5-88af-aa06ed98b1d4</mdm:id>
               <mdm:label>string</mdm:label>
-              <mdm:lastUpdated>2022-07-07T15:36:24.783Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2023-06-14T13:20:40.203Z</mdm:lastUpdated>
+              <mdm:rules>
+                <mdm:rule>
+                  <mdm:id>520b230d-40d3-4f90-90f0-87e37592d8c5</mdm:id>
+                  <mdm:createdBy>development@test.com</mdm:createdBy>
+                  <mdm:lastUpdated>2023-06-14T13:20:40.161Z</mdm:lastUpdated>
+                  <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+                  <mdm:description>Functional Test Description</mdm:description>
+                </mdm:rule>
+              </mdm:rules>
               <mdm:index>2</mdm:index>
               <mdm:domainType>PrimitiveType</mdm:domainType>
             </mdm:dataType>
@@ -232,14 +277,14 @@
             <mdm:minMultiplicity>0</mdm:minMultiplicity>
           </mdm:dataElement>
           <mdm:dataElement>
-            <mdm:id>0f307181-6ae1-4f66-bb3c-18546a992fa8</mdm:id>
+            <mdm:id>2e2444ff-c5e1-4315-bae6-6e776c7cdae8</mdm:id>
             <mdm:label>element2</mdm:label>
-            <mdm:lastUpdated>2022-07-07T15:36:24.781Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2023-06-14T13:20:40.202Z</mdm:lastUpdated>
             <mdm:index>1</mdm:index>
             <mdm:dataType>
-              <mdm:id>d9dbcdfc-5d32-404d-8d7c-32472b412511</mdm:id>
+              <mdm:id>ba3fd2f0-059a-4cdf-a005-468b87601130</mdm:id>
               <mdm:label>integer</mdm:label>
-              <mdm:lastUpdated>2022-07-07T15:36:24.782Z</mdm:lastUpdated>
+              <mdm:lastUpdated>2023-06-14T13:20:40.204Z</mdm:lastUpdated>
               <mdm:index>1</mdm:index>
               <mdm:domainType>PrimitiveType</mdm:domainType>
             </mdm:dataType>
@@ -252,11 +297,11 @@
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
-    <exp:exportedOn>2022-07-07T16:36:24.814934+01:00</exp:exportedOn>
+    <exp:exportedOn>2023-06-14T14:20:40.233285+01:00</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>5.2</exp:version>
+      <exp:version>5.3</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

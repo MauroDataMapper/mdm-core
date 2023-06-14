@@ -101,10 +101,10 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
         List<Terminology> terminologies = modelIds.collect {
             Terminology terminology = terminologyService.get(it)
-            removeRule(terminology)
-            ['terms', 'allTermRelationships', 'termRelationshipTypes'].each {
-                terminology.getProperty(it)?.each(removeRule)
-            }
+//            removeRule(terminology)
+//            ['terms', 'allTermRelationships', 'termRelationshipTypes'].each {
+//                terminology.getProperty(it)?.each(removeRule)
+//            }
             terminology
         }
         sessionFactory.currentSession.clear()

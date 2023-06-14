@@ -162,11 +162,11 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         ObjectDiff diff = terminologyService.get(complexTerminologyId).diff(imported, 'none', null, null)
 
         then:
-        if (!diff.objectsAreIdentical() && diff.numberOfDiffs != 4) {
+        if (!diff.objectsAreIdentical()) {
             log.error('{}', diff.toString())
         }
         // Rules are not exported/imported and therefore will exist as diffs
-        diff.numberOfDiffs == 4
+        diff.numberOfDiffs == 0
     }
 
     void 'E04 : test export and import simple Terminology'() {

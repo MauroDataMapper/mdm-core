@@ -1,16 +1,13 @@
-import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+
+inherits template: '/catalogueItem/export', model: [export: export]
 
 model {
     TermRelationshipType export
 }
 
 json {
-    id export.id
-    label export.label
-    if (export.description) export.description
     displayLabel export.displayLabel
-    if (export.lastUpdated) lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
     parentalRelationship export.parentalRelationship
     childRelationship export.childRelationship
 }

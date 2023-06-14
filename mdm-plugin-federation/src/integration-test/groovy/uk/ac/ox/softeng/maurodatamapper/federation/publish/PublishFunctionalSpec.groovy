@@ -349,7 +349,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
     private static Map<String, String> getDataModelExporters() {
         [
             'application/mauro.datamodel+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.2',
-            'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.2'
+            'application/mauro.datamodel+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.3'
         ]
     }
 }

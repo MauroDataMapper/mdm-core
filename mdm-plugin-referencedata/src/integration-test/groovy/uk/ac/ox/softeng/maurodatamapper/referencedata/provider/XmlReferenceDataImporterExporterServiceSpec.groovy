@@ -198,8 +198,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         ObjectDiff diff = referenceDataModelService.get(exampleReferenceDataModelId).diff(imported, 'none', null, null)
 
         then:
-        diff.numberOfDiffs == 3
-        diff.diffs.find {it.fieldName == 'rules'}.deleted.size() == 1
+        diff.numberOfDiffs == 2
         diff.diffs.find { it.fieldName == 'referenceDataTypes' }.modified.first().diffs.first().deleted.size() == 1
         diff.diffs.find { it.fieldName == 'referenceDataElements' }.modified.first().diffs.first().deleted.size() == 1
     }
