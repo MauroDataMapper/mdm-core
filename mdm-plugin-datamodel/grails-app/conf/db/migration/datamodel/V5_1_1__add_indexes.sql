@@ -1,0 +1,52 @@
+-- index all columns on datamodel.join_dataelement_to_facet
+
+CREATE INDEX join_dataelement_to_facet_dataelement_idx ON datamodel.join_dataelement_to_facet(dataelement_id);
+CREATE INDEX join_dataelement_to_facet_classifier_idx ON datamodel.join_dataelement_to_facet(classifier_id);
+CREATE INDEX join_dataelement_to_facet_annotation_idx ON datamodel.join_dataelement_to_facet(annotation_id);
+CREATE INDEX join_dataelement_to_facet_semantic_link_idx ON datamodel.join_dataelement_to_facet(semantic_link_id);
+CREATE INDEX join_dataelement_to_facet_reference_file_idx ON datamodel.join_dataelement_to_facet(reference_file_id);
+CREATE INDEX join_dataelement_to_facet_metadata_idx ON datamodel.join_dataelement_to_facet(metadata_id);
+CREATE INDEX join_dataelement_to_facet_summary_metadata_idx ON datamodel.join_dataelement_to_facet(summary_metadata_id);
+CREATE INDEX join_dataelement_to_facet_rule_idx ON datamodel.join_dataelement_to_facet(rule_id);
+
+-- index all columns on datamodel.join_dataclass_to_facet
+
+CREATE INDEX join_dataclass_to_facet_dataclass_idx ON datamodel.join_dataclass_to_facet(dataclass_id);
+CREATE INDEX join_dataclass_to_facet_classifier_idx ON datamodel.join_dataclass_to_facet(classifier_id);
+CREATE INDEX join_dataclass_to_facet_annotation_idx ON datamodel.join_dataclass_to_facet(annotation_id);
+CREATE INDEX join_dataclass_to_facet_semantic_link_idx ON datamodel.join_dataclass_to_facet(semantic_link_id);
+CREATE INDEX join_dataclass_to_facet_reference_file_idx ON datamodel.join_dataclass_to_facet(reference_file_id);
+CREATE INDEX join_dataclass_to_facet_metadata_idx ON datamodel.join_dataclass_to_facet(metadata_id);
+CREATE INDEX join_dataclass_to_facet_summary_metadata_idx ON datamodel.join_dataclass_to_facet(summary_metadata_id);
+CREATE INDEX join_dataclass_to_facet_rule_idx ON datamodel.join_dataclass_to_facet(rule_id);
+
+-- index all columns on datamodel.join_datamodel_to_facet
+
+CREATE INDEX join_datamodel_to_facet_datamodel_idx ON datamodel.join_datamodel_to_facet(datamodel_id);
+CREATE INDEX join_datamodel_to_facet_classifier_idx ON datamodel.join_datamodel_to_facet(classifier_id);
+CREATE INDEX join_datamodel_to_facet_annotation_idx ON datamodel.join_datamodel_to_facet(annotation_id);
+CREATE INDEX join_datamodel_to_facet_semantic_link_idx ON datamodel.join_datamodel_to_facet(semantic_link_id);
+CREATE INDEX join_datamodel_to_facet_version_link_idx ON datamodel.join_datamodel_to_facet(version_link_id);
+CREATE INDEX join_datamodel_to_facet_reference_file_idx ON datamodel.join_datamodel_to_facet(reference_file_id);
+CREATE INDEX join_datamodel_to_facet_metadata_idx ON datamodel.join_datamodel_to_facet(metadata_id);
+CREATE INDEX join_datamodel_to_facet_summary_metadata_idx ON datamodel.join_datamodel_to_facet(summary_metadata_id);
+CREATE INDEX join_datamodel_to_facet_rule_idx ON datamodel.join_datamodel_to_facet(rule_id);
+
+-- index all columns on datamodel.join_datatype_to_facet
+
+CREATE INDEX join_datatype_to_facet_datatype_idx ON datamodel.join_datatype_to_facet(datatype_id);
+CREATE INDEX join_datatype_to_facet_classifier_idx ON datamodel.join_datatype_to_facet(classifier_id);
+CREATE INDEX join_datatype_to_facet_annotation_idx ON datamodel.join_datatype_to_facet(annotation_id);
+CREATE INDEX join_datatype_to_facet_semantic_link_idx ON datamodel.join_datatype_to_facet(semantic_link_id);
+CREATE INDEX join_datatype_to_facet_reference_file_idx ON datamodel.join_datatype_to_facet(reference_file_id);
+CREATE INDEX join_datatype_to_facet_metadata_idx ON datamodel.join_datatype_to_facet(metadata_id);
+CREATE INDEX join_datatype_to_facet_summary_metadata_idx ON datamodel.join_datatype_to_facet(summary_metadata_id);
+CREATE INDEX join_datatype_to_facet_rule_idx ON datamodel.join_datatype_to_facet(rule_id);
+
+-- indexes on imported item IDs
+CREATE INDEX join_datamodel_to_imported_data_class_imported_dataclass_idx ON datamodel.join_datamodel_to_imported_data_class(imported_dataclass_id);
+CREATE INDEX join_dataclass_to_imported_data_element_imported_de_idx ON datamodel.join_dataclass_to_imported_data_element(imported_dataelement_id);
+
+-- create breadcrumb tree index on datamodel
+
+CREATE INDEX data_model_breadcrumb_tree_idx ON datamodel.data_model(breadcrumb_tree_id);
