@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -36,6 +37,9 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
     @Autowired
     PathService pathService
+
+    @Autowired(required = false)
+    List<VersionLinkAwareService> versionLinkAwareServices
 
     @Autowired(required = false)
     Set<SearchParamFilter> searchParamFilters
@@ -93,10 +97,12 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         if (filteredDomainsToSearch.size() == 1) {
             results = performSearch(owningIds, searchParams.searchTerm, searchParams.labelOnly,
                                     filteredDomainsToSearch.first(), pagination, additional, customSearch)
+
             if (removeOwningIds) {
                 // Remove null entries and any which have an owning id, as we only want those inside the owners
                 results.removeIf {it.id in owningIds}
             }
+            results.removeIf {it.id in getExcludedCatalogueItemIds(searchParams, results.results)}
         } else {
             List<K> items = performSearch(owningIds, searchParams.searchTerm, searchParams.labelOnly,
                                           filteredDomainsToSearch, additional, customSearch)
@@ -104,6 +110,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                 // Remove null entries and any which have an owning id, as we only want those inside the owners
                 items.removeIf {it.id in owningIds}
             }
+            items.removeIf {it.id in getExcludedCatalogueItemIds(searchParams, items)}
 
             results = filteredDomainsToSearch.size() == 1 ?
                       items as PaginatedHibernateSearchResult<K> :
@@ -196,5 +203,21 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                                                     @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         log.debug('Domain searching {}', domainToSearch)
         domainToSearch.customHibernateSearch(domainToSearch, owningIds, paths, pagination, additional, customSearch)
+    }
+
+    protected List<K> getExcludedCatalogueItemIds(SearchParams searchParams, List<K> items) {
+        List<K> excludedIds
+        if (!searchParams.supercededDocuments) {
+            log.error("Superceded Param: {}", searchParams.supercededDocuments);
+            // Remove older versions of data models
+            excludedIds = versionLinkAwareServices.collect {service ->
+                service.findAllExcludedIds(items*.id, searchParams.supercededDocuments, searchParams.supercededDocuments)
+            }.findAll().flatten() as List<K>
+
+            log.error("Found excludedIds {}: {}", excludedIds.size(), excludedIds)
+
+            //items.removeAll{it.id in excludedIds}
+        }
+        excludedIds
     }
 }
