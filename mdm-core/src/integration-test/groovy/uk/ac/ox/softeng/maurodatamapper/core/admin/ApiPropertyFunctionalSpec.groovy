@@ -228,7 +228,8 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
                          ApiPropertyEnum.EMAIL_FROM_ADDRESS,
                          ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
-                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS])
+                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
+                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION])
             }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {

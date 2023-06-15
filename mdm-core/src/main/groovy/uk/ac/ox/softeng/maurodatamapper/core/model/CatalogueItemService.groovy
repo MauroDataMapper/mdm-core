@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
@@ -26,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
@@ -59,6 +63,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     SemanticLinkService semanticLinkService
     AnnotationService annotationService
     ReferenceFileService referenceFileService
+    ApiPropertyService apiPropertyService
 
     Class<K> getMultiFacetAwareClass() {
         getDomainClass()
@@ -161,6 +166,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
         List<Metadata> metadata
         List<Rule> rules
         List<SemanticLink> semanticLinks
+        List<Annotation> annotations
+        List<ReferenceFile> referenceFiles
+
         if (copyInformation) {
             metadata =
                 copyInformation.hasFacetData('metadata') ? copyInformation.extractPreloadedFacetsForTypeAndId(Metadata, 'metadata', original.id) :
@@ -174,6 +182,27 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             metadata = metadataService.findAllByMultiFacetAwareItemId(original.id)
             rules = ruleService.findAllByMultiFacetAwareItemId(original.id)
             semanticLinks = semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
+        }
+
+        if (copyAnnotations()) {
+            annotations = annotationService.findAllByMultiFacetAwareItemId(original.id)
+            annotations.each {
+                if (!it.parentAnnotation) {
+                    Annotation copyAnnotation = new Annotation(label: it.label, description: it.description,
+                            createdBy: copier.emailAddress)
+                    it.childAnnotations.each { Annotation childIt ->
+                        annotationService.copy(childIt, copyAnnotation)
+                    }
+                    copy.addToAnnotations(copyAnnotation)
+                }
+            }
+
+            referenceFiles = referenceFileService.findAllByMultiFacetAwareItemId(original.id, [:])
+            referenceFiles.each {
+                copy.addToReferenceFiles(fileName: it.fileName,
+                        fileType: it.fileType, fileContents: it.fileContents,
+                        fileSize: it.fileSize, createdBy: copier.emailAddress)
+            }
         }
 
         metadata.each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
@@ -452,5 +481,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             }
         }
         extractedFilters
+    }
+
+    boolean copyAnnotations() {
+        ApiProperty property = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION)
+        property?.value?.toBoolean()
     }
 }

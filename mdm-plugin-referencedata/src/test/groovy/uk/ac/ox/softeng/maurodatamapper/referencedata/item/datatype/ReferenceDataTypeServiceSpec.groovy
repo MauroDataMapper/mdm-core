@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -45,8 +47,9 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         mockArtefact(ReferenceEnumerationTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
         mockArtefact(ReferenceEnumerationValueService)
+        mockArtefact(ApiPropertyService)
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue,
-                    ReferenceDataElement)
+                    ReferenceDataElement, ApiProperty)
 
         referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
