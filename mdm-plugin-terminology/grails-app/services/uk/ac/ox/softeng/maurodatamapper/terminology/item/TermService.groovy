@@ -102,7 +102,7 @@ class TermService extends ModelItemService<Term> {
         List<UUID> termIds = Term.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termIds) {
-            Utils.executeInBatches(modelIds as List, {ids ->
+            Utils.executeInBatches(termIds as List, {ids ->
                 log.trace('Removing TermRelationships in {} Terms', ids.size())
                 termRelationshipService.deleteAllByModelIds(modelIds)
                 log.trace('Removing CodeSet references for {} Terms', ids.size())
