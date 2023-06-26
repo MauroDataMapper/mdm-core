@@ -30,9 +30,10 @@ CREATE INDEX join_codeset_to_facet_reference_file_idx ON terminology.join_codese
 CREATE INDEX join_codeset_to_facet_metadata_idx ON terminology.join_codeset_to_facet(metadata_id);
 CREATE INDEX join_codeset_to_facet_rule_idx ON terminology.join_codeset_to_facet(rule_id);
 
--- create breadcrumb tree index on codeset
+-- create breadcrumb tree index on codeset and terminology
 
 CREATE INDEX code_set_breadcrumb_tree_idx ON terminology.code_set(breadcrumb_tree_id);
+CREATE INDEX terminology_breadcrumb_tree_idx ON terminology.terminology(breadcrumb_tree_id);
 
 -- create indexes on codeset join table
 
