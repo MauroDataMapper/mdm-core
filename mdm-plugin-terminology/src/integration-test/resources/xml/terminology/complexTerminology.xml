@@ -54,6 +54,15 @@
                 <mdm:description>with description</mdm:description>
             </mdm:annotation>
         </mdm:annotations>
+        <mdm:rules>
+          <mdm:rule>
+            <mdm:id>1099029b-c73d-4adc-b549-c475e2a64a5c</mdm:id>
+            <mdm:createdBy>development@test.com</mdm:createdBy>
+            <mdm:lastUpdated>2023-06-29T15:48:48.076Z</mdm:lastUpdated>
+            <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+            <mdm:description>Functional Test Description</mdm:description>
+          </mdm:rule>
+        </mdm:rules>
         <mdm:author>Test Bootstrap</mdm:author>
         <mdm:organisation>Oxford BRC</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
@@ -114,6 +123,15 @@
                 <mdm:id>6f14fe75-7e3f-475e-b0b8-0f12f01861df</mdm:id>
                 <mdm:label>CTT1: Complex Test Term 1</mdm:label>
                 <mdm:lastUpdated>2022-01-11T16:01:29.466Z</mdm:lastUpdated>
+                <mdm:rules>
+                  <mdm:rule>
+                    <mdm:id>ee43e6d3-420a-417c-bc67-35a3ad36db05</mdm:id>
+                    <mdm:createdBy>development@test.com</mdm:createdBy>
+                    <mdm:lastUpdated>2023-06-29T15:48:48.302Z</mdm:lastUpdated>
+                    <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+                    <mdm:description>Functional Test Description</mdm:description>
+                  </mdm:rule>
+                </mdm:rules>
                 <mdm:code>CTT1</mdm:code>
                 <mdm:definition>Complex Test Term 1</mdm:definition>
                 <mdm:depth>1</mdm:depth>
@@ -926,6 +944,15 @@
                 <mdm:id>30f6a890-9808-4f8e-b417-14959dc8107f</mdm:id>
                 <mdm:label>is-a-part-of</mdm:label>
                 <mdm:lastUpdated>2022-01-11T16:01:29.468Z</mdm:lastUpdated>
+                <mdm:rules>
+                  <mdm:rule>
+                    <mdm:id>7e8130ca-c7b0-40eb-9535-90db3ccc32e4</mdm:id>
+                    <mdm:createdBy>development@test.com</mdm:createdBy>
+                    <mdm:lastUpdated>2023-06-29T15:48:48.441Z</mdm:lastUpdated>
+                    <mdm:name>Bootstrapped Functional Test Rule</mdm:name>
+                    <mdm:description>Functional Test Description</mdm:description>
+                  </mdm:rule>
+                </mdm:rules>
                 <mdm:relationshipType>is-a-part-of</mdm:relationshipType>
                 <mdm:sourceTerm>CTT1</mdm:sourceTerm>
                 <mdm:targetTerm>CTT00</mdm:targetTerm>

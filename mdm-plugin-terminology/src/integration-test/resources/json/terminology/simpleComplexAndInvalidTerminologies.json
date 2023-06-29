@@ -122,6 +122,15 @@
           "description": "with description"
         }
       ],
+      "rules": [
+        {
+          "id": "${json-unit.matches:id}",
+          "createdBy": "development@test.com",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "name": "Bootstrapped Functional Test Rule",
+          "description": "Functional Test Description"
+        }
+      ],
       "author": "Test Bootstrap",
       "organisation": "Oxford BRC",
       "documentationVersion": "1.0.0",
@@ -135,32 +144,41 @@
         {
           "id": "${json-unit.matches:id}",
           "label": "is-a",
-          "displayLabel": "Is A",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "displayLabel": "Is A",
           "parentalRelationship": false,
           "childRelationship": false
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "is-a-part-of",
-          "displayLabel": "Is A Part Of",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "displayLabel": "Is A Part Of",
           "parentalRelationship": false,
           "childRelationship": true
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "broaderThan",
-          "displayLabel": "Broader Than",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "displayLabel": "Broader Than",
           "parentalRelationship": true,
           "childRelationship": false
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "narrowerThan",
-          "displayLabel": "Narrower Than",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "rules": [
+            {
+              "id": "${json-unit.matches:id}",
+              "createdBy": "development@test.com",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "name": "Bootstrapped Functional Test Rule",
+              "description": "Functional Test Description"
+            }
+          ],
+          "displayLabel": "Narrower Than",
           "parentalRelationship": false,
           "childRelationship": false
         }
@@ -180,6 +198,15 @@
           "id": "${json-unit.matches:id}",
           "label": "CTT1: Complex Test Term 1",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "rules": [
+            {
+              "id": "${json-unit.matches:id}",
+              "createdBy": "development@test.com",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "name": "Bootstrapped Functional Test Rule",
+              "description": "Functional Test Description"
+            }
+          ],
           "code": "CTT1",
           "definition": "Complex Test Term 1",
           "depth": 1
@@ -988,581 +1015,938 @@
       ],
       "termRelationships": [
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "rules": [
+            {
+              "id": "${json-unit.matches:id}",
+              "createdBy": "development@test.com",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "name": "Bootstrapped Functional Test Rule",
+              "description": "Functional Test Description"
+            }
+          ],
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT1",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT2",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT2",
           "targetTerm": "CTT1"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT3",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT3",
           "targetTerm": "CTT2"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT4",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT4",
           "targetTerm": "CTT3"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT5",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT5",
           "targetTerm": "CTT4"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT6",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT6",
           "targetTerm": "CTT5"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT7",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT7",
           "targetTerm": "CTT6"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT8",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT8",
           "targetTerm": "CTT7"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT9",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "narrowerThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "narrowerThan",
           "sourceTerm": "CTT9",
           "targetTerm": "CTT8"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT10",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT11",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT11",
           "targetTerm": "CTT12"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT12",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT12",
           "targetTerm": "CTT13"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT13",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT13",
           "targetTerm": "CTT14"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT14",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT14",
           "targetTerm": "CTT15"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT15",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT15",
           "targetTerm": "CTT16"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT16",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT16",
           "targetTerm": "CTT17"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT17",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT17",
           "targetTerm": "CTT18"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT18",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "broaderThan",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "broaderThan",
           "sourceTerm": "CTT18",
           "targetTerm": "CTT19"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT19",
           "targetTerm": "CTT10"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT20",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT21",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT22",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT23",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT24",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT25",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT26",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT27",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT28",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT29",
           "targetTerm": "CTT20"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT30",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT31",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT32",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT33",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT34",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT35",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT36",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT37",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT38",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT39",
           "targetTerm": "CTT30"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT40",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT41",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT42",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT43",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT44",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT45",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT46",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT47",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT48",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT49",
           "targetTerm": "CTT40"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT50",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT51",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT52",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT53",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT54",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT55",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT56",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT57",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT58",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT59",
           "targetTerm": "CTT50"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT60",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT61",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT62",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT63",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT64",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT65",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT66",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT67",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT68",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT69",
           "targetTerm": "CTT60"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT70",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT71",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT72",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT73",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT74",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT75",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT76",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT77",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT78",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT79",
           "targetTerm": "CTT70"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT80",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT81",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT82",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT83",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT84",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT85",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT86",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT87",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT88",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT89",
           "targetTerm": "CTT80"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT90",
           "targetTerm": "CTT00"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT91",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT92",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT93",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT94",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT95",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT96",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT97",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT98",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a-part-of",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a-part-of",
           "sourceTerm": "CTT99",
           "targetTerm": "CTT90"
         },
         {
+          "id": "${json-unit.matches:id}",
+          "label": "is-a",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "relationshipType": "is-a",
           "sourceTerm": "CTT100",
           "targetTerm": "CTT00"

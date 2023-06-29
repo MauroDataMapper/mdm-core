@@ -979,7 +979,8 @@
                 <mdm:term>
                     <mdm:id>4fd67a0e-9d28-4421-9a3e-5b8f3a383140</mdm:id>
                     <mdm:label>CTT101</mdm:label>
-                    <mdm:description>Example of truncated term label when code and definition are the same</mdm:description>
+                    <mdm:description>Example of truncated term label when code and definition are the
+                        same</mdm:description>
                     <mdm:lastUpdated>2022-01-11T16:01:28.106Z</mdm:lastUpdated>
                     <mdm:code>CTT101</mdm:code>
                     <mdm:definition>CTT101</mdm:definition>
