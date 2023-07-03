@@ -1391,7 +1391,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyJsonExporterService",
-                "version": "4.0",
+                "version": "4.1",
                 "displayName": "JSON Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1403,7 +1403,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
             },
             {
                 "name": "TerminologyXmlExporterService",
-                "version": "5.0",
+                "version": "5.1",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1443,7 +1443,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "4.0"
+                    "version": "4.1"
                 }
             }
         }'''
@@ -1618,7 +1618,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "4.0"
+                    "version": "4.1"
                 }
             }
         }'''
@@ -1705,7 +1705,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyXmlImporterService",
-                "version": "5.0",
+                "version": "5.1",
                 "displayName": "XML Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -1719,7 +1719,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
             },
             {
                 "name": "TerminologyJsonImporterService",
-                "version": "4.0",
+                "version": "4.1",
                 "displayName": "JSON Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,

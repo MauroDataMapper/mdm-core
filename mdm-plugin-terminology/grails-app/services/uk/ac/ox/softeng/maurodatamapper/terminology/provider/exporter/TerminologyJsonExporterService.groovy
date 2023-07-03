@@ -41,7 +41,7 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
 
     @Override
     String getVersion() {
-        '4.0'
+        '4.1'
     }
 
     @Override

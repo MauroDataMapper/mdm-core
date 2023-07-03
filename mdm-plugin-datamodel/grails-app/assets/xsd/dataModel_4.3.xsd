@@ -101,6 +101,25 @@ However be aware that any DataTypes which use the same label will use the first 
       <xs:element minOccurs="0" name="childAnnotations" type="mdm:childAnnotationsType"/>
     </xs:sequence>
   </xs:complexType>
+  <xs:complexType name="childAnnotationsType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:childAnnotationType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="childAnnotationType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation/>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="createdBy" type="mdm:mandatoryString"/>
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType"/>
+    </xs:sequence>
+  </xs:complexType>
   <xs:complexType name="rulesType">
     <xs:sequence>
       <xs:element maxOccurs="unbounded" name="rule" type="mdm:ruleType"/>
@@ -127,25 +146,6 @@ However be aware that any DataTypes which use the same label will use the first 
       <xs:element minOccurs="0" name="language" type="xs:string"/>
       <xs:element minOccurs="0" name="representation" type="xs:string"/>
       <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="childAnnotationsType">
-    <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:childAnnotationType"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="childAnnotationType">
-    <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
-      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation/>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="createdBy" type="mdm:mandatoryString"/>
-      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
-      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
-      <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataTypesType">

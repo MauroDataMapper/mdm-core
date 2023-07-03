@@ -42,7 +42,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
     @Override
     String getVersion() {
-        '5.0'
+        '5.1'
     }
 
     @Override

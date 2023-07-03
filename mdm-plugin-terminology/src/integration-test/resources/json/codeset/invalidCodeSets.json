@@ -13,7 +13,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "CodeSetJsonExporterService",
-      "version": "4.0"
+      "version": "4.1"
     }
   }
 }

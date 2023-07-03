@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/codeSet/4.0">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/codeSet/4.1">
   <mdm:codeSet>
     <mdm:id>523d6a7f-efd4-4200-94c5-970555bf3408</mdm:id>
     <mdm:label>Complex Test CodeSet</mdm:label>
@@ -160,7 +160,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
       <exp:name>CodeSetXmlExporterService</exp:name>
-      <exp:version>5.0</exp:version>
+      <exp:version>5.1</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>
