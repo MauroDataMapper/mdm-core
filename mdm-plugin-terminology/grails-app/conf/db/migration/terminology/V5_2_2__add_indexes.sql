@@ -1,0 +1,41 @@
+-- index all columns on terminology.join_term_to_facet
+
+CREATE INDEX join_term_to_facet_term_idx ON terminology.join_term_to_facet(term_id);
+CREATE INDEX join_term_to_facet_classifier_idx ON terminology.join_term_to_facet(classifier_id);
+CREATE INDEX join_term_to_facet_annotation_idx ON terminology.join_term_to_facet(annotation_id);
+CREATE INDEX join_term_to_facet_semantic_link_idx ON terminology.join_term_to_facet(semantic_link_id);
+CREATE INDEX join_term_to_facet_reference_file_idx ON terminology.join_term_to_facet(reference_file_id);
+CREATE INDEX join_term_to_facet_metadata_idx ON terminology.join_term_to_facet(metadata_id);
+CREATE INDEX join_term_to_facet_rule_idx ON terminology.join_term_to_facet(rule_id);
+
+-- index all columns on terminology.join_terminology_to_facet
+
+CREATE INDEX join_terminology_to_facet_terminology_idx ON terminology.join_terminology_to_facet(terminology_id);
+CREATE INDEX join_terminology_to_facet_classifier_idx ON terminology.join_terminology_to_facet(classifier_id);
+CREATE INDEX join_terminology_to_facet_annotation_idx ON terminology.join_terminology_to_facet(annotation_id);
+CREATE INDEX join_terminology_to_facet_semantic_link_idx ON terminology.join_terminology_to_facet(semantic_link_id);
+CREATE INDEX join_terminology_to_facet_version_link_idx ON terminology.join_terminology_to_facet(version_link_id);
+CREATE INDEX join_terminology_to_facet_reference_file_idx ON terminology.join_terminology_to_facet(reference_file_id);
+CREATE INDEX join_terminology_to_facet_metadata_idx ON terminology.join_terminology_to_facet(metadata_id);
+CREATE INDEX join_terminology_to_facet_rule_idx ON terminology.join_terminology_to_facet(rule_id);
+
+-- index all columns on terminology.join_codeset_to_facet
+
+CREATE INDEX join_codeset_to_facet_codeset_idx ON terminology.join_codeset_to_facet(codeset_id);
+CREATE INDEX join_codeset_to_facet_classifier_idx ON terminology.join_codeset_to_facet(classifier_id);
+CREATE INDEX join_codeset_to_facet_annotation_idx ON terminology.join_codeset_to_facet(annotation_id);
+CREATE INDEX join_codeset_to_facet_semantic_link_idx ON terminology.join_codeset_to_facet(semantic_link_id);
+CREATE INDEX join_codeset_to_facet_version_link_idx ON terminology.join_codeset_to_facet(version_link_id);
+CREATE INDEX join_codeset_to_facet_reference_file_idx ON terminology.join_codeset_to_facet(reference_file_id);
+CREATE INDEX join_codeset_to_facet_metadata_idx ON terminology.join_codeset_to_facet(metadata_id);
+CREATE INDEX join_codeset_to_facet_rule_idx ON terminology.join_codeset_to_facet(rule_id);
+
+-- create breadcrumb tree index on codeset and terminology
+
+CREATE INDEX code_set_breadcrumb_tree_idx ON terminology.code_set(breadcrumb_tree_id);
+CREATE INDEX terminology_breadcrumb_tree_idx ON terminology.terminology(breadcrumb_tree_id);
+
+-- create indexes on codeset join table
+
+CREATE INDEX join_codeset_to_term_term_idx ON terminology.join_codeset_to_term(term_id);
+CREATE INDEX join_codeset_to_term_codeset_idx ON terminology.join_codeset_to_term(codeset_id);
