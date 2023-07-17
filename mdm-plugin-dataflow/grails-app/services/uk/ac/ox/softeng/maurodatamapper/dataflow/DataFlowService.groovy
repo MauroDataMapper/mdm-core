@@ -106,7 +106,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
             log.trace('Removing {} DataFlows', dataFlowIds.size())
 
-            Utils.executeInBatches(modelIds, { ids ->
+            Utils.executeInBatches(modelIds as List, { ids ->
                 sessionFactory.currentSession
                         .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id in :ids OR target_id in :ids')
                         .setParameter('ids', ids)
