@@ -40,7 +40,8 @@ enum ApiPropertyEnum {
     EMAIL_PASSWORD_RESET_BODY('email.password_reset.body'),
     SECURITY_RESTRICT_ROOT_FOLDER('security.restrict.root.folder'),
     SECURITY_RESTRICT_CLASSIFIER_CREATE('security.restrict.classifier.create'),
-    SECURITY_HIDE_EXCEPTIONS('security.hide.exception')
+    SECURITY_HIDE_EXCEPTIONS('security.hide.exception'),
+    FEATURE_ATTACHMENT_SIZE_LIMIT('feature.attachment_size_limit_mb')
 
     String key
 
