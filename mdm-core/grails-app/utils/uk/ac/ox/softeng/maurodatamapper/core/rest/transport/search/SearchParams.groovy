@@ -35,7 +35,7 @@ class SearchParams implements Validateable {
     String sort
     String searchTerm
     Boolean labelOnly
-    Boolean supercededDocuments
+    Boolean includeSuperseded
     List<String> domainTypes
     Date lastUpdatedBefore
     Date lastUpdatedAfter
@@ -62,7 +62,7 @@ class SearchParams implements Validateable {
         classifiers = []
         classifierFilter = []
         labelOnly = false
-        supercededDocuments = false
+        includeSuperseded = false
     }
 
     void setLimit(Integer limit) {

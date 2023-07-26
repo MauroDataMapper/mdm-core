@@ -209,4 +209,23 @@ class PathService {
         }
         throw new ApiInternalException('PSXX', "No domain service found for prefix [${prefix}]")
     }
+
+    MdmDomain findRootResourceByPath(Path path) {
+        if (path.isEmpty()) {
+            throw new ApiBadRequestException('PS05', 'Must have a path to search')
+        }
+
+        PathNode rootNode = path.first()
+
+        MdmDomainService domainService = domainServices.find {service ->
+            service.handlesPathPrefix(rootNode.prefix)
+        }
+
+        if (!domainService) {
+            log.warn("Unknown path prefix [${rootNode.prefix}] in path")
+            return null
+        }
+
+        domainService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+    }
 }
