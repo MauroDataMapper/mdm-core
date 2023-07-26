@@ -104,7 +104,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                 results.removeIf {it.id in owningIds}
             }
 
-            List<K> excludedIds = getExcludedCatalogueItemIds(searchParams, items)
+            List<K> excludedIds = getExcludedCatalogueItemIds(searchParams, results.results)
             results.removeIf {it.id in excludedIds}
             results.removeIf {it -> ((MdmDomain)pathService.findRootResourceByPath(it.path)).id in excludedIds}
 
@@ -224,9 +224,18 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                 service.findAllExcludedIds(items*.id, searchParams.includeSuperseded, searchParams.includeSuperseded)
             }.findAll().flatten() as List<K>
 
+            // Remove older versions of parent data models
+            List<K> parentIds = items.collect{((MdmDomain)pathService.findRootResourceByPath(it.path)).id }
+            excludedIds.addAll(
+                versionLinkAwareServices.collect {service ->
+                        service.findAllExcludedIds(parentIds, searchParams.includeSuperseded, searchParams.includeSuperseded)
+                    }.findAll().flatten() as List<K>
+            )
+
             log.debug("Found excludedIds {}: {}", excludedIds.size(), excludedIds)
 
         }
         excludedIds
     }
+
 }
