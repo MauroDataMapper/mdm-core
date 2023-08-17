@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core
 
+import org.springframework.beans.factory.annotation.Value
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
@@ -61,6 +63,9 @@ class BootStrap {
 
     @Autowired
     MessageSource messageSource
+
+    @Value('${grails.controllers.upload.maxFileSize}')
+    Integer maxFileUploadSize
 
     def init = {servletContext ->
 
@@ -146,6 +151,18 @@ class BootStrap {
         apiPropertyService.checkAndSetSiteUrl(grailsApplication.config.getProperty('grails.serverURL', String),
                                               grailsApplication.config.getProperty('grails.contextPath', String),
                                               bootstrapUser)
+
+        // Get the default maximum upload file size from config
+        if (!apiPropertyService.findByKey(ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT.key)) {
+            Integer maxFileUploadSizeMb = (maxFileUploadSize / 1024 / 1024)
+            apiPropertyService.save(
+                    ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT.key,
+                    maxFileUploadSizeMb,
+                    bootstrapUser,
+                    ApiProperty.extractDefaultCategoryFromKey(ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT.key)
+            )
+        }
+
     }
 
     boolean configureEmailProviderServices(Config config) {

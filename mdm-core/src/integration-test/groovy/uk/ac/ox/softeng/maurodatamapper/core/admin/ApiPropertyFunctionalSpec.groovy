@@ -39,12 +39,12 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
     @RunOnce
     @Transactional
     def setup() {
-        assert apiPropertyService.count() == 15
+        assert apiPropertyService.count() == 16
     }
 
     @Override
     int getExpectedInitialResourceCount() {
-        15
+        16
     }
 
     @Override
@@ -220,7 +220,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
-        assert responseBody().count == 15
+        assert responseBody().count == 16
 
         ApiPropertyEnum.values()
             .findAll {
@@ -228,7 +228,9 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
                          ApiPropertyEnum.EMAIL_FROM_ADDRESS,
                          ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
-                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS])
+                         ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                ])
             }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {
@@ -240,8 +242,8 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
     void verifyR3IndexResponse(String expectedId) {
         verifyResponse(HttpStatus.OK, response)
-        assert responseBody().count == 16
-        assert responseBody().items.size() == 16
+        assert responseBody().count == 17
+        assert responseBody().items.size() == 17
         assert responseBody().items.any {it.id == expectedId}
     }
 
@@ -326,7 +328,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         verifyResponse(HttpStatus.OK, jsonCapableResponse)
         String csv = jsonCapableResponse.body().toString()
         String[] lines = csv.split('\r\n')
-        assert lines.size() == 16 //header + 15 rows
+        assert lines.size() == 17 //header + 17 rows
         assert lines[0] == 'id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated'
         String id = lines[1].split(",")[0]
 
@@ -371,7 +373,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         GET('')
 
         then:
-        responseBody().count == 15
+        responseBody().count == 16
         responseBody().items[0].key == 'email.invite_edit.body'
         String id = responseBody().items[0].id
 

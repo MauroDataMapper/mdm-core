@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.BootStrap
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.HibernateSearchIndexParameters
@@ -46,7 +45,7 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         mockDomain(ApiProperty)
 
         ApiPropertyService apiPropertyService = new ApiPropertyService()
-
+        apiPropertyService.maxFileUploadSize = 200000000
         apiPropertyService.assetResourceLocator = Mock(AssetResourceLocator) {
             findAssetForURI('defaults.properties') >> {
                 Path path = Paths.get('grails-app/assets/api/defaults.properties')
@@ -64,6 +63,7 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         }
 
         BootStrap bootStrap = new BootStrap()
+        bootStrap.maxFileUploadSize = 200000000
         bootStrap.grailsApplication = grailsApplication
         bootStrap.apiPropertyService = apiPropertyService
         bootStrap.grailsApplication.config.simplejavamail.smtp.username = 'Unit Test Controller'

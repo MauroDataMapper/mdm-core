@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <apiProperties>
-    <count>15</count>
+    <count>16</count>
     <items>
         <apiProperty>
             <id>cd07f97f-5315-45f4-894f-ed814b835653</id>
@@ -202,6 +202,16 @@
 
                 (This is an automated mail).</value>
             <category>Email</category>
+            <publiclyVisible>false</publiclyVisible>
+            <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+            <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
+            <lastUpdated>2021-10-28T13:49:24.804440+01:00</lastUpdated>
+        </apiProperty>
+        <apiProperty>
+            <id>d90f11b1-411e-423a-b353-320b3ca207aa</id>
+            <key>feature.attachment_size_limit_mb</key>
+            <value>190</value>
+            <category>Feature</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
