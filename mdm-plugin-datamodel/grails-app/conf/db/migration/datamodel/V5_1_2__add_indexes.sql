@@ -1,0 +1,9 @@
+-- index all columns on datamodel.join_enumerationvalue_to_facet
+
+CREATE INDEX join_enumerationvalue_to_facet_enumerationvalue_idx ON datamodel.join_enumerationvalue_to_facet(enumerationvalue_id);
+CREATE INDEX join_enumerationvalue_to_facet_classifier_idx ON datamodel.join_enumerationvalue_to_facet(classifier_id);
+CREATE INDEX join_enumerationvalue_to_facet_annotation_idx ON datamodel.join_enumerationvalue_to_facet(annotation_id);
+CREATE INDEX join_enumerationvalue_to_facet_semantic_link_idx ON datamodel.join_enumerationvalue_to_facet(semantic_link_id);
+CREATE INDEX join_enumerationvalue_to_facet_reference_file_idx ON datamodel.join_enumerationvalue_to_facet(reference_file_id);
+CREATE INDEX join_enumerationvalue_to_facet_metadata_idx ON datamodel.join_enumerationvalue_to_facet(metadata_id);
+CREATE INDEX join_enumerationvalue_to_facet_rule_idx ON datamodel.join_enumerationvalue_to_facet(rule_id);
