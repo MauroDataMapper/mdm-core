@@ -7,17 +7,14 @@ database:
 ---
 maurodatamapper:
     security:
-        public: false
+        public: true
     authority:
         name: 'Mauro Data Mapper'
         url: http://localhost
-    email:
-        from:
-            address: 'mtf@maurodatamapper.com'
 grails:
-    profile: rest-api
+    profile: rest-api-plugin
     codegen:
-        defaultPackage: uk.ac.ox.softeng.maurodatamapper.testing.functional
+        defaultPackage: uk.ac.ox.softeng.maurodatamapper.ui
     gorm:
         reactor:
             # Whether to translate GORM events into Reactor events
@@ -135,27 +132,41 @@ grails:
             - "yyyy-MM-dd"
 ---
 hibernate:
+    cache:
+        queries: false
+        use_second_level_cache: true
+        use_query_cache: true
+        region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+    javax:
+        cache:
+            provider: org.ehcache.jsr107.EhcacheCachingProvider
+            missing_cache_strategy: create
     search:
         backend:
             directory:
                 root: 'build/lucene'
-grails:
-    plugins:
-        hibernatesearch:
-            rebuildIndexOnStart: false
 
 ---
 dataSource:
     pooled: true
     jmxExport: true
+    driverClassName: org.postgresql.Driver
+    dialect: org.hibernate.dialect.PostgreSQL10Dialect
     formatSql: true
+    url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
+    dbCreate: none
 ---
 environments:
     test:
+        maurodatamapper:
+            authority:
+                name: 'Test Authority'
+                url: 'http://localhost'
         spring.flyway.enabled: false
         database:
-            name: 'mtf'
-            creation: 'CREATE SCHEMA IF NOT EXISTS CORE\;CREATE SCHEMA IF NOT EXISTS SECURITY\;CREATE SCHEMA IF NOT EXISTS DATAMODEL\;CREATE SCHEMA IF NOT EXISTS TERMINOLOGY\;CREATE SCHEMA IF NOT EXISTS DATAFLOW\;CREATE SCHEMA IF NOT EXISTS REFERENCEDATA\;CREATE SCHEMA IF NOT EXISTS FEDERATION'
+            name: 'mpp'
+            creation: 'CREATE SCHEMA IF NOT EXISTS CORE\;CREATE SCHEMA IF NOT EXISTS DATAMODEL\;CREATE SCHEMA IF NOT EXISTS TERMINOLOGY'
         dataSource:
             driverClassName: org.h2.Driver
             dialect: org.hibernate.dialect.H2Dialect
@@ -165,18 +176,7 @@ environments:
             url: 'jdbc:h2:mem:${database.name};LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;INIT=${database.creation}'
     development:
         dataSource:
-            driverClassName: org.postgresql.Driver
-            dialect: org.hibernate.dialect.PostgreSQL10Dialect
             username: maurodatamapper
             password: MauroDataMapper1234
-            dbCreate: none
-            url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
-    production:
-        dataSource:
-            driverClassName: org.postgresql.Driver
-            dialect: org.hibernate.dialect.PostgreSQL10Dialect
-            username: maurodatamapper
-            password: MauroDataMapper1234
-            dbCreate: none
-            url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
+
 ---

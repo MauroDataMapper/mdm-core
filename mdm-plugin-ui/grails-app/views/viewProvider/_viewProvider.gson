@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
+model {
+}
+
+json {
+}

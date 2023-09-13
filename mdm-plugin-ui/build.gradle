@@ -3,21 +3,24 @@ buildscript {
         mavenLocal()
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-        maven {url "https://repo.grails.org/grails/core"}
+        maven { url "https://repo.grails.org/grails/core" }
+
     }
     dependencies {
         classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath "org.grails.plugins:hibernate5:$grailsHibernate5Version"
         classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:$assetPipelineVersion"
+
     }
 }
 
 apply plugin: "idea"
-apply plugin: "war"
-apply plugin: "org.grails.grails-web"
+apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
+//apply plugin: "com.bertramlabs.asset-pipeline"
 
 apply plugin: 'uk.ac.ox.softeng.maurodatamapper.gradle.mdm-grails'
 
@@ -56,14 +59,14 @@ dependencies {
     implementation "org.grails:grails-logging"
     implementation "org.grails.plugins:cache"
     implementation "org.grails.plugins:async"
-    implementation "org.grails.plugins:events"
     implementation "org.grails.plugins:hibernate5"
     implementation "org.hibernate:hibernate-core"
     implementation "org.grails.plugins:views-json"
     implementation "org.grails.plugins:views-json-templates"
     implementation "org.grails.plugins:views-markup"
     implementation "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
-    profile "org.grails.profiles:rest-api"
+    profile "org.grails.profiles:rest-api-plugin"
+    developmentOnly "org.springframework.boot:spring-boot-starter-tomcat"
     runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
     integrationTestRuntimeOnly "com.h2database:h2"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
@@ -76,8 +79,6 @@ dependencies {
     testImplementation "org.grails:views-json-testing-support"
     testImplementation "org.hibernate.validator:hibernate-validator"
     testImplementation "io.micronaut:micronaut-http-client"
-
-    implementation "uk.ac.ox.softeng.maurodatamapper.plugins:mdm-plugin-forms:1.1.0-SNAPSHOT"
 }
 
 bootRun {
@@ -92,89 +93,17 @@ bootRun {
     System.properties.each {prop ->
         systemProperty prop.key, prop.value
     }
-
     String springProfilesActive = 'spring.profiles.active'
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
-    systemProperty 'user.dir', projectDir
 }
+// enable if you wish to package this plugin as a standalone application
+bootJar.enabled = false
 
 grails {
     plugins {
         implementation project(':mdm-core')
-        implementation project(':mdm-plugin-authentication-basic')
-        implementation project(':mdm-plugin-authentication-apikey')
         implementation project(':mdm-plugin-datamodel')
-        implementation project(':mdm-plugin-terminology')
-        implementation project(':mdm-plugin-referencedata')
-        implementation project(':mdm-plugin-federation')
-        //        compile project(':mdm-plugin-email-proxy')
-        implementation project(':mdm-security')
-        implementation project(':mdm-plugin-dataflow')
-        implementation project(':mdm-plugin-profile')
-        implementation project(':mdm-plugin-ui')
     }
 }
 
 apply from: 'dependencies.gradle'
-
-String testCategory = ''
-String testPackage = ''
-
-if (System.getProperty('gradle.test.category')) {
-    testCategory = System.getProperty('gradle.test.category')
-}
-if (System.getProperty('gradle.test.package')) {
-    testPackage = System.getProperty('gradle.test.package')
-}
-
-integrationTest {
-    //    failFast true
-    useJUnitPlatform()
-
-    if (testPackage) {
-        logger.quiet('Filtering to tests on {}', "uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*")
-        filter {
-            includeTestsMatching "uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*"
-        }
-
-        binaryResultsDirectory.set(file("${project.testResultsDir}/${testPackage}/binary"))
-        reports {
-            junitXml.getOutputLocation().set file("${project.testResultsDir}/${testPackage}")
-
-        }
-        mergeTestReports.reportOn(file("${project.testResultsDir}/${testPackage}/binary"))
-
-        systemProperty('mdm.logFileName', "e2e-${testPackage}")
-    }
-
-    if (testCategory) {
-        binaryResultsDirectory.set(file("${project.testResultsDir}/${testCategory}/binary"))
-        reports {
-            junitXml.getOutputLocation().set file("${project.testResultsDir}/${testCategory}")
-
-        }
-        mergeTestReports.reportOn(file("${project.testResultsDir}/${testCategory}/binary"))
-    }
-}
-
-afterEvaluate {
-
-    tasks.withType(AbstractPublishToMaven).configureEach {
-        enabled = false
-    }
-    sonarqube {
-        properties {
-            property 'sonar.sources', ''
-            property 'sonar.java.binaries', ''
-            property 'sonar.groovy.binaries', ''
-            property 'sonar.tests', findAllExisting(project, project.sourceSets.integrationTest.allSource.srcDirs +
-                                                             project.sourceSets.main.allSource.srcDirs)
-            property 'sonar.java.test.binaries', project.sourceSets.integrationTest.output.classesDirs +
-                                                 project.sourceSets.main.output.classesDirs
-        }
-    }
-}
-
-List<File> findAllExisting(Project project, Collection<File> files) {
-    files.findAll {it.exists()}.collect {project.projectDir.relativePath(it)}
-}
