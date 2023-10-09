@@ -170,23 +170,23 @@ class DateIntervalHelper extends AbstractIntervalHelper<LocalDateTime> {
 
             LocalDateTime finish = start.plus(intervalLengthSize, intervalLengthDimension)
             String label
-            if (intervalLengthSize == 1 && intervalLengthDimension == ChronoUnit.YEARS) {
+            if ("${start.getYear()}" == "${finish.getYear()}" && intervalLengthDimension == ChronoUnit.YEARS) {
                 label = "${start.getYear()}"
             } else if (intervalLengthDimension == ChronoUnit.DECADES || intervalLengthDimension == ChronoUnit.YEARS) {
                 label = "${start.getYear()}${labelSeparator}${finish.getYear()}"
-            } else if (intervalLengthSize == 1 && intervalLengthDimension == ChronoUnit.MONTHS) {
+            } else if ("${start.format(monthDateFormatter)}" == "${finish.format(monthDateFormatter)}" && intervalLengthDimension == ChronoUnit.MONTHS) {
                 label = start.format(monthDateFormatter)
             } else if (intervalLengthDimension == ChronoUnit.MONTHS) {
                 label = "${start.format(monthDateFormatter)}${labelSeparator}${finish.format(monthDateFormatter)}"
-            } else if (intervalLengthSize == 1 && intervalLengthDimension == ChronoUnit.DAYS) {
+            } else if ("${start.format(dateFormatter)}" == "${finish.format(dateFormatter)}" && intervalLengthDimension == ChronoUnit.DAYS) {
                 label = start.format(dateFormatter)
             } else if (intervalLengthDimension == ChronoUnit.DAYS) {
                 label = "${start.format(dateFormatter)}${labelSeparator}${finish.format(dateFormatter)}"
-            } else if (intervalLengthSize == 1 && intervalLengthDimension == ChronoUnit.HOURS) {
+            } else if ("${start.format(dateTimeFormatter)}" == "${finish.format(dateTimeFormatter)}" && intervalLengthDimension == ChronoUnit.HOURS) {
                 label = start.format(dateTimeFormatter)
             } else if (intervalLengthDimension == ChronoUnit.HOURS) {
                 label = "${start.format(dateTimeFormatter)}${labelSeparator}${finish.format(dateTimeFormatter)}"
-            } else if (intervalLengthSize == 1 && intervalLengthDimension == ChronoUnit.MINUTES) {
+            } else if ("${start.format(dateTimeFormatter)}" == "${finish.format(dateTimeFormatter)}" && intervalLengthDimension == ChronoUnit.MINUTES) {
                 label = start.format(dateTimeFormatter)
             } else {
                 label = "${start.format(dateTimeFormatter)}${labelSeparator}${finish.format(dateTimeFormatter)}"
