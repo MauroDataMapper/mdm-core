@@ -39,14 +39,6 @@ abstract class NumericIntervalHelper<N extends Number> extends AbstractIntervalH
         }
     }
 
-    void calculateIntervals() {
-        intervalStarts.each {start ->
-            N finish = safeConvert(start + getIntervalLength())
-            String label = "${start}" == "${finish}" ? "${start}" : "${start}${labelSeparator}${finish}"
-            addInterval(label, new Pair(start, finish))
-        }
-    }
-
     @Override
     void calculateInterval() {
 

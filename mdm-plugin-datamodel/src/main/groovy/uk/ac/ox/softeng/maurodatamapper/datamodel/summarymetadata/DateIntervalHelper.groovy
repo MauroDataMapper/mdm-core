@@ -169,27 +169,49 @@ class DateIntervalHelper extends AbstractIntervalHelper<LocalDateTime> {
         intervalStarts.each {start ->
 
             LocalDateTime finish = start.plus(intervalLengthSize, intervalLengthDimension)
+            ChronoUnit finishLabelAdjust
+            switch (intervalLengthDimension) {
+                case ChronoUnit.DECADES:
+                case ChronoUnit.YEARS:
+                    finishLabelAdjust =  ChronoUnit.MONTHS
+                    break
+                case ChronoUnit.MONTHS:
+                    finishLabelAdjust =  ChronoUnit.DAYS
+                    break
+                case ChronoUnit.DAYS:
+                    finishLabelAdjust =  ChronoUnit.HOURS
+                    break
+                case ChronoUnit.HOURS:
+                    finishLabelAdjust =  ChronoUnit.MINUTES
+                    break
+                case ChronoUnit.MINUTES:
+                    finishLabelAdjust =  ChronoUnit.SECONDS
+                    break
+                default:
+                    finishLabelAdjust = ChronoUnit.SECONDS
+            }
+            LocalDateTime labelFinish = finish.minus(1, finishLabelAdjust)
             String label
-            if ("${start.getYear()}" == "${finish.getYear()}" && intervalLengthDimension == ChronoUnit.YEARS) {
+            if ("${start.getYear()}" == "${labelFinish.getYear()}" && intervalLengthDimension == ChronoUnit.YEARS) {
                 label = "${start.getYear()}"
             } else if (intervalLengthDimension == ChronoUnit.DECADES || intervalLengthDimension == ChronoUnit.YEARS) {
-                label = "${start.getYear()}${labelSeparator}${finish.getYear()}"
-            } else if ("${start.format(monthDateFormatter)}" == "${finish.format(monthDateFormatter)}" && intervalLengthDimension == ChronoUnit.MONTHS) {
+                label = "${start.getYear()}${labelSeparator}${labelFinish.getYear()}"
+            } else if ("${start.format(monthDateFormatter)}" == "${labelFinish.format(monthDateFormatter)}" && intervalLengthDimension == ChronoUnit.MONTHS) {
                 label = start.format(monthDateFormatter)
             } else if (intervalLengthDimension == ChronoUnit.MONTHS) {
-                label = "${start.format(monthDateFormatter)}${labelSeparator}${finish.format(monthDateFormatter)}"
-            } else if ("${start.format(dateFormatter)}" == "${finish.format(dateFormatter)}" && intervalLengthDimension == ChronoUnit.DAYS) {
+                label = "${start.format(monthDateFormatter)}${labelSeparator}${labelFinish.format(monthDateFormatter)}"
+            } else if ("${start.format(dateFormatter)}" == "${labelFinish.format(dateFormatter)}" && intervalLengthDimension == ChronoUnit.DAYS) {
                 label = start.format(dateFormatter)
             } else if (intervalLengthDimension == ChronoUnit.DAYS) {
-                label = "${start.format(dateFormatter)}${labelSeparator}${finish.format(dateFormatter)}"
-            } else if ("${start.format(dateTimeFormatter)}" == "${finish.format(dateTimeFormatter)}" && intervalLengthDimension == ChronoUnit.HOURS) {
+                label = "${start.format(dateFormatter)}${labelSeparator}${labelFinish.format(dateFormatter)}"
+            } else if ("${start.format(dateTimeFormatter)}" == "${labelFinish.format(dateTimeFormatter)}" && intervalLengthDimension == ChronoUnit.HOURS) {
                 label = start.format(dateTimeFormatter)
             } else if (intervalLengthDimension == ChronoUnit.HOURS) {
-                label = "${start.format(dateTimeFormatter)}${labelSeparator}${finish.format(dateTimeFormatter)}"
-            } else if ("${start.format(dateTimeFormatter)}" == "${finish.format(dateTimeFormatter)}" && intervalLengthDimension == ChronoUnit.MINUTES) {
+                label = "${start.format(dateTimeFormatter)}${labelSeparator}${labelFinish.format(dateTimeFormatter)}"
+            } else if ("${start.format(dateTimeFormatter)}" == "${labelFinish.format(dateTimeFormatter)}" && intervalLengthDimension == ChronoUnit.MINUTES) {
                 label = start.format(dateTimeFormatter)
             } else {
-                label = "${start.format(dateTimeFormatter)}${labelSeparator}${finish.format(dateTimeFormatter)}"
+                label = "${start.format(dateTimeFormatter)}${labelSeparator}${labelFinish.format(dateTimeFormatter)}"
             }
             addInterval(label, new Pair(start, finish))
         }

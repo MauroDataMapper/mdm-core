@@ -58,63 +58,63 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
 
         when:
         LinkedHashMap expectedIntervals = new LinkedHashMap()
-        expectedIntervals['01/12/2019 - 03/12/2019'] = new Pair(
+        expectedIntervals['01/12/2019 - 02/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-01T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-03T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['03/12/2019 - 05/12/2019'] = new Pair(
+        expectedIntervals['03/12/2019 - 04/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-03T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-05T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['05/12/2019 - 07/12/2019'] = new Pair(
+        expectedIntervals['05/12/2019 - 06/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-05T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-07T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['07/12/2019 - 09/12/2019'] = new Pair(
+        expectedIntervals['07/12/2019 - 08/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-07T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-09T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['09/12/2019 - 11/12/2019'] = new Pair(
+        expectedIntervals['09/12/2019 - 10/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-09T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-11T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['11/12/2019 - 13/12/2019'] = new Pair(
+        expectedIntervals['11/12/2019 - 12/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-11T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-13T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['13/12/2019 - 15/12/2019'] = new Pair(
+        expectedIntervals['13/12/2019 - 14/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-13T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-15T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['15/12/2019 - 17/12/2019'] = new Pair(
+        expectedIntervals['15/12/2019 - 16/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-15T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-17T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['17/12/2019 - 19/12/2019'] = new Pair(
+        expectedIntervals['17/12/2019 - 18/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-17T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-19T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['19/12/2019 - 21/12/2019'] = new Pair(
+        expectedIntervals['19/12/2019 - 20/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-19T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-21T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['21/12/2019 - 23/12/2019'] = new Pair(
+        expectedIntervals['21/12/2019 - 22/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-21T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-23T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['23/12/2019 - 25/12/2019'] = new Pair(
+        expectedIntervals['23/12/2019 - 24/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-23T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-25T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['25/12/2019 - 27/12/2019'] = new Pair(
+        expectedIntervals['25/12/2019 - 26/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-25T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-27T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['27/12/2019 - 29/12/2019'] = new Pair(
+        expectedIntervals['27/12/2019 - 28/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-27T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-29T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-        expectedIntervals['29/12/2019 - 31/12/2019'] = new Pair(
+        expectedIntervals['29/12/2019 - 30/12/2019'] = new Pair(
             LocalDateTime.parse('2019-12-29T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             LocalDateTime.parse('2019-12-31T00:00:00', DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
@@ -161,7 +161,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MINUTES
         dih.intervalLengthSize == 2
         dih.intervals.size() == 7
-        hasFirstAndLast('23/02/2019 01:04 - 23/02/2019 01:06', '23/02/2019 01:16 - 23/02/2019 01:18')
+        hasFirstAndLast('23/02/2019 01:04 - 23/02/2019 01:05', '23/02/2019 01:16 - 23/02/2019 01:17')
 
         when:
         to = from.plusMinutes(22)
@@ -172,7 +172,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MINUTES
         dih.intervalLengthSize == 5
         dih.intervals.size() == 6
-        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:05', '23/02/2019 01:25 - 23/02/2019 01:30')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:04', '23/02/2019 01:25 - 23/02/2019 01:29')
 
         when:
         to = from.plusMinutes(36)
@@ -183,7 +183,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MINUTES
         dih.intervalLengthSize == 5
         dih.intervals.size() == 9
-        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:05', '23/02/2019 01:40 - 23/02/2019 01:45')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:04', '23/02/2019 01:40 - 23/02/2019 01:44')
 
         when:
         to = from.plusMinutes(65)
@@ -194,7 +194,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MINUTES
         dih.intervalLengthSize == 15
         dih.intervals.size() == 5
-        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:15', '23/02/2019 02:00 - 23/02/2019 02:15')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:14', '23/02/2019 02:00 - 23/02/2019 02:14')
 
         when:
         to = from.plusMinutes(125)
@@ -205,7 +205,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MINUTES
         dih.intervalLengthSize == 30
         dih.intervals.size() == 5
-        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:30', '23/02/2019 03:00 - 23/02/2019 03:30')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:29', '23/02/2019 03:00 - 23/02/2019 03:29')
 
     }
 
@@ -221,7 +221,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 1
         dih.intervals.size() == 7
-        hasFirstAndLast('23/02/2019 01:00', '23/02/2019 07:00')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:59', '23/02/2019 07:00 - 23/02/2019 07:59')
 
         when:
         to = from.plusHours(12)
@@ -232,7 +232,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 1
         dih.intervals.size() == 13
-        hasFirstAndLast('23/02/2019 01:00', '23/02/2019 13:00')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 01:59', '23/02/2019 13:00 - 23/02/2019 13:59')
 
         when:
         to = from.plusHours(18)
@@ -243,7 +243,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 10
-        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 03:00', '23/02/2019 19:00 - 23/02/2019 21:00')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 02:59', '23/02/2019 19:00 - 23/02/2019 20:59')
 
         when:
         to = from.plusHours(23)
@@ -254,7 +254,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 12
-        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 03:00', '23/02/2019 23:00 - 24/02/2019 01:00')
+        hasFirstAndLast('23/02/2019 01:00 - 23/02/2019 02:59', '23/02/2019 23:00 - 24/02/2019 00:59')
 
         when:
         to = from.plusDays(1)
@@ -265,7 +265,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 6
         dih.intervals.size() == 5
-        hasFirstAndLast('23/02/2019 00:00 - 23/02/2019 06:00', '24/02/2019 00:00 - 24/02/2019 06:00')
+        hasFirstAndLast('23/02/2019 00:00 - 23/02/2019 05:59', '24/02/2019 00:00 - 24/02/2019 05:59')
 
         when:
         to = from.plusDays(2)
@@ -276,7 +276,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 6
         dih.intervals.size() == 9
-        hasFirstAndLast('23/02/2019 00:00 - 23/02/2019 06:00', '25/02/2019 00:00 - 25/02/2019 06:00')
+        hasFirstAndLast('23/02/2019 00:00 - 23/02/2019 05:59', '25/02/2019 00:00 - 25/02/2019 05:59')
 
         when:
         to = from.plusDays(5)
@@ -287,7 +287,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.HOURS
         dih.intervalLengthSize == 12
         dih.intervals.size() == 11
-        hasFirstAndLast('23/02/2019 00:00 - 23/02/2019 12:00', '28/02/2019 00:00 - 28/02/2019 12:00')
+        hasFirstAndLast('23/02/2019 00:00 - 23/02/2019 11:59', '28/02/2019 00:00 - 28/02/2019 11:59')
     }
 
     void 'test interval buckets sizes for days'() {
@@ -325,7 +325,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.DAYS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 9
-        hasFirstAndLast('23/02/2019 - 25/02/2019', '11/03/2019 - 13/03/2019')
+        hasFirstAndLast('23/02/2019 - 24/02/2019', '11/03/2019 - 12/03/2019')
 
         when:
         // Change month to allow a 30 day check
@@ -338,7 +338,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.DAYS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 16
-        hasFirstAndLast('23/03/2019 - 25/03/2019', '22/04/2019 - 24/04/2019')
+        hasFirstAndLast('23/03/2019 - 24/03/2019', '22/04/2019 - 23/04/2019')
     }
 
     void 'test interval buckets sizes for months'() {
@@ -399,7 +399,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MONTHS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 7
-        hasFirstAndLast('Jan 2019 - Mar 2019', 'Jan 2020 - Mar 2020')
+        hasFirstAndLast('Jan 2019 - Feb 2019', 'Jan 2020 - Feb 2020')
 
         when:
         to = from.plusMonths(18)
@@ -410,7 +410,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MONTHS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 10
-        hasFirstAndLast('Jan 2019 - Mar 2019', 'Jul 2020 - Sept 2020')
+        hasFirstAndLast('Jan 2019 - Feb 2019', 'Jul 2020 - Aug 2020')
 
         when:
         to = from.plusMonths(24).minusDays(1)
@@ -421,7 +421,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.MONTHS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 13
-        hasFirstAndLast('Jan 2019 - Mar 2019', 'Jan 2021 - Mar 2021')
+        hasFirstAndLast('Jan 2019 - Feb 2019', 'Jan 2021 - Feb 2021')
     }
 
     void 'test interval buckets sizes for years'() {
@@ -470,7 +470,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.YEARS
         dih.intervalLengthSize == 2
         dih.intervals.size() == 9
-        hasFirstAndLast('2018 - 2020', '2034 - 2036')
+        hasFirstAndLast('2018 - 2019', '2034 - 2035')
 
         when:
         to = from.plusYears(20)
@@ -481,7 +481,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.YEARS
         dih.intervalLengthSize == 5
         dih.intervals.size() == 5
-        hasFirstAndLast('2015 - 2020', '2035 - 2040')
+        hasFirstAndLast('2015 - 2019', '2035 - 2039')
 
         when:
         to = from.plusYears(35)
@@ -492,7 +492,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.YEARS
         dih.intervalLengthSize == 5
         dih.intervals.size() == 8
-        hasFirstAndLast('2015 - 2020', '2050 - 2055')
+        hasFirstAndLast('2015 - 2019', '2050 - 2054')
 
         when:
         to = from.plusYears(50).minusDays(1)
@@ -503,7 +503,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.YEARS
         dih.intervalLengthSize == 5
         dih.intervals.size() == 11
-        hasFirstAndLast('2015 - 2020', '2065 - 2070')
+        hasFirstAndLast('2015 - 2019', '2065 - 2069')
 
     }
 
@@ -521,7 +521,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         !dih.needToMergeOrRemoveEmptyBuckets
         dih.intervalLengthSize == 1
         dih.intervals.size() == 6
-        hasFirstAndLast('2010 - 2020', '2060 - 2070')
+        hasFirstAndLast('2010 - 2019', '2060 - 2069')
 
 
         when:
@@ -534,7 +534,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.needToMergeOrRemoveEmptyBuckets
         dih.intervalLengthSize == 1
         dih.intervals.size() == 11
-        hasFirstAndLast('2010 - 2020', '2110 - 2120')
+        hasFirstAndLast('2010 - 2019', '2110 - 2119')
 
         when:
         to = from.plusYears(100)
@@ -545,7 +545,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.DECADES
         dih.needToMergeOrRemoveEmptyBuckets
         dih.intervalLengthSize == 1
-        hasFirstAndLast('2010 - 2020', '2110 - 2120')
+        hasFirstAndLast('2010 - 2019', '2110 - 2119')
 
         when:
         to = from.plusYears(150)
@@ -556,7 +556,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         dih.intervalLengthDimension == ChronoUnit.DECADES
         dih.needToMergeOrRemoveEmptyBuckets
         dih.intervalLengthSize == 1
-        hasFirstAndLast('2010 - 2020', '2160 - 2170')
+        hasFirstAndLast('2010 - 2019', '2160 - 2169')
 
         when:
         to = from.plusYears(500)
@@ -566,7 +566,7 @@ class DateIntervalHelperSpec extends MdmSpecification implements GrailsUnitTest 
         then:
         dih.intervalLengthDimension == ChronoUnit.DECADES
         dih.intervalLengthSize == 1
-        hasFirstAndLast('2010 - 2020', '2510 - 2520')
+        hasFirstAndLast('2010 - 2019', '2510 - 2519')
 
     }
 
