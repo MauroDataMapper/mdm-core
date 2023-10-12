@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.summarymetadata
 
-
+import grails.util.Pair
 import groovy.transform.CompileStatic
 
 @CompileStatic
@@ -33,5 +33,15 @@ class LongIntervalHelper extends NumericIntervalHelper<Long> {
         number.toLong()
     }
 
+    @Override
+    void calculateIntervals() {
+        intervalStarts.each {start ->
+            Long labelIntervalLength = getIntervalLength() > 0 ? getIntervalLength() - 1 : getIntervalLength()
+            Long finish = safeConvert(start + getIntervalLength())
+            Long labelFinish = safeConvert(start + labelIntervalLength)
+            String label = "${start}" == "${labelFinish}" ? "${start}" : "${start}${labelSeparator}${labelFinish}"
+            addInterval(label, new Pair(start, finish))
+        }
+    }
 }
 

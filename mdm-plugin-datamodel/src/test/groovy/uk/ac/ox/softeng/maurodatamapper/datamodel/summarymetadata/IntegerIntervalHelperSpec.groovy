@@ -42,7 +42,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(1, 500)
 
         then:
-        checkIntervals(50, '0 - 50', '500 - 550')
+        checkIntervals(50, '0 - 49', '500 - 549')
     }
 
     void 'Negative minimum left of boundary'() {
@@ -51,7 +51,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(-30000001, 19999999)
 
         then:
-        checkIntervals(5000000, '-35000000 - -30000000', '15000000 - 20000000')
+        checkIntervals(5000000, '-35000000 - -30000001', '15000000 - 19999999')
     }
 
     void 'Negative minimum on boundary'() {
@@ -60,7 +60,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(-30000000, 19999999)
 
         then:
-        checkIntervals(5000000, '-30000000 - -25000000', '15000000 - 20000000')
+        checkIntervals(5000000, '-30000000 - -25000001', '15000000 - 19999999')
     }
 
     void 'Negative minimum right of boundary'() {
@@ -69,7 +69,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(-29999999, 19999999)
 
         then:
-        checkIntervals(5000000, '-30000000 - -25000000', '15000000 - 20000000')
+        checkIntervals(5000000, '-30000000 - -25000001', '15000000 - 19999999')
     }
 
     void 'Negative max, left of boundary'() {
@@ -78,7 +78,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(-5100, -1001)
 
         then:
-        checkIntervals(500, '-5500 - -5000', '-1500 - -1000')
+        checkIntervals(500, '-5500 - -5001', '-1500 - -1001')
     }
 
     void 'Negative max, onboundary'() {
@@ -87,7 +87,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(-5100, -1000)
 
         then:
-        checkIntervals(500, '-5500 - -5000', '-1000 - -500')
+        checkIntervals(500, '-5500 - -5001', '-1000 - -501')
     }
 
     void 'Negative max, right of boundary'() {
@@ -96,7 +96,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(-5100, -999)
 
         then:
-        checkIntervals(500, '-5500 - -5000', '-1000 - -500')
+        checkIntervals(500, '-5500 - -5001', '-1000 - -501')
     }
 
     void 'Zero interval'() {
@@ -105,7 +105,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(83, 83)
 
         then:
-        checkIntervals(1, '83 - 84', '83 - 84')
+        checkIntervals(1, '83', '83')
     }
 
     void 'Positive min and max, both left of boundary'() {
@@ -114,7 +114,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(999, 5999)
 
         then:
-        checkIntervals(500, '500 - 1000', '5500 - 6000')
+        checkIntervals(500, '500 - 999', '5500 - 5999')
     }
 
     void 'Positive min and max, both on boundary'() {
@@ -123,7 +123,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(1000, 6000)
 
         then:
-        checkIntervals(500, '1000 - 1500', '6000 - 6500')
+        checkIntervals(500, '1000 - 1499', '6000 - 6499')
     }
 
     void 'Positive min and max, both right of boundary'() {
@@ -132,7 +132,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(1001, 6001)
 
         then:
-        checkIntervals(500, '1000 - 1500', '6000 - 6500')
+        checkIntervals(500, '1000 - 1499', '6000 - 6499')
     }
 
     void 'Beyond defined intervals'() {
@@ -141,7 +141,7 @@ class IntegerIntervalHelperSpec extends MdmSpecification implements GrailsUnitTe
         iih = new IntegerIntervalHelper(123, 558000000)
 
         then:
-        checkIntervals(100000000, '0 - 100000000', '500000000 - 600000000')
+        checkIntervals(100000000, '0 - 99999999', '500000000 - 599999999')
     }
 
     private void checkIntervals(int length, String firstKey, String lastKey) {

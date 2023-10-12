@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.summarymetadata
 
-
+import grails.util.Pair
 import groovy.transform.CompileStatic
 
 import java.math.RoundingMode
@@ -27,6 +27,15 @@ class DecimalIntervalHelper extends NumericIntervalHelper<BigDecimal> {
 
     DecimalIntervalHelper(BigDecimal minValue, BigDecimal maxValue) {
         super(minValue, maxValue)
+    }
+
+    @Override
+    void calculateIntervals() {
+        intervalStarts.each {start ->
+            BigDecimal finish = safeConvert(start + getIntervalLength())
+            String label = "${start}${labelSeparator}${finish}"
+            addInterval(label, new Pair(start, finish))
+        }
     }
 
     void calculateInterval() {
