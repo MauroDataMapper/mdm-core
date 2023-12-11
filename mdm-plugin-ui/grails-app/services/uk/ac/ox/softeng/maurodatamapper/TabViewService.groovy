@@ -1,37 +1,37 @@
 package uk.ac.ox.softeng.maurodatamapper
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.ui.providers.DataModelViewUIProviderService
-
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
+import uk.ac.ox.softeng.maurodatamapper.ui.providers.TabViewUIProviderService
 
 @Transactional
-class DataModelViewService {
+class TabViewService {
 
     @Autowired(required = false)
-    Set<DataModelViewUIProviderService> dataModelViewProviderServices
+
+    Set<TabViewUIProviderService> tabViewProviderServices
 
 
-    List<Map> getDataModelViewProviderServicesForDataModel(DataModel dataModel) {
-        return dataModelViewProviderServices.findAll {
-            it.providesDataModelView (dataModel)
-        }.collect {
-            [   "tabName" : it.tabName,
-                "pluginNamespace": it.namespace,
-                "pluginName": it.name,
-                "pluginVersion": it.version
-            ]
-        }
-
+    List getTabViewProviderServices(String domainType, UUID itemId) {
+        System.err.println("Here")
+        tabViewProviderServices.collect {service ->
+            System.err.println(service)
+            service.providedTabViews(domainType, itemId).collect {tabName ->
+                [   "tabName" : tabName,
+                    "pluginNamespace": service.namespace,
+                    "pluginName": service.name,
+                    "pluginVersion": service.version
+                ]
+            }
+        }.flatten()
     }
 
-    byte[] dataModelView(String dataModelId, String pluginNamespace, String pluginName, String pluginVersion) {
-        dataModelViewProviderServices.find {service ->
+    byte[] tabView(String itemId, String domainType, String pluginNamespace, String pluginName, String pluginVersion, String tabName) {
+        tabViewProviderServices.find {service ->
             service.namespace == pluginNamespace &&
                 service.name == pluginName &&
                 service.version == pluginVersion
-        }.getJSWebComponent(UUID.fromString(dataModelId))
+        }.getJSWebComponent(tabName, UUID.fromString(itemId), domainType)
     }
 
 }

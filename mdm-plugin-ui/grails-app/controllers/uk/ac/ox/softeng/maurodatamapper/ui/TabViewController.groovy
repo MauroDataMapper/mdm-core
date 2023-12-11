@@ -1,26 +1,23 @@
 package uk.ac.ox.softeng.maurodatamapper.ui
 
-import uk.ac.ox.softeng.maurodatamapper.DataModelViewService
+import uk.ac.ox.softeng.maurodatamapper.TabViewService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 
-import grails.rest.*
-import grails.converters.*
+class TabViewController {
 
-class DataModelViewController {
-
-    DataModelViewService dataModelViewService
+    TabViewService tabViewService
 
 	static responseFormats = ['json', 'xml']
 	
-    def viewProviders() {
-        UUID dataModelId = UUID.fromString(params.dataModelId)
-        DataModel dataModel = DataModel.get(dataModelId)
-        respond dataModelViewService.getDataModelViewProviderServicesForDataModel(dataModel)
+    def tabViewProviders() {
+        UUID itemId = UUID.fromString(params.itemId)
+        String domainType = params.domainType?:''
+        respond tabViewService.getTabViewProviderServices(domainType, itemId)
     }
 
-    // get "/views/$pluginNamespace/$pluginName/$pluginVersion" (controller: 'dataModelView', action: 'dataModelView')
-    def dataModelView() {
-        byte[] response = dataModelViewService.dataModelView(params.dataModelId, params.pluginNamespace, params.pluginName, params.pluginVersion)
+    // get "/views/$pluginNamespace/$pluginName/$pluginVersion/$tabView" (controller: 'dataModelView', action: 'dataModelView')
+    def tabView() {
+        byte[] response = tabViewService.tabView(params.itemId, params.domainType, params.pluginNamespace, params.pluginName, params.pluginVersion, params.tabName)
         render(file: response, fileName: 'output.js', contentType: "application/javascript")
     }
 

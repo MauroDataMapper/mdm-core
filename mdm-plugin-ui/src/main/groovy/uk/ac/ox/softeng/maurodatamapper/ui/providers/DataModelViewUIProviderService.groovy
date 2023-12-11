@@ -1,22 +1,16 @@
 package uk.ac.ox.softeng.maurodatamapper.ui.providers
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-
-abstract class DataModelViewUIProviderService extends UIProviderService {
+abstract class TabViewUIProviderService extends UIProviderService {
 
 
     @Override
     String getProviderType() {
-        'DataModelViewUIProvider'
+        'TabViewUIProvider'
     }
 
-    boolean providesDataModelView(DataModel dataModel) {
-        false
-    }
+    abstract List<String> providedTabViews(String domainType, UUID itemId)
 
-    abstract String getTabName()
-
-    abstract byte[] getJSWebComponent(UUID dataModelId)
+    abstract byte[] getJSWebComponent(String tabName, UUID itemId, String domainType)
 
 
 }

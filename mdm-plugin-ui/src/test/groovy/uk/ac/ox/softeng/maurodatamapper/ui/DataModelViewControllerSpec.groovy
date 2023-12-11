@@ -3,7 +3,7 @@ package uk.ac.ox.softeng.maurodatamapper.ui
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
-class DataModelViewControllerSpec extends Specification implements ControllerUnitTest<DataModelViewController> {
+class DataModelViewControllerSpec extends Specification implements ControllerUnitTest<TabViewController> {
 
     def setup() {
     }

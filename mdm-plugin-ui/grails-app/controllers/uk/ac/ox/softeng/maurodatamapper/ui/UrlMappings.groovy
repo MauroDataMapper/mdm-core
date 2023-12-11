@@ -22,10 +22,10 @@ class UrlMappings {
     static mappings = {
         group '/api', {
 
-            group "/ui/plugins/dataModel/$dataModelId", {
-                get "/views" (controller: 'dataModelView', action: 'viewProviders')
+            group "/ui/plugins/tabView/$domainType/$itemId", {
+                get "/views" (controller: 'tabView', action: 'tabViewProviders')
 
-                get "/views/$pluginNamespace/$pluginName/$pluginVersion" (controller: 'dataModelView', action: 'dataModelView')
+                get "/views/$pluginNamespace/$pluginName/$pluginVersion/$tabName" (controller: 'tabView', action: 'tabView')
             }
         }
     }
