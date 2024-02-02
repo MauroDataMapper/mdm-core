@@ -70,6 +70,10 @@ class VersionTreeModel implements Comparable<VersionTreeModel> {
         versionAware.modelVersion
     }
 
+    String getModelVersionTag() {
+        versionAware.modelVersionTag
+    }
+
     String getDocumentationVersion() {
         versionAware.documentationVersion
     }

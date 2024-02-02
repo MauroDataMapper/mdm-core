@@ -8,6 +8,7 @@ json {
     id versionTreeModel.id
     branch versionTreeModel.branchName
     modelVersion versionTreeModel.modelVersion
+    modelVersionTag versionTreeModel.modelVersionTag
     documentationVersion versionTreeModel.documentationVersion
     displayName versionTreeModel.simpleDisplayName
 }
