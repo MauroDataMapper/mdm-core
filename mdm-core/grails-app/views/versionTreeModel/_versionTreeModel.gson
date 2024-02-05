@@ -9,7 +9,7 @@ json {
     label versionTreeModel.label
     branch versionTreeModel.branchName
     modelVersion versionTreeModel.modelVersion
-    modelVersion versionTreeModel.modelVersionTag
+    modelVersionTag versionTreeModel.modelVersionTag
     documentationVersion versionTreeModel.documentationVersion
     isNewBranchModelVersion versionTreeModel.newBranchModelVersion
     isNewDocumentationVersion versionTreeModel.newDocumentationVersion
