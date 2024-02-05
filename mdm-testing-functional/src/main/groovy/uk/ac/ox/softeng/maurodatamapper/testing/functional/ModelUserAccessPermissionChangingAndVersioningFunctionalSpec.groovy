@@ -1583,6 +1583,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "label": "Functional Test Fork ${modelType}",
     "branch": null,
     "modelVersion": "0.1.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
@@ -1599,6 +1600,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "label": "Functional Test Fork ${modelType}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -1730,6 +1732,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.fork}",
     "branch": null,
     "modelVersion": "0.1.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V0.1.0"
   },
@@ -1737,6 +1740,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.forkMain}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main (V0.1.0)"
   }]"""
@@ -1760,6 +1764,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.anotherFork}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main"
   }]"""
@@ -1784,6 +1789,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.newBranch}",
     "branch": "newBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "newBranch (V1.0.0)"
   },
@@ -1791,6 +1797,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.testBranch}",
     "branch": "testBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "testBranch (V3.0.0)"
   },
@@ -1798,6 +1805,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.main}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main (V5.0.0)"
   },
@@ -1805,6 +1813,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.anotherBranch}",
     "branch": "anotherBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "anotherBranch (V5.0.0)"
   }
@@ -1831,6 +1840,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.newBranch}",
     "branch": "newBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "newBranch (V1.0.0)"
   },
@@ -1838,6 +1848,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.testBranch}",
     "branch": "testBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "testBranch (V3.0.0)"
   },
@@ -1845,6 +1856,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.main}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main (V5.0.0)"
   },
@@ -1852,6 +1864,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.anotherBranch}",
     "branch": "anotherBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "anotherBranch (V5.0.0)"
   },
@@ -1859,6 +1872,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "id": "${data.interestingBranch}",
     "branch": "interestingBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
    "displayName": "interestingBranch (V5.0.0)"
   }
@@ -2143,6 +2157,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "label": "Functional Test ${modelType}",
     "branch": null,
     "modelVersion" : "1.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
