@@ -46,7 +46,7 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = Math.min(max ?: 10, 10000)
         respond(listAllReadableResources(params))
     }
 

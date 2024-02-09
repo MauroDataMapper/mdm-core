@@ -44,7 +44,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = Math.min(max ?: 10, 10000)
         def res = listAllResources(params)
         // The new grails-views code sets the modelAndView object rather than writing the response
         // Therefore if thats written then we dont want to try and re-write it

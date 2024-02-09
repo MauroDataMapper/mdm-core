@@ -55,7 +55,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = Math.min(max ?: 10, 10000)
         def res = listAllResources(params)
         // The new grails-views code sets the modelAndView object rather than writing the response
         // Therefore if thats written then we dont want to try and re-write it
@@ -76,7 +76,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
     }
 
     def content(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = Math.min(max ?: 10, 10000)
         params.sort = params.sort ?: 'label'
 
         respond content: dataClassService.findAllContentOfDataClassIdInDataModelId(params.dataModelId, params.dataClassId, params)
