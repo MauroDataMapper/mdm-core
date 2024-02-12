@@ -2240,6 +2240,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test Fork ${modelType}",
     "branch": null,
     "modelVersion": "0.1.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
@@ -2256,6 +2257,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test Fork ${modelType}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -2285,6 +2287,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test AnotherFork ${modelType}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
@@ -2333,6 +2336,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.fork}",
     "branch": null,
     "modelVersion": "0.1.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V0.1.0"
   },
@@ -2340,6 +2344,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.forkMain}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main (V0.1.0)"
   }]"""
@@ -2363,6 +2368,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.anotherFork}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main"
   }]"""
@@ -3443,6 +3449,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": null,
     "modelVersion" : "1.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
@@ -3468,6 +3475,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": "newBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3481,6 +3489,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test Fork ${modelType}",
     "branch": null,
     "modelVersion": "0.1.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
@@ -3494,6 +3503,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": null,
     "modelVersion" : "2.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3510,6 +3520,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": null,
     "modelVersion" : "3.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3530,6 +3541,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": "testBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3543,6 +3555,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": null,
     "modelVersion" : "4.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3563,6 +3576,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test AnotherFork ${modelType}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
@@ -3576,6 +3590,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": null,
     "modelVersion" : "5.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3600,6 +3615,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3613,6 +3629,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": "anotherBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3626,6 +3643,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "label": "Functional Test ${modelType} 3",
     "branch": "interestingBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
@@ -3643,6 +3661,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.v1}",
     "branch": null,
     "modelVersion" : "1.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V1.0.0"
   },
@@ -3650,6 +3669,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.newBranch}",
     "branch": "newBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "newBranch (V1.0.0)"
   },
@@ -3657,6 +3677,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.v2}",
     "branch": null,
     "modelVersion" : "2.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V2.0.0"
   },
@@ -3664,6 +3685,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.v3}",
     "branch": null,
     "modelVersion" : "3.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V3.0.0"
   },
@@ -3671,6 +3693,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.testBranch}",
     "branch": "testBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "testBranch (V3.0.0)"
   },
@@ -3678,6 +3701,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.v4}",
     "branch": null,
     "modelVersion" : "4.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V4.0.0"
   },
@@ -3685,6 +3709,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.v5}",
     "branch": null,
     "modelVersion" : "5.0.0",
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "V5.0.0"
   },
@@ -3692,6 +3717,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.main}",
     "branch": "main",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "main (V5.0.0)"
   },
@@ -3699,6 +3725,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.anotherBranch}",
     "branch": "anotherBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
     "displayName": "anotherBranch (V5.0.0)"
   },
@@ -3706,8 +3733,9 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "id": "${data.interestingBranch}",
     "branch": "interestingBranch",
     "modelVersion": null,
+    "modelVersionTag": null,
     "documentationVersion": "1.0.0",
-   "displayName": "interestingBranch (V5.0.0)"
+    "displayName": "interestingBranch (V5.0.0)"
   }
 ]"""
     }
