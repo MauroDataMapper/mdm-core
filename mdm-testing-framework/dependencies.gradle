@@ -19,7 +19,7 @@ dependencies {
     api group: 'com.google.guava', name: 'guava'
 
     // Needed for xml pretty print only
-    implementation('org.dom4j:dom4j:2.1.3') {
+    implementation('org.dom4j:dom4j:2.1.4') {
         exclude group: 'pull-parser', module: 'pull-parser'
     }
     implementation 'jaxen:jaxen:1.2.0'
