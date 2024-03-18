@@ -199,8 +199,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         }
 
         // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
-        SearchSession searchSession = Search.session(sessionFactory.currentSession)
-        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+        //SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        //searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
 
         save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, referenceDataModel)
 

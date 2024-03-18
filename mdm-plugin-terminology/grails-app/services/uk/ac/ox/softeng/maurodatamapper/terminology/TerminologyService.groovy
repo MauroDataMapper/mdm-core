@@ -213,8 +213,8 @@ class TerminologyService extends ModelService<Terminology> {
         long st = System.currentTimeMillis()
 
         // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
-        SearchSession searchSession = Search.session(sessionFactory.currentSession)
-        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+        //SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        //searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
 
         save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
         sessionFactory.currentSession.flush()
@@ -274,8 +274,8 @@ class TerminologyService extends ModelService<Terminology> {
         long st = System.currentTimeMillis()
 
         // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
-        SearchSession searchSession = Search.session(sessionFactory.currentSession)
-        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+        //SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        //searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
 
         terminologies.each {terminology ->
             save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
@@ -462,7 +462,25 @@ class TerminologyService extends ModelService<Terminology> {
                                           "Terminology ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
             )
-        } else throw new ApiInvalidModelException('TMS01', 'Copied Terminology is invalid', copy.errors, messageSource)
+        } else {
+            System.err.println("Copy issues")
+            System.err.println(copy.label)
+            System.err.println(copy.branchName)
+            System.err.println(copy.version)
+            System.err.println(copy.modelVersion)
+            System.err.println(copy.modelVersionTag)
+
+            Terminology.getAll().findAll {
+                it.label == copy.label
+            }.each {
+                System.err.println(it.label)
+                System.err.println(it.branchName)
+                System.err.println(it.version)
+                System.err.println(it.modelVersion)
+                System.err.println(it.modelVersionTag)
+            }
+            throw new ApiInvalidModelException('TMS01', 'Copied Terminology is invalid', copy.errors, messageSource)
+        }
 
         copy.trackChanges()
 

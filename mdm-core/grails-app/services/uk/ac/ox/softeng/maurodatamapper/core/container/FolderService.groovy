@@ -41,14 +41,20 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
+import org.hibernate.search.mapper.orm.session.SearchSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -335,6 +341,10 @@ class FolderService extends ContainerService<Folder> {
     Folder copyFolder(Folder original, Folder copiedFolder, String label, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors, boolean clearSession,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
+
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+
         log.debug('Copying folder {}[{}]', original.id, original.label)
         long start = System.currentTimeMillis()
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
@@ -348,6 +358,7 @@ class FolderService extends ContainerService<Folder> {
         copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         log.debug('Folder copy complete in {}', Utils.timeTaken(start))
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.sync())
         get(copiedFolder.id)
     }
 
@@ -378,9 +389,10 @@ class FolderService extends ContainerService<Folder> {
                                               copier
                 )
                 if (securityPolicyManagerService) {
-                    userSecurityPolicyManager =
-                        securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
-                                                                                     copiedFolder.label)
+                    System.err.println("Would update the User security")
+                    //userSecurityPolicyManager =
+                    //    securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
+                    //                                                                 copiedFolder.label)
                 }
             } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
         }

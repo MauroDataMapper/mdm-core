@@ -80,6 +80,9 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.JoinTable
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
+import org.hibernate.search.mapper.orm.session.SearchSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -317,6 +320,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             parentModelVersion = Version.from('0.0.0')
         }
 
+        // Now we need to check that the version in question doesn't already exist.  We can compare it to the latest version, perhaps?
+        Version latestVersion = getLatestModelVersionByLabel(folder.label)
+        if(latestVersion > parentModelVersion) {
+            parentModelVersion = latestVersion
+        }
+
+
         if (requestedVersionChangeType) {
             // Someone requests a type change
             // Increment the parent version by that amount
@@ -477,6 +487,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     VersionedFolder createNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
                                                 UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+
+
         if (!newVersionCreationIsAllowed(folder)) return folder
         log.info('Creating a new branch model version of {}', folder.id)
         // Check if the branch name is already being used
@@ -493,6 +505,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             countAllByLabelAndBranchNameAndNotFinalised(folder.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
         if (!draftFolderOnMainBranchForLabel) {
+            System.err.println("No draft main branch here!")
             log.info('Creating a new branch model version of {} with name {}', folder.id, VersionAwareConstraints.DEFAULT_BRANCH_NAME)
             VersionedFolder newMainBranchModelVersion = copyFolderAsNewBranchFolder(folder,
                                                                                     user,
@@ -715,7 +728,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        VersionedFolder.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+        int response = VersionedFolder.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+        System.err.println("response = ${response}")
+        response
     }
 
     VersionedFolder copyFolderAsNewBranchFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, String branchName,

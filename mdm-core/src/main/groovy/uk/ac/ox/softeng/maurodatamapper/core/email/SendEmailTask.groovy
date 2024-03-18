@@ -94,17 +94,18 @@ class SendEmailTask implements Runnable {
 
     @Override
     void run() {
+        log.error("Running...")
         try {
-            log.debug('Sending email')
+            log.error('Sending email')
             emailService.sendEmail(this)
-            if (result) log.warn('Email was not sent: [{}]', result)
-            else log.debug('Email sent successfully')
+            if (result) log.error('Email was not sent: [{}]', result)
+            else log.error('Email sent successfully')
         } catch (ApiException apiException) {
             log.error('Could not send email', apiException)
         } catch (IllegalStateException illegalStateException) {
             // Only going to happen in the event the application shuts down before the email is saved
             // However as we daemonise the process of sending the email this is possible.
-            log.warn("Possible failure to send email due to IllegalStateException: ${illegalStateException.message}")
+            log.error("Possible failure to send email due to IllegalStateException: ${illegalStateException.message}")
         }
         catch (RuntimeException runtimeException) {
             log.error('Unhandled runtime exception', runtimeException)

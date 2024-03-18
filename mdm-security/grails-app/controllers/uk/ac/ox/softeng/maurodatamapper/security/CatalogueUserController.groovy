@@ -284,6 +284,8 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
     @Transactional
     def adminPasswordReset() {
+
+        log.error("Admin password reset")
         internalCurrentUser = null
         CatalogueUser user = queryForResource(params.catalogueUserId)
 
@@ -291,8 +293,10 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
         def instance = catalogueUserService.administratorPasswordReset(getCurrentUser(), user)
 
+        log.error("UpdateResource: instance")
         updateResource instance
 
+        log.error("Updated.")
         emailService.sendEmailToUser(siteUrl, EMAIL_PASSWORD_RESET_SUBJECT, EMAIL_PASSWORD_RESET_BODY, instance)
 
         updateResponse instance

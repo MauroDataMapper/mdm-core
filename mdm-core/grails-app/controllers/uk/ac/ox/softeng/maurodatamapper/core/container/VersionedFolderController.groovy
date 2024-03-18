@@ -188,7 +188,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
                                                                                         currentUserSecurityPolicyManager)
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
-
+        System.err.println("Creating a new branch model version")
         VersionedFolder copy = versionedFolderService.createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
                                                                                   createNewVersionData.copyPermissions,
                                                                                   currentUserSecurityPolicyManager)

@@ -99,7 +99,9 @@ class EmailService implements AnonymisableService {
                          User user,
                          InformationAware informationAwareItem, String passwordResetLink) {
 
+        log.error("Sending email to user...")
         Map<String, String> propertiesMap = buildUserPropertiesMap(user, informationAwareItem, baseUrl, passwordResetLink)
+        log.error(propertiesMap.toString())
 
         SendEmailTask task = new SendEmailTask(this)
             .using(getEmailProviderService())
@@ -108,7 +110,9 @@ class EmailService implements AnonymisableService {
             .subject(getApiPropertyAndSubstitute(subjectProperty, propertiesMap))
             .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
 
+        log.error("Created task")
         executorService.submit(task)
+        log.error("Submitted task")
     }
 
     /**
@@ -171,25 +175,32 @@ class EmailService implements AnonymisableService {
 
     @Transactional
     void sendEmail(SendEmailTask sendEmailTask) {
-
+        log.error("Sending email 1")
         Email email = sendEmailTask.asEmail().save(flush: true)
-
+        log.error("Sending email 2")
         if (sendEmailTask.hasEmailProviderService()) {
 
+            log.error("Sending email 3")
             if (sendEmailTask.isValid()) {
 
-                log.info('Sending an email with email provider service "{}"', emailProviderService.getDisplayName())
+                log.error("Sending email 4")
+                log.error('Sending an email with email provider service "{}"', emailProviderService.getDisplayName())
 
                 sendEmailTask.result = emailProviderService.sendEmail(sendEmailTask)
 
-                log.debug('Email sent with response [{}]', sendEmailTask.result)
+                log.error("Sending email 5")
+                log.error('Email sent with response [{}]', sendEmailTask.result)
             }
         } else {
+            log.error("Sending email 6")
             sendEmailTask.result = 'No email provider service configured'
         }
 
+        log.error("Sending email 7")
         email.failureReason = sendEmailTask.result
+        log.error("Sending email 8")
         email.successfullySent = sendEmailTask.wasSuccessfullySent()
+        log.error("Sending email 9")
         email.save(flush: true)
     }
 

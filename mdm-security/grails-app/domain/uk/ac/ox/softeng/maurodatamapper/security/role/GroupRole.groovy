@@ -159,6 +159,10 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
 
     @Override
     int compareTo(GroupRole that) {
+        System.err.println(this)
+        System.err.println(this.applicationLevelRole)
+        System.err.println(that)
+        System.err.println(that.applicationLevelRole)
         if (this.applicationLevelRole != that.applicationLevelRole) {
             throw new ApiInternalException('GR01', 'Incomparable group roles')
         }

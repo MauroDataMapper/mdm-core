@@ -84,7 +84,7 @@ hibernate:
             purgeAllOnStart: true
             transactionTimeout: 1800
             threadsToLoadObjects: 20
-            batchSizeToLoadObjects: 1000
+            batchSizeToLoadObjects: 10000
             idFetchSize: -1 # Use postgres default
     cache:
         queries: false

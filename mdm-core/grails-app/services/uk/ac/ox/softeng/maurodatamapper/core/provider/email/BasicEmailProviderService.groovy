@@ -74,18 +74,30 @@ class BasicEmailProviderService extends EmailProviderService {
     @Override
     String sendEmail(SendEmailTask sendEmailTask) {
 
-        log.info('Sending email to {}', sendEmailTask.to)
+        log.error('Sending email to {}', sendEmailTask.to)
         try {
             Email email = buildEmail(sendEmailTask)
-            log.debug('Email built')
-            buildMailer().sendMail(email)
-            log.debug('Email sent successfully')
+            log.error('Email built')
+            log.error(email.toString())
+            Mailer mailer = buildMailer()
+            log.error(mailer.getServerConfig().host)
+            log.error(mailer.getServerConfig().password)
+            log.error(mailer.getServerConfig().username)
+            log.error(mailer.getServerConfig().port.toString())
+            log.error(mailer.getOperationalConfig().getProperties().toString())
+            mailer.testConnection()
+            log.error("Test connection successful: now sending email...")
+            mailer.sendMail(email, false)
+            log.error('Email sent successfully')
             return null
         } catch (MailException e) {
             String failureReason = extractFullFailureReason(e)
             log.error('Email sending failed: {}', failureReason)
             return failureReason
         } catch (IllegalArgumentException e) {
+            log.error('Email sending failed: {}', e.message)
+            return e.message
+        } catch (Exception e) {
             log.error('Email sending failed: {}', e.message)
             return e.message
         }
@@ -120,8 +132,8 @@ class BasicEmailProviderService extends EmailProviderService {
     }
 
     Mailer buildMailer() {
-        Mailer mailer = MailerBuilder.buildMailer()
-        log.debug('{}', mailer.getSession().getProperties())
+        Mailer mailer = MailerBuilder.withDebugLogging(true).buildMailer()
+        log.error('{}', mailer.getSession().getProperties())
         mailer
     }
 
