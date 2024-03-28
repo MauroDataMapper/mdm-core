@@ -91,7 +91,7 @@ class ThemeImageFileFunctionalSpec extends FunctionalSpec {
         sessionFactory.currentSession.flush()
         getOrCreateApiProperties()
         assert CatalogueUser.count() == 10
-        assert ApiProperty.count() == 20
+        assert ApiProperty.count() == 21
         sessionFactory.currentSession.flush()
         UUID userId = CatalogueUser.findByEmailAddress(userEmailAddresses.editor).id
         assert userId

@@ -222,7 +222,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                          ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
                          ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
-                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION])
+                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION,
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                ])
             }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", responseBody().items.any {
@@ -242,7 +244,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                          ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
                          ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
-                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION])
+                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION,
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                ])
             }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("<key>${ape.key}</key>")
@@ -267,7 +271,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                          ApiPropertyEnum.SECURITY_RESTRICT_CLASSIFIER_CREATE,
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
                          ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
-                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION])
+                         ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION,
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                ])
             }
             .each {ape ->
                 Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("${ape.key},")
