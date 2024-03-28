@@ -17,6 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
+import org.springframework.beans.factory.annotation.Value
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+
 // import asset.pipeline.AssetPipelineConfigHolder
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -38,6 +42,9 @@ class ApiPropertyService {
 
     // This is autowired does not need the annotation
     DefaultLinkGenerator grailsLinkGenerator
+
+    @Value('${grails.controllers.upload.maxFileSize}')
+    Integer maxFileUploadSize
 
     List<ApiProperty> list(Map pagination = [:]) {
         ApiProperty.by().list(pagination)
@@ -105,7 +112,7 @@ class ApiPropertyService {
     }
 
     ApiProperty save(String key, value, User updatedBy, String category = null) {
-        value ? save(new ApiProperty(key: key, value: value.toString, createdBy: updatedBy.emailAddress, category: category), updatedBy) : null
+        value ? save(new ApiProperty(key: key, value: value.toString(), createdBy: updatedBy.emailAddress, category: category), updatedBy) : null
     }
 
     ApiProperty save(ApiPropertyEnum apiProperty, value, User updatedBy, String category = null) {
@@ -114,6 +121,7 @@ class ApiPropertyService {
 
     ApiProperty save(ApiProperty apiProperty, User updatedBy) {
         apiProperty.lastUpdatedBy = updatedBy.emailAddress
+        apiProperty = this.validate(apiProperty)
         apiProperty.save(flush: true)
     }
 
@@ -231,5 +239,26 @@ class ApiPropertyService {
         } catch (IOException e) {
             log.error('Something went wrong trying to load default API Properties', e)
         }
+    }
+
+    ApiProperty validate(ApiProperty apiProperty) {
+        boolean valid = apiProperty.validate()
+        if (!valid) return apiProperty
+
+
+        Integer maxFileUploadSizeMb = (maxFileUploadSize / 1024 / 1024)
+        if (apiProperty.key == ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT.key) {
+            if (apiProperty.value?.isInteger()) {
+                if (Integer.valueOf(apiProperty.value) > maxFileUploadSizeMb) {
+                    apiProperty.errors.rejectValue('value',
+                            'default.invalid.max.message',
+                            ['value', apiProperty, apiProperty.value,
+                             maxFileUploadSizeMb as String].toArray(),
+                            'default.invalid.max.message')
+                }
+            }
+        }
+
+        apiProperty
     }
 }

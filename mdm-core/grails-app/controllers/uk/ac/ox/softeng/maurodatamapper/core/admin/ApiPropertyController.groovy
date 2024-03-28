@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
+import org.springframework.beans.factory.annotation.Value
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -37,6 +38,10 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
     ApiPropertyController() {
         super(ApiProperty)
     }
+
+    @Value('${grails.controllers.upload.maxFileSize}')
+    private Integer maxFileUploadSize;
+
 
     @Override
     def index(Integer max) {
@@ -74,6 +79,7 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
     @Override
     protected boolean validateResource(ApiProperty instance, String view) {
         instance.lastUpdatedBy = currentUser.emailAddress
+        instance = apiPropertyService.validate(instance)
         super.validateResource(instance, view)
     }
 
@@ -116,6 +122,7 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
             if (!errorInstance) {
                 instance.validate()
+                instance = apiPropertyService.validate(instance)
 
                 if (instance.hasErrors()) {
                     errorInstance = instance
@@ -164,4 +171,5 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
         cleanedInstances
     }
+
 }

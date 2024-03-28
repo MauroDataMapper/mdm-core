@@ -24,6 +24,10 @@ grails:
             # Disabled by default for performance reasons
             events: false
         failOnError: true
+    controllers:
+        upload:
+            maxFileSize: 200000000 # 190 MB * 1024 * 1024
+            maxRequestSize: 200000000 # 190 MB * 1024 * 1024
     resources:
         pattern: /**
 info:
