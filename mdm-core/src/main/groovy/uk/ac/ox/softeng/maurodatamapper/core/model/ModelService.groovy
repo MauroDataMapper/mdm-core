@@ -138,7 +138,7 @@ abstract class ModelService<K extends Model>
 
     abstract List<K> findAllByContainerId(UUID containerId)
 
-    abstract void deleteAllInContainer(Container container)
+    abstract List<K> deleteAllInContainer(Container container, boolean updateSecurity = true)
 
     abstract void removeAllFromContainer(Container container)
 
@@ -232,7 +232,7 @@ abstract class ModelService<K extends Model>
         deleteAll(models.id, true)
     }
 
-    List<K> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
+    List<K> deleteAll(List<Serializable> idsToDelete, Boolean permanent, boolean updateSecurity = true) {
         if (!permanent) {
             // Use findResults rather than collect so that we don't add
             // null values, which would happen if an unknown ID has been provided,
@@ -251,7 +251,7 @@ abstract class ModelService<K extends Model>
         if (!ids) return []
 
         // Batch deletion
-        if (securityPolicyManagerService) {
+        if (securityPolicyManagerService && updateSecurity) {
             securityPolicyManagerService.removeSecurityForSecurableResourceIds(getDomainClass().simpleName, ids)
         }
         long start = System.currentTimeMillis()
