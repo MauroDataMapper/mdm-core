@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUserService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -70,6 +71,8 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     GrailsApplication grailsApplication
     GrailsCacheManager grailsCacheManager
+
+    List<ModelService> modelServices
 
     @Autowired(required = false)
     List<ContainerService> containerServices = []
@@ -421,8 +424,15 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents = [] as HashSet
 
+        List<Model> allModels = modelServices.collectMany {service ->
+            service.list()
+        } as List<Model>
+
+        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+
+
         virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService
-                                                   .buildForSecurableResource(securableResource)
+                                                   .buildForSecurableResource(securableResource, folderModelMap)
                                                    .withAccessLevel(readerRole.groupRole))
 
         if (Utils.parentClassIsAssignableFromChild(Container, securableResource.class)) {
@@ -440,7 +450,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             virtualSecurableResourceGroupRolesForParents.addAll(
                 containerService.findAllWhereDirectParentOfContainer(securableResource as Container)
                     .collect { container ->
-                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(container as Container)
+                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(container as Container, folderModelMap)
                             .withAccessLevel(readerRole.groupRole)
                     })
         }
@@ -451,7 +461,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             virtualSecurableResourceGroupRolesForParents.addAll(
                 folderService.findAllWhereDirectParentOfModel(securableResource as Model)
                     .collect { folder ->
-                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(folder)
+                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(folder, folderModelMap)
                             .withAccessLevel(readerRole.groupRole)
                     })
         }

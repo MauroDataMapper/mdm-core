@@ -878,6 +878,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     boolean doesDepthTreeContainVersionedFolder(Folder folder) {
+        //List<Model> models = folderModelMap[folder.id]
         folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it)}
     }
 
@@ -885,9 +886,23 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folder.instanceOf(VersionedFolder) || hasVersionedFolderParent(folder)
     }
 
-    boolean doesDepthTreeContainFinalisedModel(Folder folder) {
-        List<Model> models = folderService.findAllModelsInFolder(folder)
-        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
+    boolean doesDepthTreeContainFinalisedModel(Folder folder, Map<UUID, List<Model>> folderModelMap) {
+        List<Model> models = []
+        if(!folderModelMap && modelServices) {
+            List<Model> allModels = modelServices.collectMany {service ->
+                service.list()
+            } as List<Model>
+
+            folderModelMap = allModels.groupBy { it.id}
+        }
+        if(folderModelMap) {
+            models = folderModelMap[folder.id]
+        }
+
+        if(models) {
+            return models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it, folderModelMap)}
+        }
+        return false
     }
 
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {

@@ -316,13 +316,14 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void deleteAllInContainer(Container container) {
+    List<CodeSet> deleteAllInContainer(Container container, boolean updateSecurity = true) {
         if (container.instanceOf(Folder)) {
-            deleteAll(CodeSet.byFolderId(container.id).id().list() as List<UUID>, true)
+            return deleteAll(CodeSet.byFolderId(container.id).id().list() as List<UUID>, true, updateSecurity)
         }
         if (container.instanceOf(Classifier)) {
-            deleteAll(CodeSet.byClassifierId(container.id).id().list() as List<UUID>, true)
+            return deleteAll(CodeSet.byClassifierId(container.id).id().list() as List<UUID>, true, updateSecurity)
         }
+        return []
     }
 
     @Override

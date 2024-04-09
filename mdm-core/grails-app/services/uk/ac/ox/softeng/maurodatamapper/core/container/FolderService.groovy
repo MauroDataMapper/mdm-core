@@ -37,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -156,22 +157,31 @@ class FolderService extends ContainerService<Folder> {
         folder?.deleted = true
     }
 
-    void delete(Folder folder, boolean permanent, boolean flush = true) {
+    Set<SecurableResource> delete(Folder folder, boolean permanent, boolean flush = true, boolean rebuildSecurity = true) {
         if (!folder) {
             log.warn('Attempted to delete Folder which doesnt exist')
             return
         }
         if (permanent) {
-            folder.childFolders.each {delete(it, permanent, false)}
-            modelServices.each {it.deleteAllInContainer(folder)}
+            Set<SecurableResource> deletedResources = []
+            folder.childFolders.each {deletedResources.addAll(delete(it, permanent, false, false))}
+            modelServices.each {deletedResources.addAll(it.deleteAllInContainer(folder, false))}
             folder.trackChanges()
             folder.delete(flush: flush)
-            if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
+            if (securityPolicyManagerService && rebuildSecurity) {
+                Map<String, List<SecurableResource>> deletionMap = deletedResources.groupBy{ it.domainType}
+                deletionMap.each { String domainType, List<SecurableResource> resourcesOfType ->
+                    securityPolicyManagerService.removeSecurityForSecurableResourceIds(domainType, resourcesOfType.collect {it.id})
+                }
+                return []
+                //securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
+            } else {
+                return deletedResources
             }
         } else {
             folder.childFolders.each {delete(it)}
             delete(folder)
+            return []
         }
     }
 
