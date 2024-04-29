@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.tree
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -153,6 +154,17 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         respond(containerTreeItem:
                     treeItemService.buildCatalogueItemTreeWithAncestors(params.containerClass, catalogueItem, currentUserSecurityPolicyManager))
 
+    }
+
+    def containerAncestors() {
+        log.debug('Call to tree for containing ancestors of a container')
+        Container container = treeItemService.findTreeCapableContainer(params.containerClass, params.containerId)
+        if (!container) {
+            return notFound(Container, params.containerId)
+        }
+
+        ContainerTreeItem treeItem = treeItemService.buildContainerTreeWithAncestors(container, currentUserSecurityPolicyManager)
+        respond([containerTreeItem: treeItem], view: 'ancestors')
     }
 
     private boolean shouldIncludeImportedItems() {
