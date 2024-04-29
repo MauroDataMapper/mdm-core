@@ -263,6 +263,7 @@ class UrlMappings {
                 group "/$containerDomainType", {
                     get '/'(controller: 'treeItem', action: 'index')
                     get "/${containerId}"(controller: 'treeItem', action: 'show')
+                    get "/${containerId}/ancestors"(controller: 'treeItem', action: 'containerAncestors')
                     get "/${catalogueItemDomainType}/$catalogueItemId"(controller: 'treeItem', action: 'show')
                     get "/${catalogueItemDomainType}/$catalogueItemId/ancestors"(controller: 'treeItem', action: 'ancestors')
                     get "/search/$searchTerm"(controller: 'treeItem', action: 'search')

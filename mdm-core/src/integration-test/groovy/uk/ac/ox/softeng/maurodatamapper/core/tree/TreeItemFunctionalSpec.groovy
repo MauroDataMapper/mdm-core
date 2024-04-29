@@ -827,4 +827,81 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         DELETE("folders/$parentId?permanent=true")
         assert response.status() == HttpStatus.NO_CONTENT
     }
+
+    void '15. test ancestors of containers'() {
+        given:
+        String expAncestors = '''{
+  "id": "${json-unit.matches:id}",
+  "domainType": "Folder",
+  "label": "Functional Test Folder",
+  "hasChildren": true,
+  "availableActions": [
+    
+  ],
+  "path": "fo:Functional Test Folder",
+  "deleted": false,
+  "children": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "VersionedFolder",
+      "label": "Functional Test Versioned Folder Parent",
+      "hasChildren": true,
+      "availableActions": [
+        
+      ],
+      "path": "fo:Functional Test Folder|vf:Functional Test Versioned Folder Parent$main",
+      "deleted": false,
+      "parentFolder": "${json-unit.matches:id}",
+      "finalised": false,
+      "documentationVersion": "1.0.0",
+      "branchName": "main",
+      "children": [
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "Folder",
+          "label": "Functional Test Folder Child",
+          "hasChildren": false,
+          "availableActions": [
+            
+          ],
+          "path": "fo:Functional Test Folder|vf:Functional Test Versioned Folder Parent$main|fo:Functional Test Folder Child",
+          "deleted": false,
+          "parentFolder": "${json-unit.matches:id}"
+        }
+      ]
+    }
+  ]
+}'''
+
+        when: 'creating new root folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        def rootFolderId = response.body().id
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new parent versioned folder'
+        POST("folders/$rootFolderId/versionedFolders", [label: 'Functional Test Versioned Folder Parent'])
+
+        then:
+        def parentFolderId = response.body().id
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new child folder'
+        POST("folders/$parentFolderId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        def childFolderId = response.body().id
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting the ancestors'
+        GET("$folderTreeResourcePath/$childFolderId/ancestors", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expAncestors, Option.IGNORING_EXTRA_FIELDS
+
+        cleanup:
+        DELETE("folders/$rootFolderId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
 }

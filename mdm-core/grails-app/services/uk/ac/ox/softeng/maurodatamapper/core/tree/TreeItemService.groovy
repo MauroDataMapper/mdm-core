@@ -88,6 +88,16 @@ class TreeItemService {
         service.get(containerId)
     }
 
+    Container findTreeCapableContainer(String containerDomainType, UUID containerId) {
+        if (!containerId) return null
+
+        ContainerService service = containerServices.find {it.handles(containerDomainType)}
+        if (!service) throw new ApiBadRequestException('TIS01',
+                                                       "Container retrieval for container [${containerDomainType}] with no " +
+                                                       'supporting service')
+        service.get(containerId)
+    }
+
     /**
      * Obtain a complete tree containing all the containers the user is allowed to read
      *
@@ -342,6 +352,35 @@ class TreeItemService {
         cti.first()
     }
 
+    ContainerTreeItem buildContainerTreeWithAncestors(Container container, UserSecurityPolicyManager userSecurityPolicyManager) {
+        List<ContainerTreeItem> containerTreeItems = []
+        recursiveAncestorContainerTreeItemBuilder(containerTreeItems, container, userSecurityPolicyManager)
+
+        ContainerTreeItem rootTreeItem = containerTreeItems.first()
+        ContainerTreeItem currentTreeItem = rootTreeItem
+
+        containerTreeItems.tail().each { containerTreeItem ->
+            currentTreeItem.addAllToChildren([containerTreeItem])
+            currentTreeItem.renderChildren = true
+            currentTreeItem = containerTreeItem
+        }
+
+        rootTreeItem
+    }
+
+    void recursiveAncestorContainerTreeItemBuilder(List<ContainerTreeItem> containerTreeItems,
+                                                   Container container,
+                                                   UserSecurityPolicyManager userSecurityPolicyManager) {
+        ContainerTreeItem containerTreeItem = createContainerTreeItem(container, userSecurityPolicyManager)
+
+        if (container.parent) {
+            // Fetch the full details of the parent container
+            Container parentContainer = findTreeCapableContainer(container.parent.domainType, container.parent.id)
+            recursiveAncestorContainerTreeItemBuilder(containerTreeItems, parentContainer, userSecurityPolicyManager)
+        }
+
+        containerTreeItems.add(containerTreeItem)
+    }
 
     /**
      * Given a catalogue Item the method works its way up the tree to a non ModelItem (which should be a DataModel)

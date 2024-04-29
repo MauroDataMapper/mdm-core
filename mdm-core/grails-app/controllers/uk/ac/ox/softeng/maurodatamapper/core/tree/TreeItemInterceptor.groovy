@@ -42,7 +42,7 @@ class TreeItemInterceptor implements MdmInterceptor {
 
     @Override
     boolean isShow() {
-        actionName in ['show', 'ancestors']
+        actionName in ['show', 'ancestors', 'containerAncestors']
     }
 
     boolean before() {
