@@ -154,6 +154,7 @@
 | *      | /api/tree/full/${modelDomainType}/${modelId} | fullModelTree |
 | GET    | /api/tree/${containerDomainType}/search/${searchTerm} | search |
 | GET    | /api/tree/${containerDomainType}/${catalogueItemDomainType}/${catalogueItemId}/ancestors | ancestors |
+| GET    | /api/tree/${containerDomainType}/${containerId}/ancestors | containerAncestors |
 | GET    | /api/tree/${containerDomainType} | index |
 | GET    | /api/tree/${containerDomainType}/${containerId} | show |
 | GET    | /api/tree/${containerDomainType}/${catalogueItemDomainType}/${catalogueItemId} | show |
