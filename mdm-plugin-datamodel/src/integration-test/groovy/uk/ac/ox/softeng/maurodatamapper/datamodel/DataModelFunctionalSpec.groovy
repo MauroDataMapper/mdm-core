@@ -1815,7 +1815,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(finalisedId)
     }
 
-    void 'MD01 : test finding merge difference of two datamodels'() {
+    void 'MD01 : test finding merge difference of two datamodels, including one where main is the sourcce'() {
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -1845,6 +1845,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         verifyResponse OK, response
         responseBody().targetId == mainId
         responseBody().sourceId == rightId
+
+        when:
+        GET("$mainId/mergeDiff/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == rightId
+        responseBody().sourceId == mainId
 
         cleanup:
         cleanUpData(mainId)
