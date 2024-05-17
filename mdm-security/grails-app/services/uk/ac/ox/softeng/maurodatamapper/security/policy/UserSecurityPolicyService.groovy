@@ -283,12 +283,14 @@ class UserSecurityPolicyService {
                                                                                           appliedGroupRole)
         } else virtualSecurableResourceGroupRoles = [] as HashSet
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         // Load sub containers
         List<Container> subContainers = containerService.findAllContainersInside(container.path.last()) as List<Container>
         subContainers.each {subContainer ->
             virtualSecurableResourceGroupRoles.addAll(
                 accessRoles.collect {igr ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(subContainer)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(subContainer, folderModelMap)
                         .withAccessLevel(igr)
                         .definedByGroup(userGroup)
                         .definedByAccessLevel(appliedGroupRole)
@@ -313,11 +315,7 @@ class UserSecurityPolicyService {
         // Only deal with folders, there is a question around if you can see a model can you read all its classifiers??
         // We need to make the tree of folders down to the model readable so that the tree can be rendered,
         // As these are virtual roles we dont iterate into any of the folders, we just want to make that folder and its parents readable
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
-
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
 
         folderService
             .findAllWhereDirectParentOfModel(model)
@@ -339,16 +337,12 @@ class UserSecurityPolicyService {
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<CatalogueUser> users = catalogueUserService.list([:])
 
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
-
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
 
         users.each {user ->
             virtualSecurableResourceGroupRoles.addAll(
                 inheritedUserRoles.collect {iur ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user, folderModelMap)
                         .definedByAccessLevel(highestRole)
                         .withAccessLevel(iur)
                 }
@@ -367,10 +361,12 @@ class UserSecurityPolicyService {
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<UserGroup> userGroups = userGroupService.list([:])
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         userGroups.each {user ->
             virtualSecurableResourceGroupRoles.addAll(
                 inheritedUserRoles.collect {iur ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user, folderModelMap)
                         .definedByAccessLevel(highestRole)
                         .withAccessLevel(iur)
                 }
@@ -384,11 +380,7 @@ class UserSecurityPolicyService {
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         Set<GroupRole> inheritedContainerRoles = groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).allowedRoles
         // Don't bother with usergroups or users as these will be implicitly defined by the other roles under application_admin
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
-
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
 
         securableResourceServices.findAll {!it.handles(UserGroup) && !it.handles(CatalogueUser)}.each {service ->
 
@@ -466,11 +458,9 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildReadableByEveryone() {
         VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
 
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+        List<Model> allModels = getAllModels()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
 
         containerServices.each {service ->
             List<Container> containers = service.findAllReadableByEveryone() as List<Container>
@@ -507,11 +497,8 @@ class UserSecurityPolicyService {
 
     private Set<VirtualSecurableResourceGroupRole> buildReadableByAuthenticatedUsers() {
 
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
-
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+        List<Model> allModels = getAllModels()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
 
         VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
@@ -556,11 +543,7 @@ class UserSecurityPolicyService {
 
         if (!container) return [] as HashSet
 
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
-
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = accessRoles.collect {igr ->
             virtualSecurableResourceGroupRoleService.buildForSecurableResource(container, folderModelMap)
@@ -595,11 +578,8 @@ class UserSecurityPolicyService {
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
         // Load models
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
 
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
         List<Model> models = folderModelMap[container.id]
         if(models) {
             models.each {Model model ->
@@ -623,8 +603,10 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildIndividualCatalogueUserVirtualRoles(CatalogueUser catalogueUser,
                                                                                             VirtualGroupRole applicationRole) {
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         applicationRole.allowedRoles.collect {iur ->
-            virtualSecurableResourceGroupRoleService.buildForSecurableResource(catalogueUser)
+            virtualSecurableResourceGroupRoleService.buildForSecurableResource(catalogueUser, folderModelMap)
                 .definedByAccessLevel(applicationRole.groupRole)
                 .withAccessLevel(iur)
         }.toSet()
@@ -646,5 +628,22 @@ class UserSecurityPolicyService {
             allRolesToRemove.removeAll(canBeRemoved)
             removeRolesWithNoRequiredAccess(userSecurityPolicy, allRolesToRemove)
         }
+    }
+
+    List<Model> getAllModels() {
+        if (modelServices) {
+            modelServices.collectMany {service -> service.list()} as List<Model>
+        } else {
+            []
+        }
+    }
+
+    Map<UUID, List<Model>> calculateFolderModelMap() {
+        calculateFolderModelMap(getAllModels())
+    }
+
+
+    Map<UUID, List<Model>> calculateFolderModelMap(List<Model> allModels) {
+        return allModels.groupBy {it.folder.id}
     }
 }

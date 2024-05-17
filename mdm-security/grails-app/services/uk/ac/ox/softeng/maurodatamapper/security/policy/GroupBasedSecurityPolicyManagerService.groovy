@@ -72,6 +72,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     GrailsApplication grailsApplication
     GrailsCacheManager grailsCacheManager
 
+    @Autowired(required = false)
     List<ModelService> modelServices
 
     @Autowired(required = false)
@@ -424,11 +425,14 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents = [] as HashSet
 
-        List<Model> allModels = modelServices.collectMany {service ->
-            service.list()
-        } as List<Model>
+        Map<UUID, List<Model>> folderModelMap = [:]
+        if(modelServices) {
+            List<Model> allModels = modelServices.collectMany {service ->
+                service.list()
+            } as List<Model>
+             folderModelMap = allModels.groupBy { it.folder.id}
+        }
 
-        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.id}
 
 
         virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService

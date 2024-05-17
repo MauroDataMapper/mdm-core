@@ -160,7 +160,7 @@ class FolderService extends ContainerService<Folder> {
     Set<SecurableResource> delete(Folder folder, boolean permanent, boolean flush = true, boolean rebuildSecurity = true) {
         if (!folder) {
             log.warn('Attempted to delete Folder which doesnt exist')
-            return
+            return []
         }
         if (permanent) {
             Set<SecurableResource> deletedResources = []
@@ -168,21 +168,24 @@ class FolderService extends ContainerService<Folder> {
             modelServices.each {deletedResources.addAll(it.deleteAllInContainer(folder, false))}
             folder.trackChanges()
             folder.delete(flush: flush)
-            if (securityPolicyManagerService && rebuildSecurity) {
-                Map<String, List<SecurableResource>> deletionMap = deletedResources.groupBy{ it.domainType}
-                deletionMap.each { String domainType, List<SecurableResource> resourcesOfType ->
-                    securityPolicyManagerService.removeSecurityForSecurableResourceIds(domainType, resourcesOfType.collect {it.id})
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
+                if(rebuildSecurity) {
+                    Map<String, List<SecurableResource>> deletionMap = deletedResources.groupBy {it.domainType}
+                    deletionMap.each {String domainType, List<SecurableResource> resourcesOfType ->
+                        securityPolicyManagerService.removeSecurityForSecurableResourceIds(domainType, resourcesOfType.collect {it.id})
+                    }
+                    return []
                 }
-                return []
-                //securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
-            } else {
-                return deletedResources
             }
+
+            return deletedResources
         } else {
             folder.childFolders.each {delete(it)}
             delete(folder)
             return []
         }
+
     }
 
     Folder validate(Folder folder) {
