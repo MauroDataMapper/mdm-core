@@ -48,7 +48,7 @@ class VirtualSecurableResourceGroupRoleService {
             List<Model> allModels = modelServices.collectMany {service ->
                 service.list()
             } as List<Model>
-             folderModelMap = allModels.groupBy { it.id}
+             folderModelMap = allModels.groupBy { it.folder.id}
         }
 
 
@@ -73,7 +73,7 @@ class VirtualSecurableResourceGroupRoleService {
             virtualRole
                 .withDependencyOnAccessToDomainId((securableResource as Folder).parentFolder?.id)
                 .asVersionControlled(versionedFolderService.hasVersionedFolderParent(securableResource as Folder))
-                .withVersionedContents(versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder) ||
+                .withVersionedContents(versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder, folderModelMap) ||
                                        versionedFolderService.doesDepthTreeContainFinalisedModel(securableResource as Folder, folderModelMap))
         } else if (Utils.parentClassIsAssignableFromChild(Classifier, securableResource.class)) {
             virtualRole.withDependencyOnAccessToDomainId((securableResource as Classifier).parentClassifier?.id)

@@ -896,14 +896,15 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    List<DataModel> deleteAllInContainer(Container container, boolean updateSecurity = false) {
+    List<DataModel> deleteAllInContainer(Container container, boolean updateSecurity = true) {
+        List<DataModel> dataModels = []
         if (container.instanceOf(Folder)) {
-            return deleteAll(DataModel.byFolderId(container.id).id().list() as List<UUID>, true, updateSecurity)
+            dataModels = DataModel.byFolderId(container.id).list()
+        } else if (container.instanceOf(Classifier)) {
+            dataModels = DataModel.byClassifierId(container.id).list()
         }
-        if (container.instanceOf(Classifier)) {
-            return deleteAll(DataModel.byClassifierId(container.id).id().list() as List<UUID>, true, updateSecurity)
-        }
-        return []
+        deleteAll(dataModels.id as List<UUID>, true, updateSecurity)
+        return dataModels
     }
 
     @Override
