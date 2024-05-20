@@ -117,7 +117,7 @@ class UserExpectation {
 
     UserExpectation withDefaultActions() {
         if (canUpdate) {
-            canAction 'delete', 'save', 'show', 'update'
+            canAction 'delete', 'save', 'show', 'update', 'mergeInto'
         } else if (canCreate) {
             canAction 'delete', 'save', 'show'
         } else if (canSee) {

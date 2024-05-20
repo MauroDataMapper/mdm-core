@@ -1111,7 +1111,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
         responseBody().availableActions ==
-        ((expectations.getContainerAdminAvailableActions() - [ResourceActions.FINALISE_ACTION]) + [ResourceActions.MERGE_INTO_ACTION]).sort()
+        ((expectations.getContainerAdminAvailableActions() - [ResourceActions.FINALISE_ACTION])).sort()
 
         when:
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
