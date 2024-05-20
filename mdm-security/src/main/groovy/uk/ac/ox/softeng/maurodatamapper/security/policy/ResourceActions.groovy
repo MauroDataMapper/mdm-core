@@ -78,13 +78,10 @@ class ResourceActions {
                                                       [EDIT_DESCRIPTION_ACTION]
 
     public static final List<String> EDITOR_ACTIONS = AUTHOR_ACTIONS +
-                                                      SOFT_CREATE_AND_EDIT_ACTIONS +
-                                                      [MERGE_INTO_ACTION]
-
+                                                      SOFT_CREATE_AND_EDIT_ACTIONS
 
     public static final List<String> CONTAINER_ADMIN_ACTIONS = EDITOR_ACTIONS +
                                                                [DELETE_ACTION]
-
 
 
     public static final List<String> DISALLOWED_ONCE_FINALISED_ACTIONS = [UPDATE_ACTION,

@@ -693,9 +693,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
         }
-        if (role.isVersionControlled()) {
+        if (!role.isVersionControlled()) {
             // If cant be versioned its inside a VF therefore shouldn't allow mergeInto
-            updatedActions.remove(MERGE_INTO_ACTION)
+            updatedActions << MERGE_INTO_ACTION
         }
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
