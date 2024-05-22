@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyModelData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
@@ -30,10 +32,14 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImp
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Intersects
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+
+import static org.springframework.http.HttpStatus.CREATED
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 
 @Slf4j
 class DataModelController extends ModelController<DataModel> {
@@ -220,5 +226,47 @@ class DataModelController extends ModelController<DataModel> {
         if (!sourceModel) return notFound(params[alternateParamsIdKey])
 
         respond(intersectionMany: dataModelService.intersectsMany(currentUserSecurityPolicyManager, sourceModel, intersects))
+    }
+
+    def copyModel(CopyModelData copyModelData) {
+        try {
+            if (!copyModelData.validate()) {
+                respond copyModelData.errors, status: INTERNAL_SERVER_ERROR
+                return
+            }
+            DataModel original = dataModelService.get(params.dataModelId)
+
+            if (original == null) {
+                log.error("The data model for ${param.dataModelId} is null")
+                respond "Data model cannot be null", status: INTERNAL_SERVER_ERROR
+                return
+            }
+            Folder copyToFolder = folderService.get(copyModelData.folderId)
+
+            if (copyToFolder == null) {
+                log.error("The folder to copy to (${copyModelData.folderId}) is null")
+                respond "Data model cannot be null", status: INTERNAL_SERVER_ERROR
+                return
+            }
+
+            DataModel instance = dataModelService.copyModel(original,
+                                                            copyToFolder,
+                                                            currentUser,
+                                                            copyModelData.copyPermissions,
+                                                            copyModelData.label,
+                                                            copyModelData.version,
+                                                            copyModelData.branchName,
+                                                            true,
+                                                            currentUserSecurityPolicyManager,
+                                                            true)
+
+            log.info("Success - model copied")
+            respond instance, status: CREATED, view: 'show'
+        } catch(Exception e) {
+            log.error("EXCEPTION: \"${e.toString()}\"")
+
+            // And the weired thing is the client sees an OK so maybe this is wrong?
+            respond e.toString(), status: INTERNAL_SERVER_ERROR
+        }
     }
 }

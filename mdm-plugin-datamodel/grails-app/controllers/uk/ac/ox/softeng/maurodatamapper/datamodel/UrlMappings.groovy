@@ -33,6 +33,7 @@ class UrlMappings {
 
             '/dataModels'(resources: 'dataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
+                post '/copyModel'(controller: 'dataModel', action: 'copyModel')
                 put '/finalise'(controller: 'dataModel', action: 'finalise')
                 put '/newBranchModelVersion'(controller: 'dataModel', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
@@ -120,7 +121,6 @@ class UrlMappings {
                 post "/dataTypes/$otherDataModelId/$dataTypeId"(controller: 'dataType', action: 'copyDataType')
                 put "/dataTypes/$otherDataModelId/$otherDataTypeId"(controller: 'dataModel', action: 'importDataType')
                 delete "/dataTypes/$otherDataModelId/$otherDataTypeId"(controller: 'dataModel', action: 'importDataType')
-
                 "/enumerationTypes/${enumerationTypeId}/enumerationValues"(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
             }
 

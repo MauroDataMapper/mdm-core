@@ -1549,6 +1549,39 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData()
     }
 
+    void 'EIEIO : test copy model'() {
+        given:
+
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        // It turns out that this pattern works (with the model Id in the URL)
+        // even though there is no Id in UrlMappings for copyModel.
+        POST("$id/copyModel", [
+            folderId: movingFolderId,
+            label: 'new label',
+            copyPermissions: false,
+            branchName: "New branch name",
+            version: '1'
+            ])
+
+        verifyResponse CREATED, response
+
+        // Next steps:
+        // -    pick the view of the data model out of the response and check the properties
+
+
+    }
+
     void 'VB13 : test creating new branch with imported DataTypes'() {
         given:
         // Get DataModel
