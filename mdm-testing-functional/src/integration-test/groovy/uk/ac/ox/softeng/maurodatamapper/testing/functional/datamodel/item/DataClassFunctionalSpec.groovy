@@ -22,7 +22,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -118,6 +120,20 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     String getComplexStringDataTypeId() {
         PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getComplexDataModelId()), 'string').get().id.toString()
     }
+
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
+    }
+
 
     @Override
     Map getValidJson() {
@@ -231,7 +247,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         assert body.breadcrumbs.first().domainType == 'DataModel'
         assert body.breadcrumbs.first().finalised == false
 
-        assert body.availableActions == getEditorModelItemAvailableActions().sort()
+        assert body.availableActions == (getEditorModelItemAvailableActions() + [ResourceActions.MERGE_INTO_ACTION]).sort()
         assert body.lastUpdated
         assert body.maxMultiplicity == -1
         assert body.minMultiplicity == 1

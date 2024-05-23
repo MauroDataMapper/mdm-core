@@ -203,8 +203,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 canSee()
                 canIndex()
             }
-            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
-            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
             .whereAuthorsCanAction('comment', 'editDescription', 'show')
             .whereReviewersCanAction('comment', 'show')
             .whereReadersCanAction('show')
