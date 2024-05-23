@@ -120,19 +120,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
     }
 
     @Override
-    Expectations getExpectations() {
-        Expectations.builder()
-            .withDefaultExpectations()
-            .withInheritedAccessPermissions()
-            .whereTestingUnsecuredResource()
-            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
-            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
-            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
-            .whereReviewersCanAction('comment', 'show')
-            .whereReadersCanAction('show')
-    }
-
-    @Override
     String getModelType() {
         'Terminology'
     }
