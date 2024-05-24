@@ -860,6 +860,10 @@ abstract class ModelService<K extends Model>
         getDomainClass().byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
     }
 
+    K findByLabelAndBranchAndNotFinalised(String label, String branchName) {
+        getDomainClass().byLabelAndBranchNameAndNotFinalised(label, branchName).get() as K
+    }
+
     List<K> findAllAvailableBranchesByLabel(String label) {
         getDomainClass().byLabelAndNotFinalised(label).list() as List<K>
     }

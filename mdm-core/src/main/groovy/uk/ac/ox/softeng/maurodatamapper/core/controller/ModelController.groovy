@@ -514,6 +514,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return forbidden('Cannot copy a model that is finalised - create a fork instead')
         }
 
+        def existingTargetModel = modelService.findByLabelAndBranchAndNotFinalised(copyModelData.label, original.branchName)
+        if (existingTargetModel) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Label passed in request body is not unique.')
+        }
+
         // TODO: check that model is within a versioned folder
 
         Folder targetFolder = copyModelData.folderId ? folderService.get(copyModelData.folderId) : original.folder
