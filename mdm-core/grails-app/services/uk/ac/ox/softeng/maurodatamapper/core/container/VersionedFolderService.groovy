@@ -856,14 +856,41 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     VersionedFolder getVersionedFolderParent(Folder folder) {
-        if (folder.instanceOf(VersionedFolder)) return proxyHandler.unwrapIfProxy(folder) as VersionedFolder
+        if (folder.instanceOf(VersionedFolder)) {
+            return proxyHandler.unwrapIfProxy(folder) as VersionedFolder
+        }
+
+        if (!folder.parentFolder) {
+            return null
+        }
+
         getVersionedFolderParent(folder.parentFolder)
+    }
+
+    VersionedFolder getVersionedFolderParent(Model model) {
+        if (!model.folder) {
+            return null
+        }
+
+        getVersionedFolderParent(model.folder)
     }
 
     boolean hasVersionedFolderParent(Folder folder) {
         if (!folder.parentFolder) return false
         if (folder.parentFolder.instanceOf(VersionedFolder)) return true
         hasVersionedFolderParent(folder.parentFolder)
+    }
+
+    boolean hasVersionedFolderParent(Model model) {
+        if (!model.folder) {
+            return false
+        }
+
+        if (model.folder.instanceOf(VersionedFolder)) {
+            return true
+        }
+
+        hasVersionedFolderParent(model.folder)
     }
 
     boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo) {

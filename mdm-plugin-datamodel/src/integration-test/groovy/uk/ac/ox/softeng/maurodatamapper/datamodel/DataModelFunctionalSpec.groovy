@@ -5783,7 +5783,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         given: 'a model exists'
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
-            folderId                       : folderId.toString(),
+            folderId                       : versionedFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileType    : MimeType.JSON_API.name,
@@ -5796,7 +5796,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'copying the model'
         String newLabel = 'copied model'
         PUT("$originalId/copy", [
-            folderId: movingFolderId,
+            folderId: versionedFolderId,
             label: newLabel,
             copyPermissions: false
         ])
@@ -5834,7 +5834,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         when: 'copying the model'
         String id = UUID.randomUUID().toString()
         PUT("$id/copy", [
-            folderId: movingFolderId,
+            folderId: versionedFolderId,
             label: 'copied data model',
             copyPermissions: false
         ])
@@ -5845,9 +5845,31 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'COPY03: should not copy a model that is finalised'() {
         given: 'a model exists'
-        String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: 'Major'])
+        POST("folders/${versionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        and: 'the parent versioned folder is finalised'
+        PUT("versionedFolders/$versionedFolderId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'COPY04: should not copy a model that is not inside a versioned folder'() {
+        given: 'a model exists'
+        String id = createNewItem(validJson)
 
         when: 'copying the model'
         PUT("$id/copy", [
@@ -5863,10 +5885,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id)
     }
 
-    void 'COPY04: should not copy a model with the same label'() {
+    void 'COPY05: should not copy a model with the same label'() {
         given: 'a model exists'
         String label = 'Functional data model'
-        String id = createNewItem([ label: label ])
+        POST("folders/${versionedFolderId}/${getResourcePath()}", [ label: label ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
 
         when: 'copying the model'
         PUT("$id/copy", [
@@ -5877,6 +5901,26 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then: 'the correct response was returned'
         verifyResponse UNPROCESSABLE_ENTITY, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'COPY06: should not copy a model outside the original versioned folder parent'() {
+        given: 'a model exists'
+        POST("folders/${versionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: otherVersionedFolderId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
 
         cleanup:
         cleanUpData(id)
