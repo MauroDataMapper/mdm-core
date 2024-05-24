@@ -39,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.MergeIntoData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyModelData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.DeleteAllParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
@@ -495,6 +496,65 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         saveResponse savedCopy
+    }
+
+    @Transactional
+    def copyModel(CopyModelData copyModelData) {
+        if (copyModelData.hasErrors()) {
+            respond copyModelData.errors
+            return
+        }
+
+        T original = queryForResource(params[alternateParamsIdKey])
+        if (!original) {
+            return notFound(params[alternateParamsIdKey])
+        }
+
+        if (original.finalised) {
+            return forbidden('Cannot copy a model that is finalised - create a fork instead')
+        }
+
+        // TODO: check that model is within a versioned folder
+
+        Folder targetFolder = copyModelData.folderId ? folderService.get(copyModelData.folderId) : original.folder
+        if (!targetFolder) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Target folder id passed in request body or from original model not found.')
+        }
+
+        // TODO: check that target folder is within the same versioned folder structure
+
+        if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params[alternateParamsIdKey])) {
+            copyModelData.copyPermissions = false
+        }
+
+        // TODO: option to run as async job
+
+        T copy = modelService.copyModel(
+            original,
+            targetFolder,
+            currentUser,
+            copyModelData.copyPermissions,
+            copyModelData.label,
+            original.documentationVersion,
+            original.branchName,
+            true,
+            currentUserSecurityPolicyManager) as T
+
+        if (!validateResource(copy, 'create')) {
+            return
+        }
+
+        T savedCopy = modelService.saveModelWithContent(copy) as T
+        savedCopy.addCreatedEdit(currentUser)
+
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(
+                savedCopy,
+                currentUser,
+                savedCopy.label)
+        }
+
+        saveResponse(savedCopy)
     }
 
     def exportModel() {

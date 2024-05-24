@@ -33,11 +33,11 @@ class UrlMappings {
 
             '/dataModels'(resources: 'dataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
-                post '/copyModel'(controller: 'dataModel', action: 'copyModel')
                 put '/finalise'(controller: 'dataModel', action: 'finalise')
                 put '/newBranchModelVersion'(controller: 'dataModel', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'dataModel', action: 'newForkModel') // new URL
+                put '/copy'(controller: 'dataModel', action: 'copyModel')
 
                 /*
                 Version Control

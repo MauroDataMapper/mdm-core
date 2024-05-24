@@ -13,9 +13,9 @@ import grails.validation.Validateable
 class CopyModelData implements Validateable {
     UUID folderId
     String label
-    Boolean copyPermissions
-    String branchName
+    boolean copyPermissions = true
 
-    @BindUsing({obj, source -> Version.from(source['version'] as String) })
-    Version version
+    static constraints = {
+        folderId nullable: true
+    }
 }

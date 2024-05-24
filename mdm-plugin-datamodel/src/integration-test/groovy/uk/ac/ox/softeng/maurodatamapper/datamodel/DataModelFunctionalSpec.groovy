@@ -1549,9 +1549,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData()
     }
 
-    void 'EIEIO : test copy model'() {
-        given:
-
+    void 'test copying a model'() {
+        given: 'a model exists'
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
             finalised                      : false,
             folderId                       : folderId.toString(),
@@ -1562,24 +1561,43 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             ]
         ])
         verifyResponse CREATED, response
-        String id = response.body().items[0].id
+        String originalId = response.body().items[0].id
 
-        // It turns out that this pattern works (with the model Id in the URL)
-        // even though there is no Id in UrlMappings for copyModel.
-        POST("$id/copyModel", [
+        when: 'copying the model'
+        String newLabel = 'copied model'
+        PUT("$originalId/copy", [
             folderId: movingFolderId,
-            label: 'new label',
-            copyPermissions: false,
-            branchName: "New branch name",
-            version: '1'
-            ])
+            label: newLabel,
+            copyPermissions: false
+        ])
 
+        then: 'the correct response was returned'
         verifyResponse CREATED, response
+        String copiedId = response.body().id
 
-        // Next steps:
-        // -    pick the view of the data model out of the response and check the properties
+        and: 'the copied model has the correct properties'
+        verifyAll(response.body()) {
+            id != originalId
+            label == newLabel
+        }
 
+        and: 'the copied model has the same types'
+        HttpResponse<Object> originalTypesResponse = GET("$originalId/dataTypes")
+        HttpResponse<Object> copiedTypesResponse = GET("$copiedId/dataTypes")
+        with {
+            originalTypesResponse.body().count == copiedTypesResponse.body().count
+        }
 
+        and: 'the copied model has the same classes'
+        HttpResponse<Object> originalClassesResponse = GET("$originalId/dataClasses")
+        HttpResponse<Object> copiedClassesResponse = GET("$copiedId/dataClasses")
+        with {
+            originalClassesResponse.body().count == copiedClassesResponse.body().count
+        }
+
+        cleanup:
+        cleanUpData(originalId)
+        cleanUpData(copiedId)
     }
 
     void 'VB13 : test creating new branch with imported DataTypes'() {

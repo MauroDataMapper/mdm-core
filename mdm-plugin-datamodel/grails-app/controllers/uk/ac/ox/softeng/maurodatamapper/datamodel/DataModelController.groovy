@@ -227,46 +227,4 @@ class DataModelController extends ModelController<DataModel> {
 
         respond(intersectionMany: dataModelService.intersectsMany(currentUserSecurityPolicyManager, sourceModel, intersects))
     }
-
-    def copyModel(CopyModelData copyModelData) {
-        try {
-            if (!copyModelData.validate()) {
-                respond copyModelData.errors, status: INTERNAL_SERVER_ERROR
-                return
-            }
-            DataModel original = dataModelService.get(params.dataModelId)
-
-            if (original == null) {
-                log.error("The data model for ${param.dataModelId} is null")
-                respond "Data model cannot be null", status: INTERNAL_SERVER_ERROR
-                return
-            }
-            Folder copyToFolder = folderService.get(copyModelData.folderId)
-
-            if (copyToFolder == null) {
-                log.error("The folder to copy to (${copyModelData.folderId}) is null")
-                respond "Data model cannot be null", status: INTERNAL_SERVER_ERROR
-                return
-            }
-
-            DataModel instance = dataModelService.copyModel(original,
-                                                            copyToFolder,
-                                                            currentUser,
-                                                            copyModelData.copyPermissions,
-                                                            copyModelData.label,
-                                                            copyModelData.version,
-                                                            copyModelData.branchName,
-                                                            true,
-                                                            currentUserSecurityPolicyManager,
-                                                            true)
-
-            log.info("Success - model copied")
-            respond instance, status: CREATED, view: 'show'
-        } catch(Exception e) {
-            log.error("EXCEPTION: \"${e.toString()}\"")
-
-            // And the weired thing is the client sees an OK so maybe this is wrong?
-            respond e.toString(), status: INTERNAL_SERVER_ERROR
-        }
-    }
 }
