@@ -693,8 +693,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
         }
-
-        if ((role.domainType == "VersionedFolder" || role.domainType == "DataModel") && !role.isFinalised()){
+        // should you be able to merge reference data models?
+        if ((role.domainType == "VersionedFolder"
+            || role.domainType == "DataModel"
+            || role.domainType == "CodeSet"
+            || role.domainType == "Terminology")
+            && !role.isFinalised()){
             updatedActions << MERGE_INTO_ACTION
         }
 

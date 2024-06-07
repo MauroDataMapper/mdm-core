@@ -119,6 +119,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         ]
     }
 
+
     @Override
     String getModelType() {
         'Terminology'
