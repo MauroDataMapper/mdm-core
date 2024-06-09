@@ -118,6 +118,25 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     }
 
     @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withSoftDeleteByDefault()
+            .withInheritedAccessPermissions()
+            .whereAuthenticatedUsers {
+                canIndex()
+            }
+            .whereAnonymousUsers {
+                canIndex()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
+    }
+
+    @Override
     String getModelType() {
         'CodeSet'
     }

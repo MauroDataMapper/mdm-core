@@ -87,11 +87,6 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'referencedata').toAbsolutePath()
     }
 
-    @Override
-    Expectations getExpectations() {
-        super.getExpectations().withoutMergingAvailable()
-    }
-
     byte[] loadTestFile(String filename) {
         Path testFilePath = resourcesPath.resolve("${filename}").toAbsolutePath()
         assert Files.exists(testFilePath)
@@ -146,6 +141,26 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
             label: 'Simple Reference Data Model'
         ]
     }
+
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withSoftDeleteByDefault()
+            .withInheritedAccessPermissions()
+            .whereAuthenticatedUsers {
+                canIndex()
+            }
+            .whereAnonymousUsers {
+                canIndex()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
+    }
+
 
     @Override
     String getModelType() {
