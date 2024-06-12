@@ -20,7 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datat
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -69,6 +71,19 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     @Transactional
     String getReferenceDataClassId() {
         DataClass.byDataModelIdAndLabel(Utils.toUuid(getComplexDataModelId()), 'parent').get().id.toString()
+    }
+
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     @Override
@@ -244,7 +259,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         assert body.breadcrumbs.first().domainType == 'DataModel'
         assert body.breadcrumbs.first().finalised == false
 
-        assert body.availableActions == getEditorModelItemAvailableActions().sort()
+        assert body.availableActions == (getEditorModelItemAvailableActions() + [ResourceActions.MERGE_INTO_ACTION]).sort()
         assert body.lastUpdated
     }
 
@@ -289,7 +304,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "show","comment","editDescription","update","save","delete"
+    "comment","delete","editDescription","mergeInto","save","show","update"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "enumerationValues": [
@@ -354,7 +369,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-   "show","comment","editDescription","update","save","delete"
+   "comment","delete","editDescription","mergeInto","save","show","update"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "referenceClass": {
@@ -421,7 +436,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "show","comment","editDescription","update","save","delete"
+    "comment","delete","editDescription","mergeInto","save","show","update"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "modelResourceId": "${json-unit.matches:id}",

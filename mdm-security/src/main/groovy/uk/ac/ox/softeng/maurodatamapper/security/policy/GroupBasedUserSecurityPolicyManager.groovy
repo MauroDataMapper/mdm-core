@@ -588,9 +588,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResourceClass)) {
             // The below should get editor level versioning and finalisation rights
             VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
-            if (role) {
+            if (role){
                 return updateBaseModelActionsForEditor(CONTAINER_ADMIN_ACTIONS, role)
             }
+
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             if (role) {
                 return updateBaseModelActionsForEditor(EDITOR_ACTIONS, role)
@@ -688,14 +689,21 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         List<String> updatedActions = new ArrayList<>(baseActions)
         if (role.canFinalise()) {
             updatedActions << FINALISE_ACTION
-        } else {
-            // If it cant be finalised its either a non-main branch or inside a VF or finalised
-            // The last 2 cases we can remove the action in this method
-            updatedActions << MERGE_INTO_ACTION
         }
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
         }
+
+        if ((role.domainType == "VersionedFolder"
+            || role.domainType == "DataModel"
+            || role.domainType == "CodeSet"
+            || role.domainType == "Terminology"
+            || role.domainType == "ReferenceDataModel"
+       )
+            && !role.isFinalised()){
+            updatedActions << MERGE_INTO_ACTION
+        }
+
         if (role.isVersionControlled()) {
             // If cant be versioned its inside a VF therefore shouldn't allow mergeInto
             updatedActions.remove(MERGE_INTO_ACTION)
