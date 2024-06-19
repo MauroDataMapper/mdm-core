@@ -49,6 +49,11 @@ class TermInterceptor extends TerminologySecuredInterceptor {
             return canReadModel()
         }
 
+        // TODO: is this appropriate?
+        if (actionName == 'copyTerm') {
+            return canEditModelAndReadOtherModel()
+        }
+
         if (isIndex() && params.containsKey('codeSetId')) {
             return checkActionAuthorisationOnUnsecuredResource(getModelItemClass(), params.id, CodeSet, params.codeSetId)
         }

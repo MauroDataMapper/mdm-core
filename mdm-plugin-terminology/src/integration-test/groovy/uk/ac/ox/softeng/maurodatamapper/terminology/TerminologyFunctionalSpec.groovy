@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -42,6 +44,7 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import net.javacrumbs.jsonunit.core.Option
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -49,6 +52,7 @@ import java.nio.file.Path
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -74,6 +78,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *
  *  |   PUT    | /api/terminologies/${terminologyId}/newForkModel          | Action: newForkModel
  *  |   PUT    | /api/terminologies/${terminologyId}/newDocumentationVersion  | Action: newDocumentationVersion
+ *  |   PUT    | /api/terminologies/${terminologyId}/copy                     | Action: copyModel
  *  |   PUT    | /api/terminologies/${terminologyId}/finalise                 | Action: finalise
 
  *  |   PUT    | /api/terminologies/${terminologyId}/folder/${folderId}   | Action: changeFolder
@@ -99,8 +104,23 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     TerminologyXmlExporterService terminologyXmlExporterService
     TerminologyXmlImporterService terminologyXmlImporterService
 
+    @Autowired
+    VersionedFolderService versionedFolderService
+
+    @Autowired
+    TerminologyService terminologyService
+
     @Shared
     UUID folderId
+
+    @Shared
+    UUID versionedFolderId
+
+    @Shared
+    UUID otherVersionedFolderId
+
+    @Shared
+    UUID versionedAndFinalisedId
 
     @Shared
     UUID movingFolderId
@@ -119,6 +139,15 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+        versionedFolderId =
+            new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedFolderId
+        otherVersionedFolderId  =
+            new VersionedFolder(label: 'Functional Test Other VersionedFolder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert otherVersionedFolderId
+        versionedAndFinalisedId  =
+            new VersionedFolder(label: 'Functional Test Versioned and finalised Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedAndFinalisedId
         builder = new TerminologyPluginMergeBuilder(this)
     }
 
@@ -195,6 +224,19 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
     String getXmlExporterPath() {
         "${terminologyXmlExporterService.namespace}/${terminologyXmlExporterService.name}/${terminologyXmlExporterService.version}"
+    }
+
+    /**
+     * Same as @see ResourceFunctionalSpec#createNewItem() except the path uses
+     * a versioned folder.
+     *
+     * @param model The parameters required to build a new Terminology instance.
+     */
+    String createNewItemInVersionedFolder(Map model) {
+        final String path = "folders/${versionedFolderId}/${getResourcePath()}"
+        POST(path, model, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        response.body().id
     }
 
     void 'test finalising Terminology'() {
@@ -1979,6 +2021,131 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         cleanup:
         cleanUpData(id)
         cleanUpData(id2)
+    }
+
+    void 'CPTERM01 : should copy a terminology'() {
+        given:
+        String originalId = createNewItemInVersionedFolder(validJson)
+
+        when: 'copying the terminology'
+        String newLabel = 'copied terminology'
+        PUT("$originalId/copy", [
+            folderId: versionedFolderId,
+            label: newLabel,
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse CREATED, response
+        String copiedId = response.body().id
+
+        and: 'the copied model has the correct properties'
+        verifyAll(response.body()) {
+            id != originalId
+            label == newLabel
+        }
+
+        and: 'the copied model has the same terms'
+        HttpResponse<Object> originalTermsResponse = GET("$originalId/terms")
+        HttpResponse<Object> copiedTermsResponse = GET("$copiedId/terms")
+        with {
+            originalTermsResponse.body().count == copiedTermsResponse.body().count
+        }
+        cleanup:
+        cleanUpData(originalId)
+        cleanUpData(copiedId)
+    }
+
+    void 'CPTERM02: should not copy a terminology that cannot be found'() {
+        when: 'copying the terminology'
+        String id = UUID.randomUUID().toString()
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            label: 'copied terminology',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse NOT_FOUND, response
+    }
+
+    void 'CPTERM03: should not copy a terminology that is finalised'() {
+        given: 'a terminology exists'
+        String id = createNewItemInVersionedFolder(validJson)
+
+        and: 'the parent versioned folder is finalised'
+        PUT("versionedFolders/$versionedAndFinalisedId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
+        verifyResponse OK, response
+
+        when: 'copying the terminology'
+        PUT("$id/copy", [
+            folderId: versionedAndFinalisedId,
+            label: 'copied data terminology',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'CPTERM05 : should not copy a terminology not contained in a versioned folder'() {
+        given:
+        String id = createNewItem(validJson)
+
+        when: 'copying the terminology'
+        String newLabel = 'copied terminology'
+        PUT("$id/copy", [
+            folderId: folderId,
+            label: newLabel,
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'CPTERM04: a copy with the same label is not allowed'() {
+        given: 'a terminology  exists'
+        String id = createNewItemInVersionedFolder(validJson)
+        Terminology ology = terminologyService.get(id)
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            label: ology.label,
+            copyPermissions: false
+        ])
+
+        log.info("Expect ${UNPROCESSABLE_ENTITY.code}, got ${response.status().code}")
+        then: 'the correct response was returned'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'CPTERM06: should not copy ther terminlolgy outside the original versioned folder parent'() {
+        given: 'a model exists'
+        String id = createNewItemInVersionedFolder(validJson)
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: otherVersionedFolderId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
     }
 
     byte[] loadTestFile(String filename, String fileType = 'json') {

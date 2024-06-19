@@ -51,6 +51,7 @@ class UrlMappings {
                 put '/newBranchModelVersion'(controller: 'terminology', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'terminology', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'terminology', action: 'newForkModel')
+                put '/copy'(controller: 'terminology', action: 'copyModel')
 
                 /*
                 Version Control
@@ -86,6 +87,7 @@ class UrlMappings {
                 post '/terms/search'(controller: 'term', action: 'search')
                 get '/terms/search'(controller: 'term', action: 'search') // New URL
                 get "/terms/tree/$termId?"(controller: 'term', action: 'tree') // New URL
+                put "/terms/copy/$termId"(controller: 'term', action: 'copyTerm')
 
                 /*
                 Term Relationship Types

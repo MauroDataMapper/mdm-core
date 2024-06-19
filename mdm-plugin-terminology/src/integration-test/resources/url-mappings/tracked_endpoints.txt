@@ -88,3 +88,5 @@
 | DELETE | /api/terminologies/${id} | delete |
 | PUT    | /api/terminologies/${id} | update |
 | GET    | /api/terminologies/${id} | show |
+| PUT    | /api/terminologies/${terminologyId}/copy | copyModel |
+| PUT    | /api/terminologies/${terminologyId}/terms/copy/${termId} | copyTerm |

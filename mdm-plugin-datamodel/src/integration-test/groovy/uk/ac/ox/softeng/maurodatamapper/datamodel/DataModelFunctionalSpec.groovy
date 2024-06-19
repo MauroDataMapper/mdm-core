@@ -103,6 +103,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     UUID otherVersionedFolderId
 
     @Shared
+    UUID versionedAndFinalisedId
+
+    @Shared
     UUID movingFolderId
 
     @Shared
@@ -124,6 +127,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         otherVersionedFolderId =
             new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert otherVersionedFolderId
+        versionedAndFinalisedId =
+            new VersionedFolder(label: 'Functional Test Versioned and Finalised Folder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedAndFinalisedId
         builder = new DataModelPluginMergeBuilder(this)
     }
 
@@ -5845,17 +5851,17 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void 'COPY03: should not copy a model that is finalised'() {
         given: 'a model exists'
-        POST("folders/${versionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        POST("folders/${versionedAndFinalisedId}/${getResourcePath()}", validJson, MAP_ARG, true)
         verifyResponse(CREATED, response)
         String id = responseBody().id
 
         and: 'the parent versioned folder is finalised'
-        PUT("versionedFolders/$versionedFolderId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
+        PUT("versionedFolders/$versionedAndFinalisedId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         when: 'copying the model'
         PUT("$id/copy", [
-            folderId: versionedFolderId,
+            folderId: versionedAndFinalisedId,
             label: 'copied data model',
             copyPermissions: false
         ])
