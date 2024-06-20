@@ -59,6 +59,13 @@ class DataElementInterceptor extends DataModelSecuredInterceptor {
             return true
         }
 
+        if (actionName == 'moveDataElement') {
+            if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(DataClass, params.otherDataClassId)) {
+                return notFound(DataClass, params.otherDataClassId)
+            }
+            return true
+        }
+
         if (actionName == 'copyDataElement') {
             return canEditModelAndReadOtherModel()
         }

@@ -94,6 +94,7 @@ class UrlMappings {
                      */
                     '/dataElements'(resources: 'dataElement', excludes: DEFAULT_EXCLUDES) {
                         get "/suggestLinks/$otherDataModelId"(controller: 'dataElement', action: 'suggestLinks')
+                        put "/move/$otherDataClassId"(controller: 'dataElement', action: 'moveDataElement')
                     }
 
                     post "/dataElements/$otherDataModelId/$otherDataClassId/$dataElementId"(controller: 'dataElement', action: 'copyDataElement')

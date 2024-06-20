@@ -1119,4 +1119,24 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     }'''
     }
 
+    void "MV01: should move a data element from one data class to another within the same model"() {
+        given: "there is a data element"
+        String dataElementId = createNewItem(validJson)
+
+        when: "the parent data class is changed on the data element"
+        PUT("$dataElementId/move/$secondDataClassId", [:], MAP_ARG)
+
+        then: "the response is OK"
+        verifyResponse(OK, response)
+
+        and: "the data element parent data class has changed"
+        verifyAll(responseBody()) {
+            model == this.dataModelId.toString()
+            dataClass == this.secondDataClassId.toString()
+        }
+
+        cleanup:
+        DELETE(getDeleteEndpoint(dataElementId))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
 }

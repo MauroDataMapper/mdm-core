@@ -112,6 +112,22 @@ class DataElementController extends CatalogueItemController<DataElement> {
         respond dataElementService.findAllSimilarDataElementsInDataModel(otherDataModel, dataElement, maxResults)
     }
 
+    @Transactional
+    def moveDataElement() {
+        UUID otherDataClassId = params.otherDataClassId
+
+        // TODO: checks...
+
+        DataElement dataElement = queryForResource(params.dataElementId)
+        if (!dataElement) {
+            return notFound(params.dataElementId)
+        }
+
+        // TODO: move...
+
+        DataElement savedDataElement = saveResource(dataElement)
+        updateResponse(savedDataElement)
+    }
 
     @Override
     protected DataElement queryForResource(Serializable resourceId) {
