@@ -115,6 +115,10 @@ class DataElementController extends CatalogueItemController<DataElement> {
     @Transactional
     def moveDataElement() {
         UUID otherDataClassId = params.otherDataClassId
+        DataClass otherDataClass = dataClassService.get(otherDataClassId)
+        if (!otherDataClass) {
+            return notFound(DataClass, otherDataClassId)
+        }
 
         // TODO: checks...
 
@@ -124,6 +128,8 @@ class DataElementController extends CatalogueItemController<DataElement> {
         }
 
         // TODO: move...
+        dataElement.dataClass = otherDataClass
+        // TODO: anything else to change??
 
         DataElement savedDataElement = saveResource(dataElement)
         updateResponse(savedDataElement)

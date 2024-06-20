@@ -1122,6 +1122,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     void "MV01: should move a data element from one data class to another within the same model"() {
         given: "there is a data element"
         String dataElementId = createNewItem(validJson)
+        String originalPath = responseBody().path
 
         when: "the parent data class is changed on the data element"
         PUT("$dataElementId/move/$secondDataClassId", [:], MAP_ARG)
@@ -1130,13 +1131,30 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         verifyResponse(OK, response)
 
         and: "the data element parent data class has changed"
+        String expectedPath = originalPath.replace("Functional Test DataClass", "Functional Test DataClass 3")
         verifyAll(responseBody()) {
             model == this.dataModelId.toString()
             dataClass == this.secondDataClassId.toString()
+            path == expectedPath
+            // TODO check breadcrumb
+        }
+
+        and: "the path was updated correctly"
+        with(responseBody()) {
+            path == expectedPath
+        }
+
+        and: "the breadcrumbs were updated correctly"
+        def updatedBreadcrumbs = responseBody().breadcrumbs
+        def updatedDataClassBreadcrumb = updatedBreadcrumbs.find { it.domainType == "DataClass" }
+        with(updatedDataClassBreadcrumb) {
+            id == this.secondDataClassId
+            label == "Functional Test DataClass 3"
         }
 
         cleanup:
-        DELETE(getDeleteEndpoint(dataElementId))
+        // Moving the Data Element means the resource path has changed
+        DELETE("${getResourcePath(dataModelId, secondDataClassId)}/$dataElementId", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
 }
