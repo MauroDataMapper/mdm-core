@@ -1124,10 +1124,11 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         String dataElementId = createNewItem(validJson)
         String originalPath = responseBody().path
 
-        when: "the parent data class is changed on the data element"
+        when: "moving the data element"
         PUT("$dataElementId/move/$secondDataClassId", [:], MAP_ARG)
 
         then: "the response is OK"
+        String movedDataElementId = responseBody().id
         verifyResponse(OK, response)
 
         and: "the data element parent data class has changed"
@@ -1135,8 +1136,6 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         verifyAll(responseBody()) {
             model == this.dataModelId.toString()
             dataClass == this.secondDataClassId.toString()
-            path == expectedPath
-            // TODO check breadcrumb
         }
 
         and: "the path was updated correctly"
@@ -1148,13 +1147,35 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         def updatedBreadcrumbs = responseBody().breadcrumbs
         def updatedDataClassBreadcrumb = updatedBreadcrumbs.find { it.domainType == "DataClass" }
         with(updatedDataClassBreadcrumb) {
-            id == this.secondDataClassId
+            id == this.secondDataClassId.toString()
             label == "Functional Test DataClass 3"
         }
 
+        when: "getting the original data element"
+        GET(dataElementId)
+
+        then: "the original should not exist"
+        verifyResponse(NOT_FOUND, response)
+
         cleanup:
         // Moving the Data Element means the resource path has changed
-        DELETE("${getResourcePath(dataModelId, secondDataClassId)}/$dataElementId", MAP_ARG, true)
+        DELETE("${getResourcePath(dataModelId, secondDataClassId)}/$movedDataElementId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void "MV02: should not move a data element from one data class to another outside the model"() {
+        given: "there is a data element"
+        String dataElementId = createNewItem(validJson)
+
+        when: "moving the data element"
+        // otherDataClassId does not belong in the same model as the
+        PUT("$dataElementId/move/$otherDataClassId", [:], MAP_ARG)
+
+        then: "the response is not OK"
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+
+        cleanup:
+        DELETE(dataElementId)
         assert response.status() == HttpStatus.NO_CONTENT
     }
 }

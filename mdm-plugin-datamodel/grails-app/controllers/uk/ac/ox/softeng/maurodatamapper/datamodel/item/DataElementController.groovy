@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
+import org.springframework.http.HttpStatus
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
@@ -114,25 +115,68 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Transactional
     def moveDataElement() {
-        UUID otherDataClassId = params.otherDataClassId
-        DataClass otherDataClass = dataClassService.get(otherDataClassId)
-        if (!otherDataClass) {
-            return notFound(DataClass, otherDataClassId)
+        if (handleReadOnly()) {
+            return
         }
 
-        // TODO: checks...
-
-        DataElement dataElement = queryForResource(params.dataElementId)
-        if (!dataElement) {
+        DataElement originalDataElement = dataElementService.findByDataClassIdAndId(params.dataClassId, params.dataElementId)
+        if (!originalDataElement) {
             return notFound(params.dataElementId)
         }
 
-        // TODO: move...
-        dataElement.dataClass = otherDataClass
-        // TODO: anything else to change??
+        // Only allowed to move a Data Element to another class within the same model
+        DataModel destinationDataModel = dataModelService.get(params.dataModelId)
 
-        DataElement savedDataElement = saveResource(dataElement)
-        updateResponse(savedDataElement)
+        DataClass destinationDataClass = dataClassService.get(params.otherDataClassId)
+        if (destinationDataClass.modelId != destinationDataModel.id) {
+            return errorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Can only move a Data Element to another Data Class within the same Data Model")
+        }
+
+        DataElement copiedDataElement
+        try {
+            // Have to simulate a move operation by making a copy first and deleting the original.
+            // It does not seem possible to adjust/modify an existing data element record to belong to
+            // a different parent, since the breadcrumb tree has constraints on it preventing this - either
+            // updating the breadcrumb tree would cause a cascade failure, or deleting and re-inserting seems
+            // to cause a key constraint violation
+            copiedDataElement = dataElementService.copyDataElement(
+                destinationDataModel,
+                originalDataElement,
+                currentUser,
+                currentUserSecurityPolicyManager,
+                false,
+                new CopyInformation())
+
+            destinationDataClass.addToDataElements(copiedDataElement)
+
+            dataClassService.matchUpAndAddMissingReferenceTypeClasses(
+                destinationDataModel,
+                destinationDataModel,
+                currentUser,
+                currentUserSecurityPolicyManager)
+        }
+        catch (ApiInvalidModelException ex) {
+            transactionStatus.setRollbackOnly()
+            respond ex.errors, view: 'create' // STATUS CODE 422
+            return
+        }
+
+        if (!validateResource(copiedDataElement, 'create')) {
+            return
+        }
+
+        dataModelService.validate(destinationDataModel)
+        if (destinationDataModel.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond destinationDataModel.errors, view: 'create' // STATUS CODE 422
+            return
+        }
+
+        saveResource(copiedDataElement)
+
+        dataElementService.delete(originalDataElement, true)
+
+        updateResponse(copiedDataElement)
     }
 
     @Override
