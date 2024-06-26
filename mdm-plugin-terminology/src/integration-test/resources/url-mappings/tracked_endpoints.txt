@@ -90,3 +90,4 @@
 | GET    | /api/terminologies/${id} | show |
 | PUT    | /api/terminologies/${terminologyId}/copy | copyModel |
 | PUT    | /api/terminologies/${terminologyId}/terms/copy/${termId} | copyTerm |
+| PUT    | /api/codeSets/${codeSetId}/copy  | copyModel |

@@ -115,6 +115,7 @@ class UrlMappings {
                 put '/newBranchModelVersion'(controller: 'codeSet', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'codeSet', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'codeSet', action: 'newForkModel')
+                put '/copy'(controller: 'codeSet', action: 'copyModel')
 
                 /*
                 Version Control
