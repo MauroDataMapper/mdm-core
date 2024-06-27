@@ -27,10 +27,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 
+@Slf4j
 class DataElementController extends CatalogueItemController<DataElement> {
     static responseFormats = ['json', 'xml']
 
@@ -193,7 +195,8 @@ class DataElementController extends CatalogueItemController<DataElement> {
             else resource.dataType = null
             if (resource.dataType && !resource.dataType.ident()) resource.dataType.save()
         }
-        if(resource.dataClass.ident()) {
+        if(resource.dataClass.id && resource.dataClass.id.toString() != params.dataClassId.toString()) {
+            log.debug("Updating breadcrumb tree whlie moving data element from one class to another")
             BreadcrumbTree bt = resource.breadcrumbTree
             bt.removeFromParent()
             resource.breadcrumbTree = new BreadcrumbTree(resource)
