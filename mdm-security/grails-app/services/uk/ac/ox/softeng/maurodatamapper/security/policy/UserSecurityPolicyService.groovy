@@ -409,34 +409,35 @@ class UserSecurityPolicyService {
             // Load in the actual securable resource
             sgr.setSecurableResource(securableResourceGroupRoleService.findSecurableResource(sgr.securableResourceDomainType,
                                                                                              sgr.securableResourceId), true)
-            // Setup all the direct virtual roles
-            Set<GroupRole> allowedRoles = groupRoleService.getFromCache(sgr.groupRole.name).allowedRoles
-            virtualSecurableResourceGroupRoles.addAll(
-                allowedRoles.collect {igr ->
-                    virtualSecurableResourceGroupRoleService.buildFromSecurableResourceGroupRole(sgr)
-                        .withAccessLevel(igr)
+            if(sgr.securableResource) {
+                // Setup all the direct virtual roles
+                Set<GroupRole> allowedRoles = groupRoleService.getFromCache(sgr.groupRole.name).allowedRoles
+                virtualSecurableResourceGroupRoles.addAll(
+                    allowedRoles.collect {igr ->
+                        virtualSecurableResourceGroupRoleService.buildFromSecurableResourceGroupRole(sgr)
+                            .withAccessLevel(igr)
+                    }
+                )
+
+                if ((sgr.securableResource as GormEntityApi).instanceOf(Container)) {
+                    // If we're securing a container then we need to create virtual roles for all its contents
+                    ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
+                    if (containerService) {
+                        virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
+                                                                                                             containerService,
+                                                                                                             allowedRoles,
+                                                                                                             sgr.userGroup,
+                                                                                                             sgr.groupRole))
+
+                    }
                 }
-            )
-
-            if ((sgr.securableResource as GormEntityApi).instanceOf(Container)) {
-                // If we're securing a container then we need to create virtual roles for all its contents
-                ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
-                if (containerService) {
-                    virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
-                                                                                                         containerService,
-                                                                                                         allowedRoles,
-                                                                                                         sgr.userGroup,
-                                                                                                         sgr.groupRole))
-
+                else if ((sgr.securableResource as GormEntityApi).instanceOf(Model)) {
+                    // If we're securing a model we need to make sure the model's folder tree is readable
+                    // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
+                    virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
+                                                                                                    sgr.userGroup,
+                                                                                                    sgr.groupRole))
                 }
-            }
-
-            if ((sgr.securableResource as GormEntityApi).instanceOf(Model)) {
-                // If we're securing a model we need to make sure the model's folder tree is readable
-                // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
-                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
-                                                                                                sgr.userGroup,
-                                                                                                sgr.groupRole))
             }
         }
 
