@@ -169,8 +169,8 @@ class FolderService extends ContainerService<Folder> {
             folder.trackChanges()
             folder.delete(flush: flush)
             if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
                 if(rebuildSecurity) {
+                    securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
                     Map<String, List<SecurableResource>> deletionMap = deletedResources.groupBy {it.domainType}
                     deletionMap.each {String domainType, List<SecurableResource> resourcesOfType ->
                         securityPolicyManagerService.removeSecurityForSecurableResourceIds(domainType, resourcesOfType.collect {it.id})
@@ -243,8 +243,10 @@ class FolderService extends ContainerService<Folder> {
     List<Folder> findAllWhereDirectParentOfModel(Model model) {
         List<Folder> folders = []
         Folder modelFolder = get(model.folder.id)
-        folders << modelFolder
-        folders.addAll(findAllWhereDirectParentOfContainer(modelFolder))
+        if(modelFolder) {
+            folders << modelFolder
+            folders.addAll(findAllWhereDirectParentOfContainer(modelFolder))
+        }
         folders
     }
 
