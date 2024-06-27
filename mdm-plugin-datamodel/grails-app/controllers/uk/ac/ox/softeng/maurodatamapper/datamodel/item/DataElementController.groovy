@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
@@ -191,6 +192,12 @@ class DataElementController extends CatalogueItemController<DataElement> {
             if (boundDataType) boundDataType.addToDataElements(resource)
             else resource.dataType = null
             if (resource.dataType && !resource.dataType.ident()) resource.dataType.save()
+        }
+        if(resource.dataClass.ident()) {
+            BreadcrumbTree bt = resource.breadcrumbTree
+            bt.removeFromParent()
+            resource.breadcrumbTree = new BreadcrumbTree(resource)
+            bt.delete(flush: true)
         }
         super.updateResource(resource) as DataElement
     }
