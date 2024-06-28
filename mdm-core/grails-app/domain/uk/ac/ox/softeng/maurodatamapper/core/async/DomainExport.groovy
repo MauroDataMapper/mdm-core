@@ -114,6 +114,11 @@ class DomainExport implements MdmDomain {
         new DetachedCriteria<DomainExport>(DomainExport)
     }
 
+    static DetachedCriteria<DomainExport> byCreatedBy(String createdBy) {
+        by()
+            .eq('createdBy', createdBy)
+    }
+
     static DetachedCriteria<DomainExport> byExportedDomain(UUID domainId, String domainType) {
         by()
             .eq('exportedDomainId', domainId)

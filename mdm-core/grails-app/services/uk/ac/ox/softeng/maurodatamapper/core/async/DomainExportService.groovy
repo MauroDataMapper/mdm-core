@@ -113,12 +113,20 @@ class DomainExportService implements MdmDomainService<DomainExport> {
     List<DomainExport> findAllReadableByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination) {
 
         if (!mdmDomainServices) return []
+        /*
         Class[] classes = mdmDomainServices
             .findAll {SecurableResourceService.isAssignableFrom(it.class)}
             .collect {it.domainClass}.toArray() as Class[]
-        List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(classes)
+         */
+        //List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(classes)
 
-        DomainExport.withFilter(DomainExport.byExportedDomainIdInList(readableModelIds), pagination).list(pagination)
+        //DomainExport.withFilter(DomainExport.byExportedDomainIdInList(readableModelIds), pagination).list(pagination)
+        DomainExport.withFilter(DomainExport.byCreatedBy(userSecurityPolicyManager.user.emailAddress), pagination).list(pagination)
+    }
+
+    DomainExport findByCreatedByUserAndId(String emailAddress, UUID id) {
+        DomainExport export = DomainExport.get(id)
+        export.createdBy == emailAddress ? export : null
     }
 
     List<DomainExport> findAllByExportedDomainAndExporterProviderService(UUID domainId, String domainType, String namespace, String name, Version version, Map pagination) {

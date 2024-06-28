@@ -84,6 +84,8 @@ class DomainExportController extends RestfulController<DomainExport> implements 
 
     @Override
     protected DomainExport queryForResource(Serializable id) {
-        domainExportService.get(id)
+        currentUserSecurityPolicyManager.isApplicationAdministrator() ?
+        domainExportService.get(id) :
+        domainExportService.findByCreatedByUserAndId(currentUser.emailAddress, id as UUID)
     }
 }
