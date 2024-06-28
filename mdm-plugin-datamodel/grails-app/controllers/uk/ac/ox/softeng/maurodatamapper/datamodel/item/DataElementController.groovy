@@ -147,7 +147,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
             // Cannot sort by DE idx or DC idx because items may have different parents
             (params.sort as Map).remove('dataClass.idx')
             (params.sort as Map).remove('idx')
-            return dataElementService.findAllByDataModelId(params.dataModelId, params)
+            return dataElementService.findAllByDataModelId(params.dataModelId, params, params)
         }
 
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']

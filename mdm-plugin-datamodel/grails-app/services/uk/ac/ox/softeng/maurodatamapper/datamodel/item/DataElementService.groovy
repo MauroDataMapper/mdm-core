@@ -310,8 +310,26 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
         DataElement.byImportingDataClassIdInList(dataClassIds).list()
     }
 
-    List<DataElement> findAllByDataModelId(Serializable dataModelId, Map pagination = [:]) {
-        DataElement.byDataModelId(dataModelId).list(pagination)
+    List<DataElement> findAllByDataModelId(Serializable dataModelId, Map filters = [:], Map pagination = [:]) {
+        Map<String, Object> queryParams = [dataModelId: dataModelId]
+
+        String baseQuery = applyHQLFilters('''
+FROM DataElement de
+WHERE (de.dataClass.dataModel.id = :dataModelId)''', 'de', filters)
+
+        // Cannot sort DEs including imported using idx
+        String sortedQuery = applyHQLSort(baseQuery, 'de', pagination[ARGUMENT_SORT] ?: ['label': 'asc'], pagination, true)
+
+        new HQLPagedResultList<DataElement>(DataElement)
+            .list("SELECT DISTINCT de ${sortedQuery}".toString())
+            .count("SELECT COUNT(DISTINCT de.id) ${baseQuery}".toString())
+            .queryParams(queryParams)
+            .paginate(pagination)
+            .postProcess {
+                it.dataType = proxyHandler.unwrapIfProxy(it.dataType)
+                it.trackChanges() // unwrapping the proxy changes the object and therefore is detected as a "change" this call undos this change as its not actually one
+            }
+
     }
 
     List<DataElement> findAllByDataModelIdAndLabelIlike(Serializable dataModelId, String labelSearch, Map pagination = [:]) {
