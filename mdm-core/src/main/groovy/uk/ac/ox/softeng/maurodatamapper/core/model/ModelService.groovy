@@ -473,6 +473,29 @@ abstract class ModelService<K extends Model>
         }
     }
 
+    AsyncJob asyncCopyAndSave(K model, String label,
+                              UserSecurityPolicyManager userSecurityPolicyManager,
+                              Folder targetFolder,
+                              User user,
+                              boolean copyPermissions) {
+        log.info("asyncCopyAndSave called for ${model.path}, ${label}")
+
+        asyncJobService.createAndSaveAsyncJob("Copy model ${model.path} as ${label}",
+            userSecurityPolicyManager.user.emailAddress) {
+
+            model.attach()
+            model.authority.attach()
+            model.folder.attach()
+
+            K copy = this.copyModel(
+                model, targetFolder, user, copyPermissions, label,
+                model.documentationVersion, model.branchName, true,
+                userSecurityPolicyManager) as K
+
+            fullValidateAndSaveOfModel(copy, user)
+        }
+    }
+
     K createNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
                                   UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model

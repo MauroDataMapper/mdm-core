@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -48,7 +49,10 @@ import spock.lang.Shared
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CancellationException
+import java.util.concurrent.Future
 
+import static io.micronaut.http.HttpStatus.ACCEPTED
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -101,6 +105,8 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Transactional
 @Slf4j
 class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements XmlComparer {
+
+    AsyncJobService asyncJobService
 
     CodeSetJsonExporterService codeSetJsonExporterService
     CodeSetJsonImporterService codeSetJsonImporterService
@@ -257,6 +263,18 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                             xmlResourcesPath.resolve('codeset').resolve("${filename}.xml")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
+    }
+
+    void waitForAysncToComplete(String id) {
+        log.info("Job id $id - wait for async to complete")
+        Future p = asyncJobService.getAsyncJobFuture(id)
+        try {
+            p.get()
+        } catch (CancellationException e) {
+            log.warn("Job id $id - cancellation exception caught: \"${e.message}\"")
+        } finally {
+            log.info("Job id $id - completed")
+        }
     }
 
     void 'test finalising CodeSet'() {
@@ -2349,7 +2367,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         verifyResponse FORBIDDEN, response
     }
 
-    void 'CPCS07 : cannot copy a codeset between folders'() {
+    void 'CPCS08 : cannot copy a codeset between folders'() {
         given:
         String id = createNewItemInFolder(validJson, versionedFolderId)
 
@@ -2364,7 +2382,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         verifyResponse FORBIDDEN, response
     }
 
-    void 'CPCS08 : copy a codeset'() {
+    void 'CPCS09 : copy a codeset'() {
         final String newLabel = 'A new label for a new code set'
 
         given:
@@ -2386,6 +2404,33 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
             id != originalId
             label == newLabel
         }
+    }
+
+    void 'CPCS10 : copy a codeset asynchronously'() {
+        final String newLabel = 'Label for a new code set'
+
+        given:
+        String originalId = createNewItemInFolder(validJson, versionedFolderId)
+
+        when:
+        PUT("$originalId/copy", [
+            folderId: versionedFolderId,
+            label: newLabel,
+            copyPermissions: false,
+            runAsync: true
+        ])
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = response.body().id
+        waitForAysncToComplete(jobId)
+
+        then:
+        verifyResponse(ACCEPTED, response)
+
+        // What is needed here is a way to find the copied code set
     }
 
     Map buildTestData() {

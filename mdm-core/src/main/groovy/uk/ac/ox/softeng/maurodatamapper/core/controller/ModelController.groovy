@@ -46,6 +46,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.DeleteAllParam
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.artefact.Artefact
@@ -517,6 +519,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             respond copyModelData.errors
             return
         }
+        log.info("copyModel called on thread ${Thread.currentThread().getId()}")
 
         T original = queryForResource(params[alternateParamsIdKey])
         if (!original) {
@@ -555,23 +558,33 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             copyModelData.copyPermissions = false
         }
 
-        // TODO: option to run as async job
+        if (copyModelData.runAsync) {
+            AsyncJob theJob = modelService.asyncCopyAndSave(
+                original, copyModelData.label, currentUserSecurityPolicyManager,
+                targetFolder, currentUser, copyModelData.copyPermissions)
 
+            return respond(theJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        } else {
+            copyAndSave(getModelService(), original, targetFolder, currentUser,
+                        copyModelData.copyPermissions, copyModelData.label,
+                        currentUserSecurityPolicyManager, securityPolicyManagerService)
+        }
+    }
+
+    private void copyAndSave(ModelService modelService, T original,
+                             Folder targetFolder, User currentUser,
+                             boolean copyPermissions, String label,
+                             UserSecurityPolicyManager currentUserSecurityPolicyManager,
+                             SecurityPolicyManagerService securityPolicyManagerService) {
+        log.info("copyAndSave called on thread ${Thread.currentThread().getId()}")
         T copy = modelService.copyModel(
-            original,
-            targetFolder,
-            currentUser,
-            copyModelData.copyPermissions,
-            copyModelData.label,
-            original.documentationVersion,
-            original.branchName,
-            true,
+            original, targetFolder, currentUser, copyPermissions, label,
+            original.documentationVersion, original.branchName, true,
             currentUserSecurityPolicyManager) as T
 
         if (!validateResource(copy, 'create')) {
             return
         }
-
         T savedCopy = modelService.saveModelWithContent(copy) as T
         savedCopy.addCreatedEdit(currentUser)
 
@@ -581,7 +594,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUser,
                 savedCopy.label)
         }
-
         saveResponse(savedCopy)
     }
 

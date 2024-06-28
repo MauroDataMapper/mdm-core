@@ -14,6 +14,7 @@ class CopyModelData implements Validateable {
     UUID folderId
     String label
     boolean copyPermissions = true
+    boolean runAsync = false
 
     static constraints = {
         folderId nullable: true
