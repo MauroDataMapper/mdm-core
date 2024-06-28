@@ -283,12 +283,14 @@ class UserSecurityPolicyService {
                                                                                           appliedGroupRole)
         } else virtualSecurableResourceGroupRoles = [] as HashSet
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         // Load sub containers
         List<Container> subContainers = containerService.findAllContainersInside(container.path.last()) as List<Container>
         subContainers.each {subContainer ->
             virtualSecurableResourceGroupRoles.addAll(
                 accessRoles.collect {igr ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(subContainer)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(subContainer, folderModelMap)
                         .withAccessLevel(igr)
                         .definedByGroup(userGroup)
                         .definedByAccessLevel(appliedGroupRole)
@@ -313,10 +315,12 @@ class UserSecurityPolicyService {
         // Only deal with folders, there is a question around if you can see a model can you read all its classifiers??
         // We need to make the tree of folders down to the model readable so that the tree can be rendered,
         // As these are virtual roles we dont iterate into any of the folders, we just want to make that folder and its parents readable
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         folderService
             .findAllWhereDirectParentOfModel(model)
             .collect {folder ->
-                virtualSecurableResourceGroupRoleService.buildForSecurableResource(folder)
+                virtualSecurableResourceGroupRoleService.buildForSecurableResource(folder, folderModelMap)
                     .withAccessLevel(readerRole.groupRole)
                     .definedByGroup(userGroup)
                     .definedByAccessLevel(appliedGroupRole)
@@ -333,10 +337,12 @@ class UserSecurityPolicyService {
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<CatalogueUser> users = catalogueUserService.list([:])
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         users.each {user ->
             virtualSecurableResourceGroupRoles.addAll(
                 inheritedUserRoles.collect {iur ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user, folderModelMap)
                         .definedByAccessLevel(highestRole)
                         .withAccessLevel(iur)
                 }
@@ -355,10 +361,12 @@ class UserSecurityPolicyService {
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<UserGroup> userGroups = userGroupService.list([:])
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         userGroups.each {user ->
             virtualSecurableResourceGroupRoles.addAll(
                 inheritedUserRoles.collect {iur ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(user, folderModelMap)
                         .definedByAccessLevel(highestRole)
                         .withAccessLevel(iur)
                 }
@@ -372,13 +380,15 @@ class UserSecurityPolicyService {
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         Set<GroupRole> inheritedContainerRoles = groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).allowedRoles
         // Don't bother with usergroups or users as these will be implicitly defined by the other roles under application_admin
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         securableResourceServices.findAll {!it.handles(UserGroup) && !it.handles(CatalogueUser)}.each {service ->
 
             List<SecurableResource> resources = service.list() as List<SecurableResource>
             resources.each {securableResource ->
                 virtualSecurableResourceGroupRoles.addAll(
                     inheritedContainerRoles.collect {igr ->
-                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(securableResource)
+                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(securableResource, folderModelMap)
                             .definedByAccessLevel(accessRole.groupRole)
                             .withAccessLevel(igr)
                     }
@@ -399,34 +409,35 @@ class UserSecurityPolicyService {
             // Load in the actual securable resource
             sgr.setSecurableResource(securableResourceGroupRoleService.findSecurableResource(sgr.securableResourceDomainType,
                                                                                              sgr.securableResourceId), true)
-            // Setup all the direct virtual roles
-            Set<GroupRole> allowedRoles = groupRoleService.getFromCache(sgr.groupRole.name).allowedRoles
-            virtualSecurableResourceGroupRoles.addAll(
-                allowedRoles.collect {igr ->
-                    virtualSecurableResourceGroupRoleService.buildFromSecurableResourceGroupRole(sgr)
-                        .withAccessLevel(igr)
+            if(sgr.securableResource) {
+                // Setup all the direct virtual roles
+                Set<GroupRole> allowedRoles = groupRoleService.getFromCache(sgr.groupRole.name).allowedRoles
+                virtualSecurableResourceGroupRoles.addAll(
+                    allowedRoles.collect {igr ->
+                        virtualSecurableResourceGroupRoleService.buildFromSecurableResourceGroupRole(sgr)
+                            .withAccessLevel(igr)
+                    }
+                )
+
+                if ((sgr.securableResource as GormEntityApi).instanceOf(Container)) {
+                    // If we're securing a container then we need to create virtual roles for all its contents
+                    ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
+                    if (containerService) {
+                        virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
+                                                                                                             containerService,
+                                                                                                             allowedRoles,
+                                                                                                             sgr.userGroup,
+                                                                                                             sgr.groupRole))
+
+                    }
                 }
-            )
-
-            if ((sgr.securableResource as GormEntityApi).instanceOf(Container)) {
-                // If we're securing a container then we need to create virtual roles for all its contents
-                ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
-                if (containerService) {
-                    virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
-                                                                                                         containerService,
-                                                                                                         allowedRoles,
-                                                                                                         sgr.userGroup,
-                                                                                                         sgr.groupRole))
-
+                else if ((sgr.securableResource as GormEntityApi).instanceOf(Model)) {
+                    // If we're securing a model we need to make sure the model's folder tree is readable
+                    // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
+                    virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
+                                                                                                    sgr.userGroup,
+                                                                                                    sgr.groupRole))
                 }
-            }
-
-            if ((sgr.securableResource as GormEntityApi).instanceOf(Model)) {
-                // If we're securing a model we need to make sure the model's folder tree is readable
-                // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
-                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
-                                                                                                sgr.userGroup,
-                                                                                                sgr.groupRole))
             }
         }
 
@@ -448,11 +459,15 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildReadableByEveryone() {
         VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
+
+        List<Model> allModels = getAllModels()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
+
         containerServices.each {service ->
             List<Container> containers = service.findAllReadableByEveryone() as List<Container>
             containers.each {container ->
                 // Add reader access on each container
-                virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(container)
+                virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(container, folderModelMap)
                                                            .withAccessLevel(readerRole.groupRole))
                 // Make sure contents of container are all readable as well
                 virtualSecurableResourceGroupRoles.addAll(
@@ -465,32 +480,34 @@ class UserSecurityPolicyService {
                 )
             }
         }
-        modelServices.each {service ->
-            List<Model> models = service.findAllReadableByEveryone() as List<Model>
-            models.each {model ->
-                // Add reader access on each container
-                virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(model)
-                                                           .withAccessLevel(readerRole.groupRole)
-                )
+        allModels.findAll { it.readableByEveryone}.each {model ->
+            // Add reader access on each container
+            virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(model, folderModelMap)
+                                                       .withAccessLevel(readerRole.groupRole)
+            )
 
-                // Need to make sure the owning folders are readable
-                virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
-                                                                                            readerRole.allowedRoles,
-                                                                                            null,
-                                                                                            readerRole.groupRole))
-            }
+            // Need to make sure the owning folders are readable
+            virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
+                                                                                        readerRole.allowedRoles,
+                                                                                        null,
+                                                                                        readerRole.groupRole))
+
         }
         virtualSecurableResourceGroupRoles
     }
 
     private Set<VirtualSecurableResourceGroupRole> buildReadableByAuthenticatedUsers() {
+
+        List<Model> allModels = getAllModels()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
+
         VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
         containerServices.each {service ->
             List<Container> containers = service.findAllReadableByAuthenticatedUsers() as List<Container>
             containers.each {container ->
                 // Add reader access on each container
-                virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(container)
+                virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(container, folderModelMap)
                                                            .withAccessLevel(readerRole.groupRole))
                 // Make sure contents of container are all readable as well
                 virtualSecurableResourceGroupRoles.addAll(
@@ -503,21 +520,20 @@ class UserSecurityPolicyService {
                 )
             }
         }
-        modelServices.each {service ->
-            List<Model> models = service.findAllReadableByAuthenticatedUsers() as List<Model>
-            models.each {model ->
-                // Add reader access on each container
-                virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(model)
-                                                           .withAccessLevel(readerRole.groupRole)
-                )
+
+        allModels.findAll { it.readableByAuthenticatedUsers }.each {model ->
+            // Add reader access on each container
+            virtualSecurableResourceGroupRoles.add(virtualSecurableResourceGroupRoleService.buildForSecurableResource(model, folderModelMap)
+                                                       .withAccessLevel(readerRole.groupRole)
+            )
 
 
-                // Need to make sure the owning folders are readable
-                virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
-                                                                                            readerRole.allowedRoles,
-                                                                                            null,
-                                                                                            readerRole.groupRole))
-            }
+            // Need to make sure the owning folders are readable
+            virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
+                                                                                        readerRole.allowedRoles,
+                                                                                        null,
+                                                                                        readerRole.groupRole))
+
         }
         virtualSecurableResourceGroupRoles
     }
@@ -528,8 +544,10 @@ class UserSecurityPolicyService {
 
         if (!container) return [] as HashSet
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = accessRoles.collect {igr ->
-            virtualSecurableResourceGroupRoleService.buildForSecurableResource(container)
+            virtualSecurableResourceGroupRoleService.buildForSecurableResource(container, folderModelMap)
                 .withAccessLevel(igr)
                 .definedByGroup(userGroup)
                 .definedByAccessLevel(appliedGroupRole)
@@ -543,7 +561,7 @@ class UserSecurityPolicyService {
             ContainerService containerService = containerServices.find {it.handles(container.domainType)}
             containerService.getAll(ids).each {alternateContainer ->
                 virtualSecurableResourceGroupRoles.addAll(accessRoles.collect {igr ->
-                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(alternateContainer as Container)
+                    virtualSecurableResourceGroupRoleService.buildForSecurableResource(alternateContainer as Container, folderModelMap)
                         .withAccessLevel(igr)
                         .definedByGroup(userGroup)
                         .definedByAccessLevel(appliedGroupRole)
@@ -561,19 +579,21 @@ class UserSecurityPolicyService {
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
         // Load models
-        modelServices.each {modelService ->
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
 
-            List<Model> models = modelService.findAllByContainerId(container.id) as List<Model>
+        List<Model> models = folderModelMap[container.id]
+        if(models) {
             models.each {Model model ->
                 virtualSecurableResourceGroupRoles.addAll(
                     accessRoles.collect {igr ->
                         virtualSecurableResourceGroupRoleService
-                            .buildForSecurableResource(model)
+                            .buildForSecurableResource(model, folderModelMap)
                             .withAccessLevel(igr)
                             .definedByGroup(userGroup)
                             .definedByAccessLevel(appliedGroupRole)
                     }
                 )
+
             }
         }
 
@@ -584,8 +604,10 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildIndividualCatalogueUserVirtualRoles(CatalogueUser catalogueUser,
                                                                                             VirtualGroupRole applicationRole) {
 
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+
         applicationRole.allowedRoles.collect {iur ->
-            virtualSecurableResourceGroupRoleService.buildForSecurableResource(catalogueUser)
+            virtualSecurableResourceGroupRoleService.buildForSecurableResource(catalogueUser, folderModelMap)
                 .definedByAccessLevel(applicationRole.groupRole)
                 .withAccessLevel(iur)
         }.toSet()
@@ -607,5 +629,22 @@ class UserSecurityPolicyService {
             allRolesToRemove.removeAll(canBeRemoved)
             removeRolesWithNoRequiredAccess(userSecurityPolicy, allRolesToRemove)
         }
+    }
+
+    List<Model> getAllModels() {
+        if (modelServices) {
+            modelServices.collectMany {service -> service.list()} as List<Model>
+        } else {
+            []
+        }
+    }
+
+    Map<UUID, List<Model>> calculateFolderModelMap() {
+        calculateFolderModelMap(getAllModels())
+    }
+
+
+    Map<UUID, List<Model>> calculateFolderModelMap(List<Model> allModels) {
+        return allModels.groupBy {it.folder.id}
     }
 }

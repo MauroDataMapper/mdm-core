@@ -404,7 +404,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void delete(VersionedFolder folder, boolean permanent, boolean flush = true) {
-        folderService.delete(folder, permanent, flush)
+        folderService.delete(folder, permanent, flush, true)
 
         if (permanent) {
             // delete version links which point to this VF
@@ -866,28 +866,47 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         hasVersionedFolderParent(folder.parentFolder)
     }
 
-    boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo) {
+    boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo, Map<UUID, List<Model>> folderModelMap = null) {
         // Check up the tree
+        if(!folderModelMap) {
+            folderModelMap = calculateFolderModelMap()
+        }
+
         if (isVersionedFolderFamily(folderBeingMoved) && isVersionedFolderFamily(folderToMoveTo)) return true
         if (isVersionedFolderFamily(folderToMoveTo)) {
             // If not up the tree then slower check going down the tree of the folder being moved to ensure it doesnt contain a VF
             // Only need to do this if the folder being moved into has a VF tree
-            return doesDepthTreeContainVersionedFolder(folderBeingMoved)
+            return doesDepthTreeContainVersionedFolder(folderBeingMoved, folderModelMap)
         }
         false
     }
 
-    boolean doesDepthTreeContainVersionedFolder(Folder folder) {
-        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it)}
+    boolean doesDepthTreeContainVersionedFolder(Folder folder, Map<UUID, List<Model>> folderModelMap) {
+        if(!folderModelMap) {
+            folderModelMap = calculateFolderModelMap()
+        }
+
+        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it, folderModelMap)}
     }
 
     boolean isVersionedFolderFamily(Folder folder) {
         folder.instanceOf(VersionedFolder) || hasVersionedFolderParent(folder)
     }
 
-    boolean doesDepthTreeContainFinalisedModel(Folder folder) {
-        List<Model> models = folderService.findAllModelsInFolder(folder)
-        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
+    boolean doesDepthTreeContainFinalisedModel(Folder folder, Map<UUID, List<Model>> folderModelMap) {
+        List<Model> models = []
+        if(!folderModelMap) {
+            folderModelMap = calculateFolderModelMap()
+        }
+
+        if(folderModelMap) {
+            models = folderModelMap[folder.id]
+        }
+
+        if(models) {
+            return models.any {it.finalised} || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it, folderModelMap)}
+        }
+        return false
     }
 
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
@@ -1361,5 +1380,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!constrainedIds) return []
 
         containers.findAll {it.id in constrainedIds}
+    }
+
+    Map<UUID, List<Model>> calculateFolderModelMap() {
+        if (modelServices) {
+            List<Model> allModels = modelServices.collectMany {service ->
+                service.list()
+            } as List<Model>
+
+            return allModels.groupBy {it.folder.id}
+        }
+        return [:]
     }
 }

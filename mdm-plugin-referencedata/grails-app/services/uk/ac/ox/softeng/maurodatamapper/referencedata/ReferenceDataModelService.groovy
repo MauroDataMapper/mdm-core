@@ -610,13 +610,16 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    void deleteAllInContainer(Container container) {
+    List<ReferenceDataModel> deleteAllInContainer(Container container, boolean updateSecurity = true) {
+
+        List<ReferenceDataModel> referenceDataModels = []
         if (container.instanceOf(Folder)) {
-            deleteAll(ReferenceDataModel.byFolderId(container.id).id().list() as List<UUID>, true)
+            referenceDataModels = ReferenceDataModel.byFolderId(container.id).list()
+        } else if (container.instanceOf(Classifier)) {
+            referenceDataModels = ReferenceDataModel.byClassifierId(container.id).list()
         }
-        if (container.instanceOf(Classifier)) {
-            deleteAll(ReferenceDataModel.byClassifierId(container.id).id().list() as List<UUID>, true)
-        }
+        deleteAll(referenceDataModels.id as List<UUID>, true, updateSecurity)
+        return referenceDataModels
     }
 
     @Override

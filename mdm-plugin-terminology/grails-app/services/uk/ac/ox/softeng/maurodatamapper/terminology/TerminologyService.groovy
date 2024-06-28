@@ -605,13 +605,16 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    void deleteAllInContainer(Container container) {
+    List<Terminology> deleteAllInContainer(Container container, boolean updateSecurity = true) {
+
+        List<Terminology> terminologies = []
         if (container.instanceOf(Folder)) {
-            deleteAll(Terminology.byFolderId(container.id).id().list() as List<UUID>, true)
+            terminologies = Terminology.byFolderId(container.id).list()
+        } else if (container.instanceOf(Classifier)) {
+            terminologies = Terminology.byClassifierId(container.id).list()
         }
-        if (container.instanceOf(Classifier)) {
-            deleteAll(Terminology.byClassifierId(container.id).id().list() as List<UUID>, true)
-        }
+        deleteAll(terminologies.id as List<UUID>, true, updateSecurity)
+        return terminologies
     }
 
     @Override

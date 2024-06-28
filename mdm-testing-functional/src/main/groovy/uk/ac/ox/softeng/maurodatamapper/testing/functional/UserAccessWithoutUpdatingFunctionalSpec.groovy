@@ -189,7 +189,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             // Seems to be possible in the UserGroupFS to get a result in groupsLeftOver which is then empty on the second call, possibly a timing issue
             if (groupsToDelete*.id) {
                 // This is purely here to provide info about roles and resources which havent been cleaned up
-                // It should not be used to perform cleanp of these roles and resources
+                // It should not be used to perform cleanup of these roles and resources
                 List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
 
                 if (rolesLeftOver) {
