@@ -312,7 +312,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
 
     List<DataElement> findAllByDataModelId(Serializable dataModelId, Map filters = [:], Map pagination = [:]) {
         Map<String, Object> queryParams = [dataModelId: dataModelId]
-
+        queryParams.putAll(extractFiltersAsHQLParameters(filters))
         String baseQuery = applyHQLFilters('''
 FROM DataElement de
 WHERE (de.dataClass.dataModel.id = :dataModelId)''', 'de', filters)
