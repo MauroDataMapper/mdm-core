@@ -425,13 +425,15 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents = [] as HashSet
 
-        Map<UUID, List<Model>> folderModelMap = [:]
+        List<Model> allModels = []
+
+
         if(modelServices) {
-            List<Model> allModels = modelServices.collectMany {service ->
+            allModels = modelServices.collectMany {service ->
                 service.list()
             } as List<Model>
-             folderModelMap = allModels.groupBy { it.folder.id}
         }
+        Map<UUID, List<Model>> folderModelMap = allModels.groupBy { it.folder.id}
 
 
 
@@ -447,7 +449,8 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                                                      containerService,
                                                                                      readerRole.allowedRoles,
                                                                                      null,
-                                                                                     readerRole.groupRole
+                                                                                     readerRole.groupRole,
+                                                                                     allModels
                 )
             )
             // Make sure the direct tree of containers are readable as well

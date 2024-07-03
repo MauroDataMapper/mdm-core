@@ -249,7 +249,7 @@ class UserSecurityPolicyService {
             // Build the public/authenticated access
             virtualSecurableResourceGroupRoles.addAll(buildInternalSecurity(userSecurityPolicy.isAuthenticatedForBuilding()))
             // Otherwise use the assigned roles to define access
-            virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToSecurableResources(securableResourceGroupRoles))
+            virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToSecurableResources(securableResourceGroupRoles, allModels))
             // If any container admin privileges then we need to make sure the container group admin role is added to the application level
             if (virtualSecurableResourceGroupRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}) {
                 inheritedApplicationGroupRoles.add(groupRoleService.getFromCache(GroupRole.CONTAINER_GROUP_ADMIN_ROLE_NAME).groupRole)
@@ -272,7 +272,8 @@ class UserSecurityPolicyService {
                                                                                                 ContainerService containerService,
                                                                                                 Set<GroupRole> accessRoles,
                                                                                                 UserGroup userGroup,
-                                                                                                GroupRole appliedGroupRole) {
+                                                                                                GroupRole appliedGroupRole,
+                                                                                                List<Model> allModels) {
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles
 
         // Load model access controls for all non-virtual containers
@@ -280,10 +281,11 @@ class UserSecurityPolicyService {
             virtualSecurableResourceGroupRoles = buildControlledAccessToModelsInContainer(container,
                                                                                           accessRoles,
                                                                                           userGroup,
-                                                                                          appliedGroupRole)
+                                                                                          appliedGroupRole,
+                                                                                          allModels)
         } else virtualSecurableResourceGroupRoles = [] as HashSet
 
-        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
 
         // Load sub containers
         List<Container> subContainers = containerService.findAllContainersInside(container.path.last()) as List<Container>
@@ -300,7 +302,7 @@ class UserSecurityPolicyService {
             if (!containerService.isContainerVirtual()) {
                 // Load models inside container if its non-virtual
                 virtualSecurableResourceGroupRoles.
-                    addAll(buildControlledAccessToModelsInContainer(subContainer, accessRoles, userGroup, appliedGroupRole))
+                    addAll(buildControlledAccessToModelsInContainer(subContainer, accessRoles, userGroup, appliedGroupRole, allModels))
             }
         }
 
@@ -400,7 +402,8 @@ class UserSecurityPolicyService {
     }
 
     private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToSecurableResources(
-        List<SecurableResourceGroupRole> securableResourceGroupRoles) {
+        List<SecurableResourceGroupRole> securableResourceGroupRoles,
+        List<Model> allModels) {
 
         log.debug('Building controlled access to system')
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
@@ -427,7 +430,8 @@ class UserSecurityPolicyService {
                                                                                                              containerService,
                                                                                                              allowedRoles,
                                                                                                              sgr.userGroup,
-                                                                                                             sgr.groupRole))
+                                                                                                             sgr.groupRole,
+                                                                                                             allModels))
 
                     }
                 }
@@ -451,7 +455,9 @@ class UserSecurityPolicyService {
 
         // Setup readable by authenticated users
         if (isAuthenticatedUser) {
+            System.err.println("Started...")
             virtualSecurableResourceGroupRoles.addAll(buildReadableByAuthenticatedUsers())
+            System.err.println("Finished.")
         }
         virtualSecurableResourceGroupRoles
     }
@@ -475,7 +481,8 @@ class UserSecurityPolicyService {
                                                                service,
                                                                readerRole.allowedRoles,
                                                                null,
-                                                               readerRole.groupRole
+                                                               readerRole.groupRole,
+                                                               allModels
                     )
                 )
             }
@@ -490,7 +497,8 @@ class UserSecurityPolicyService {
             virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
                                                                                         readerRole.allowedRoles,
                                                                                         null,
-                                                                                        readerRole.groupRole))
+                                                                                        readerRole.groupRole,
+                                                                                        allModels))
 
         }
         virtualSecurableResourceGroupRoles
@@ -515,7 +523,8 @@ class UserSecurityPolicyService {
                                                                service,
                                                                readerRole.allowedRoles,
                                                                null,
-                                                               readerRole.groupRole
+                                                               readerRole.groupRole,
+                                                               allModels
                     )
                 )
             }
@@ -532,7 +541,8 @@ class UserSecurityPolicyService {
             virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
                                                                                         readerRole.allowedRoles,
                                                                                         null,
-                                                                                        readerRole.groupRole))
+                                                                                        readerRole.groupRole,
+                                                                                        allModels))
 
         }
         virtualSecurableResourceGroupRoles
@@ -540,11 +550,11 @@ class UserSecurityPolicyService {
 
     private Set<VirtualSecurableResourceGroupRole> buildReadableContainerInheritance(Container container, Set<GroupRole> accessRoles,
                                                                                      UserGroup userGroup,
-                                                                                     GroupRole appliedGroupRole) {
+                                                                                     GroupRole appliedGroupRole, List<Model> allModels) {
 
         if (!container) return [] as HashSet
 
-        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = accessRoles.collect {igr ->
             virtualSecurableResourceGroupRoleService.buildForSecurableResource(container, folderModelMap)
@@ -575,11 +585,12 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToModelsInContainer(Container container,
                                                                                             Set<GroupRole> accessRoles,
                                                                                             UserGroup userGroup,
-                                                                                            GroupRole appliedGroupRole) {
+                                                                                            GroupRole appliedGroupRole,
+                                                                                            List<Model> allModels) {
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
         // Load models
-        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap()
+        Map<UUID, List<Model>> folderModelMap = calculateFolderModelMap(allModels)
 
         List<Model> models = folderModelMap[container.id]
         if(models) {
@@ -640,11 +651,14 @@ class UserSecurityPolicyService {
     }
 
     Map<UUID, List<Model>> calculateFolderModelMap() {
+        System.err.println("Calculate Folder Map (Bad)")
         calculateFolderModelMap(getAllModels())
     }
 
 
+
     Map<UUID, List<Model>> calculateFolderModelMap(List<Model> allModels) {
+        System.err.println("Calculate Folder Map (Good)")
         return allModels.groupBy {it.folder.id}
     }
 }
