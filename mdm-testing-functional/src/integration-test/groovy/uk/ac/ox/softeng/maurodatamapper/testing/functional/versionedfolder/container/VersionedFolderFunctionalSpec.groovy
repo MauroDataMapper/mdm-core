@@ -203,8 +203,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 canSee()
                 canIndex()
             }
-            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
-            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
             .whereAuthorsCanAction('comment', 'editDescription', 'show')
             .whereReviewersCanAction('comment', 'show')
             .whereReadersCanAction('show')
@@ -394,7 +394,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","mergeInto","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -434,7 +434,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions":["comment","delete","editDescription","finalise","mergeInto","save","show","softDelete",
+                    "update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -450,7 +451,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 },
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions":["comment","delete","editDescription","finalise","mergeInto","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -514,7 +515,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","mergeInto","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -666,7 +667,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         response.status == OK
-        responseBody().availableActions == expectations.getEditorAvailableActions()
+        responseBody().availableActions == (expectations.getEditorAvailableActions())
         !responseBody().finalised
         responseBody().domainType == 'VersionedFolder'
         !responseBody().modelVersion
@@ -677,7 +678,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then: 'cannot finalise model inside versioned folder'
         response.status == OK
-        responseBody().availableActions == (expectations.getEditorAvailableActions() - ResourceActions.FINALISE_ACTION)
+        responseBody().availableActions == ((expectations.getEditorAvailableActions()- [ResourceActions.MERGE_INTO_ACTION]) - ResourceActions.
+            FINALISE_ACTION)
         !responseBody().finalised
         !responseBody().modelVersion
         responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
@@ -687,7 +689,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         response.status == OK
-        responseBody().availableActions == (expectations.getEditorAvailableActions() - ResourceActions.FINALISE_ACTION)
+        responseBody().availableActions == ((expectations.getEditorAvailableActions()- [ResourceActions.MERGE_INTO_ACTION]) - ResourceActions.
+            FINALISE_ACTION)
         !responseBody().finalised
         !responseBody().modelVersion
         responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
@@ -1111,7 +1114,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
         responseBody().availableActions ==
-        ((expectations.getContainerAdminAvailableActions() - [ResourceActions.FINALISE_ACTION]) + [ResourceActions.MERGE_INTO_ACTION]).sort()
+        (expectations.getContainerAdminAvailableActions() - [ResourceActions.FINALISE_ACTION]).sort()
 
         when:
         PUT("$branchId/finalise", [versionChangeType: 'Major'])

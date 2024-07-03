@@ -21,7 +21,9 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -126,6 +128,20 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
             minMultiplicity: 0
         ]
     }
+
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update', 'mergeInto')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
+    }
+
 
     @Override
     Map getInvalidUpdateJson() {
@@ -284,7 +300,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         assert body.breadcrumbs[1].label == 'simple'
         assert body.breadcrumbs[1].domainType == 'DataClass'
 
-        assert body.availableActions == getEditorModelItemAvailableActions().sort()
+        assert body.availableActions == (getEditorModelItemAvailableActions() + [ResourceActions.MERGE_INTO_ACTION]).sort()
         assert body.lastUpdated
         assert body.maxMultiplicity == 20
         assert body.minMultiplicity == 0

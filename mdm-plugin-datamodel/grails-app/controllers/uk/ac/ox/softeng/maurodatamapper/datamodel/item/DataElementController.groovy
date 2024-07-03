@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
@@ -26,10 +27,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 
+@Slf4j
 class DataElementController extends CatalogueItemController<DataElement> {
     static responseFormats = ['json', 'xml']
 
@@ -191,6 +194,13 @@ class DataElementController extends CatalogueItemController<DataElement> {
             if (boundDataType) boundDataType.addToDataElements(resource)
             else resource.dataType = null
             if (resource.dataType && !resource.dataType.ident()) resource.dataType.save()
+        }
+        if(resource.dataClass.id && resource.dataClass.id.toString() != params.dataClassId.toString()) {
+            log.debug("Updating breadcrumb tree whlie moving data element from one class to another")
+            BreadcrumbTree bt = resource.breadcrumbTree
+            bt.removeFromParent()
+            resource.breadcrumbTree = new BreadcrumbTree(resource)
+            bt.delete(flush: true)
         }
         super.updateResource(resource) as DataElement
     }

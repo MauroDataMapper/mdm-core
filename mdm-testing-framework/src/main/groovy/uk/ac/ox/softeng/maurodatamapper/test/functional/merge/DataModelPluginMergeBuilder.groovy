@@ -42,31 +42,6 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         buildComplexModelsForMerging(folderId, null)
     }
 
-    //    Checking method used to verify the imported elements all correctly existed inside the owning DC.
-    //    This was done to aid in the branching issue, this code could be deleted
-    //    @Transactional
-    //    void checkImporting(String dataClassId, int expectedImportedSize, int expectedImportableSize, int expectedImportableAddSize,
-    //                        int expectedImportableRemoveSize) {
-    //        def importingDc = dataClassService.get(dataClassId)
-    //        assert importingDc
-    //        assert importingDc.importedDataClasses.size() == expectedImportedSize
-    //        List imported = dataClassService.findAllByImportingDataClassId(Utils.toUuid(dataClassId))
-    //        assert imported.size() == expectedImportedSize
-    //        imported.each {
-    //            log.warn 'checking DC being imported {} by {}', it.path, importingDc.path
-    //            assert it.importingDataClasses.any { it.path == importingDc.path }
-    //        }
-    //        assert imported.find { it.label.endsWith('Importable') }.importingDataClasses.size() == expectedImportableSize
-    //        if (expectedImportableAddSize) {
-    //            assert imported.find { it.label.endsWith('Add') }
-    //            assert imported.find { it.label.endsWith('Add') }.importingDataClasses.size() == expectedImportableAddSize
-    //        } else assert !imported.find { it.label.endsWith('Add') }
-    //        if (expectedImportableRemoveSize) {
-    //            assert imported.find { it.label.endsWith('Remove') }
-    //            assert imported.find { it.label.endsWith('Remove') }.importingDataClasses.size() == expectedImportableRemoveSize
-    //        } else assert !imported.find { it.label.endsWith('Remove') }
-    //    }
-
     Map buildAndAddImportableDataModelInformation(String folderId, String commonAncestorId, boolean finalise) {
         Map basicImportData = buildImportableDataModel(folderId, finalise)
         addImportableElementsToDataModel(commonAncestorId, basicImportData)

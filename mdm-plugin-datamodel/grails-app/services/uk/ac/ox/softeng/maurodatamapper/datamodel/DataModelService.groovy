@@ -728,10 +728,27 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, dataTypeCache)
         }
 
+        Map<DataClass, DataClass> oldNewClasses = [:]
         // Copy all the dataclasses (this will also match up the reference types)
         rootDataClasses.sort().each {dc ->
-            dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
+            DataClass newClass = dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
+            oldNewClasses[dc] = newClass
         }
+
+
+        rootDataClasses.sort().each {dc ->
+            DataClass newDataClass = oldNewClasses[dc]
+            dc.extendedDataClasses.each {extendedDC ->
+                // TODO: Assumption here - that it's either in the same data model, or it's external but not in the same VersionedFolder.
+                if(oldNewClasses[extendedDC]) {
+                    newDataClass.addToExtendedDataClasses(oldNewClasses[extendedDC])
+                } else {
+                    newDataClass.addToExtendedDataClasses(dc)
+                }
+            }
+        }
+
+
 
         List<DataType> importedDataTypes = dataTypeService.findAllByImportingDataModelId(original.id)
         copyImportedElements(copy, original, importedDataTypes, 'importedDataTypes', copier)
@@ -879,13 +896,15 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void deleteAllInContainer(Container container) {
+    List<DataModel> deleteAllInContainer(Container container, boolean updateSecurity = true) {
+        List<DataModel> dataModels = []
         if (container.instanceOf(Folder)) {
-            deleteAll(DataModel.byFolderId(container.id).id().list() as List<UUID>, true)
+            dataModels = DataModel.byFolderId(container.id).list()
+        } else if (container.instanceOf(Classifier)) {
+            dataModels = DataModel.byClassifierId(container.id).list()
         }
-        if (container.instanceOf(Classifier)) {
-            deleteAll(DataModel.byClassifierId(container.id).id().list() as List<UUID>, true)
-        }
+        deleteAll(dataModels.id as List<UUID>, true, updateSecurity)
+        return dataModels
     }
 
     @Override

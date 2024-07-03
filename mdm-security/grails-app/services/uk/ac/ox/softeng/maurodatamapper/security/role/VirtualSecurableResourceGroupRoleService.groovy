@@ -23,25 +23,47 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.support.proxy.ProxyHandler
 import grails.gorm.transactions.Transactional
+import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 class VirtualSecurableResourceGroupRoleService {
 
+    @Autowired(required = false)
+    List<ModelService> modelServices
+
+    @Autowired
+    ProxyHandler proxyHandler
+
     VersionedFolderService versionedFolderService
 
     VirtualSecurableResourceGroupRole buildFromSecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole) {
-        this.buildForSecurableResource(securableResourceGroupRole.securableResource)
+        Map<UUID, List<Model>> folderModelMap = null
+        if(modelServices) {
+            List<Model> allModels = modelServices.collectMany {service ->
+                service.list()
+            } as List<Model>
+             folderModelMap = allModels.groupBy { it.folder.id}
+        }
+
+
+        this.buildForSecurableResource(securableResourceGroupRole.securableResource, folderModelMap)
             .definedByGroup(securableResourceGroupRole.userGroup)
             .definedByAccessLevel(securableResourceGroupRole.groupRole)
     }
 
-    VirtualSecurableResourceGroupRole buildForSecurableResource(SecurableResource securableResource) {
+    VirtualSecurableResourceGroupRole buildForSecurableResource(SecurableResource securableResource, Map<UUID, List<Model>> folderModelMap = [:]) {
+
+        securableResource = (SecurableResource) proxyHandler.unwrapIfProxy(securableResource)
+
         VirtualSecurableResourceGroupRole virtualRole = new VirtualSecurableResourceGroupRole()
             .forSecurableResource(securableResource)
+
 
         if (securableResource.domainType == VersionedFolder.simpleName) {
             virtualRole.withAlternateDomainType(Folder.simpleName)
@@ -51,8 +73,8 @@ class VirtualSecurableResourceGroupRoleService {
             virtualRole
                 .withDependencyOnAccessToDomainId((securableResource as Folder).parentFolder?.id)
                 .asVersionControlled(versionedFolderService.hasVersionedFolderParent(securableResource as Folder))
-                .withVersionedContents(versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder) ||
-                                       versionedFolderService.doesDepthTreeContainFinalisedModel(securableResource as Folder))
+                .withVersionedContents(versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder, folderModelMap) ||
+                                       versionedFolderService.doesDepthTreeContainFinalisedModel(securableResource as Folder, folderModelMap))
         } else if (Utils.parentClassIsAssignableFromChild(Classifier, securableResource.class)) {
             virtualRole.withDependencyOnAccessToDomainId((securableResource as Classifier).parentClassifier?.id)
         }
@@ -71,7 +93,7 @@ class VirtualSecurableResourceGroupRoleService {
         }
 
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
-            VersionedFolder versionedFolder = securableResource as VersionedFolder
+            VersionedFolder versionedFolder = (VersionedFolder) proxyHandler.unwrapIfProxy(securableResource)
             virtualRole.asFinalised(versionedFolder.finalised)
                 .asFinalisable(versionedFolder.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
                 .asVersionable(true)

@@ -45,6 +45,7 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import net.javacrumbs.jsonunit.core.Option
+import org.hibernate.jdbc.Expectations
 import spock.lang.Shared
 
 import java.nio.file.Files

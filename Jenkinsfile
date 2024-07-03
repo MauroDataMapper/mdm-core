@@ -522,12 +522,12 @@ pipeline {
             recordIssues enabledForFailure: true, tool: spotBugs(pattern: '**/reports/spotbugs/*.xml', useRankAsPriority: true)
             recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/reports/pmd/*.xml')
 
-            publishCoverage adapters: [jacocoAdapter('**/reports/jacoco/jacocoTestReport.xml')]
+            recordCoverage(tools: [[parser: 'JACOCO', pattern: '**/reports/jacoco/jacocoTestReport.xml']])
             outputTestResults()
             jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy',
                    sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
-//             zulipNotification(topic: 'mdm-core')
+            zulipNotification(topic: 'mdm-core')
         }
     }
 }

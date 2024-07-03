@@ -737,7 +737,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
-        responseBody().availableActions == (actions + [ResourceActions.MERGE_INTO_ACTION]).sort() - [ResourceActions.FINALISE_ACTION]
+        responseBody().availableActions == (actions - [ResourceActions.FINALISE_ACTION])
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
 
@@ -849,7 +849,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
-        responseBody().availableActions == (actions + [ResourceActions.MERGE_INTO_ACTION] - [ResourceActions.FINALISE_ACTION]).sort()
+        responseBody().availableActions == (actions - [ResourceActions.FINALISE_ACTION]).sort()
 
         when:
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
@@ -1890,6 +1890,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
+    // probably have to overwrite this in datamodel?
     void 'CORE-#prefix-27a : Test available actions inside a VersionedFolder (as #name)'() {
         given:
         loginCreator()
@@ -1904,7 +1905,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse(OK, response)
-        responseBody().availableActions == actions - ResourceActions.FINALISE_ACTION
+        responseBody().availableActions == (actions - ResourceActions.MERGE_INTO_ACTION) - ResourceActions.FINALISE_ACTION
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
@@ -1941,7 +1942,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse(OK, response)
-        responseBody().availableActions == actions - ResourceActions.FINALISE_ACTION
+        responseBody().availableActions == (actions - ResourceActions.MERGE_INTO_ACTION) - ResourceActions.FINALISE_ACTION
 
         cleanup:
         loginCreator()

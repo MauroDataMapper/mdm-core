@@ -88,8 +88,8 @@ class NestedVersionedFolderInFolderFunctionalSpec extends UserAccessFunctionalSp
             .whereEditors {
                 cannotCreate()
             }
-            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
-            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
+            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update', 'mergeInto')
             .whereAuthorsCanAction('comment', 'editDescription', 'show')
             .whereReviewersCanAction('comment', 'show')
             .whereReadersCanAction('show')
@@ -98,7 +98,9 @@ class NestedVersionedFolderInFolderFunctionalSpec extends UserAccessFunctionalSp
     @Override
     void verifyDefaultCreationResponse(HttpResponse<Map> response, int count) {
         assert response.body().label == count ? "New Folder (${count})".toString() : 'New Folder'
-        assert response.body().availableActions == ['show', 'comment', 'editDescription', 'finalise', 'update', 'save', 'softDelete', 'delete'].sort()
+        assert response.body().availableActions == ['show', 'comment', 'editDescription', 'finalise', 'update', 'save', 'softDelete', 'delete',
+                                                    'mergeInto'].
+            sort()
         assert response.body().readableByEveryone == false
         assert response.body().readableByAuthenticatedUsers == false
     }
