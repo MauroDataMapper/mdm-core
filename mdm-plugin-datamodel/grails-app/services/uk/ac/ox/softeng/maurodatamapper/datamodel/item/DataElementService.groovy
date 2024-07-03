@@ -282,6 +282,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
     String applyHQLFilters(String originalQuery, String ciQueryPrefix, Map filters) {
         StringBuilder filteredQuery = new StringBuilder(super.applyHQLFilters(originalQuery, ciQueryPrefix, filters))
         if (filters.dataType) filteredQuery.append '\nAND lower(dt.label) LIKE lower(:dataType)'
+        if (filters.dataClass) filteredQuery.append '\nAND lower(dc.label) LIKE lower(:dataClass)'
         filteredQuery.toString()
     }
 
@@ -312,9 +313,10 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
 
     List<DataElement> findAllByDataModelId(Serializable dataModelId, Map filters = [:], Map pagination = [:]) {
         Map<String, Object> queryParams = [dataModelId: dataModelId]
-        queryParams.putAll(extractFiltersAsHQLParameters(filters))
+        queryParams.putAll(extractFiltersAsHQLParameters(filters, 'dataClass'))
         String baseQuery = applyHQLFilters('''
 FROM DataElement de
+INNER JOIN de.dataClass dc
 WHERE (de.dataClass.dataModel.id = :dataModelId)''', 'de', filters)
 
         // Cannot sort DEs including imported using idx
