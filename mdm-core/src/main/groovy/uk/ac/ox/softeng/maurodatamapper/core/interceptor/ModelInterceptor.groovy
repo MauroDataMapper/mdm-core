@@ -117,7 +117,6 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             return checkExportModelAction()
         }
 
-        // TODO: check this before merge - pure guesswork
         if (actionName == 'copyModel') {
             boolean canReadModel = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())
             if (!canReadModel) {

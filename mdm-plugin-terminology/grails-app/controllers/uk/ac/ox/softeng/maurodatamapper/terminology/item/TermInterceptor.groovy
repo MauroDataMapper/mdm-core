@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.traits.controller.TerminologySecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -49,9 +50,9 @@ class TermInterceptor extends TerminologySecuredInterceptor {
             return canReadModel()
         }
 
-        // TODO: is this appropriate?
         if (actionName == 'copyTerm') {
-            return canEditModelAndReadOtherModel()
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.terminologyId)
+                && currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.targetTerminologyId)
         }
 
         if (isIndex() && params.containsKey('codeSetId')) {
