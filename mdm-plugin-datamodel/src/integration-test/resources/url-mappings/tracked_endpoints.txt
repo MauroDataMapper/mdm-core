@@ -101,3 +101,4 @@
 | GET    | /api/dataModels/${dataModelId}/intersects/${otherDataModelId} | intersects |
 | PUT    | /api/dataModels/${dataModelId}/subset/${otherDataModelId} | subset |
 | POST   | /api/dataModels/${dataModelId}/intersectsMany | intersectsMany |
+| PUT    | /api/dataModels/${dataModelId}/copy | copyModel |
