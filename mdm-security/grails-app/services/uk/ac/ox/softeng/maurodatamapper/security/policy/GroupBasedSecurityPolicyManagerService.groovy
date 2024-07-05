@@ -257,12 +257,16 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
         Set<String> groupEmailAddresses = userGroup.groupMembers.collect { it.emailAddress }.toSet()
+        List<Model> allModels = userSecurityPolicyService.getAllModels()
+        Map<UUID, List<Model>> folderModelMap = userSecurityPolicyService.calculateFolderModelMap(allModels)
         keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.user.emailAddress in groupEmailAddresses) {
                 userSecurityPolicyManager.lock()
                 UserSecurityPolicy updatedPolicy = userSecurityPolicyService.updatePolicyWithAccessInUserGroup(userSecurityPolicyManager.userPolicy,
-                                                                                                               userGroup)
+                                                                                                               userGroup,
+                                                                                                               allModels,
+                                                                                                               folderModelMap)
                 storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
 
             }
@@ -273,12 +277,14 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     UserSecurityPolicyManager removeUserGroupFromUserSecurityPolicyManagers(User currentUser, UserGroup userGroup) {
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
+        List<Model> allModels = userSecurityPolicyService.getAllModels()
+        Map<UUID, List<Model>> folderModelMap = userSecurityPolicyService.calculateFolderModelMap(allModels)
         keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.userPolicyIsManagedByGroup(userGroup)) {
                 userSecurityPolicyManager.lock()
                 UserSecurityPolicy updatedPolicy =
-                    userSecurityPolicyService.updatePolicyWithoutAccessInUserGroup(userSecurityPolicyManager.userPolicy, userGroup)
+                    userSecurityPolicyService.updatePolicyWithoutAccessInUserGroup(userSecurityPolicyManager.userPolicy, userGroup, allModels, folderModelMap)
                 storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
             }
         }
@@ -335,12 +341,15 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
 
+        Map<UUID, List<Model>> folderModelMap = userSecurityPolicyService.calculateFolderModelMap()
+
         keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.userPolicyHasApplicationRoles()) {
                 userSecurityPolicyManager.lock()
                 UserSecurityPolicy updatedPolicy = userSecurityPolicyService.updatePolicyForAccessToUser(userSecurityPolicyManager.userPolicy,
-                                                                                                         catalogueUser)
+                                                                                                         catalogueUser,
+                                                                                                         folderModelMap)
                 storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
             }
         }
@@ -450,7 +459,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                                                      readerRole.allowedRoles,
                                                                                      null,
                                                                                      readerRole.groupRole,
-                                                                                     allModels
+                                                                                     folderModelMap
                 )
             )
             // Make sure the direct tree of containers are readable as well
