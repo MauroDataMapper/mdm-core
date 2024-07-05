@@ -105,6 +105,16 @@ class TermController extends CatalogueItemController<Term> {
             if (copyTermData.hasErrors()) {
                 return errorResponse(HttpStatus.CONFLICT, "Validation error: \"${copyTermData.errors}\"")
             }
+
+            // Cannot check security of target terminology in TermInterceptor since that would mean reading the HTTP request input stream and
+            // no longer allow binding to CopyTermData
+            boolean canReadTargetTerminology = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, copyTermData.targetTerminologyId)
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Terminology, copyTermData.targetTerminologyId)) {
+                return canReadTargetTerminology
+                    ? forbiddenDueToPermissions()
+                    : notFound(Terminology, copyTermData.targetTerminologyId)
+            }
+
             Terminology terminology = params.containsKey('terminologyId')
                 ? terminologyService.get(params.terminologyId)
                 : null

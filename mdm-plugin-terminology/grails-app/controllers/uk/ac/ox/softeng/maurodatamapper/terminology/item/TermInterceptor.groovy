@@ -53,21 +53,11 @@ class TermInterceptor extends TerminologySecuredInterceptor {
         }
 
         if (actionName == 'copyTerm') {
+            // This checks the security of the source terminology. To check the security of the target terminology, that has to be done
+            // in the controller because we need to access the HTTP request body to get the target ID
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.terminologyId)) {
                 return notFound(Terminology, params.terminologyId)
             }
-
-            // TODO: cannot check security of target terminology because reading the request body won't allow reading the input stream a second time in
-            //  the controller. Figure out how to solve this later
-//            DataBindingSource bindingSource = cacheRequestBody()
-//            UUID targetTerminologyId = bindingSource && bindingSource.containsProperty('targetTerminologyId')
-//                ? UUID.fromString(bindingSource.getPropertyValue('targetTerminologyId').toString())
-//                : null
-//
-//            boolean canReadTarget = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, targetTerminologyId)
-//            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Terminology, targetTerminologyId)) {
-//                return forbiddenOrNotFound(canReadTarget, Terminology, targetTerminologyId)
-//            }
 
             return true
         }

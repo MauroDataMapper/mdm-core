@@ -531,6 +531,16 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return forbidden('Cannot copy a model not contained in a versioned folder - create a fork instead')
         }
 
+        boolean canReadOriginalParentVersionedFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(
+            originalParentVersionedFolder.class,
+            originalParentVersionedFolder.id)
+
+        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(originalParentVersionedFolder.class, originalParentVersionedFolder.id)) {
+            return canReadOriginalParentVersionedFolder
+                ? forbiddenDueToPermissions()
+                : notFound(originalParentVersionedFolder.class, originalParentVersionedFolder.id)
+        }
+
         if (originalParentVersionedFolder.finalised) {
             return forbidden('Cannot copy a model that is finalised - create a fork instead')
         }
