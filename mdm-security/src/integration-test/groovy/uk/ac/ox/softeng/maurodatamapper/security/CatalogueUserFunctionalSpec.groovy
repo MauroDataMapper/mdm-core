@@ -136,6 +136,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = applicationContext.getBean(
             MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME, GroupBasedUserSecurityPolicyManager)
         defaultUserSecurityPolicyManager.lock()
+        userSecurityPolicyService.calculateFolderModelMap()
         if (accessGranted) {
             VirtualGroupRole applicationLevelRole = groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
             defaultUserSecurityPolicyManager.withUpdatedUserPolicy(UserSecurityPolicy.builder()
@@ -143,7 +144,8 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
                                                                        .withApplicationRoles([applicationLevelRole.groupRole] as HashSet)
                                                                        .withVirtualRoles(
                                                                            userSecurityPolicyService.buildCatalogueUserVirtualRoles(
-                                                                               [applicationLevelRole.groupRole] as HashSet)
+                                                                               [applicationLevelRole.groupRole] as HashSet,
+                                                                               userSecurityPolicyService.calculateFolderModelMap())
                                                                        )
             )
         } else {
