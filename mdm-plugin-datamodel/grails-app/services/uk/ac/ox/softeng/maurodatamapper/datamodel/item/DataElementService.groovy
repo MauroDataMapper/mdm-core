@@ -328,6 +328,7 @@ WHERE (de.dataClass.dataModel.id = :dataModelId)''', 'de', filters)
             .queryParams(queryParams)
             .paginate(pagination)
             .postProcess {
+                it.dataType = proxyHandler.unwrapIfProxy(it.dataType)
                 it.breadcrumbTree = proxyHandler.unwrapIfProxy(it.breadcrumbTree)
                 it.trackChanges() // unwrapping the proxy changes the object and therefore is detected as a "change" this call undos this change as its not actually one
             }

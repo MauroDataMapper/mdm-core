@@ -39,6 +39,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -367,6 +368,171 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().items.size() == 1
         response.body().items[0].id == id
         response.body().items[0].label == validJson.label
+    }
+
+    void 'should get all DataElements for a known DataModel'() {
+        given: "there is a data element"
+        String elementLabel1 = 'Functional Test DataElement 1'
+        POST("", [
+            label          : elementLabel1,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ])
+        verifyResponse CREATED, response
+        String elementId1 = response.body().id
+
+        and: "there is a data element in a different class"
+        POST("dataModels/$dataModelId/dataClasses", [
+            label: "Another Functional DataClass"
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String anotherDataClassId = responseBody().id
+
+        String elementLabel2 = 'Another Functional DataElement'
+        POST("dataModels/$dataModelId/dataClasses/$anotherDataClassId/dataElements", [
+            label          : elementLabel2,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String elementId2 = response.body().id
+
+        when: "getting all data elements under the model"
+        GET("dataModels/$dataModelId/dataElements", MAP_ARG, true)
+
+        then: "the response was OK"
+        verifyResponse(OK, response)
+
+        and: "the response body has the correct number of items"
+        def body = responseBody()
+        verifyAll(body) {
+            count == 2
+            items.size() == 2
+        }
+
+        and: "the response has the correct elements"
+        def actualElement1 = body.items.find { it.id == elementId1 }
+        def actualElement2 = body.items.find { it.id == elementId2 }
+        verifyAll {
+            actualElement1.id == elementId1
+            actualElement1.label == elementLabel1
+            actualElement2.id == elementId2
+            actualElement2.label == elementLabel2
+        }
+
+        cleanup:
+        DELETE("dataModels/$dataModelId/dataClasses/$anotherDataClassId", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+    }
+
+    void 'should get all DataElements for a known DataModel filtered by label'() {
+        given: "there is a data element"
+        String elementLabel1 = 'Functional Test DataElement 1'
+        POST("", [
+            label          : elementLabel1,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ])
+        verifyResponse CREATED, response
+        String elementId1 = response.body().id
+
+        and: "there is a data element in a different class"
+        POST("dataModels/$dataModelId/dataClasses", [
+            label: "Another Functional DataClass"
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String anotherDataClassId = responseBody().id
+
+        String elementLabel2 = 'Another Functional DataElement'
+        POST("dataModels/$dataModelId/dataClasses/$anotherDataClassId/dataElements", [
+            label          : elementLabel2,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String elementId2 = response.body().id
+
+        when: "getting all data elements under the model"
+        GET("dataModels/$dataModelId/dataElements?label=DataElement%201", MAP_ARG, true)
+
+        then: "the response was OK"
+        verifyResponse(OK, response)
+
+        and: "the response body has the correct number of items"
+        def body = responseBody()
+        verifyAll(body) {
+            count == 1
+            items.size() == 1
+        }
+
+        and: "the response has the correct elements"
+        def actualElement1 = body.items.find { it.id == elementId1 }
+        verifyAll {
+            actualElement1.id == elementId1
+            actualElement1.label == elementLabel1
+        }
+
+        cleanup:
+        DELETE("dataModels/$dataModelId/dataClasses/$anotherDataClassId", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+    }
+
+    void 'should get all DataElements for a known DataModel filtered by dataClass'() {
+        given: "there is a data element"
+        String elementLabel1 = 'Functional Test DataElement 1'
+        POST("", [
+            label          : elementLabel1,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ])
+        verifyResponse CREATED, response
+        String elementId1 = response.body().id
+
+        and: "there is a data element in a different class"
+        POST("dataModels/$dataModelId/dataClasses", [
+            label: "Another Functional DataClass"
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String anotherDataClassId = responseBody().id
+
+        String elementLabel2 = 'Another Functional DataElement'
+        POST("dataModels/$dataModelId/dataClasses/$anotherDataClassId/dataElements", [
+            label          : elementLabel2,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String elementId2 = response.body().id
+
+        when: "getting all data elements under the model"
+        GET("dataModels/$dataModelId/dataElements?dataClass=Another", MAP_ARG, true)
+
+        then: "the response was OK"
+        verifyResponse(OK, response)
+
+        and: "the response body has the correct number of items"
+        def body = responseBody()
+        verifyAll(body) {
+            count == 1
+            items.size() == 1
+        }
+
+        and: "the response has the correct elements"
+        def actualElement2 = body.items.find { it.id == elementId2 }
+        verifyAll {
+            actualElement2.id == elementId2
+            actualElement2.label == elementLabel2
+        }
+
+        cleanup:
+        DELETE("dataModels/$dataModelId/dataClasses/$anotherDataClassId", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
     }
 
     @Transactional
