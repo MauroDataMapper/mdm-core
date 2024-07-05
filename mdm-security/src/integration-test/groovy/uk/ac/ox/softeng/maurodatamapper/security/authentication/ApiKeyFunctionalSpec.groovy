@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
@@ -155,10 +156,11 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
         GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = applicationContext.getBean(
             MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME)
         defaultUserSecurityPolicyManager.lock()
+        Map<UUID, List<Model>> folderModelMap = userSecurityPolicyService.calculateFolderModelMap()
         if (accessGranted) {
             VirtualGroupRole applicationLevelRole = groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
             defaultUserSecurityPolicyManager.userPolicy.withApplicationRoles(applicationLevelRole.allowedRoles).withVirtualRoles(
-                userSecurityPolicyService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet)
+                userSecurityPolicyService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet, folderModelMap)
             )
         } else {
             defaultUserSecurityPolicyManager.userPolicy.withApplicationRoles([] as HashSet)
