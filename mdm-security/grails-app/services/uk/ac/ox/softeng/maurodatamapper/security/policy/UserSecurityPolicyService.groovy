@@ -642,7 +642,6 @@ class UserSecurityPolicyService {
     }
 
     List<Model> getAllModels() {
-        System.err.println("getAllModels")
         if (modelServices) {
             modelServices.collectMany {service -> service.list()} as List<Model>
         } else {
