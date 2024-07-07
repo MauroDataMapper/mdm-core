@@ -1,0 +1,131 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: sandbox
+          POSTGRES_DB: sandbox
+          POSTGRES_PASSWORD: sandbox
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 1s
+          --health-timeout 5s
+          --health-retries 50
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        cache-disabled: true
+
+    - name: Core gradle info
+      run: |
+        ./gradlew -v
+        ./gradlew jvmArgs sysProps
+
+    - name: Mdm-core gradle info
+      working-directory: ./mdm-core
+      run: |
+        ./grailsw -v
+
+    - name: License header check
+      run: |
+        ./gradlew --build-cache license
+
+    - name: Flyway migration check
+      run: |
+        ./gradlew --build-cache verifyFlywayMigrationVersions
+
+
+    - name: Test with Gradle
+      run: ./gradlew --build-cache test --no-daemon --no-watch-fs --stacktrace
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Test Results
+        path: '**/build/test-results/**/*.xml'
+        reporter: java-junit
+
+#    - name: Archive test report
+#      if: always()
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: test-report
+#        path: '**/build/test-results/**/*.xml'
+
+    - name: MegaLinter
+      uses: oxsecurity/megalinter/flavors/ci_light@v7
+      env:
+        # All available variables are described in documentation
+        # https://megalinter.io/configuration/
+        VALIDATE_ALL_CODEBASE: true
+
+        ENABLE_LINTERS: GROOVY_NPM_GROOVY_LINT
+        LINTER_RULES_PATH: 'config/codenarc'
+        DISABLE_ERRORS: true #Flag to have the linter complete with exit code 0 even if errors were detected.
+        SARIF_REPORTER: true
+
+    ## This won't work until the repository is made public
+    #- name: Upload MegaLinter scan results to GitHub Security tab
+    #  if: ${{ success() }} || ${{ failure() }}
+    #  uses: github/codeql-action/upload-sarif@v2
+    #  with:
+    #    sarif_file: 'megalinter-reports/megalinter-report.sarif'
+
+
+    # Upload MegaLinter artifacts
+#    - name: Archive lint reports
+#      if: ${{ success() }} || ${{ failure() }}
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: MegaLinter reports
+#        path: |
+#          megalinter-reports
+#          mega-linter.log
+
+    - name: Send a stream message
+      if: success() || failure()
+      uses: zulip/github-actions-zulip/send-message@v1
+      with:
+        api-key: ${{ secrets.ZULIP_API_KEY }}
+        email: "githubactionsbot-bot@maurodatamapper.zulipchat.com"
+        organization-url: "https://maurodatamapper.zulipchat.com"
+        to: "build/github-actions"
+        type: "stream"
+        topic: "${{github.repository}}"
+        content: "${{ job.status == 'success' && ':check_mark:' || ':cross_mark:' }} ${{github.repository}} : **${{github.ref}}**\nGitHub Actions build result: **${{ job.status }}**\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
