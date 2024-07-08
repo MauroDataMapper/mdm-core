@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyTermData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
@@ -27,9 +29,20 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.SearchService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 
+import grails.gorm.transactions.Transactional
+import grails.validation.ValidationException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
+import org.springframework.http.HttpStatus
+
+import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
+
 class TermController extends CatalogueItemController<Term> {
 
     static responseFormats = ['json', 'xml']
+
+    @Autowired
+    MessageSource messageSource
 
     TermService termService
     CodeSetService codeSetService
@@ -84,6 +97,58 @@ class TermController extends CatalogueItemController<Term> {
         }
 
         respond tree
+    }
+
+    @Transactional
+    def copyTerm(CopyTermData copyTermData) {
+        try {
+            if (copyTermData.hasErrors()) {
+                return errorResponse(HttpStatus.CONFLICT, "Validation error: \"${copyTermData.errors}\"")
+            }
+
+            // Cannot check security of target terminology in TermInterceptor since that would mean reading the HTTP request input stream and
+            // no longer allow binding to CopyTermData
+            boolean canReadTargetTerminology = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, copyTermData.targetTerminologyId)
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Terminology, copyTermData.targetTerminologyId)) {
+                return canReadTargetTerminology
+                    ? forbiddenDueToPermissions()
+                    : notFound(Terminology, copyTermData.targetTerminologyId)
+            }
+
+            Terminology terminology = params.containsKey('terminologyId')
+                ? terminologyService.get(params.terminologyId)
+                : null
+
+            if (!terminology) {
+                String idstr = params.containsKey('terminologyId')
+                    ? params.terminologyId.toString()
+                    : "(unknown)"
+                return errorResponse(HttpStatus.NOT_FOUND, "Cannot find terminology: \"${idstr}\"")
+            }
+            Terminology targetTerminology = terminology
+
+            if (copyTermData.targetTerminologyId != null) {
+                targetTerminology = terminologyService.get(copyTermData.targetTerminologyId)
+
+                if (!targetTerminology) {
+                    return errorResponse(HttpStatus.NOT_FOUND, "Cannot find terminology: \"${copyTermData.targetTerminologyId}\"")
+                }
+            }
+            Term term = terminology.terms.find {it.id == params.termId}
+
+            if (!term) {
+                return errorResponse(HttpStatus.NOT_FOUND, "Cannot find term: \"${params.termId}\"")
+            }
+            Term copy = termService.copyTerm(term, currentUser, currentUserSecurityPolicyManager)
+            copy.code = copyTermData.code
+
+            targetTerminology.addToTerms(copy)
+            checkAndSave(messageSource, targetTerminology)
+
+            return respond(copy)
+        } catch(ValidationException e) {
+            return errorResponse(HttpStatus.CONFLICT, "Validation error: \"${e.errors}\"")
+        }
     }
 
     @Override

@@ -19,8 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.traits.controller.TerminologySecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import grails.databinding.DataBindingSource
 
 class TermInterceptor extends TerminologySecuredInterceptor {
 
@@ -47,6 +50,16 @@ class TermInterceptor extends TerminologySecuredInterceptor {
 
         if (actionName in ['search', 'tree']) {
             return canReadModel()
+        }
+
+        if (actionName == 'copyTerm') {
+            // This checks the security of the source terminology. To check the security of the target terminology, that has to be done
+            // in the controller because we need to access the HTTP request body to get the target ID
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.terminologyId)) {
+                return notFound(Terminology, params.terminologyId)
+            }
+
+            return true
         }
 
         if (isIndex() && params.containsKey('codeSetId')) {

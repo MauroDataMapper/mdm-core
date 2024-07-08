@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -48,7 +50,10 @@ import spock.lang.Shared
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CancellationException
+import java.util.concurrent.Future
 
+import static io.micronaut.http.HttpStatus.ACCEPTED
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -93,6 +98,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  |   GET    | /api/codeSets/${codeSetId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModel
  *  |   POST   | /api/codeSets/import/${importerNamespace}/${importerName}/${importerVersion}  | Action: importModels
  *  |   POST   | /api/codeSets/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModels
+ *  |   PUT    | /api/codeSets/${codeSetId}/copy  | Action: copyModel
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetController
  */
@@ -100,6 +106,8 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Transactional
 @Slf4j
 class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements XmlComparer {
+
+    AsyncJobService asyncJobService
 
     CodeSetJsonExporterService codeSetJsonExporterService
     CodeSetJsonImporterService codeSetJsonImporterService
@@ -116,6 +124,15 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
     @Shared
     Folder folder
+
+    @Shared
+    UUID versionedFolderId
+
+    @Shared
+    UUID versionedAndFinalisedId
+
+    @Shared
+    UUID otherVersionedFolderId
 
     @Shared
     TerminologyPluginMergeBuilder builder
@@ -135,6 +152,15 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+
+        versionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedFolderId
+
+        versionedAndFinalisedId  = new VersionedFolder(label: 'Functional Test Versioned and finalised Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedAndFinalisedId
+
+        otherVersionedFolderId = new VersionedFolder(label: 'Functional Test another Versioned folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert otherVersionedFolderId
 
         builder = new TerminologyPluginMergeBuilder(this)
     }
@@ -226,11 +252,30 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         "${terminologyJsonExporterService.namespace}/${terminologyJsonExporterService.name}/${terminologyJsonExporterService.version}"
     }
 
+    String createNewItemInFolder(Map model, UUID folderId) {
+        final String path = "folders/${folderId}/${getResourcePath()}"
+        POST(path, model, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        response.body().id
+    }
+
     byte[] loadTestFile(String filename, String fileType = 'json') {
         Path testFilePath = fileType == 'json' ? resourcesPath.resolve('codeset').resolve("${filename}.json") :
                             xmlResourcesPath.resolve('codeset').resolve("${filename}.xml")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
+    }
+
+    void waitForAysncToComplete(String id) {
+        log.info("Job id $id - wait for async to complete")
+        Future p = asyncJobService.getAsyncJobFuture(id)
+        try {
+            p.get()
+        } catch (CancellationException e) {
+            log.warn("Job id $id - cancellation exception caught: \"${e.message}\"")
+        } finally {
+            log.info("Job id $id - completed")
+        }
     }
 
     void 'test finalising CodeSet'() {
@@ -2214,6 +2259,179 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         cleanup:
         cleanupTestData(data)
+    }
+
+    void 'CPCS01 : cannot copy a codeset in a non-versoned folder'() {
+    given:
+        String id = createNewItem(validJson)
+
+    when:
+        PUT("$id/copy", [
+            folderId: folderId,
+            label: 'new label',
+            copyPermissions: false
+        ])
+
+    then:
+        verifyResponse FORBIDDEN, response
+    }
+
+    void 'CPCS02 : cannot copy a codeset with invalid data'() {
+    given:
+        String id = createNewItemInFolder(validJson, versionedFolderId)
+    when:
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            copyPermissions: false
+        ])
+
+    then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+    }
+
+    void 'CPCS03 : cannot copy a bogus codeset'() {
+        given:
+        String id = UUID.randomUUID().toString()
+
+        when:
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            label: 'new label',
+            copyPermissions: false
+        ])
+
+        then:
+        verifyResponse NOT_FOUND, response
+    }
+
+    void 'CPCS04 : cannot copy a codeset in a versoned and finalised folder'() {
+        given:
+        PUT("versionedFolders/$versionedAndFinalisedId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
+        verifyResponse OK, response
+
+        and:
+        String id = createNewItemInFolder(validJson, versionedAndFinalisedId)
+
+        when:
+        PUT("$id/copy", [
+            folderId: versionedAndFinalisedId,
+            label: 'new label which should not match an existing label',
+            copyPermissions: false
+        ])
+
+        then:
+        verifyResponse FORBIDDEN, response
+    }
+
+    void 'CPCS05 : cannot copy a codeset with an in-use label'() {
+        given:
+        String id = createNewItemInFolder(validJson, versionedFolderId)
+
+        when:
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            label: validJson['label'],
+            copyPermissions: false
+        ])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+    }
+
+    void 'CPCS06 : cannot copy a codeset to an unknown folder'() {
+        given:
+        String id = createNewItemInFolder(validJson, versionedFolderId)
+
+        when:
+        PUT("$id/copy", [
+            folderId: UUID.randomUUID(),
+            label: 'A distinctly different label',
+            copyPermissions: false
+        ])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+    }
+
+    void 'CPCS07 : cannot copy a codeset to an non-versioned folder'() {
+    given:
+        String id = createNewItemInFolder(validJson, versionedFolderId)
+
+    when:
+        PUT("$id/copy", [
+            folderId: folderId,
+            label: 'A distinctly different label',
+            copyPermissions: false
+        ])
+
+    then:
+        verifyResponse FORBIDDEN, response
+    }
+
+    void 'CPCS08 : cannot copy a codeset between folders'() {
+        given:
+        String id = createNewItemInFolder(validJson, versionedFolderId)
+
+        when:
+        PUT("$id/copy", [
+            folderId: otherVersionedFolderId,
+            label: 'A distinctly different label',
+            copyPermissions: false
+        ])
+
+        then:
+        verifyResponse FORBIDDEN, response
+    }
+
+    void 'CPCS09 : copy a codeset'() {
+        final String newLabel = 'A new label for a new code set'
+
+        given:
+        String originalId = createNewItemInFolder(validJson, versionedFolderId)
+
+        when:
+        PUT("$originalId/copy", [
+            folderId: versionedFolderId,
+            label: newLabel,
+            copyPermissions: false
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String copiedId = response.body().id
+
+        and: 'the copied code set has the correct properties'
+        verifyAll(response.body()) {
+            id != originalId
+            label == newLabel
+        }
+    }
+
+    void 'CPCS10 : copy a codeset asynchronously'() {
+        final String newLabel = 'Label for a new code set'
+
+        given:
+        String originalId = createNewItemInFolder(validJson, versionedFolderId)
+
+        when:
+        PUT("$originalId/copy", [
+            folderId: versionedFolderId,
+            label: newLabel,
+            copyPermissions: false,
+            runAsync: true
+        ])
+
+        then:
+        verifyResponse ACCEPTED, response
+
+        when:
+        String jobId = response.body().id
+        waitForAysncToComplete(jobId)
+
+        then:
+        verifyResponse(ACCEPTED, response)
+
+        // What is needed here is a way to find the copied code set
     }
 
     Map buildTestData() {

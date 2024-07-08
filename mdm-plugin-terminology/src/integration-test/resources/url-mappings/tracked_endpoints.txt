@@ -18,6 +18,7 @@
 | PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion | newDocumentationVersion |
 | PUT    | /api/codeSets/${codeSetId}/newBranchModelVersion | newBranchModelVersion |
 | PUT    | /api/codeSets/${codeSetId}/finalise | finalise |
+| PUT    | /api/codeSets/${codeSetId}/copy | copyModel |
 | POST   | /api/folders/${folderId}/codeSets | save |
 | GET    | /api/folders/${folderId}/codeSets | index |
 | DELETE | /api/codeSets/${codeSetId}/terms/${termId} | alterTerms |
@@ -88,3 +89,5 @@
 | DELETE | /api/terminologies/${id} | delete |
 | PUT    | /api/terminologies/${id} | update |
 | GET    | /api/terminologies/${id} | show |
+| PUT    | /api/terminologies/${terminologyId}/copy | copyModel |
+| PUT    | /api/terminologies/${terminologyId}/terms/copy/${termId} | copyTerm |

@@ -103,6 +103,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     UUID otherVersionedFolderId
 
     @Shared
+    UUID versionedAndFinalisedId
+
+    @Shared
     UUID movingFolderId
 
     @Shared
@@ -124,6 +127,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         otherVersionedFolderId =
             new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
         assert otherVersionedFolderId
+        versionedAndFinalisedId =
+            new VersionedFolder(label: 'Functional Test Versioned and Finalised Folder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedAndFinalisedId
         builder = new DataModelPluginMergeBuilder(this)
     }
 
@@ -5785,6 +5791,153 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(source.dataModelId)
         cleanUpData(target.dataModelId)
         cleanUpData(target2.dataModelId)
+    }
+
+    void 'COPY01: should copy a model'() {
+        given: 'a model exists'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.2', [
+            finalised                      : false,
+            folderId                       : versionedFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        String originalId = response.body().items[0].id
+
+        when: 'copying the model'
+        String newLabel = 'copied model'
+        PUT("$originalId/copy", [
+            folderId: versionedFolderId,
+            label: newLabel,
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse CREATED, response
+        String copiedId = response.body().id
+
+        and: 'the copied model has the correct properties'
+        verifyAll(response.body()) {
+            id != originalId
+            label == newLabel
+        }
+
+        and: 'the copied model has the same types'
+        HttpResponse<Object> originalTypesResponse = GET("$originalId/dataTypes")
+        HttpResponse<Object> copiedTypesResponse = GET("$copiedId/dataTypes")
+        with {
+            originalTypesResponse.body().count == copiedTypesResponse.body().count
+        }
+
+        and: 'the copied model has the same classes'
+        HttpResponse<Object> originalClassesResponse = GET("$originalId/dataClasses")
+        HttpResponse<Object> copiedClassesResponse = GET("$copiedId/dataClasses")
+        with {
+            originalClassesResponse.body().count == copiedClassesResponse.body().count
+        }
+
+        cleanup:
+        cleanUpData(originalId)
+        cleanUpData(copiedId)
+    }
+
+    void 'COPY02: should not copy a model that cannot be found'() {
+        when: 'copying the model'
+        String id = UUID.randomUUID().toString()
+        PUT("$id/copy", [
+            folderId: versionedFolderId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse NOT_FOUND, response
+    }
+
+    void 'COPY03: should not copy a model that is finalised'() {
+        given: 'a model exists'
+        POST("folders/${versionedAndFinalisedId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        and: 'the parent versioned folder is finalised'
+        PUT("versionedFolders/$versionedAndFinalisedId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
+        verifyResponse OK, response
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: versionedAndFinalisedId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'COPY04: should not copy a model that is not inside a versioned folder'() {
+        given: 'a model exists'
+        String id = createNewItem(validJson)
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: movingFolderId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'COPY05: should not copy a model with the same label'() {
+        given: 'a model exists'
+        String label = 'Functional data model'
+        POST("folders/${versionedFolderId}/${getResourcePath()}", [ label: label ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: movingFolderId,
+            label: label,
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'COPY06: should not copy a model outside the original versioned folder parent'() {
+        given: 'a model exists'
+        POST("folders/${versionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        when: 'copying the model'
+        PUT("$id/copy", [
+            folderId: otherVersionedFolderId,
+            label: 'copied data model',
+            copyPermissions: false
+        ])
+
+        then: 'the correct response was returned'
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        cleanUpData(id)
     }
 
     String expectedLinkSuggestions(Map<String, String> results) {

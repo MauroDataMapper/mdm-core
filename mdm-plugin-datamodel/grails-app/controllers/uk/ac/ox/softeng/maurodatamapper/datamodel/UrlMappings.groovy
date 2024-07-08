@@ -37,6 +37,7 @@ class UrlMappings {
                 put '/newBranchModelVersion'(controller: 'dataModel', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'dataModel', action: 'newForkModel') // new URL
+                put '/copy'(controller: 'dataModel', action: 'copyModel')
 
                 /*
                 Version Control
@@ -120,7 +121,6 @@ class UrlMappings {
                 post "/dataTypes/$otherDataModelId/$dataTypeId"(controller: 'dataType', action: 'copyDataType')
                 put "/dataTypes/$otherDataModelId/$otherDataTypeId"(controller: 'dataModel', action: 'importDataType')
                 delete "/dataTypes/$otherDataModelId/$otherDataTypeId"(controller: 'dataModel', action: 'importDataType')
-
                 "/enumerationTypes/${enumerationTypeId}/enumerationValues"(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
             }
 

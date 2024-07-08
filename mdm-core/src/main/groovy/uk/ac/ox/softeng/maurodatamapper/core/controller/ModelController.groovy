@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.async.DomainExportService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
@@ -39,11 +40,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.MergeIntoData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyModelData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.DeleteAllParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.artefact.Artefact
@@ -495,6 +499,112 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         saveResponse savedCopy
+    }
+
+    /**
+     * Copies a draft model within a versioned folder.
+     *
+     * <p>
+     * Copying a model is allowed under the following conditions:
+     *  <ol>
+     *      <li>The source model is contained in a versioned folder (or has a sub-folder parent which is eventually contained within a versioned folder)</li>
+     *      <li>The versioned folder parent is not finalised</li>
+     *      <li>The model will be copied to a folder/sub-folder (either same as source or different) that is contained within the same versioned folder parent as the source model</li>
+     *  </ol>
+     * <p>
+     */
+    @Transactional
+    def copyModel(CopyModelData copyModelData) {
+        if (copyModelData.hasErrors()) {
+            respond copyModelData.errors
+            return
+        }
+        log.info("copyModel called on thread ${Thread.currentThread().getId()}")
+
+        T original = queryForResource(params[alternateParamsIdKey])
+        if (!original) {
+            return notFound(params[alternateParamsIdKey])
+        }
+
+        VersionedFolder originalParentVersionedFolder = versionedFolderService.getVersionedFolderParent(original)
+        if (!originalParentVersionedFolder) {
+            return forbidden('Cannot copy a model not contained in a versioned folder - create a fork instead')
+        }
+
+        boolean canReadOriginalParentVersionedFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(
+            originalParentVersionedFolder.class,
+            originalParentVersionedFolder.id)
+
+        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(originalParentVersionedFolder.class, originalParentVersionedFolder.id)) {
+            return canReadOriginalParentVersionedFolder
+                ? forbiddenDueToPermissions()
+                : notFound(originalParentVersionedFolder.class, originalParentVersionedFolder.id)
+        }
+
+        if (originalParentVersionedFolder.finalised) {
+            return forbidden('Cannot copy a model that is finalised - create a fork instead')
+        }
+
+        def existingTargetModel = modelService.findByLabelAndBranchAndNotFinalised(copyModelData.label, original.branchName)
+        if (existingTargetModel) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Label passed in request body is not unique.')
+        }
+
+        Folder targetFolder = copyModelData.folderId ? folderService.get(copyModelData.folderId) : original.folder
+        if (!targetFolder) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Target folder id passed in request body or from original model not found.')
+        }
+
+        VersionedFolder targetParentVersionedFolder = versionedFolderService.getVersionedFolderParent(targetFolder)
+        if (!targetParentVersionedFolder) {
+            return forbidden("Cannot copy a model to folder $targetFolder.id - not within a versioned folder")
+        }
+
+        if (targetParentVersionedFolder.id != originalParentVersionedFolder.id) {
+            return forbidden("Cannot copy a model to folder $targetFolder.id - must be copied within the same versioned folder parent")
+        }
+
+        if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params[alternateParamsIdKey])) {
+            copyModelData.copyPermissions = false
+        }
+
+        if (copyModelData.runAsync) {
+            AsyncJob theJob = modelService.asyncCopyAndSave(
+                original, copyModelData.label, currentUserSecurityPolicyManager,
+                targetFolder, currentUser, copyModelData.copyPermissions)
+
+            return respond(theJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        } else {
+            copyAndSave(getModelService(), original, targetFolder, currentUser,
+                        copyModelData.copyPermissions, copyModelData.label,
+                        currentUserSecurityPolicyManager, securityPolicyManagerService)
+        }
+    }
+
+    private void copyAndSave(ModelService modelService, T original,
+                             Folder targetFolder, User currentUser,
+                             boolean copyPermissions, String label,
+                             UserSecurityPolicyManager currentUserSecurityPolicyManager,
+                             SecurityPolicyManagerService securityPolicyManagerService) {
+        log.info("copyAndSave called on thread ${Thread.currentThread().getId()}")
+        T copy = modelService.copyModel(
+            original, targetFolder, currentUser, copyPermissions, label,
+            original.documentationVersion, original.branchName, true,
+            currentUserSecurityPolicyManager) as T
+
+        if (!validateResource(copy, 'create')) {
+            return
+        }
+        T savedCopy = modelService.saveModelWithContent(copy) as T
+        savedCopy.addCreatedEdit(currentUser)
+
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(
+                savedCopy,
+                currentUser,
+                savedCopy.label)
+        }
+        saveResponse(savedCopy)
     }
 
     def exportModel() {

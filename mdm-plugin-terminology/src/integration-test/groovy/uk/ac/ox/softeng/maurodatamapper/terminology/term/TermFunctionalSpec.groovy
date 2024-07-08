@@ -41,6 +41,7 @@ import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.CONFLICT
 
 /**
  * <pre>
@@ -536,5 +537,131 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     }
   ]
 }''', Option.IGNORING_EXTRA_FIELDS
+    }
+
+    @Transactional
+    void 'T10 : should copy a term to the same terminology'() {
+        final String NEW_CODE = "T10 New term code"
+
+    given:
+        def id = Term.findByCode('CTT20').id
+        def newId = Term.findByCode(NEW_CODE)?.id
+
+    and:
+        id != null
+        newId == null
+
+    when:
+        PUT("terminologies/${complexTerminologyId}/terms/copy/$id", [
+            code: NEW_CODE
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse OK, response
+
+    when:
+        Term newTerm = Term.findByCode(NEW_CODE)
+
+    then:
+        newTerm != null
+        newTerm.terminology.id == complexTerminologyId
+    }
+
+    @Transactional
+    void 'T11 : should copy a term to another terminology'() {
+        final String NEW_CODE = "T11: New term, unique Code"
+
+    given:
+        def id = Term.findByCode('CTT20').id
+        def newId = Term.findByCode(NEW_CODE)?.id
+
+        and:
+        id != null
+        newId == null
+
+    when:
+        PUT("terminologies/${complexTerminologyId}/terms/copy/$id", [
+            code: NEW_CODE,
+            targetTerminologyId: simpleTerminologyId
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse OK, response
+
+    when:
+        Term newTerm = Term.findByCode(NEW_CODE)
+
+    then:
+        newTerm != null
+        newTerm.terminology.id == simpleTerminologyId
+    }
+
+    @Transactional
+    void 'T12 : cannot copy a term if no code is provided'() {
+    given:
+        def id = Term.findByCode('CTT20').id
+
+    and:
+        id != null
+
+    when:
+        PUT("terminologies/${complexTerminologyId}/terms/copy/$id", [
+            targetTerminologyId: complexTerminologyId
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse CONFLICT, response
+    }
+
+    @Transactional
+    void 'T13 : cannot copy a term if the source terminology does not exist'() {
+    given:
+        def id = Term.findByCode('CTT20').id
+
+    and:
+        id != null
+
+    when:
+        PUT("terminologies/${UUID.randomUUID()}/terms/copy/$id", [
+            code: "New code value"
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse NOT_FOUND, response
+    }
+
+    @Transactional
+    void 'T14 : cannot copy a term if the term does not exist in the terminology'() {
+    given:
+        def id = Term.findByCode('STT01').id
+
+    and:
+        id != null
+
+    when:
+        PUT("terminologies/${complexTerminologyId}/terms/copy/$id", [
+            code: "New code value"
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse NOT_FOUND, response
+    }
+
+    @Transactional
+    void 'T15 : cannot copy a term if the target terminology cannot be found'() {
+    given:
+        def id = Term.findByCode('CTT20').id
+
+    and:
+        id != null
+
+    when:
+        PUT("terminologies/${complexTerminologyId}/terms/copy/$id", [
+            code: "New code value",
+            targetTerminologyId: UUID.randomUUID()
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse NOT_FOUND, response
     }
 }
