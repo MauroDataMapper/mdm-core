@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
@@ -181,13 +182,15 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
         GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = applicationContext.getBean(
             MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME)
         defaultUserSecurityPolicyManager.lock()
+        Map<UUID, List<Model>> folderModelMap = userSecurityPolicyService.calculateFolderModelMap()
         if (accessGranted) {
             VirtualGroupRole applicationLevelRole = groupRoleService.getFromCache(GroupRole.GROUP_ADMIN_ROLE_NAME)
             defaultUserSecurityPolicyManager.userPolicy
                 .withApplicationRoles(applicationLevelRole.allowedRoles)
                 .withVirtualRoles(
                     userSecurityPolicyService.buildUserGroupVirtualRoles(
-                        [applicationLevelRole.groupRole] as HashSet)
+                        [applicationLevelRole.groupRole] as HashSet,
+                        folderModelMap)
                 )
 
         } else {
