@@ -165,7 +165,7 @@ trait SecurityDefinition {
     }
 
     void getOrCreateBasicGroups(String creatorKey, boolean includeAdmin = true) {
-        admins = UserGroup.findByNameInList(['administrators', 'Administrators'])
+        admins = getAdministratorsGroup()
         if (includeAdmin) {
             if (!admins) createAdminGroup(creatorKey)
         }
@@ -206,4 +206,10 @@ trait SecurityDefinition {
         }
         admins.addToGroupMembers(creator)
     }
+
+    UserGroup getAdministratorsGroup() {
+        GroupRole adminGroupRole = GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME)
+        UserGroup.findByApplicationGroupRole(adminGroupRole)
+    }
+
 }
