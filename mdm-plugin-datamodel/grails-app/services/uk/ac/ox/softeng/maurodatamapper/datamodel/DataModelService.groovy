@@ -1093,7 +1093,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
-                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+                                         UserSecurityPolicyManager userSecurityPolicyManager,
+                                         String mergeEditDescription, boolean flush = false) {
 
         // If the path to copy endswith the model item's path being copied then the model item cannot be inside the target model as the model item would already exist
         // and the path to copy must also therefore include a fully resolved model path after a modelitem path
@@ -1127,7 +1128,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             return
         }
-        super.processCreationPatchOfModelItem(modelItemToCopy, targetModel, pathToCopy, userSecurityPolicyManager, flush)
+        super.processCreationPatchOfModelItem(modelItemToCopy, targetModel, pathToCopy, userSecurityPolicyManager, mergeEditDescription, flush)
     }
 
     @Override

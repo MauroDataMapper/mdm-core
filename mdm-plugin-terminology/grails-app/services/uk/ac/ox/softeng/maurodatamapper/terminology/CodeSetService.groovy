@@ -463,7 +463,8 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToCopy,
-                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+                                         UserSecurityPolicyManager userSecurityPolicyManager,
+                                         String mergeEditDescription, boolean flush = false) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
         }
@@ -471,6 +472,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         (targetModel as CodeSet).addToTerms(modelItem as Term)
         save(targetModel as CodeSet, flush: flush, validate: false)
+        targetModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
     @Override

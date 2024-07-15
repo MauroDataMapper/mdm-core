@@ -56,6 +56,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeC
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -1088,18 +1089,19 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         // Potential creations are folders, models, modelItems or facets
         if (Utils.parentClassIsAssignableFromChild(Folder, domainToCopy.class)) {
             processCreationPatchOfFolder(domainToCopy as Folder, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
-                                         userSecurityPolicyManager)
+                                         userSecurityPolicyManager, sourceVersionedFolder)
         }
         if (Utils.parentClassIsAssignableFromChild(Model, domainToCopy.class)) {
             processCreationPatchOfModel(domainToCopy as Model, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
-                                        userSecurityPolicyManager)
+                                        userSecurityPolicyManager, sourceVersionedFolder)
         }
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
             processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPatch.relativePathToRoot,
-                                            userSecurityPolicyManager)
+                                            userSecurityPolicyManager, sourceVersionedFolder)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
-            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent)
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
+                                        userSecurityPolicyManager, sourceVersionedFolder)
         }
     }
 
@@ -1208,40 +1210,49 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void processCreationPatchOfFolder(Folder folderToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
-                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+                                      UserSecurityPolicyManager userSecurityPolicyManager, VersionedFolder sourceVersionedFolder) {
         log.debug('Creating Folder into VersionedFolder at [{}]', relativeParentPathToCopyTo)
         Folder parentFolder =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
-        folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
-                                 targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
+        def copiedFolder = folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
+                                                            targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
+
+        copiedFolder.addMergeEdit(userSecurityPolicyManager.user, "Merged from '$sourceVersionedFolder.label:$sourceVersionedFolder.branchName'")
     }
 
     void processCreationPatchOfModel(Model modelToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
-                                     UserSecurityPolicyManager userSecurityPolicyManager) {
+                                     UserSecurityPolicyManager userSecurityPolicyManager, VersionedFolder sourceVersionedFolder) {
         ModelService modelService = folderService.findModelServiceForModel(modelToCopy)
         log.debug('Creating Model into VersionedFolder at [{}]', relativeParentPathToCopyTo)
         Folder parentFolder =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
-        modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label,
-                                                 modelToCopy.documentationVersion,
-                                                 targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+        def copiedModel = modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label,
+                                                                            modelToCopy.documentationVersion,
+                                                                            targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+
+        copiedModel.addMergeEdit(userSecurityPolicyManager.user, "Merged from '$sourceVersionedFolder.label:$sourceVersionedFolder.branchName'")
     }
 
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, VersionedFolder targetVersionedFolder, Path relativePathToCopyTo,
-                                         UserSecurityPolicyManager userSecurityPolicyManager) {
+                                         UserSecurityPolicyManager userSecurityPolicyManager, VersionedFolder sourceVersionedFolder) {
 
         Map<String, Object> modelInformation =
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToCopyTo, modelItemToCopy.domainType)
+
+        String mergeEditDescription = "Merged from '$sourceVersionedFolder.label:$sourceVersionedFolder.branchName'"
+
         (modelInformation.modelService as ModelService).processCreationPatchOfModelItem(modelItemToCopy,
                                                                                         modelInformation.targetModel as Model,
                                                                                         (modelInformation.modelItemToModelAbsolutePath as Path),
                                                                                         userSecurityPolicyManager,
+                                                                                        mergeEditDescription,
                                                                                         true)
     }
 
-    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo) {
+    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, VersionedFolder sourceVersionedFolder) {
         MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
         if (!multiFacetItemAwareService) {
             throw new ApiInternalException('MSXX',
@@ -1257,6 +1268,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!copy.validate()) throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
 
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
+        if (Utils.parentClassIsAssignableFromChild(EditHistoryAware, copy.class)) {
+            (copy as EditHistoryAware).addMergeEdit(
+                userSecurityPolicyManager.user,
+                "Merged from '$sourceVersionedFolder.label:$sourceVersionedFolder.branchName'")
+        }
     }
 
     @Override

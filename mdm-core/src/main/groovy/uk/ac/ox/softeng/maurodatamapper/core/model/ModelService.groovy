@@ -753,7 +753,8 @@ abstract class ModelService<K extends Model>
     }
 
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
-                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+                                         UserSecurityPolicyManager userSecurityPolicyManager,
+                                         String mergeEditDescription, boolean flush = false) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
         log.debug('Creating [{}] ModelItem into Model at [{}]', pathToCopy, pathToCopy.parent)
@@ -765,6 +766,8 @@ abstract class ModelService<K extends Model>
             throw new ApiInvalidModelException('MS01', 'Copied ModelItem is invalid', copy.errors, messageSource)
 
         modelItemService.save(copy, flush: flush, validate: false)
+
+        copy.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {

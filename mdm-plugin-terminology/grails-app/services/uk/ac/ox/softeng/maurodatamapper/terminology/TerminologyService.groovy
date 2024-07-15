@@ -816,15 +816,17 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path pathToCopy,
-                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+                                         UserSecurityPolicyManager userSecurityPolicyManager,
+                                         String mergeEditDescription, boolean flush = false) {
         if (modelItemToCopy.domainType == TermRelationship.simpleName) {
             TermRelationship copy = termRelationshipService.copy(targetModel, modelItemToCopy as TermRelationship, null, userSecurityPolicyManager)
             if (!copy.validate())
                 throw new ApiInvalidModelException('MS01', 'Copied ModelItem is invalid', copy.errors, messageSource)
 
             termRelationshipService.save(copy, flush: flush, validate: false)
+            copy.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
             return
         }
-        super.processCreationPatchOfModelItem(modelItemToCopy, targetModel, pathToCopy, userSecurityPolicyManager, flush)
+        super.processCreationPatchOfModelItem(modelItemToCopy, targetModel, pathToCopy, userSecurityPolicyManager, mergeEditDescription, flush)
     }
 }
