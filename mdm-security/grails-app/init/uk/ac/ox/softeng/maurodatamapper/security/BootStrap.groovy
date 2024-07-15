@@ -82,7 +82,7 @@ class BootStrap implements SecurityDefinition {
                     checkAndSave(messageSource, admin)
 
                 }
-                admins = UserGroup.findByName('administrators')
+                admins = UserGroup.findByNameInList(['administrators', 'Administrators'])
                 if (!admins) {
                     createAdminGroup('admin')
                     checkAndSave(messageSource, admins)
