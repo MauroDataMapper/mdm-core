@@ -1132,7 +1132,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         // If the path to copy endswith the model item's path being copied then the model item cannot be inside the target model as the model item would already exist
         // and the path to copy must also therefore include a fully resolved model path after a modelitem path
         // This is indicitive of an imported object
@@ -1164,7 +1165,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             return
         }
-        super.processDeletionPatchOfModelItem(modelItem, targetModel, pathToDelete)
+        super.processDeletionPatchOfModelItem(modelItem, targetModel, pathToDelete, userSecurityPolicyManager, mergeEditDescription)
     }
 
     @Override

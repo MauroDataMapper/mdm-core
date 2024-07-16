@@ -476,7 +476,8 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot delete [${modelItem.domainType}] from CodeSet")
         }
@@ -484,6 +485,8 @@ class CodeSetService extends ModelService<CodeSet> {
 
         (targetModel as CodeSet).removeFromTerms(modelItem as Term)
         save(targetModel as CodeSet, flush: false, validate: false)
+
+        targetModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
     @Override

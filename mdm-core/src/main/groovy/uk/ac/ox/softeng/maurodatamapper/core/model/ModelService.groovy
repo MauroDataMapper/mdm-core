@@ -714,11 +714,14 @@ abstract class ModelService<K extends Model>
 
     }
 
-    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel, Path pathToDelete,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
         log.debug('Deleting ModelItem from Model')
         modelItemService.delete(modelItem)
+
+        targetModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
     CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
