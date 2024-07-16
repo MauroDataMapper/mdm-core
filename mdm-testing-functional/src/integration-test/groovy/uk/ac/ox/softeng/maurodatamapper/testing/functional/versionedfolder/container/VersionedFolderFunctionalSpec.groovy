@@ -2770,6 +2770,14 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         responseBody().description == 'DescriptionLeft'
 
+        when: "checking the edit history"
+        GET("dataModels/$targetDataModelMap.dataModelId/edits", MAP_ARG, true)
+
+        then: "the edit history contains merge actions"
+        def dataModelEdits = responseBody()
+        def dataModelMergeEdits = (dataModelEdits.items as ArrayList).findAll { edit -> edit.title == 'MERGE' }
+        dataModelMergeEdits.size() == 4
+
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses?all=true", MAP_ARG, true)
 
@@ -2788,6 +2796,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add'}.imported
         responseBody().items.find {dataClass -> dataClass.label == 'Functional Test DataClass Importable Add 2'}.imported
 
+        def dataClassEditTrackingId = responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.id
+
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
 
@@ -2795,6 +2805,14 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass',
                                               'Functional Test DataClass Importable', 'Functional Test DataClass Importable Add',
                                               'Functional Test DataClass Importable Add 2'] as Set
+
+        when: "checking the edit history"
+        GET("dataClasses/$dataClassEditTrackingId/edits", MAP_ARG, true)
+
+        then: "the edit history contains merge actions"
+        def dataClassEdits = responseBody()
+        def dataClassMergeEdits = (dataClassEdits.items as ArrayList).findAll { edit -> edit.title == 'MERGE' }
+        dataClassMergeEdits.size() == 1
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataElements", MAP_ARG, true)
@@ -2808,6 +2826,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             'Functional Test DataElement Importable', 'Functional Test DataElement Importable Add', 'Functional Test DataElement Importable Add 2'] as Set
         responseBody().items.find {dc -> dc.label == 'Functional Test DataElement Importable'}.imported
         responseBody().items.find {dc -> dc.label == 'Functional Test DataElement Importable Add'}.imported
+
+        def dataElementTrackingId = responseBody().items.find {dc -> dc.label == 'addLeftOnly'}.id
+
+        when: "checking the edit history"
+        GET("dataElements/$dataElementTrackingId/edits", MAP_ARG, true)
+
+        then: "the edit history contains merge actions"
+        def dataElementEdits = responseBody()
+        def dataElementMergeEdits = (dataElementEdits.items as ArrayList).findAll { edit -> edit.title == 'MERGE' }
+        dataElementMergeEdits.size() == 1
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
@@ -2851,6 +2879,14 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         responseBody().description == 'DescriptionLeft'
 
+        when: "checking the edit history"
+        GET("terminologies/$targetTerminologyMap.terminologyId/edits", MAP_ARG, true)
+
+        then: "the edit history contains merge actions"
+        def terminologyEdits = responseBody()
+        def terminologyMergeEdits = (terminologyEdits.items as ArrayList).findAll { edit -> edit.title == 'MERGE' }
+        terminologyMergeEdits.size() == 5
+
         when:
         GET("terminologies/$targetTerminologyMap.terminologyId/terms", MAP_ARG, true)
 
@@ -2860,6 +2896,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.find { term -> term.code == 'AAARD' }.description == 'DescriptionLeft'
         responseBody().items.find { term -> term.code == 'MAMRD' }.description == 'DescriptionLeft'
         responseBody().items.find { term -> term.code == 'MLO' }.description == 'Description'
+
+        def termEditTrackingId = responseBody().items.find { term -> term.code == 'MAD' }.id
+
+        when: "checking the edit history"
+        GET("terms/$termEditTrackingId/edits", MAP_ARG, true)
+
+        then: "the edit history contains merge actions"
+        def termEdits = responseBody()
+        def termMergeEdits = (termEdits.items as ArrayList).findAll { edit -> edit.title == 'MERGE' }
+        termMergeEdits.size() == 1
 
         when:
         GET("terminologies/$targetTerminologyMap.terminologyId/termRelationshipTypes", MAP_ARG, true)
@@ -2936,6 +2982,14 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.each { t ->
             Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
         }
+
+        when: "checking the edit history"
+        GET("codeSets/$targetCodeSetMap.codeSetId/edits", MAP_ARG, true)
+
+        then: "the edit history contains merge actions"
+        def codeSetEdits = responseBody()
+        def codeSetMergeEdits = (codeSetEdits.items as ArrayList).findAll { edit -> edit.title == 'MERGE' }
+        codeSetMergeEdits.size() == 4
 
         when:
         GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
