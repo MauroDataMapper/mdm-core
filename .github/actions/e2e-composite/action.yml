@@ -8,6 +8,7 @@ runs:
     using: 'composite'
     steps:
         - name: 'E2E Functional Test: ${{ inputs.package }}'
+          shell: bash
           run: './gradlew -Dgradle.test.package=${{ inputs.package }} :mdm-testing-functional:integrationTest'
 
         - name: 'E2E Functional Test Report: ${{ inputs.package }}'

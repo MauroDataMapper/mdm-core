@@ -138,47 +138,58 @@ jobs:
         reporter: java-junit
         list-tests: 'failed'
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - core
+      uses: ./.github/actions/e2e-composite
       with:
         package: core
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - security
+      uses: ./.github/actions/e2e-composite
       with:
         package: security
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - authentication
+      uses: ./.github/actions/e2e-composite
       with:
         package: authentication
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - datamodel
+      uses: ./.github/actions/e2e-composite
       with:
         package: datamodel
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - terminology
+      uses: ./.github/actions/e2e-composite
       with:
         package: terminology
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - referencedata
+      uses: ./.github/actions/e2e-composite
       with:
         package: referencedata
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - profile
+      uses: ./.github/actions/e2e-composite
       with:
         package: profile
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - dataflow
+      uses: ./.github/actions/e2e-composite
       with:
         package: dataflow
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - federation
+      uses: ./.github/actions/e2e-composite
       with:
         package: federation
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - facet
+      uses: ./.github/actions/e2e-composite
       with:
         package: facet
 
-    - uses: ./.github/actions/e2e-composite
+    - name: End-to-end testing - versionedfolder
+      uses: ./.github/actions/e2e-composite
       with:
          package: versionedfolder
 
