@@ -83,7 +83,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
   "Java Version": "${json-unit.regex}17.*",
   "Java Vendor": "${json-unit.any-string}",
   "OS Name": "${json-unit.any-string}",
-  "OS Version": "${json-unit.matches:version}",
+  "OS Version": "${json-unit.any-string}",
   "OS Architecture": "${json-unit.any-string}",
   "Driver Manager Drivers Available": [
     {

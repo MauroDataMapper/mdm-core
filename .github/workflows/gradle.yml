@@ -17,6 +17,7 @@ permissions:
   contents: read
   actions: read
   checks: write
+  security-events: write
 
 jobs:
   build:
@@ -137,6 +138,50 @@ jobs:
         reporter: java-junit
         list-tests: 'failed'
 
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: core
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: security
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: authentication
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: datamodel
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: terminology
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: referencedata
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: profile
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: dataflow
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: federation
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+        package: facet
+
+    - uses: ./.github/actions/e2e-composite
+      with:
+         package: versionedfolder
+
 #    - name: Archive test report
 #      if: always()
 #      uses: actions/upload-artifact@v3
@@ -150,7 +195,6 @@ jobs:
         # All available variables are described in documentation
         # https://megalinter.io/configuration/
         VALIDATE_ALL_CODEBASE: true
-
         ENABLE_LINTERS: GROOVY_NPM_GROOVY_LINT
         LINTER_RULES_PATH: 'config/codenarc'
         DISABLE_ERRORS: true #Flag to have the linter complete with exit code 0 even if errors were detected.
