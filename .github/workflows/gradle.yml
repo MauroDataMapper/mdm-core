@@ -23,6 +23,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      GRADLE_OPTS: -Dorg.gradle.jvmargs="-XX:MaxMetaspaceSize=1g -Xmx1024m"
+
     services:
       postgres:
         image: postgres
@@ -50,6 +53,9 @@ jobs:
       uses: gradle/actions/setup-gradle@v3
       with:
         cache-disabled: true
+#        build-scan-publish: true
+#        build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
+#        build-scan-terms-of-use-agree: "yes"
 
     - name: Core gradle info
       run: |
@@ -63,15 +69,18 @@ jobs:
 
     - name: License header check
       run: |
-        ./gradlew --build-cache license
+        ./gradlew license
 
     - name: Flyway migration check
       run: |
-        ./gradlew --build-cache verifyFlywayMigrationVersions
+        ./gradlew verifyFlywayMigrationVersions
 
 
     - name: Test with Gradle
-      run: ./gradlew --build-cache test --no-daemon --no-watch-fs --stacktrace
+      run: ./gradlew  test --no-daemon --stacktrace -Duser.language=en -Duser.country=GB
+
+
+
 
     - name: Test Report
       uses: dorny/test-reporter@v1
