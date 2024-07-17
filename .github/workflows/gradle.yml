@@ -211,12 +211,12 @@ jobs:
         DISABLE_ERRORS: true #Flag to have the linter complete with exit code 0 even if errors were detected.
         SARIF_REPORTER: true
 
-    # This won't work until the repository is made public
-    - name: Upload MegaLinter scan results to GitHub Security tab
-      if: success() || failure()
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'megalinter-reports/megalinter-report.sarif'
+    # This is currently too big for the security tab
+#    - name: Upload MegaLinter scan results to GitHub Security tab
+#      if: success() || failure()
+#      uses: github/codeql-action/upload-sarif@v2
+#      with:
+#        sarif_file: 'megalinter-reports/megalinter-report.sarif'
 
 
     # Upload MegaLinter artifacts
