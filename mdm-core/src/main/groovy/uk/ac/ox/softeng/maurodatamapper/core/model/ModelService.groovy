@@ -56,6 +56,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeC
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -614,9 +616,9 @@ abstract class ModelService<K extends Model>
                 case 'creation':
                     return processCreationPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
                 case 'deletion':
-                    return processDeletionPatchIntoModel(fieldPatch, targetModel)
+                    return processDeletionPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
                 case 'modification':
-                    return processModificationPatchIntoModel(fieldPatch, targetModel)
+                    return processModificationPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
                 default:
                     log.warn('Unknown field patch type [{}]', fieldPatch.type)
             }
@@ -648,16 +650,20 @@ abstract class ModelService<K extends Model>
             return
         }
         log.debug('Creating [{}] into [{}]', creationPatch.path, creationPatch.relativePathToRoot.parent)
+        String mergeEditDescription = "Item created in '$sourceModel.label\$$sourceModel.branchName'"
+
         // Potential creations are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot, userSecurityPolicyManager)
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot,
+                                            userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
-            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent)
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent,
+                                        userSecurityPolicyManager, mergeEditDescription)
         }
     }
 
-    void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
+    void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
         if (!domain) {
             customProcessPatchIntoModelForUnfoundPath(deletionPatch, targetModel)
@@ -665,16 +671,20 @@ abstract class ModelService<K extends Model>
         }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
+        String itemRemovedLabel = (domain as InformationAware)?.label
+        String mergeEditSuffix = itemRemovedLabel ?: domain.domainType ?: ""
+        String mergeEditDescription = "Item removed from '$sourceModel.label\$$sourceModel.branchName' - $mergeEditSuffix"
+
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem, targetModel, deletionPatch.relativePathToRoot)
+            processDeletionPatchOfModelItem(domain as ModelItem, targetModel, deletionPatch.relativePathToRoot, userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
-            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
+            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot, userSecurityPolicyManager, mergeEditDescription)
         }
     }
 
-    void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
+    void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         if (!domain) {
             customProcessPatchIntoModelForUnfoundPath(modificationPatch, targetModel)
@@ -695,6 +705,11 @@ abstract class ModelService<K extends Model>
         if (!domain.validate())
             throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
         domainService.save(domain, flush: false, validate: false)
+
+        if (domain instanceof EditHistoryAware) {
+            String mergeEditDescription = "Item modified in '$sourceModel.label\$$sourceModel.branchName'"
+            (domain as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
     }
 
     void customProcessPatchIntoModelForUnfoundPath(FieldPatchData fieldPatchData, K targetModel) {
@@ -724,7 +739,8 @@ abstract class ModelService<K extends Model>
         targetModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
-    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
+    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
@@ -752,6 +768,14 @@ abstract class ModelService<K extends Model>
                 (catalogueItem as Model).versionLinks.remove(multiFacetItemAware)
                 break
         }
+
+        if (multiFacetItemAware instanceof EditHistoryAware) {
+            (multiFacetItemAware as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
+        else {
+            targetModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
+
         catalogueItem
     }
 
@@ -773,7 +797,8 @@ abstract class ModelService<K extends Model>
         copy.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
-    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {
+    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
         if (!multiFacetItemAwareService) {
             throw new ApiInternalException('MSXX',
@@ -788,6 +813,10 @@ abstract class ModelService<K extends Model>
             throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
 
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
+
+        if (copy instanceof EditHistoryAware) {
+            (copy as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
     }
 
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,

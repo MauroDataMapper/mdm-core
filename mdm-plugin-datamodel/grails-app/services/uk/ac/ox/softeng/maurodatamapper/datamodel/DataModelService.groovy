@@ -89,8 +89,6 @@ import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.
 import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.MODEL_DATA_DOMAIN_TYPE
 import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.PRIMITIVE_DOMAIN_TYPE
 import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.REFERENCE_DOMAIN_TYPE
-import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.count
-import static uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType.get
 
 @Slf4j
 @Transactional
@@ -1169,8 +1167,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
-        CatalogueItem catalogueItem = super.processDeletionPatchOfFacet(multiFacetItemAware, targetModel, path)
+    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
+        CatalogueItem catalogueItem = super.processDeletionPatchOfFacet(multiFacetItemAware, targetModel, path, userSecurityPolicyManager, mergeEditDescription)
 
         if (multiFacetItemAware.domainType == SummaryMetadata.simpleName) {
             (catalogueItem as SummaryMetadataAware).summaryMetadata.remove(multiFacetItemAware)
