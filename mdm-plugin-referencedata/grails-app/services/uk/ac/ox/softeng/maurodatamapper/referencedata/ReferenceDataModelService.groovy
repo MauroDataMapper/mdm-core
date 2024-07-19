@@ -735,8 +735,9 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
-        CatalogueItem catalogueItem = super.processDeletionPatchOfFacet(multiFacetItemAware, targetModel, path)
+    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
+        CatalogueItem catalogueItem = super.processDeletionPatchOfFacet(multiFacetItemAware, targetModel, path, userSecurityPolicyManager, mergeEditDescription)
 
         if (multiFacetItemAware.domainType == ReferenceSummaryMetadata.simpleName) {
             (catalogueItem as ReferenceSummaryMetadataAware).referenceSummaryMetadata.remove(multiFacetItemAware)

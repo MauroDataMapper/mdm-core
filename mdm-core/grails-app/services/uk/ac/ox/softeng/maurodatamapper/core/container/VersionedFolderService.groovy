@@ -56,6 +56,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeC
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -1042,9 +1044,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                     return processCreationPatchIntoVersionedFolder(fieldPatch, target, get(sourceVersionedFolder.id),
                                                                    userSecurityPolicyManager)
                 case 'deletion':
-                    return processDeletionPatchIntoVersionedFolder(fieldPatch, target)
+                    return processDeletionPatchIntoVersionedFolder(fieldPatch, target, get(sourceVersionedFolder.id),
+                                                                   userSecurityPolicyManager)
                 case 'modification':
-                    return processModificationPatchIntoVersionedFolder(fieldPatch, target)
+                    return processModificationPatchIntoVersionedFolder(fieldPatch, target, get(sourceVersionedFolder.id),
+                                                                       userSecurityPolicyManager)
                 default:
                     log.warn('Unknown field patch type [{}]', fieldPatch.type)
             }
@@ -1085,25 +1089,29 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             return
         }
         log.debug('Creating [{}]', creationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
+        String mergeEditDescription = "Item created in '$sourceVersionedFolder.label\$$sourceVersionedFolder.branchName'"
+
         // Potential creations are folders, models, modelItems or facets
         if (Utils.parentClassIsAssignableFromChild(Folder, domainToCopy.class)) {
             processCreationPatchOfFolder(domainToCopy as Folder, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
-                                         userSecurityPolicyManager)
+                                         userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(Model, domainToCopy.class)) {
             processCreationPatchOfModel(domainToCopy as Model, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
-                                        userSecurityPolicyManager)
+                                        userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
             processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPatch.relativePathToRoot,
-                                            userSecurityPolicyManager)
+                                            userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
-            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent)
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
+                                        userSecurityPolicyManager, mergeEditDescription)
         }
     }
 
-    void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder) {
+    void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
+                                                 UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domain =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot,
                                                            getModelIdentifier(targetVersionedFolder))
@@ -1114,22 +1122,29 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
         log.debug('Deleting [{}]', deletionPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
 
+        String itemRemovedLabel = (domain as InformationAware)?.label
+        String mergeEditSuffix = itemRemovedLabel ?: domain.domainType ?: ""
+        String mergeEditDescription = "Item removed from '$sourceVersionedFolder.label\$$sourceVersionedFolder.branchName' - $mergeEditSuffix"
+
         // Potential deletions are folders, models, modelItems or facets
         if (Utils.parentClassIsAssignableFromChild(Folder, domain.class)) {
-            processDeletionPatchOfFolder(domain as Folder)
+            processDeletionPatchOfFolder(domain as Folder, targetVersionedFolder, userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(Model, domain.class)) {
-            processDeletionPatchOfModel(domain as Model)
+            processDeletionPatchOfModel(domain as Model, targetVersionedFolder, userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem, targetVersionedFolder, deletionPatch.relativePathToRoot)
+            processDeletionPatchOfModelItem(domain as ModelItem, targetVersionedFolder, deletionPatch.relativePathToRoot,
+                                            userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
-            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetVersionedFolder, deletionPatch.relativePathToRoot)
+            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetVersionedFolder, deletionPatch.relativePathToRoot,
+                                        userSecurityPolicyManager, mergeEditDescription)
         }
     }
 
-    void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder) {
+    void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder,
+                                                     VersionedFolder sourceVersionedFolder, UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domain =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, modificationPatch.relativePathToRoot,
                                                            getModelIdentifier(targetVersionedFolder))
@@ -1154,27 +1169,45 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         domainService.validate(domain)
         if (domain.hasErrors()) throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
         domainService.save(domain, flush: false, validate: false)
+
+        if (domain instanceof EditHistoryAware) {
+            String mergeEditDescription = "Item modified in '$sourceVersionedFolder.label\$$sourceVersionedFolder.branchName'"
+            (domain as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
     }
 
-    void processDeletionPatchOfFolder(Folder folder) {
+    void processDeletionPatchOfFolder(Folder folder, Container defaultParent,
+                                      UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
+        Container parent = folder.parent ?: defaultParent
+
         log.debug('Deleting Folder from VersionedFolder')
         folderService.delete(folder, true, false)
+
+        parent.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
-    void processDeletionPatchOfModel(Model model) {
+    void processDeletionPatchOfModel(Model model, Container defaultParent,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
+        Container parent = model.folder ?: defaultParent
         ModelService modelService = folderService.findModelServiceForModel(model)
+
         log.debug('Deleting Model from VersionedFolder')
         modelService.delete(model, true, false)
+
+        parent.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
-    void processDeletionPatchOfModelItem(ModelItem modelItem, VersionedFolder targetVersionedFolder, Path relativePathToRemoveFrom) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, VersionedFolder targetVersionedFolder, Path relativePathToRemoveFrom,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         Map<String, Object> modelInformation =
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToRemoveFrom, modelItem.domainType)
 
-        (modelInformation.modelService as ModelService).processDeletionPatchOfModelItem(modelItem, modelInformation.targetModel as Model, relativePathToRemoveFrom)
+        (modelInformation.modelService as ModelService).processDeletionPatchOfModelItem(modelItem, modelInformation.targetModel as Model,
+                                                                                        relativePathToRemoveFrom, userSecurityPolicyManager, mergeEditDescription)
     }
 
-    MultiFacetAware processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, VersionedFolder targetVersionedFolder, Path path) {
+    MultiFacetAware processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, VersionedFolder targetVersionedFolder, Path path,
+                                                UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
@@ -1204,44 +1237,58 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 (multiFacetAwareItem as Model).versionLinks.remove(multiFacetItemAware)
                 break
         }
+
+        if (multiFacetItemAware instanceof EditHistoryAware) {
+            (multiFacetItemAware as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
+        else {
+            targetVersionedFolder.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
+
         multiFacetAwareItem
     }
 
     void processCreationPatchOfFolder(Folder folderToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
-                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+                                      UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         log.debug('Creating Folder into VersionedFolder at [{}]', relativeParentPathToCopyTo)
         Folder parentFolder =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
-        folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
-                                 targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
+        def copiedFolder = folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
+                                                            targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
+
+        copiedFolder.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
     void processCreationPatchOfModel(Model modelToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
-                                     UserSecurityPolicyManager userSecurityPolicyManager) {
+                                     UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         ModelService modelService = folderService.findModelServiceForModel(modelToCopy)
         log.debug('Creating Model into VersionedFolder at [{}]', relativeParentPathToCopyTo)
         Folder parentFolder =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
-        modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label,
-                                                 modelToCopy.documentationVersion,
-                                                 targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+        def copiedModel = modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label,
+                                                                            modelToCopy.documentationVersion,
+                                                                            targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+
+        copiedModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
 
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, VersionedFolder targetVersionedFolder, Path relativePathToCopyTo,
-                                         UserSecurityPolicyManager userSecurityPolicyManager) {
-
+                                         UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         Map<String, Object> modelInformation =
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToCopyTo, modelItemToCopy.domainType)
+
         (modelInformation.modelService as ModelService).processCreationPatchOfModelItem(modelItemToCopy,
                                                                                         modelInformation.targetModel as Model,
                                                                                         (modelInformation.modelItemToModelAbsolutePath as Path),
                                                                                         userSecurityPolicyManager,
+                                                                                        mergeEditDescription,
                                                                                         true)
     }
 
-    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo) {
+    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
         MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
         if (!multiFacetItemAwareService) {
             throw new ApiInternalException('MSXX',
@@ -1257,6 +1304,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!copy.validate()) throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
 
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
+        if (copy instanceof EditHistoryAware) {
+            (copy as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
+        }
     }
 
     @Override

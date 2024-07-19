@@ -92,6 +92,10 @@ trait EditHistoryAware {
         addToEditsTransactionally EditTitle.CHANGENOTICE, changer, changeNotice
     }
 
+    void addMergeEdit(User merger, String description) {
+        addToEditsTransactionally(EditTitle.MERGE, merger, description)
+    }
+
     List<Edit> getEdits() {
         Edit.findAllByResource(domainType, id)
     }
