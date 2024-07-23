@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 
+import grails.gorm.PagedResultList
 import grails.rest.RestfulController
 
 class EditController extends RestfulController<Edit> implements MdmController {
@@ -43,7 +44,15 @@ class EditController extends RestfulController<Edit> implements MdmController {
         params.sort = params.sort ?: 'dateCreated'
         params.order = params.order ?: 'asc'
 
-        List<Edit> edits = editService.findAllByResource(params.resourceDomainType, params.resourceId, params)
-        edits.collect {editService.populateEditUser(it)}
+        PagedResultList<Edit> edits = editService.findAllByResource(params.resourceDomainType, params.resourceId, params)
+        List<Edit> transformedEdits = edits.collect { edit ->
+            editService.populateEditUser(edit)
+        }
+
+        // Since we cannot directly create a new PagedResultList with a modified list,
+        // and we still need the totalCount field which this function destroys
+        // we're abusing modify by reference to edit the items within the edits structure.
+        return edits
+
     }
 }
