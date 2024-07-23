@@ -97,7 +97,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             }
 
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }
@@ -332,14 +332,19 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
     def simpleModelVersionTree() {
         VersionedFolder instance = queryForResource(params.versionedFolderId)
+        boolean branchesOnly = params.boolean('branchesOnly', false)
+        boolean forMerge = params.boolean('forMerge', false)
+
         if (!instance) return notFound(params.versionedFolderId)
+
 
         VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance) as VersionedFolder
 
         List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null, null, false,
+                                                                                                   branchesOnly || forMerge,
                                                                                                    currentUserSecurityPolicyManager)
 
-        respond versionTreeModelList.findAll {!it.newFork}
+        respond versionTreeModelList.findAll { !it.newFork }
     }
 
     def diff() {
@@ -372,10 +377,12 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
 
         if (mergeIntoData.patch.sourceId != params.versionedFolderId) {
-            return errorResponse(UNPROCESSABLE_ENTITY, 'Source versioned folder id passed in request body does not match source versioned folder id in URI.')
+            return
+            errorResponse(UNPROCESSABLE_ENTITY, 'Source versioned folder id passed in request body does not match source versioned folder id in URI.')
         }
         if (mergeIntoData.patch.targetId != params.otherVersionedFolderId) {
-            return errorResponse(UNPROCESSABLE_ENTITY, 'Target versioned folder id passed in request body does not match target versioned folder id in URI.')
+            return
+            errorResponse(UNPROCESSABLE_ENTITY, 'Target versioned folder id passed in request body does not match target versioned folder id in URI.')
         }
 
         VersionedFolder source = queryForResource params.versionedFolderId
@@ -384,7 +391,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         VersionedFolder target = queryForResource params.otherVersionedFolderId
         if (!target) return notFound(params.otherVersionedFolderId)
 
-        VersionedFolder instance = versionedFolderService.mergeObjectPatchDataIntoVersionedFolder(mergeIntoData.patch, target, source, currentUserSecurityPolicyManager)
+        VersionedFolder instance =
+            versionedFolderService.mergeObjectPatchDataIntoVersionedFolder(mergeIntoData.patch, target, source, currentUserSecurityPolicyManager)
 
         if (!validateResource(instance, 'merge')) return
 
@@ -492,9 +500,9 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     }
 
     protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
-        modelServices.each {service ->
+        modelServices.each { service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)
-            modelsInFolder.each {model ->
+            modelsInFolder.each { model ->
                 if (securityPolicyManagerService) {
                     currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model as SecurableResource,
                                                                                                                        changedProperties,

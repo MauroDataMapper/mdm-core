@@ -156,14 +156,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        VersionedFolder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
+        VersionedFolder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.treeLabelHibernateSearch(readableIds.collect {it.toString()}, searchTerm)
+        VersionedFolder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
@@ -256,7 +256,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                              "${OffsetDateTimeConverter.toString(folder.dateFinalised)}")
 
         editService.createAndSaveEdit(EditTitle.FINALISE, folder.id, folder.domainType,
-                                      "${folder.label} finalised by ${user.firstName} ${user.lastName} on " + "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
+                                      "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
+                                      "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
                                       user)
 
         if (Environment.current != Environment.TEST) {
@@ -278,11 +279,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Found {} total folders inside (and including) VF', foldersInside.size())
 
         log.debug('Finalising models inside folders')
-        modelServices.each {service ->
+        modelServices.each { service ->
             long st = System.currentTimeMillis()
             Collection<Model> modelsInFolder = service.findAllByFolderIdInList(foldersInside)
             log.debug('Found {} {} inside VF', modelsInFolder.size(), service.getDomainClass().simpleName)
-            modelsInFolder.each {model -> service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)}
+            modelsInFolder.each { model -> service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag) }
             log.debug('Finalisation of {} models took {}', modelsInFolder.size(), Utils.timeTaken(st))
         }
 
@@ -292,14 +293,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     Set<UUID> collectAllFoldersIdsInsideFolder(UUID folderId) {
         Set<UUID> folderIds = new HashSet<>()
         List<Folder> folders = folderService.findAllByParentId(folderId)
-        folderIds.addAll(folders.collect {it.id})
-        folderIds.addAll(folders.collectMany {collectAllFoldersIdsInsideFolder(it.id)})
+        folderIds.addAll(folders.collect { it.id })
+        folderIds.addAll(folders.collectMany { collectAllFoldersIdsInsideFolder(it.id) })
         folderIds
     }
 
     Version getParentModelVersion(VersionedFolder currentFolder) {
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(currentFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF) ?:
-                                  currentFolder.versionLinks?.find {it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+                                  currentFolder.versionLinks?.find { it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
         if (!versionLink) return null
         VersionedFolder parent = get(versionLink.targetModelId)
         parent.modelVersion
@@ -382,7 +383,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<VersionedFolder> list() {
-        VersionedFolder.list().collect {unwrapIfProxy(it)}
+        VersionedFolder.list().collect { unwrapIfProxy(it) }
     }
 
     Long count() {
@@ -534,7 +535,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         newBranchModelVersion
     }
 
-    void checkBranchModelVersion(VersionedFolder folder, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser, Authority otherAuthority = null) {
+    void checkBranchModelVersion(VersionedFolder folder, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser,
+                                 Authority otherAuthority = null) {
         if (importAsNewBranchModelVersion) {
 
             if (countByAuthorityAndLabel(otherAuthority ?: folder.authority, folder.label)) {
@@ -550,7 +552,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                     if (!latest) {
                         log.info('No finalised VersionedFolder to create branch from so finalising existing main branch')
                         latest = findCurrentMainBranchByLabel(folder.label)
-                        // If there is no default branch or finalised branch then the countBy found the current imported VersionedFolder so we dont need to
+                        // If there is no default branch or finalised branch then the countBy found the current imported VersionedFolder so we dont
+                        // need to
                         // do anything
                         if (!latest) {
                             log.info('Marked as importAsNewBranchModelVersion but no existing VersionedFolders with label [{}]', folder.label)
@@ -622,7 +625,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         newDocVersion
     }
 
-    void checkDocumentationVersion(VersionedFolder folder, boolean importAsNewDocumentationVersion, User catalogueUser, Authority otherAuthority = null) {
+    void checkDocumentationVersion(VersionedFolder folder, boolean importAsNewDocumentationVersion, User catalogueUser,
+                                   Authority otherAuthority = null) {
         if (importAsNewDocumentationVersion) {
 
             if (countByAuthorityAndLabel(otherAuthority ?: folder.authority, folder.label)) {
@@ -773,8 +777,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     VersionedFolder findLatestFinalisedFolderByLabel(String label) {
-        List<VersionedFolder> versionedFolders = VersionedFolder.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list()
-        return versionedFolders.empty ? null : versionedFolders.sort {it.modelVersion}.last()
+        List<VersionedFolder> versionedFolders =
+            VersionedFolder.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list()
+        return versionedFolders.empty ? null : versionedFolders.sort { it.modelVersion }.last()
     }
 
     Version getLatestModelVersionByLabel(String label) {
@@ -788,7 +793,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder findOldestAncestor(VersionedFolder versionedFolder) {
         // Look for model version or doc version only
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-        versionLink = versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+        versionLink =
+            versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
 
         // If no versionlink then we're at the oldest ancestor
         if (!versionLink) {
@@ -801,20 +807,21 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     List<VersionTreeModel> buildModelVersionTree(VersionedFolder instance, VersionLinkType versionLinkType,
                                                  VersionTreeModel parentVersionTreeModel, boolean includeForks,
+                                                 boolean branchesOnly,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
 
         VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
-        List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
+        List<VersionTreeModel> versionTreeModelList = instance.finalised && branchesOnly ? [] : [rootVersionTreeModel]
 
         if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
 
-        versionLinks.each {link ->
+        versionLinks.each { link ->
             VersionedFolder linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
-                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
+                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, branchesOnly, userSecurityPolicyManager))
         }
         versionTreeModelList.sort()
     }
@@ -895,9 +902,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         hasVersionedFolderParent(model.folder)
     }
 
-    boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo, Map<UUID, List<Model>> folderModelMap = null) {
+    boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo,
+                                                              Map<UUID, List<Model>> folderModelMap = null) {
         // Check up the tree
-        if(!folderModelMap) {
+        if (!folderModelMap) {
             folderModelMap = calculateFolderModelMap()
         }
 
@@ -911,11 +919,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     boolean doesDepthTreeContainVersionedFolder(Folder folder, Map<UUID, List<Model>> folderModelMap) {
-        if(!folderModelMap) {
+        if (!folderModelMap) {
             folderModelMap = calculateFolderModelMap()
         }
 
-        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it, folderModelMap)}
+        folder.instanceOf(VersionedFolder) ||
+        folderService.findAllByParentId(folder.id).any { doesDepthTreeContainVersionedFolder(it, folderModelMap) }
     }
 
     boolean isVersionedFolderFamily(Folder folder) {
@@ -924,21 +933,23 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     boolean doesDepthTreeContainFinalisedModel(Folder folder, Map<UUID, List<Model>> folderModelMap) {
         List<Model> models = []
-        if(!folderModelMap) {
+        if (!folderModelMap) {
             folderModelMap = calculateFolderModelMap()
         }
 
-        if(folderModelMap) {
+        if (folderModelMap) {
             models = folderModelMap[folder.id]
         }
 
-        if(models) {
-            return models.any {it.finalised} || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it, folderModelMap)}
+        if (models) {
+            return
+            models.any { it.finalised } || folderService.findAllByParentId(folder.id).any { doesDepthTreeContainFinalisedModel(it, folderModelMap) }
         }
         return false
     }
 
-    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder,
+                                                           String contentContext = 'none') {
         log.debug('Obtaining diff for {} <> {}', thisVersionedFolder.diffIdentifier, otherVersionedFolder.diffIdentifier)
 
         CachedDiffable<VersionedFolder> thisCachedDiffable = loadEntireVersionedFolderIntoDiffCache(thisVersionedFolder.id)
@@ -946,7 +957,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         getDiffForVersionedFolders(thisCachedDiffable, otherCachedDiffable, contentContext)
     }
 
-    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(CachedDiffable<VersionedFolder> thisCachedDiffable, CachedDiffable<VersionedFolder> otherCachedDiffable,
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(CachedDiffable<VersionedFolder> thisCachedDiffable,
+                                                           CachedDiffable<VersionedFolder> otherCachedDiffable,
                                                            String contentContext = 'none') {
         ObjectDiff<VersionedFolder> coreDiff = thisCachedDiffable.diff(otherCachedDiffable, 'none')
         folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisCachedDiffable.diffable, otherCachedDiffable.diffable, contentContext)
@@ -969,17 +981,24 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         /*
         Context is needed to allow CodeSet term comparisons
-        We need to ensure that created/deleted terms are correctly identified, when performing the diffs between the below we end up with a list of all the terms from CA
-        being marked as deleted and all the terms from the source/target as being created. This is due to the diffIdentifier for a Term being set from the terminology
-        path. This is therefore technically correct, however its not useful for us as it incorrectly marks the terms. What we need is to identify the terms which
+        We need to ensure that created/deleted terms are correctly identified, when performing the diffs between the below we end up with a list of
+         all the terms from CA
+        being marked as deleted and all the terms from the source/target as being created. This is due to the diffIdentifier for a Term being set
+        from the terminology
+        path. This is therefore technically correct, however its not useful for us as it incorrectly marks the terms. What we need is to identify
+        the terms which
         have actually been created and actually been deleted, ignoring the modelIdentifier of the terminology.
         This ignoring can be done by passing in the possible modelIdentifiers to the Terms and then removing them.
-        However we may have CS which looks at a terminology outside of the the VF which adds or removes Terms from another version of the same Terminology model.
-        This context solution will handle that issue as only finalised Terminologies can be used for CS outside of a VF which means a comparsion of 1.0.0|source of a VF
+        However we may have CS which looks at a terminology outside of the the VF which adds or removes Terms from another version of the same
+        Terminology model.
+        This context solution will handle that issue as only finalised Terminologies can be used for CS outside of a VF which means a comparsion of
+         1.0.0|source of a VF
         which uses a 1.0.0|2.0.0 external T the terms will still be correctly identified.
          */
-        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(caCachedDiffable, sourceCachedDiffable, "${caModelIdentifier}|${sourceModelIdentifier}")
-        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(caCachedDiffable, targetCachedDiffable, "${caModelIdentifier}|${targetModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffSource =
+            getDiffForVersionedFolders(caCachedDiffable, sourceCachedDiffable, "${caModelIdentifier}|${sourceModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffTarget =
+            getDiffForVersionedFolders(caCachedDiffable, targetCachedDiffable, "${caModelIdentifier}|${targetModelIdentifier}")
 
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
@@ -997,7 +1016,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 PathNode lastNode = diffPath.last()
                 // Strip out term property nodes defined inside codeset paths
                 // TODO come up with an agnostic way of doing this
-                lastNode.isPropertyNode() && lastNode.prefix == 'tm' && diffPath.any {it.prefix == 'cs'}
+                lastNode.isPropertyNode() && lastNode.prefix == 'tm' && diffPath.any { it.prefix == 'cs' }
             }
         log.debug('MergeDiff completed, took {}', Utils.timeTaken(start))
         mergeDiff
@@ -1005,18 +1024,18 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void removeBranchNameDiff(ObjectDiff diff) {
 
-        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff -> fieldDiff.fieldName == 'branchName'}] as Predicate
+        Predicate branchNamePredicate = [test: { FieldDiff fieldDiff -> fieldDiff.fieldName == 'branchName' }] as Predicate
 
         diff.diffs.removeIf(branchNamePredicate)
 
-        ArrayDiff modelsDiff = diff.diffs.find {it.fieldName == 'models'}
+        ArrayDiff modelsDiff = diff.diffs.find { it.fieldName == 'models' }
         if (modelsDiff) {
-            modelsDiff.modified.each {md -> md.diffs.removeIf(branchNamePredicate)}
+            modelsDiff.modified.each { md -> md.diffs.removeIf(branchNamePredicate) }
         }
 
-        ArrayDiff folderDiff = diff.diffs.find {it.fieldName == 'folders'}
+        ArrayDiff folderDiff = diff.diffs.find { it.fieldName == 'folders' }
         if (folderDiff) {
-            folderDiff.modified.each {fd -> removeBranchNameDiff(fd)}
+            folderDiff.modified.each { fd -> removeBranchNameDiff(fd) }
         }
     }
 
@@ -1031,7 +1050,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
         log.debug('Merging patch data into {}', targetVersionedFolder.id)
 
-        getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
+        getSortedFieldPatchDataForMerging(objectPatchData).each { fieldPatch ->
             // Flush and clear the session before each patch
             // This ensures all "retrieved" objects are properly loaded into the session and that all objects are stored correctly
             // This will also keep the session small so kep speed high
@@ -1062,7 +1081,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
           We have to process modifications in after everything else incase the modifications require something to have been created
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
-        objectPatchData.patches.sort {l, r ->
+        objectPatchData.patches.sort { l, r ->
             if (l.type == r.type) return getSortResultForFieldPatchPath(l.path, r.path)
             l <=> r
         }
@@ -1110,7 +1129,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
     }
 
-    void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
+    void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder,
+                                                 VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         MdmDomain domain =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot,
@@ -1156,7 +1176,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
 
-        MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        MdmDomainService domainService = getDomainServices().find { it.handles(domain.class) }
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         // If the domainService provides a special handler for modifying this field then use it,
@@ -1203,12 +1223,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToRemoveFrom, modelItem.domainType)
 
         (modelInformation.modelService as ModelService).processDeletionPatchOfModelItem(modelItem, modelInformation.targetModel as Model,
-                                                                                        relativePathToRemoveFrom, userSecurityPolicyManager, mergeEditDescription)
+                                                                                        relativePathToRemoveFrom, userSecurityPolicyManager,
+                                                                                        mergeEditDescription)
     }
 
     MultiFacetAware processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, VersionedFolder targetVersionedFolder, Path path,
                                                 UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAware.class) }
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
         log.debug('Deleting Facet from path [{}]', path)
@@ -1240,8 +1261,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         if (multiFacetItemAware instanceof EditHistoryAware) {
             (multiFacetItemAware as EditHistoryAware).addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
-        }
-        else {
+        } else {
             targetVersionedFolder.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
         }
 
@@ -1254,8 +1274,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         Folder parentFolder =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
-        def copiedFolder = folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
-                                                            targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
+        def copiedFolder =
+            folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
+                                     targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
 
         copiedFolder.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
@@ -1268,8 +1289,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
         def copiedModel = modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label,
-                                                                            modelToCopy.documentationVersion,
-                                                                            targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+                                                                   modelToCopy.documentationVersion,
+                                                                   targetVersionedFolder.branchName, false, userSecurityPolicyManager)
 
         copiedModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }
@@ -1289,7 +1310,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo,
                                      UserSecurityPolicyManager userSecurityPolicyManager, String mergeEditDescription) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAwareToCopy.class) }
         if (!multiFacetItemAwareService) {
             throw new ApiInternalException('MSXX',
                                            "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
@@ -1345,13 +1366,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         Path modelItemToModelAbsolutePath
         Path modelRelativeToTargetPath
 
-        relativePathToMergeTo.each {node ->
+        relativePathToMergeTo.each { node ->
             if (!modelService) {
                 // Build up the path to the model
                 if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node)
                 else modelRelativeToTargetPath.addToPathNodes(node)
 
-                modelService = modelServices.find {s -> s.handlesPathPrefix(node.prefix)}
+                modelService = modelServices.find { s -> s.handlesPathPrefix(node.prefix) }
             }
             // Dont use else as we want to make sure the model node is added to the absolute path therefore as soon as the modelservice is found we
             // should add the node
@@ -1396,11 +1417,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         log.trace('Loading Folder')
         List<Folder> folders = getAllFoldersInside(loadedFolder)
-        Map<UUID, List<Folder>> foldersMap = folders.groupBy {it.parentFolder.id}
+        Map<UUID, List<Folder>> foldersMap = folders.groupBy { it.parentFolder.id }
 
         log.trace('Loading Facets')
         List<UUID> allIds = Utils.gatherIds(Collections.singleton(folderId),
-                                            folders.collect {it.id})
+                                            folders.collect { it.id })
 
         Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
 
@@ -1414,7 +1435,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     private List<Folder> getAllFoldersInside(Folder folder) {
         List<Folder> folders = []
         folders.addAll(folder.childFolders)
-        folders.addAll(folder.childFolders.collectMany {getAllFoldersInside(it)})
+        folders.addAll(folder.childFolders.collectMany { getAllFoldersInside(it) })
         folders
     }
 
@@ -1442,7 +1463,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     List<VersionedFolder> filterAllReadableContainers(Collection<VersionedFolder> containers, boolean includeDocumentSuperseded,
                                                       boolean includeModelSuperseded, boolean includeDeleted) {
-        List<UUID> ids = containers.findAll {includeDeleted ? true : !it.deleted}.collect {it.id}
+        List<UUID> ids = containers.findAll { includeDeleted ? true : !it.deleted }.collect { it.id }
         List<UUID> constrainedIds
         // The list of ids are ALL the readable ids by the user, no matter the model status
         if (includeDocumentSuperseded && includeModelSuperseded) {
@@ -1456,16 +1477,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
         if (!constrainedIds) return []
 
-        containers.findAll {it.id in constrainedIds}
+        containers.findAll { it.id in constrainedIds }
     }
 
     Map<UUID, List<Model>> calculateFolderModelMap() {
         if (modelServices) {
-            List<Model> allModels = modelServices.collectMany {service ->
+            List<Model> allModels = modelServices.collectMany { service ->
                 service.list()
             } as List<Model>
 
-            return allModels.groupBy {it.folder.id}
+            return allModels.groupBy { it.folder.id }
         }
         return [:]
     }
