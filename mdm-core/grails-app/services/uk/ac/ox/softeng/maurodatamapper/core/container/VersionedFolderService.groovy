@@ -1081,46 +1081,57 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void processCreationPatchIntoVersionedFolder(FieldPatchData creationPatch, VersionedFolder targetVersionedFolder,
                                                  VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-        MdmDomain domainInTarget = pathService.findResourceByPathFromRootResource(targetVersionedFolder, creationPatch.relativePathToRoot,
-                                                                                  getModelIdentifier(targetVersionedFolder))
-        MdmDomain domainToCopy = domainInTarget ?: pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
+        Path creationPath = creationPatch.path.reduce(sourceVersionedFolder.path)
+        Path creationPathRelativeToRoot = creationPath.childPath
+
+        MdmDomain domainInTarget = pathService.findResourceByPathFromRootResource(
+            targetVersionedFolder,
+            creationPathRelativeToRoot,  //creationPatch.relativePathToRoot,
+            getModelIdentifier(targetVersionedFolder))
+
+        MdmDomain domainToCopy = domainInTarget ?: pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPath)
         if (!domainToCopy) {
-            log.warn('Could not process creation patch into versioned folder at path [{}] as no such path exists in the source', creationPatch.path)
+            log.warn('Could not process creation patch into versioned folder at path [{}] as no such path exists in the source', creationPath)
             return
         }
-        log.debug('Creating [{}]', creationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
+        log.debug('Creating [{}]', creationPath.toString(getModelIdentifier(targetVersionedFolder)))
         String mergeEditDescription = "Item created in '$sourceVersionedFolder.label\$$sourceVersionedFolder.branchName'"
 
         // Potential creations are folders, models, modelItems or facets
         if (Utils.parentClassIsAssignableFromChild(Folder, domainToCopy.class)) {
-            processCreationPatchOfFolder(domainToCopy as Folder, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
+            processCreationPatchOfFolder(domainToCopy as Folder, targetVersionedFolder, creationPathRelativeToRoot.parent,
                                          userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(Model, domainToCopy.class)) {
-            processCreationPatchOfModel(domainToCopy as Model, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
+            processCreationPatchOfModel(domainToCopy as Model, targetVersionedFolder, creationPathRelativeToRoot.parent,
                                         userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPatch.relativePathToRoot,
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPathRelativeToRoot,
                                             userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
-            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent,
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPathRelativeToRoot.parent,
                                         userSecurityPolicyManager, mergeEditDescription)
         }
     }
 
     void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-        MdmDomain domain =
-            pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot,
-                                                           getModelIdentifier(targetVersionedFolder))
+        Path deletionPath = deletionPatch.path.reduce(targetVersionedFolder.path)
+        Path deletionPathRelativeToRoot = deletionPath.childPath
+
+        MdmDomain domain = pathService.findResourceByPathFromRootResource(
+            targetVersionedFolder,
+            deletionPathRelativeToRoot,
+            getModelIdentifier(targetVersionedFolder))
+
         if (!domain) {
             log.warn('Could not process deletion patch from versioned folder at path [{}] as no such path exists in the target',
-                     deletionPatch.relativePathToRoot)
+                     deletionPathRelativeToRoot)
             return
         }
-        log.debug('Deleting [{}]', deletionPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
+        log.debug('Deleting [{}]', deletionPath.toString(getModelIdentifier(targetVersionedFolder)))
 
         String itemRemovedLabel = (domain as InformationAware)?.label
         String mergeEditSuffix = itemRemovedLabel ?: domain.domainType ?: ""
@@ -1134,27 +1145,32 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             processDeletionPatchOfModel(domain as Model, targetVersionedFolder, userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem, targetVersionedFolder, deletionPatch.relativePathToRoot,
+            processDeletionPatchOfModelItem(domain as ModelItem, targetVersionedFolder, deletionPathRelativeToRoot,
                                             userSecurityPolicyManager, mergeEditDescription)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
-            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetVersionedFolder, deletionPatch.relativePathToRoot,
+            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetVersionedFolder, deletionPathRelativeToRoot,
                                         userSecurityPolicyManager, mergeEditDescription)
         }
     }
 
     void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder,
                                                      VersionedFolder sourceVersionedFolder, UserSecurityPolicyManager userSecurityPolicyManager) {
-        MdmDomain domain =
-            pathService.findResourceByPathFromRootResource(targetVersionedFolder, modificationPatch.relativePathToRoot,
-                                                           getModelIdentifier(targetVersionedFolder))
+        Path modificationPath = modificationPatch.path.reduce(targetVersionedFolder.path)
+        Path modificationPathRelativeToRoot = modificationPath.childPath
+
+        MdmDomain domain = pathService.findResourceByPathFromRootResource(
+            targetVersionedFolder,
+            modificationPathRelativeToRoot,
+            getModelIdentifier(targetVersionedFolder))
+
         if (!domain) {
             log.warn('Could not process modification patch into model at path [{}] as no such path exists in the target',
-                     modificationPatch.relativePathToRoot)
+                     modificationPathRelativeToRoot)
             return
         }
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPath.toString(getModelIdentifier(targetVersionedFolder)))
 
         MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
