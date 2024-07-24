@@ -311,11 +311,13 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     def modelVersionTree() {
         VersionedFolder instance = queryForResource(params.versionedFolderId)
         if (!instance) return notFound(params.versionedFolderId)
+        boolean branchesOnly = params.boolean('branchesOnly', false)
+        boolean forMerge = params.boolean('forMerge', false)
 
         VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance)
 
-        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null,
-                                                                                                   null, true,
+        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null, null, false,
+                                                                                                   branchesOnly || forMerge,
                                                                                                    currentUserSecurityPolicyManager)
         respond versionTreeModelList
     }
