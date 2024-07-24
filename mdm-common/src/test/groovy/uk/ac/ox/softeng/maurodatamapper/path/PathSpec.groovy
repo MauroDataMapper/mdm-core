@@ -124,4 +124,26 @@ class PathSpec extends Specification {
         childPath.first().prefix == 'dc'
         childPath.first().identifier == 'test2'
     }
+
+    void "should reduce from base path: #testCase"(String testCase, String original, String base, String expected) {
+        given: "the paths to use"
+        Path originalPath = Path.from(original)
+        Path basePath = Path.from(base)
+        Path expectedPath = Path.from(expected)
+
+        when: "the path is reduced"
+        Path actualPath = originalPath.reduce(basePath)
+
+        then: "the returned path is correct"
+        actualPath == expectedPath
+
+        where:
+        testCase | original | base | expected
+        'Relative Root Not Found'                   | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'dm:Data Model$main' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+        'Relative Root Not Found using sub-folders' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'dm:Data Model$main' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+        'Relative Root Is Same'                     | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+        'VersionedFolder under one sub-folder'      | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+        'VersionedFolder under two sub-folders'     | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+        'VersionedFolder under three sub-folders'   | 'fo:Testing Folder|fo:Branches|fo:Sub-Branch|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|fo:Branches|fo:Sub-Branch|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+    }
 }

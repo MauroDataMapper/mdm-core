@@ -180,6 +180,34 @@ class Path implements Serializable, Cloneable {
         resolved
     }
 
+    /**
+     * Reduce a path by removing it's relative root path and return a copy of the new path.
+     * @param basePath The base path to remove from the front of this path
+     * @return The new copy of this path without the base path at the front.
+     */
+    Path reduce(Path basePath) {
+        if (basePath == this) {
+            return this
+        }
+
+        PathNode lastNodeFromBase = basePath.last()
+        int lastNodeIndex = this.pathNodes.findIndexOf {pathNode -> pathNode == lastNodeFromBase }
+        if (lastNodeIndex == -1) {
+            // Not found
+            return this
+        }
+
+        List<PathNode> reducedPathNodes = this.pathNodes
+            .subList(lastNodeIndex, this.pathNodes.size())
+            .collect {pathNode -> pathNode.clone() }
+
+        Path reducedPath = new Path().tap {
+            it.pathNodes = reducedPathNodes
+        }
+
+        reducedPath
+    }
+
     boolean startsWith(PathNode pathNode, String modelIdentifierOverride = null) {
         pathNode.matches(first(), modelIdentifierOverride)
     }
