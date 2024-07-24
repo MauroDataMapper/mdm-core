@@ -23,8 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstr
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
-import grails.gorm.DetachedCriteria
-
 class Edit implements MdmDomain {
 
     UUID id
@@ -66,28 +64,12 @@ class Edit implements MdmDomain {
         title
     }
 
-        //previous findbyx does return with a totalcount value or in the correct object
+    @SuppressWarnings('UnnecessaryQualifiedReference')
     static List<Edit> findAllByResource(String resourceDomainType, UUID resourceId, Map pagination = [:]) {
-        byResourceCriteria(resourceDomainType, resourceId).list(pagination)
-    }
-
-    static DetachedCriteria<Edit> byResourceCriteria(String resourceDomainTypeValue, UUID resourceIdValue) {
-        where {
-            resourceDomainType == resourceDomainTypeValue
-            resourceId == resourceIdValue
-        }
+        Edit.findAllByResourceDomainTypeAndResourceId(resourceDomainType, resourceId, pagination)
     }
 
     static List<Edit> findAllByResourceAndTitle(String resourceDomainType, UUID resourceId, EditTitle title, Map pagination = [:]) {
-        byResourceAndTitleCritera(resourceDomainType, resourceId, title).list(pagination)
+        Edit.findAllByResourceDomainTypeAndResourceIdAndTitle(resourceDomainType, resourceId, title, pagination)
     }
-
-    static DetachedCriteria<Edit> byResourceAndTitleCritera(String resourceDomainTypeValue, UUID resourceIdValue, EditTitle titleValue) {
-        where {
-            resourceDomainType == resourceDomainTypeValue
-            resourceId == resourceIdValue
-            title == titleValue
-        }
-    }
-
 }
