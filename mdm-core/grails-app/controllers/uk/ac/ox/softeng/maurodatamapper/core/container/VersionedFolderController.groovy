@@ -316,7 +316,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance)
 
-        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null, null, false,
+        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null, null, true,
                                                                                                    branchesOnly || forMerge,
                                                                                                    currentUserSecurityPolicyManager)
         respond versionTreeModelList
@@ -379,12 +379,12 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
 
         if (mergeIntoData.patch.sourceId != params.versionedFolderId) {
-            return
             errorResponse(UNPROCESSABLE_ENTITY, 'Source versioned folder id passed in request body does not match source versioned folder id in URI.')
+            return
         }
         if (mergeIntoData.patch.targetId != params.otherVersionedFolderId) {
-            return
             errorResponse(UNPROCESSABLE_ENTITY, 'Target versioned folder id passed in request body does not match target versioned folder id in URI.')
+            return
         }
 
         VersionedFolder source = queryForResource params.versionedFolderId

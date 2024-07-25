@@ -561,9 +561,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createFolder",
           "createModel",
           "createVersionedFolder",
-         "moveToFolder",
-      "moveToVersionedFolder",
-      "softDelete"
+          "moveToFolder",
+          "softDelete"
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
@@ -746,9 +745,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "delete",
-         "moveToFolder",
-      "moveToVersionedFolder",
-      "softDelete"
+          "moveToFolder",
+          "softDelete"
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
@@ -1021,7 +1019,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "moveToFolder",
-          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -1099,9 +1096,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "delete",
-         "moveToFolder",
-      "moveToVersionedFolder",
-      "softDelete"
+          "moveToFolder",
+          "softDelete"
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
@@ -1254,9 +1250,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createFolder",
           "createModel",
           "createVersionedFolder",
-         "moveToFolder",
-      "moveToVersionedFolder",
-      "softDelete"
+          "moveToFolder",
+          "softDelete"
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
@@ -1331,9 +1326,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "delete",
-         "moveToFolder",
-      "moveToVersionedFolder",
-      "softDelete"
+          "moveToFolder",
+          "softDelete"
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
