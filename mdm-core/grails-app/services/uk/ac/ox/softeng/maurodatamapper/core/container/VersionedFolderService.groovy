@@ -1118,20 +1118,21 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-        Path deletionPath = deletionPatch.path.reduce(targetVersionedFolder.path)
+        String targetModelIdentifier = getModelIdentifier(targetVersionedFolder)
+        Path deletionPath = deletionPatch.path.reduce(targetVersionedFolder.path, targetModelIdentifier)
         Path deletionPathRelativeToRoot = deletionPath.childPath
 
         MdmDomain domain = pathService.findResourceByPathFromRootResource(
             targetVersionedFolder,
             deletionPathRelativeToRoot,
-            getModelIdentifier(targetVersionedFolder))
+            targetModelIdentifier)
 
         if (!domain) {
             log.warn('Could not process deletion patch from versioned folder at path [{}] as no such path exists in the target',
                      deletionPathRelativeToRoot)
             return
         }
-        log.debug('Deleting [{}]', deletionPath.toString(getModelIdentifier(targetVersionedFolder)))
+        log.debug('Deleting [{}]', deletionPath.toString(targetModelIdentifier))
 
         String itemRemovedLabel = (domain as InformationAware)?.label
         String mergeEditSuffix = itemRemovedLabel ?: domain.domainType ?: ""
@@ -1156,13 +1157,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder,
                                                      VersionedFolder sourceVersionedFolder, UserSecurityPolicyManager userSecurityPolicyManager) {
-        Path modificationPath = modificationPatch.path.reduce(targetVersionedFolder.path)
+        String targetModelIdentifier = getModelIdentifier(targetVersionedFolder)
+        Path modificationPath = modificationPatch.path.reduce(targetVersionedFolder.path, targetModelIdentifier)
         Path modificationPathRelativeToRoot = modificationPath.childPath
 
         MdmDomain domain = pathService.findResourceByPathFromRootResource(
             targetVersionedFolder,
             modificationPathRelativeToRoot,
-            getModelIdentifier(targetVersionedFolder))
+            targetModelIdentifier)
 
         if (!domain) {
             log.warn('Could not process modification patch into model at path [{}] as no such path exists in the target',
@@ -1170,7 +1172,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             return
         }
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPath.toString(getModelIdentifier(targetVersionedFolder)))
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPath.toString(targetModelIdentifier))
 
         MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")

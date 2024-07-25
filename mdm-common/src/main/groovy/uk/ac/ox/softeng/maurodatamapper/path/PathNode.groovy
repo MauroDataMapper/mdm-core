@@ -194,8 +194,13 @@ class PathNode implements Serializable, Cloneable {
         false
     }
 
-    PathNode clone() {
-        new PathNode(this.prefix, this.identifier, this.modelIdentifier, this.attribute)
+    PathNode clone(String modelIdentifierOverride = null) {
+        boolean hasModelIdentifier = this.modelIdentifier && !this.modelIdentifier.empty
+        new PathNode(
+            this.prefix,
+            this.identifier,
+            modelIdentifierOverride && hasModelIdentifier ? modelIdentifierOverride : this.modelIdentifier,
+            this.attribute)
     }
 
     double getLatitudeValue() {

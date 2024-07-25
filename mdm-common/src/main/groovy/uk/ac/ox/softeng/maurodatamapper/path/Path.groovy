@@ -148,10 +148,10 @@ class Path implements Serializable, Cloneable {
         getPathString(modelIdentifierOverride)
     }
 
-    Path clone() {
+    Path clone(String modelIdentifierOverride = null) {
         Path local = this
         new Path().tap {
-            pathNodes = local.pathNodes.collect {it.clone()}
+            pathNodes = local.pathNodes.collect {it.clone(modelIdentifierOverride) }
         }
     }
 
@@ -183,22 +183,25 @@ class Path implements Serializable, Cloneable {
     /**
      * Reduce a path by removing it's relative root path and return a copy of the new path.
      * @param basePath The base path to remove from the front of this path
+     * @param modelIdentifierOverride A model identifier to override this path before reducing further. If not required, set to null
      * @return The new copy of this path without the base path at the front.
      */
-    Path reduce(Path basePath) {
-        if (basePath == this) {
+    Path reduce(Path basePath, String modelIdentifierOverride = null) {
+        Path workingPath = modelIdentifierOverride ? this.clone(modelIdentifierOverride) : this
+
+        if (basePath == workingPath) {
             return this
         }
 
         PathNode lastNodeFromBase = basePath.last()
-        int lastNodeIndex = this.pathNodes.findIndexOf {pathNode -> pathNode == lastNodeFromBase }
+        int lastNodeIndex = workingPath.pathNodes.findIndexOf {pathNode -> pathNode == lastNodeFromBase }
         if (lastNodeIndex == -1) {
             // Not found
             return this
         }
 
-        List<PathNode> reducedPathNodes = this.pathNodes
-            .subList(lastNodeIndex, this.pathNodes.size())
+        List<PathNode> reducedPathNodes = workingPath.pathNodes
+            .subList(lastNodeIndex, workingPath.pathNodes.size())
             .collect {pathNode -> pathNode.clone() }
 
         Path reducedPath = new Path().tap {

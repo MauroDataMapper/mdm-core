@@ -125,25 +125,48 @@ class PathSpec extends Specification {
         childPath.first().identifier == 'test2'
     }
 
-    void "should reduce from base path: #testCase"(String testCase, String original, String base, String expected) {
+    void "should clone a path"(String original, String modelIdentifierOverride) {
+        given: "the paths to use"
+        Path originalPath = Path.from(original)
+
+        when: "the path is cloned"
+        Path clonedPath = originalPath.clone(modelIdentifierOverride)
+
+        then: "the result is as expected"
+        !clonedPath.is(originalPath)    // Test object references are different
+        clonedPath.toString() == originalPath.toString(modelIdentifierOverride)
+
+        where:
+        original | modelIdentifierOverride
+        'dm:Data Model' | null
+        'dm:Data Model$main' | null
+        'dm:Data Model$main' | 'another'
+        'dm:Data Model$main|dc:Data Class|de:Data Element' | null
+        'dm:Data Model$main|dc:Data Class|de:Data Element' | 'another'
+        'vf:Versioned Folder$main|dm:Data Model$main|dc:Data Class' | null
+        'vf:Versioned Folder$main|dm:Data Model$main|dc:Data Class' | 'another'
+    }
+
+    void "should reduce from base path: #testCase"(String testCase, String original, String base, String expected, String modelIdentifierOverride) {
         given: "the paths to use"
         Path originalPath = Path.from(original)
         Path basePath = Path.from(base)
         Path expectedPath = Path.from(expected)
 
         when: "the path is reduced"
-        Path actualPath = originalPath.reduce(basePath)
+        Path actualPath = originalPath.reduce(basePath, modelIdentifierOverride)
 
         then: "the returned path is correct"
         actualPath == expectedPath
 
         where:
-        testCase | original | base | expected
-        'Relative Root Not Found'                   | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'dm:Data Model$main' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
-        'Relative Root Not Found using sub-folders' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'dm:Data Model$main' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
-        'Relative Root Is Same'                     | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
-        'VersionedFolder under one sub-folder'      | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
-        'VersionedFolder under two sub-folders'     | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
-        'VersionedFolder under three sub-folders'   | 'fo:Testing Folder|fo:Branches|fo:Sub-Branch|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|fo:Branches|fo:Sub-Branch|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch'
+        testCase | original | base | expected | modelIdentifierOverride
+        'Relative Root Not Found'                   | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'dm:Data Model$main' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | null
+        'Relative Root Not Found using sub-folders' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'dm:Data Model$main' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | null
+        'Relative Root Is Same'                     | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | null
+        'VersionedFolder under one sub-folder'      | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | null
+        'VersionedFolder under two sub-folders'     | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | null
+        'VersionedFolder under three sub-folders'   | 'fo:Testing Folder|fo:Branches|fo:Sub-Branch|vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | 'fo:Testing Folder|fo:Branches|fo:Sub-Branch|vf:Test Versioned Folder$another-branch' | 'vf:Test Versioned Folder$another-branch|te:Test Versioned Terminology$another-branch' | null
+        'Override Model Identifier on VersionedFolder' | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$another-branch|dm:Test Versioned Data Model$another-branch@description' | 'fo:Testing Folder|fo:Branches|vf:Test Versioned Folder$main' | 'vf:Test Versioned Folder$main|dm:Test Versioned Data Model$main@description' | 'main'
     }
 }
