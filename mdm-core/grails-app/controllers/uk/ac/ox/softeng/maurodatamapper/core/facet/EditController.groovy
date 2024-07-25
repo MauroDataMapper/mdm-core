@@ -50,7 +50,7 @@ class EditController extends RestfulController<Edit> implements MdmController {
         }
 
         // Since we cannot directly create a new PagedResultList with a modified list,
-        // and we still need the totalCount field which this function destroys
+        // and we still need the totalCount field which this function destroys so
         // we're abusing modify by reference to edit the items within the edits structure.
         return edits
 
