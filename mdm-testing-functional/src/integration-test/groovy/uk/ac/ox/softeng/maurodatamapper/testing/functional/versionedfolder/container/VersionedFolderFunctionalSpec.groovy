@@ -3244,6 +3244,62 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         builder.cleanupTestMergeData(mergeData)
     }
 
+    void 'Edit a branch name'() {
+        final String newBranchName = 'Different branch name'
+
+    given:
+        loginEditor()
+
+    when:
+        POST('versionedFolders', [
+            label: 'Some versioned folder for testing',
+            description: 'Creating a versioned folder to which models will be added and renamed',
+            author: 'Me, myself',
+            organisation: 'Very little',
+            readableByEveryone: true
+        ], MAP_ARG, true)
+
+    then:
+        log.info("Verifying POST new versioned folder response (${response.status()})")
+        verifyResponse(CREATED, response)
+        responseBody().domainType == 'VersionedFolder'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        String versionedFolderId = responseBody().id
+
+    when:
+        POST("folders/$versionedFolderId/dataModels", [
+            label: "label",
+            description: "description"
+        ], MAP_ARG, true)
+
+    then:
+        verifyResponse(CREATED, response)
+        String dataModelId = responseBody().id
+
+    when:
+        PUT("versionedFolders/${versionedFolderId}",
+            [
+                branchName: newBranchName
+            ], MAP_ARG, true)
+
+    then:
+        log.info("Verifying PUT branch rename response (${response.status()})")
+        verifyResponse(OK, response)
+        responseBody().branchName == newBranchName
+
+    when:
+        GET("dataModels/$dataModelId", MAP_ARG, true)
+
+    then:
+        verifyResponse(OK, response)
+        responseBody().branchName == newBranchName
+
+    cleanup:
+        cleanupIds(versionedFolderId)
+        logout()
+    }
+
     Map<String, String> buildModelVersionTree() {
         /*
                                                    /- anotherFork

@@ -446,6 +446,10 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     }
 
     protected VersionedFolder updateResource(VersionedFolder resource, Set<String> changedProperties) {
+        if (changedProperties.contains("branchName")) {
+            final String newBranchName = resource.getBranchName()
+            log.info("Need to update the branchName of the contained models to \"$newBranchName\"")
+        }
         VersionedFolder folder = super.updateResource(resource) as VersionedFolder
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(folder,
