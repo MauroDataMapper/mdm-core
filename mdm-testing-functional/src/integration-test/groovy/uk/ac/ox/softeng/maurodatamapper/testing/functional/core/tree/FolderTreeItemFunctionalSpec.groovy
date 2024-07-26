@@ -401,7 +401,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         responseBody().children.first().children.first().hasChildren
     }
 
-    void 'CO : test geting model creatable only folders as reader'(){
+    void 'CO : test geting model creatable only folders as reader'() {
 
         when:
         loginReader()
@@ -411,7 +411,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         verifyJsonResponse OK, '[]'
     }
 
-    void 'CO : test geting model creatable only folders as editor'(){
+    void 'CO : test geting model creatable only folders as editor'() {
 
         when: 'editor can create models therefoer should have some folders back'
         loginEditor()
@@ -476,6 +476,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -486,7 +487,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
 ]''', Option.IGNORING_EXTRA_FIELDS
     }
 
-    void 'CO : test geting model creatable only folders as container admin'(){
+    void 'CO : test geting model creatable only folders as container admin'() {
 
         when:
         loginContainerAdmin()
@@ -571,6 +572,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
           "createVersionedFolder",
           "delete",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -852,6 +854,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -1170,6 +1173,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
           "createVersionedFolder",
           "delete",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,

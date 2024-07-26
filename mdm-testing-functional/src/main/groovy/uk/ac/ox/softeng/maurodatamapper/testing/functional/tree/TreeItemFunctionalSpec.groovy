@@ -562,6 +562,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -746,6 +747,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createVersionedFolder",
           "delete",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -1019,6 +1021,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -1097,6 +1100,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createVersionedFolder",
           "delete",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -1251,6 +1255,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createModel",
           "createVersionedFolder",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
@@ -1327,6 +1332,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createVersionedFolder",
           "delete",
           "moveToFolder",
+          "moveToVersionedFolder",
           "softDelete"
         ],
         "deleted": false,
