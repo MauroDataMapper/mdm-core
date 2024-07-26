@@ -45,9 +45,7 @@ class EditController extends RestfulController<Edit> implements MdmController {
         params.order = params.order ?: 'asc'
 
         PagedResultList<Edit> edits = editService.findAllByResource(params.resourceDomainType, params.resourceId, params)
-        List<Edit> transformedEdits = edits.collect { edit ->
-            editService.populateEditUser(edit)
-        }
+        edits.forEach { edit -> editService.populateEditUser(edit) }
 
         // Since we cannot directly create a new PagedResultList with a modified list,
         // and we still need the totalCount field which this function destroys so
