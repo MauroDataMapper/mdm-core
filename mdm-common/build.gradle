@@ -2,9 +2,12 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
-        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-
+        mavenCentral()
+        maven {url 'https://mauro-repository.com/libs-release-local'}
+        maven {url 'https://mauro-repository.com/plugins-snapshot-local'}
+        maven {url 'https://mauro-repository.com/plugins-release-local'}
+        maven {url 'https://repo.gradle.org/gradle/libs-releases/'}
+        maven {url 'https://plugins.gradle.org/m2/'}
     }
     dependencies {
         classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
