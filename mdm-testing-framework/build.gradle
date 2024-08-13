@@ -9,7 +9,7 @@ buildscript {
         maven {url 'https://plugins.gradle.org/m2/'}
     }
     dependencies {
-        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
+        classpath "org.maurodata:mdm-gradle-plugin:$mdmGradlePluginVersion"
     }
 }
 
@@ -23,4 +23,12 @@ apply from: 'dependencies.gradle'
 
 sonarqube {
     skipProject = true
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {url "https://mauro-repository.com/libs-release-local"}
+    maven {url "https://mauro-repository.com/libs-snapshot-local"}
+    maven {url "https://repo.grails.org/grails/core"}
 }

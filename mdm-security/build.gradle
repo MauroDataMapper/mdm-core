@@ -9,7 +9,7 @@ buildscript {
         maven {url 'https://plugins.gradle.org/m2/'}
     }
     dependencies {
-        classpath "uk.ac.ox.softeng.maurodatamapper.gradle:mdm-gradle-plugin:$mdmGradlePluginVersion"
+        classpath "org.maurodata:mdm-gradle-plugin:$mdmGradlePluginVersion"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath "org.grails.plugins:hibernate5:$grailsHibernate5Version"
         classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
@@ -25,8 +25,8 @@ apply plugin: 'uk.ac.ox.softeng.maurodatamapper.gradle.mdm-grails'
 repositories {
     mavenLocal()
     mavenCentral()
-    maven {url "https://mauro-repository.com/libs-release"}
-    maven {url "https://mauro-repository.com/libs-snapshot"}
+    maven {url "https://mauro-repository.com/libs-release-local"}
+    maven {url "https://mauro-repository.com/libs-snapshot-local"}
     maven {url "https://repo.grails.org/grails/core"}
 }
 

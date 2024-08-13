@@ -63,7 +63,7 @@ jobs:
         ./gradlew -v
         ./gradlew jvmArgs sysProps
 
-    - name: Mdm-core gradle info
+    - name: Mdm-core grails info
       working-directory: ./mdm-core
       run: |
         ./grailsw -v
