@@ -1,0 +1,22 @@
+name: 'End-to-end testing composite'
+description: 'Run MDM-Core End-to-end functional tests'
+inputs:
+    package:
+        description: 'The package to be tested'
+        required: true
+runs:
+    using: 'composite'
+    steps:
+        - name: 'E2E Functional Test: ${{ inputs.package }}'
+          shell: bash
+          run: './gradlew -Dgradle.test.package=${{ inputs.package }} :mdm-testing-functional:integrationTest'
+
+        - name: 'E2E Functional Test Report: ${{ inputs.package }}'
+          uses: dorny/test-reporter@v1
+          if: success() || failure()
+          with:
+            name: 'E2E Functional Test Results: ${{ inputs.package }}'
+            path: mdm-testing-functional/build/test-results/${{ inputs.package }}/*.xml
+            reporter: java-junit
+            list-suites: 'failed'
+            list-tests: 'failed'

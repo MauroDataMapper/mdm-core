@@ -2,13 +2,13 @@
   "extends": [
     "config:base",
     ":dependencyDashboard",
-    ":reviewer(olliefreeman)",
+    ":reviewer(jamesrwelch)",
     ":label(dependencies)",
     "schedule:nonOfficeHours",
     ":prHourlyLimit1"
   ],
   "rebaseWhen": "conflicted",
-  "prConcurrentLimit": 5,
+  "prConcurrentLimit": 3,
   "prCreation": "not-pending",
   "ignoreDeps": [
     "gradle"
