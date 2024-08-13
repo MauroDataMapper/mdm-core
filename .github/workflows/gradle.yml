@@ -229,6 +229,12 @@ jobs:
 #          megalinter-reports
 #          mega-linter.log
 
+    - name: Publish Snapshot to Mauro Snapshot Repository
+      if: success() && github.ref == 'refs/heads/develop'
+      run: |
+        ./gradlew --stacktrace -PMauroSnapshotRepositoryUsername=${{secrets.MAURO_SNAPSHOT_REPOSITORY_USERNAME}} -PMauroSnapshotRepositoryPassword=${{secrets.MAURO_SNAPSHOT_REPOSITORY_PASSWORD}} publishAllPublicationsToMauroSnapshotRepositoryRepository
+    
+
     - name: Send a stream message
       if: success() || failure()
       uses: zulip/github-actions-zulip/send-message@v1

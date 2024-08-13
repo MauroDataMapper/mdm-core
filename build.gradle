@@ -340,3 +340,16 @@ FileCollection findNonParallelTestFiles(Project project) {
         f.text.find(/@Tag\('non-parallel'\)/)
     }
 }
+
+publishing {
+    repositories {
+        maven {
+            name = "MauroSnapshotRepository"
+            url = "https://mauro-repository.com/libs-snapshot-local"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
