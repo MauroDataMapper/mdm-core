@@ -29,6 +29,16 @@ repositories {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "MauroSnapshotRepository"
+            url = "https://mauro-repository.com/libs-snapshot-local"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
     publications {
         mdmPlatform(MavenPublication) {
             from components.javaPlatform

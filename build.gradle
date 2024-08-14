@@ -288,6 +288,16 @@ subprojects {
                         }
                     }
                 }
+                repositories {
+                    maven {
+                        name = "MauroSnapshotRepository"
+                        url = "https://mauro-repository.com/libs-snapshot-local"
+                        credentials(PasswordCredentials)
+                        authentication {
+                            basic(BasicAuthentication)
+                        }
+                    }
+                }
             }
         }
     }
@@ -338,18 +348,5 @@ FileCollection findNonParallelTestFiles(Project project) {
     project.fileTree('src/integration-test/groovy').filter {File f ->
         !f.name.find(/FunctionalSpec/) &&
         f.text.find(/@Tag\('non-parallel'\)/)
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "MauroSnapshotRepository"
-            url = "https://mauro-repository.com/libs-snapshot-local"
-            credentials(PasswordCredentials)
-            authentication {
-                basic(BasicAuthentication)
-            }
-        }
     }
 }
