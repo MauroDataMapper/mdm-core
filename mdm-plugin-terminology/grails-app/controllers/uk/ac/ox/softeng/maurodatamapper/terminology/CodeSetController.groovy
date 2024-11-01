@@ -46,7 +46,6 @@ class CodeSetController extends ModelController<CodeSet> {
 
     @Override
     protected CodeSet createResource() {
-        System.err.println("Creating resource...")
         CodeSet resource = super.createResource() as CodeSet
         resource.addAllTermsFromTerminologies()
         resource

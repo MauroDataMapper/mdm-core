@@ -195,6 +195,6 @@ class CodeSet implements Model<CodeSet> {
                 addToTerms(term)
             }
         }
-        terminologies.removeAll()
+        terminologies?.removeAll()
     }
 }
