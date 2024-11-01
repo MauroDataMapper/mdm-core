@@ -45,6 +45,14 @@ class CodeSetController extends ModelController<CodeSet> {
     }
 
     @Override
+    protected CodeSet createResource() {
+        System.err.println("Creating resource...")
+        CodeSet resource = super.createResource() as CodeSet
+        resource.addAllTermsFromTerminologies()
+        resource
+    }
+
+    @Override
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
 
