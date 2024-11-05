@@ -65,10 +65,10 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 // Requires a connection to the CD environment, running a version providing the /types endpoint
 @Requires({
-    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/admin/subscribedCatalogues/types'
+    String url = 'https://maurosandbox.com/sandbox/api/admin/subscribedCatalogues/types'
     HttpURLConnection connection = (url).toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
-    connection.setRequestProperty('apiKey', 'f00616a7-c07f-48fe-b6cf-fb99f7076de5')
+    connection.setRequestProperty('apiKey', 'ada36a9e-7f15-4640-bccc-71574eebe615')
     connection.connect()
     connection.getResponseCode() == 200
 })
@@ -95,25 +95,25 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                  createdBy: FUNCTIONAL_TEST).save(flush: true).id
 
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
-                                                        apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5',
+        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://maurosandbox.com/sandbox',
+                                                        apiKey: 'e5ecb49c-1abb-4252-a41d-683e26eb9c4c',
                                                         label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
                                                         subscribedCatalogueAuthenticationCredentials:
-                                                            new ApiKeyAuthenticationCredentials(apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5'),
+                                                            new ApiKeyAuthenticationCredentials(apiKey: 'e5ecb49c-1abb-4252-a41d-683e26eb9c4c'),
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
 
-        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/feeds/all',
-                                                            apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5',
+        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://maurosandbox.com/sandbox/api/feeds/all',
+                                                            apiKey: 'e5ecb49c-1abb-4252-a41d-683e26eb9c4c',
                                                             label: 'Functional Test Subscribed Catalogue (Atom)',
                                                             subscribedCatalogueType: SubscribedCatalogueType.ATOM,
                                                             subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
                                                             subscribedCatalogueAuthenticationCredentials:
-                                                                new ApiKeyAuthenticationCredentials(apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5'),
+                                                                new ApiKeyAuthenticationCredentials(apiKey: 'e5ecb49c-1abb-4252-a41d-683e26eb9c4c'),
                                                             description: 'Functional Test Description',
                                                             refreshPeriod: 7,
                                                             createdBy: FUNCTIONAL_TEST).save(flush: true).id
@@ -188,7 +188,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     Map getValidJson() {
         [
             subscribedModel: [
-                subscribedModelId: '427d1243-4f89-46e8-8f8f-8424890b5083',
+                subscribedModelId: 'fa773d5a-e319-46a9-ab37-a6e925c83c09',
                 folderId         : getFolderId()
             ]
         ]
@@ -197,7 +197,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     Map getValidJsonForAtom() {
         [
             subscribedModel: [
-                subscribedModelId: 'urn:uuid:427d1243-4f89-46e8-8f8f-8424890b5083',
+                subscribedModelId: 'urn:uuid:fa773d5a-e319-46a9-ab37-a6e925c83c09',
                 folderId         : getFolderId()
             ]
         ]
