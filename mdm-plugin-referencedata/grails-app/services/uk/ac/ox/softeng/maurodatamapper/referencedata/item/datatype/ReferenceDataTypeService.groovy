@@ -213,7 +213,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
-                                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false, CopyInformation copyInformation = null) {
+                                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false, CopyInformation copyInformation = null,
+                                            boolean addRefinementLinks = true) {
         ReferenceDataType copy
 
         String domainType = original.domainType
@@ -236,7 +237,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         }
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         copiedReferenceDataModel.addToReferenceDataTypes(copy)
 

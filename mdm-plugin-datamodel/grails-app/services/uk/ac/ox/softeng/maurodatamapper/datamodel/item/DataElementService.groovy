@@ -414,19 +414,20 @@ WHERE (de.dataClass.dataModel.id = :dataModelId)''', 'de', filters)
 
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
                                 UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
-                                CopyInformation copyInformation = new CopyInformation()) {
+                                CopyInformation copyInformation = new CopyInformation(),
+                                boolean addRefinementLinks = true) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
 
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!dataType) {
             dataType = dataTypeService.copyDataType(copiedDataModel, original.dataType, copier,
-                                                    userSecurityPolicyManager)
+                                                    userSecurityPolicyManager, [:])
         }
 
         dataType.addToDataElements(copy)

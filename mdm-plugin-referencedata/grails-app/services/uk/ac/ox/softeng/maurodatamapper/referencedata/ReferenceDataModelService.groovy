@@ -72,6 +72,7 @@ import org.hibernate.search.mapper.orm.session.SearchSession
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.OffsetDateTime
+import javax.xml.catalog.Catalog
 
 @Slf4j
 @Transactional
@@ -445,22 +446,25 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     ReferenceDataModel copyModelAsNewForkModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                                               UserSecurityPolicyManager userSecurityPolicyManager) {
+                                               UserSecurityPolicyManager userSecurityPolicyManager,
+                                               Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         copyModel(original, folder, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
                   userSecurityPolicyManager,
-                  false)
+                  false, oldNewItemMap, addRefinementLinks)
     }
 
     ReferenceDataModel copyModel(ReferenceDataModel original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label,
                                  Version copyDocVersion, String branchName, boolean throwErrors,
-                                 UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, folderToCopyTo, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true)
+                                 UserSecurityPolicyManager userSecurityPolicyManager,
+                                 Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+        copyModel(original, folderToCopyTo, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true, oldNewItemMap, addRefinementLinks)
     }
 
     ReferenceDataModel copyModel(ReferenceDataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label,
                                  Version copyDocVersion, String branchName,
-                                 boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+                                 boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata,
+                                 Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
 
         ReferenceDataModel copy = new ReferenceDataModel(author: original.author, organisation: original.organisation, modelType: original.modelType,
                                                          finalised: false,
@@ -480,7 +484,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
         }
 
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         if (copy.validate()) {
             save(copy, validate: false)
@@ -496,7 +500,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         if (original.referenceDataTypes) {
             // Copy all the referencedatatypes
             original.referenceDataTypes.sort().each {dt ->
-                referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataTypeCopyInformation)
+                ReferenceDataType newRdt = referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataTypeCopyInformation)
+                oldNewItemMap[dt] = newRdt
             }
         }
 
@@ -505,7 +510,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
             // Copy all the referencedataelements
             original.referenceDataElements.sort().each {de ->
                 log.debug("copy element ${de}")
-                referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataElementCopyInformation)
+                ReferenceDataElement newRde = referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataElementCopyInformation)
+                oldNewItemMap[de] = newRde
             }
         }
 

@@ -148,14 +148,15 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
 
     ReferenceEnumerationValue copyReferenceEnumerationValue(ReferenceDataModel copiedReferenceDataModel, ReferenceEnumerationValue original,
                                                             ReferenceEnumerationType referenceEnumerationTypeToCopyInto,
-                                                            User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
+                                                            User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null,
+                                                            boolean addRefinementLinks = true) {
         ReferenceEnumerationValue copy = new ReferenceEnumerationValue(key: original.key, value: original.value, category: original.category)
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         ReferenceEnumerationType referenceEnumerationType = referenceEnumerationTypeToCopyInto ?:
-                                                            copiedReferenceDataModel.findReferenceDataTypeByLabelAndType(original.referenceEnumerationType.label,
+                                                            (ReferenceEnumerationType) copiedReferenceDataModel.findReferenceDataTypeByLabelAndType(original.referenceEnumerationType.label,
                                                                                                                          ReferenceEnumerationType.simpleName)
         referenceEnumerationType.addToReferenceEnumerationValues(copy)
         copy

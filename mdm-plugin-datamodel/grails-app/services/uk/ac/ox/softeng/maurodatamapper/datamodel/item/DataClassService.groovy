@@ -824,7 +824,7 @@ WHERE
                                                   userSecurityPolicyManager,
                                                   parentDataClassId ? get(parentDataClassId) : null,
                                                   false,
-                                                  copyInformation)
+                                                  copyInformation, [:])
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
         copiedDataClass
@@ -834,18 +834,21 @@ WHERE
     DataClass copy(Model copiedDataModel, DataClass original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager,
                       parentDataClass as DataClass,
-                      false, null)
+                      false, null, [:])
     }
 
-    DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, null, false, null)
+    DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                            Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
+        copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, null, false, null, oldNewItemMap)
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier,
                             UserSecurityPolicyManager userSecurityPolicyManager,
                             DataClass parentDataClass,
                             boolean copySummaryMetadata,
-                            CopyInformation copyInformation) {
+                            CopyInformation copyInformation,
+                            Map<CatalogueItem, CatalogueItem> oldNewItemMap,
+                            boolean addRefinementLinks = true) {
 
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
@@ -855,7 +858,7 @@ WHERE
         )
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         copiedDataModel.addToDataClasses(copy)
 
@@ -882,16 +885,18 @@ WHERE
         List<DataClass> dataClasses = DataClass.byParentDataClassId(original.id).join('classifiers').list()
         CopyInformation dataClassCache = cacheFacetInformationForCopy(dataClasses.collect {it.id}, new CopyInformation(copyIndex: true))
         dataClasses.sort().each {child ->
-            copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, copy, copySummaryMetadata, dataClassCache)
+            DataClass newDC = copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, copy, copySummaryMetadata, dataClassCache, oldNewItemMap)
+            oldNewItemMap[child] = newDC
         }
         copy.dataElements = []
 
         List<DataElement> dataElements = DataElement.byDataClassId(original.id).join('classifiers').list()
         CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect {it.id}, new CopyInformation(copyIndex: true))
         dataElements.sort().each {element ->
-            copy.addToDataElements(
-                dataElementService
-                    .copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata, dataElementCache))
+            DataElement newDe = dataElementService
+                .copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata, dataElementCache)
+            copy.addToDataElements(newDe)
+            oldNewItemMap[element] = newDe
         }
 
         List<DataClass> importedDataClasses = findAllByImportingDataClassId(original.id)

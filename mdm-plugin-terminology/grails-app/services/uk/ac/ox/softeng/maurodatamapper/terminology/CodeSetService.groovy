@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -221,7 +222,8 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
-                      String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+                      String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
+                      Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         CodeSet copy = new CodeSet(author: original.author,
@@ -241,7 +243,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         }
 
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         if (copy.validate()) {
             save(copy, validate: false)
