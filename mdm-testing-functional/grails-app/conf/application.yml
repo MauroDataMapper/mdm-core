@@ -72,6 +72,10 @@ management:
             enabled: true
 
 ---
+micronaut:
+    http:
+        client:
+            max-content-length: 200000000 # 190 MB * 1024 * 1024
 grails:
     mime:
         disable:
@@ -143,6 +147,10 @@ hibernate:
         backend:
             directory:
                 root: 'build/lucene'
+grails:
+    plugins:
+        hibernatesearch:
+            rebuildIndexOnStart: false
 ---
 dataSource:
     pooled: true

@@ -45,7 +45,7 @@ import spock.lang.Shared
 @Slf4j
 // Requires a connection to the CD environment, running a version providing the /types endpoint
 @Requires({
-    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/admin/subscribedCatalogues/types'
+    String url = 'https://maurosandbox.com/sandbox/api/admin/subscribedCatalogues/types'
     HttpURLConnection connection = (url).toURL().openConnection() as HttpURLConnection
     connection.setRequestMethod('GET')
     connection.setRequestProperty('apiKey', 'f00616a7-c07f-48fe-b6cf-fb99f7076de5')
@@ -71,25 +71,25 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
-                                                        apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5',
+        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://maurosandbox.com/sandbox/',
+                                                        apiKey: 'ada36a9e-7f15-4640-bccc-71574eebe615',
                                                         label: 'Functional Test Subscribed Catalogue (Mauro JSON)',
                                                         subscribedCatalogueType: SubscribedCatalogueType.MAURO_JSON,
                                                         subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
                                                         subscribedCatalogueAuthenticationCredentials:
-                                                            new ApiKeyAuthenticationCredentials(apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5'),
+                                                            new ApiKeyAuthenticationCredentials(apiKey: 'ada36a9e-7f15-4640-bccc-71574eebe615'),
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
 
-        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment/api/feeds/all',
-                                                            apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5',
+        atomSubscribedCatalogueId = new SubscribedCatalogue(url: 'https://maurosandbox.com/sandbox/api/feeds/all',
+                                                            apiKey: 'ada36a9e-7f15-4640-bccc-71574eebe615',
                                                             label: 'Functional Test Subscribed Catalogue (Atom)',
                                                             subscribedCatalogueType: SubscribedCatalogueType.ATOM,
                                                             subscribedCatalogueAuthenticationType: SubscribedCatalogueAuthenticationType.API_KEY,
                                                             subscribedCatalogueAuthenticationCredentials:
-                                                                new ApiKeyAuthenticationCredentials(apiKey: 'f00616a7-c07f-48fe-b6cf-fb99f7076de5'),
+                                                                new ApiKeyAuthenticationCredentials(apiKey: 'ada36a9e-7f15-4640-bccc-71574eebe615'),
                                                             description: 'Functional Test Description',
                                                             refreshPeriod: 7,
                                                             createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
