@@ -42,10 +42,15 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import org.grails.datastore.mapping.validation.CascadeValidateType
 
+import javax.persistence.Transient
+
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class CodeSet implements Model<CodeSet> {
 
     UUID id
+
+    // to support the 'add all terms' in the user interface
+    List<Terminology> terminologies
 
     static hasMany = [
         terms         : Term,
@@ -61,12 +66,13 @@ class CodeSet implements Model<CodeSet> {
 
     static belongsTo = [Folder]
 
-    static transients = ['hasChild', 'aliases']
+    static transients = ['hasChild', 'aliases', 'terminologies']
 
     static constraints = {
         CallableConstraints.call(ModelConstraints, delegate)
         terms validator: {val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'terms').isValid(val)}
         breadcrumbTree nullable: true
+        terminologies (nullable: true, bindable: true)
     }
 
     static mapping = {
@@ -181,5 +187,14 @@ class CodeSet implements Model<CodeSet> {
 
     CodeSet findByLabel(String label) {
         CodeSet.findByLabel(label)
+    }
+
+    void addAllTermsFromTerminologies() {
+        terminologies?.each {terminology ->
+            terminology.terms.each { term ->
+                addToTerms(term)
+            }
+        }
+        terminologies?.removeAll()
     }
 }

@@ -2434,6 +2434,18 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         // What is needed here is a way to find the copied code set
     }
 
+    void 'CR01 : Create a codeset and copy all terms from a terminology'() {
+        given:
+        Map data = buildTestData()
+
+        when:
+        GET("codeSets/${data.codeSet5Id}/terms", MAP_ARG, true)
+
+        then:
+        responseBody().count == 3
+
+    }
+
     Map buildTestData() {
         log.info('building test data for codeset test')
 
@@ -2464,6 +2476,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         String id3 = createNewItem([label: 'codeset 3'])
         String id4 = createNewItem([label: 'codeset 4'])
 
+        String id5 = createNewItem([label: 'codeset 5', terminologies: [[id: terminologyId]]])
+
         PUT("$id/terms/${term1Id}", [:])
         verifyResponse(OK, response)
         PUT("$id4/terms/${term1Id}", [:])
@@ -2478,7 +2492,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
          codeSet1Id   : id,
          codeSet2Id   : id2,
          codeSet3Id   : id3,
-         codeSet4Id   : id4,]
+         codeSet4Id   : id4,
+         codeSet5Id   : id5 ]
     }
 
     @Transactional
@@ -2487,6 +2502,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         CodeSet.get(data.codeSet2Id).delete(flush: true, failOnError: true)
         CodeSet.get(data.codeSet3Id).delete(flush: true, failOnError: true)
         CodeSet.get(data.codeSet4Id).delete(flush: true, failOnError: true)
+        CodeSet.get(data.codeSet5Id).delete(flush: true, failOnError: true)
         Terminology.get(data.terminologyId).delete(flush: true, failOnError: true)
     }
 
