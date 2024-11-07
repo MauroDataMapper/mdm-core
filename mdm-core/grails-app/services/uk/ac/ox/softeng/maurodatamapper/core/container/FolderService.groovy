@@ -675,20 +675,6 @@ class FolderService extends ContainerService<Folder> {
     }
 
     List<SemanticLink> getAllSemanticLinks(Map<CatalogueItem, CatalogueItem> oldNewItemMap, User copier) {
-/*
-
-        List<Container> allContainedFolders = findAllContainersInside(folder.id)
-        List<Model> allModels = []
-        modelServices.each {modelService ->
-            allModels.addAll(modelService.findAllByFolderIdInList(allContainedFolders.id))
-            modelService.findAllTreeTypeModelItemsIn()
-        }
-
-
-
- */
-
-
         log.error('{}', oldNewItemMap)
         Map<UUID, CatalogueItem> idMap = [:]
         oldNewItemMap.keySet().each {
@@ -709,27 +695,18 @@ class FolderService extends ContainerService<Folder> {
 
             if(idMap[oldTargetItemId]) {
                 CatalogueItem newTargetItem = oldNewItemMap[idMap[oldTargetItemId]]
-
                 newSemanticLinks.add(semanticLinkService.createSemanticLink(copier, newSourceItem, newTargetItem, oldSemanticLink.linkType))
-
-/*
-                newSourceItem.addToSemanticLinks(createdBy: copier.emailAddress, linkType: oldSemanticLink.linkType,
-                                                     targetMultiFacetAwareItemId: newTargetItem.id,
-                                                     targetMultiFacetAwareItemDomainType: newTargetItem.domainType,
-                                                     unconfirmed: false)
-*/
             } else {
-                newSemanticLinks.add(semanticLinkService.createSemanticLink(copier, newSourceItem, oldSemanticLink.targetMultiFacetAwareItem, oldSemanticLink.linkType))
-/*
-                newSourceItem.addToSemanticLinks(createdBy: copier.emailAddress, linkType: oldSemanticLink.linkType,
-                                                 targetMultiFacetAwareItemId: oldSemanticLink.targetMultiFacetAwareItemId,
-                                                 targetMultiFacetAwareItemDomainType: oldSemanticLink.targetMultiFacetAwareItemDomainType,
-                                                 unconfirmed: false)
-*/
+                newSemanticLinks.add(new SemanticLink(createdBy: copier.emailAddress, linkType:  oldSemanticLink.linkType,
+                                                      targetMultiFacetAwareItemId:  oldSemanticLink.targetMultiFacetAwareItemId,
+                                                      targetMultiFacetAwareItemDomainType:  oldSemanticLink.targetMultiFacetAwareItemDomainType,
+                                                      ).with {
+                    setMultiFacetAwareItem(newSourceItem)
+                    it
+                })
+
             }
-            //newSourceItem.save(flush: true, validate: false)
         }
-        System.err.println("Saving semantic links: " + newSemanticLinks.size())
         SemanticLink.saveAll(newSemanticLinks)
         newSemanticLinks
     }

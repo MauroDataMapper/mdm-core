@@ -466,8 +466,9 @@ WHERE
                 copy = new EnumerationType()
                 CopyInformation copyInformation = new CopyInformation(copyIndex: true)
                 original.enumerationValues.sort().each {ev ->
-                    EnumerationValue newEv = copy.addToEnumerationValues(
-                        enumerationValueService.copyEnumerationValue(copiedDataModel, ev, copy, userSecurityPolicyManager.user, userSecurityPolicyManager, copyInformation))
+                    EnumerationValue newEv =
+                        enumerationValueService.copyEnumerationValue(copiedDataModel, ev, copy, userSecurityPolicyManager.user, userSecurityPolicyManager, copyInformation)
+                    copy.addToEnumerationValues(newEv)
                     oldNewItemMap[ev] = newEv
                 }
                 break

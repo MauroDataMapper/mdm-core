@@ -336,7 +336,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(vsimple.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager, [:])
 
         then:
         checkAndSave(copyModel)
@@ -389,7 +389,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(content.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager, [:])
 
         then:
         checkAndSave(copyModel)
@@ -453,7 +453,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
         sessionFactory.currentSession.flush()
-        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor, userSecurityPolicyManager)
+        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor, userSecurityPolicyManager, [:])
 
         expect:
         check(copyModel)
@@ -464,7 +464,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         sessionFactory.currentSession.clear()
         copyModel = dataModelService.get(copyModel.id)
         DataClass original = dataClassService.get(complex.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager, [:])
 
         then:
         check(copyModel)
@@ -554,7 +554,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(parentClass.id)
-        dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
+        dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager, [:])
 
         then:
         checkAndSave(copyModel)
@@ -602,7 +602,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = parentClass.dataClasses.sort().first()
-        dataClassService.copyDataClass(dataModel, original, editor, userSecurityPolicyManager, parentClass, false, new CopyInformation(copyLabel: 'Child Copied Class'))
+        dataClassService.copyDataClass(dataModel, original, editor, userSecurityPolicyManager, parentClass, false, new CopyInformation(copyLabel: 'Child Copied Class'), [:])
 
         then:
         original.idx == 0

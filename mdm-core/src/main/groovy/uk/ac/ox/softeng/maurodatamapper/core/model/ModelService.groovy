@@ -460,7 +460,7 @@ abstract class ModelService<K extends Model>
                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
 
-        ApiProperty createRefinementLinksProperty = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS)
+        ApiProperty createRefinementLinksProperty = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS)
         boolean createRefinementLinks = createRefinementLinksProperty?.value?.toBoolean()
         K newForkModel = copyModelAsNewForkModel(model, user, copyPermissions, label,
                                                  additionalArguments.throwErrors as boolean,

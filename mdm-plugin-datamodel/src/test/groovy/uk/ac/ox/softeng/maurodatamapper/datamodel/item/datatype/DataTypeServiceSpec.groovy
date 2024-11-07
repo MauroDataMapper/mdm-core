@@ -191,7 +191,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         checkAndSave(copyModel)
 
         when:
-        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
+        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager, [:])
 
         then:
         checkAndSave(copyModel)
@@ -225,7 +225,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         checkAndSave(copyModel)
 
         when:
-        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
+        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager, [:])
 
         then:
         checkAndSave(copyModel)
@@ -262,7 +262,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         checkAndSave(copyModel)
 
         when:
-        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
+        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager, [:])
         checkAndSave(copyModel)
 
         then:
