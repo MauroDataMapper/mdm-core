@@ -671,21 +671,24 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     DataModel copyModelAsNewForkModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+                                      UserSecurityPolicyManager userSecurityPolicyManager,
+                                      Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         copyModel(original, folder, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
-                  userSecurityPolicyManager, false)
+                  userSecurityPolicyManager, false, oldNewItemMap, addRefinementLinks)
     }
 
     @Override
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
-                        String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+                        String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
+                        Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors,
-                  userSecurityPolicyManager, true)
+                  userSecurityPolicyManager, true, oldNewItemMap, addRefinementLinks)
     }
 
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
-                        String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+                        String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata,
+                        Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
@@ -704,7 +707,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             log.warn('Permission copying is not yet implemented')
         }
 
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         if (copy.validate()) {
             save(copy, validate: false)
@@ -723,14 +726,16 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         // Copy all the datatypes
         dataTypes.sort().each {dt ->
-            dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, dataTypeCache)
+            DataType newDt = dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, dataTypeCache, oldNewItemMap)
+            oldNewItemMap[dt] = newDt
         }
 
         Map<DataClass, DataClass> oldNewClasses = [:]
         // Copy all the dataclasses (this will also match up the reference types)
         rootDataClasses.sort().each {dc ->
-            DataClass newClass = dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
+            DataClass newClass = dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache, oldNewItemMap)
             oldNewClasses[dc] = newClass
+            oldNewItemMap[dc] = newClass
         }
 
 

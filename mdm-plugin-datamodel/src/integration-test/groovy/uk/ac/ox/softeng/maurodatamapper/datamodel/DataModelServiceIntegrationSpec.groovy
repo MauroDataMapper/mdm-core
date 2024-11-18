@@ -205,7 +205,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     }
 
     protected UUID createAndSaveNewBranchModel(String branchName, DataModel base) {
-        DataModel dataModel = dataModelService.createNewBranchModelVersion(branchName, base, admin, false, adminSecurityPolicyManager)
+        DataModel dataModel = dataModelService.createNewBranchModelVersion(branchName, base, admin, false, adminSecurityPolicyManager, [:])
         if (dataModel.hasErrors()) {
             GormUtils.outputDomainErrors(messageSource, dataModel)
             Assert.fail('Could not create new branch version')
@@ -429,7 +429,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, editorSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
-        ])
+        ], [:])
 
         then:
         checkAndSaveNewVersion(result)
@@ -927,7 +927,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel copiedDataModel =
             dataModelService
                 .copyModel(dataModel, testFolder, editor, false, dataModel.label + ' copy', Version.from('1'), dataModel.branchName, true,
-                           editorSecurityPolicyManager)
+                           editorSecurityPolicyManager, [:])
 
         then:
         copiedDataModel.childDataClasses.size() == 5

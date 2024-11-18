@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
 import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -178,7 +180,9 @@ abstract class ModelService<K extends Model>
                          Version copyDocVersion,
                          String branchName,
                          boolean throwErrors,
-                         UserSecurityPolicyManager userSecurityPolicyManager)
+                         UserSecurityPolicyManager userSecurityPolicyManager,
+                         Map<CatalogueItem, CatalogueItem> oldNewItemMap,
+                         boolean addRefinementLinks = true)
 
     abstract Set<ExporterProviderService> getExporterProviderServices()
 
@@ -374,18 +378,21 @@ abstract class ModelService<K extends Model>
     }
 
     K copyModelAsNewBranchModel(K original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
-                                UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
+                                UserSecurityPolicyManager userSecurityPolicyManager,
+                                Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+        copyModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
     K copyModelAsNewForkModel(K original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                              UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
+                              UserSecurityPolicyManager userSecurityPolicyManager,
+                              Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+        copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
     K copyModelAsNewDocumentationModel(K original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
-                                       boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+                                       boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
+                                       Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+        copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
     K copyModel(K original,
@@ -395,26 +402,29 @@ abstract class ModelService<K extends Model>
                 Version copyDocVersion,
                 String branchName,
                 boolean throwErrors,
-                UserSecurityPolicyManager userSecurityPolicyManager) {
+                UserSecurityPolicyManager userSecurityPolicyManager,
+                Map<CatalogueItem, CatalogueItem> oldNewItemMap,
+                boolean addRefinementLinks = true) {
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
-        copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+        copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
     AsyncJob asyncCreateNewDocumentationVersion(K model, User user, boolean copyPermissions,
-                                                UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+                                                UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:], Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
         asyncJobService.createAndSaveAsyncJob("Create new documentation model of ${model.path}",
                                               userSecurityPolicyManager.user.emailAddress) {
             model.attach()
             model.authority.attach()
             model.folder.attach()
             K doc = createNewDocumentationVersion(model, user, copyPermissions,
-                                                  userSecurityPolicyManager, additionalArguments) as K
+                                                  userSecurityPolicyManager, additionalArguments, oldNewItemMap) as K
             fullValidateAndSaveOfModel(doc, user)
         }
     }
 
     K createNewDocumentationVersion(K model, User user, boolean copyPermissions,
-                                    UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+                                    UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:],
+                                    Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
         if (!newVersionCreationIsAllowed(model)) return model
 
         K newDocVersion = copyModelAsNewDocumentationModel(model,
@@ -424,7 +434,7 @@ abstract class ModelService<K extends Model>
                                                            Version.nextMajorVersion(model.documentationVersion),
                                                            model.branchName,
                                                            additionalArguments.throwErrors as boolean,
-                                                           userSecurityPolicyManager,)
+                                                           userSecurityPolicyManager, oldNewItemMap)
         setModelIsNewDocumentationVersionOfModel(newDocVersion, model, user)
         if (additionalArguments.moveDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
@@ -450,9 +460,11 @@ abstract class ModelService<K extends Model>
                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
 
+        ApiProperty createRefinementLinksProperty = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS)
+        boolean createRefinementLinks = createRefinementLinksProperty?.value?.toBoolean()
         K newForkModel = copyModelAsNewForkModel(model, user, copyPermissions, label,
                                                  additionalArguments.throwErrors as boolean,
-                                                 userSecurityPolicyManager)
+                                                 userSecurityPolicyManager, [:], createRefinementLinks)
         setModelIsNewForkModelOfModel(newForkModel, model, user)
         if (additionalArguments.copyDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
@@ -521,7 +533,7 @@ abstract class ModelService<K extends Model>
                                                                     model.label,
                                                                     VersionAwareConstraints.DEFAULT_BRANCH_NAME,
                                                                     additionalArguments.throwErrors as boolean,
-                                                                    userSecurityPolicyManager)
+                                                                    userSecurityPolicyManager, [:])
             setModelIsNewBranchModelVersionOfModel(newMainBranchModelVersion, model, user)
 
             if (additionalArguments.moveDataFlows) {
@@ -551,7 +563,7 @@ abstract class ModelService<K extends Model>
                                                             model.label,
                                                             branchName,
                                                             additionalArguments.throwErrors as boolean,
-                                                            userSecurityPolicyManager)
+                                                            userSecurityPolicyManager, [:])
 
         setModelIsNewBranchModelVersionOfModel(newBranchModelVersion, model, user)
 
@@ -1171,9 +1183,10 @@ abstract class ModelService<K extends Model>
                                       Version copyDocVersion,
                                       String branchName,
                                       boolean throwErrors,
-                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+                                      UserSecurityPolicyManager userSecurityPolicyManager,
+                                      Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
         Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
-                                      branchName, throwErrors, userSecurityPolicyManager)
+                                      branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap)
         fullValidateAndSaveOfModel(copiedModel, copier)
     }
 
@@ -1183,15 +1196,7 @@ abstract class ModelService<K extends Model>
      * @param originalModel
      */
     void updateCopiedCrossModelLinks(K copiedModel, K originalModel) {
-        log.debug('Updating cross model links for [{}]', Path.from(copiedModel))
 
-        // TODO
-        // Find all SLs which were copied
-        // These will all point to the same target as the original model,
-        // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
-        // ie VF A has Models B & C, VF D is a branch of A with models E & F, if SLs exist from B to C then SLs now exist from E to C
-        // we need to update them to E to F.
-        // If a model G exists outside VF A or D with links from B to G then SLs exist from E to G, these remain as they are
     }
 
     Path getFullPathForModel(Model model) {

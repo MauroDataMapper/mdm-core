@@ -1308,7 +1308,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
         def copiedModel = modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label,
                                                                    modelToCopy.documentationVersion,
-                                                                   targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+                                                                   targetVersionedFolder.branchName, false, userSecurityPolicyManager, [:])
 
         copiedModel.addMergeEdit(userSecurityPolicyManager.user, mergeEditDescription)
     }

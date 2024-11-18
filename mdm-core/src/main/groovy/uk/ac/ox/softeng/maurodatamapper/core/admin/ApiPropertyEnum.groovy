@@ -42,7 +42,8 @@ enum ApiPropertyEnum {
     SECURITY_RESTRICT_CLASSIFIER_CREATE('security.restrict.classifier.create'),
     SECURITY_HIDE_EXCEPTIONS('security.hide.exception'),
     FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION('feature.copy_annotations_to_new_version'),
-    FEATURE_ATTACHMENT_SIZE_LIMIT('feature.attachment_size_limit_mb')
+    FEATURE_ATTACHMENT_SIZE_LIMIT('feature.attachment_size_limit_mb'),
+    FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS('feature.create_refinement_links')
 
     String key
 

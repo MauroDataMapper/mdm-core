@@ -153,6 +153,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     List<Term> findAllByTerminologyId(UUID terminologyId, Map paginate = [:]) {
+        System.err.println(paginate)
         Term.withFilter(Term.byTerminologyId(terminologyId), paginate).list(paginate)
     }
 
@@ -212,13 +213,13 @@ class TermService extends ModelItemService<Term> {
         copy
     }
 
-    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
+    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null, boolean addRefinementLinks = true) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url,
                              isParent: original.isParent,
                              depth: original.depth)
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
         copy
     }
 

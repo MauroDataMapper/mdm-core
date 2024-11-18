@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -436,7 +437,8 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     Terminology copyModel(Terminology original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyVersion,
-                          String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+                          String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
+                          Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         Terminology copy = new Terminology(author: original.author,
@@ -454,7 +456,7 @@ class TerminologyService extends ModelService<Terminology> {
             log.warn('Permission copying is not yet implemented')
         }
 
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         if (copy.validate()) {
             save(copy, validate: false)
@@ -480,19 +482,22 @@ class TerminologyService extends ModelService<Terminology> {
 
         // Copy all the TermRelationshipType
         termRelationshipTypes.each {trt ->
-            termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
+            TermRelationshipType newTrt = termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
+            oldNewItemMap[trt] = newTrt
         }
 
         // Copy all the terms
         originalTerms.each {term ->
-            termService.copyTerm(copy, term, copier, userSecurityPolicyManager, termsCachedInformation)
+            Term newTerm = termService.copyTerm(copy, term, copier, userSecurityPolicyManager, termsCachedInformation)
+            oldNewItemMap[term] = newTerm
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
         // Only copy source relationships as this will propagate the target relationships
         termRelationships.each {relationship ->
-            termRelationshipService.copyTermRelationship(copy, relationship, new TreeMap(copy.terms.collectEntries {[it.code, it]}), copier)
+            TermRelationship newTr = termRelationshipService.copyTermRelationship(copy, relationship, new TreeMap(copy.terms.collectEntries {[it.code, it]}), copier)
+            oldNewItemMap[relationship] = newTr
         }
         log.debug('Copy of terminology took {}', Utils.timeTaken(start))
         copy

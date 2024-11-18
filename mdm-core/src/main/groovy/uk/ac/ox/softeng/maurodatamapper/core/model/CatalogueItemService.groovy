@@ -215,7 +215,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             }
             copy.addToRules(copiedRule)
         }
-        semanticLinks.each {link ->
+
+/* This will be carried out in another pass now
+
+semanticLinks.each {link ->
             if (link.targetMultiFacetAwareItem) {
                 copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                         targetMultiFacetAwareItem: link.targetMultiFacetAwareItem,
@@ -228,6 +231,8 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             }
 
         }
+
+ */
         copy
     }
 
@@ -345,8 +350,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
         // default no-op
     }
 
-    void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
+    void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser, boolean addRefinementLinks = true) {
+        // Temporarily disable this
+        if(addRefinementLinks) {
+            source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
+        }
     }
 
     void checkBreadcrumbTreeAfterSavingCatalogueItem(K catalogueItem) {

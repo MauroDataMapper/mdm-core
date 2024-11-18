@@ -223,7 +223,8 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
                          ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
                          ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION,
-                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT,
+                         ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS
                 ])
             }
             .each {ape ->
@@ -245,7 +246,8 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
                          ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
                          ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION,
-                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT,
+                         ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS
                 ])
             }
             .each {ape ->
@@ -272,7 +274,8 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                          ApiPropertyEnum.SECURITY_RESTRICT_ROOT_FOLDER,
                          ApiPropertyEnum.SECURITY_HIDE_EXCEPTIONS,
                          ApiPropertyEnum.FEATURE_COPY_ANNOTATIONS_TO_NEW_VERSION,
-                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT
+                         ApiPropertyEnum.FEATURE_ATTACHMENT_SIZE_LIMIT,
+                         ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS
                 ])
             }
             .each {ape ->

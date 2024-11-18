@@ -439,12 +439,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             AsyncJob asyncJob = getModelService().asyncCreateNewDocumentationVersion(instance,
                                                                                      currentUser,
                                                                                      createNewVersionData.copyPermissions,
-                                                                                     currentUserSecurityPolicyManager)
+                                                                                     currentUserSecurityPolicyManager, [:])
             return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
 
         T copy = getModelService().
-            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as T
+            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager, [:]) as T
 
         if (!validateResource(copy, 'create')) return
 
@@ -842,6 +842,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
             if (result.any {it.hasErrors()}) {
                 log.debug('Errors found in imported models')
+                result.each {
+                    if(it.hasErrors()) {
+                        System.err.println(it.label)
+                        System.err.println(it.errors)
+                    }
+                }
                 transactionStatus.setRollbackOnly()
                 respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
                 return

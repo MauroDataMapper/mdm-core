@@ -30,7 +30,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CopyPassType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -352,16 +355,18 @@ class FolderService extends ContainerService<Folder> {
                       UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}[{}]', original.id, original.label)
         long start = System.currentTimeMillis()
+        Map<CatalogueItem, CatalogueItem> oldNewItemMap = [:]
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
-                       throwErrors, userSecurityPolicyManager)
+                       throwErrors, userSecurityPolicyManager, oldNewItemMap)
         sessionFactory.currentSession.flush()
         if (clearSession) sessionFactory.currentSession.clear()
+        getAllSemanticLinks(oldNewItemMap, copier)
         copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
-                       throwErrors, userSecurityPolicyManager)
+                       throwErrors, userSecurityPolicyManager, oldNewItemMap)
         sessionFactory.currentSession.flush()
         if (clearSession) sessionFactory.currentSession.clear()
         copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
-                       throwErrors, userSecurityPolicyManager)
+                       throwErrors, userSecurityPolicyManager, oldNewItemMap)
         log.debug('Folder copy complete in {}', Utils.timeTaken(start))
         get(copiedFolder.id)
     }
@@ -370,7 +375,8 @@ class FolderService extends ContainerService<Folder> {
                           String label, User copier, boolean copyPermissions,
                           String modelBranchName,
                           Version modelCopyDocVersion, boolean throwErrors,
-                          UserSecurityPolicyManager userSecurityPolicyManager) {
+                          UserSecurityPolicyManager userSecurityPolicyManager,
+                          Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
         log.debug('{} performing copy folder pass for {}[{}]', copyPassType, original.id, original.label)
         long start = System.currentTimeMillis()
         if (copyPassType == CopyPassType.FIRST_PASS) {
@@ -400,7 +406,7 @@ class FolderService extends ContainerService<Folder> {
             } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
         }
         copyFolderContents(original, copiedFolder, copier, copyPassType, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors,
-                           userSecurityPolicyManager)
+                           userSecurityPolicyManager, oldNewItemMap)
 
         log.debug('{} folder copy complete for {}[{}] in {}', copyPassType, original.id, original.label, Utils.timeTaken(start))
         copiedFolder
@@ -437,13 +443,14 @@ class FolderService extends ContainerService<Folder> {
                             boolean copyPermissions,
                             Version copyDocVersion,
                             String branchName,
-                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
+                            Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
 
         // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation arises in forking
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
         copyModelsInFolder(original, folderCopy, copier, copyPassType, labelSuffix, copyPermissions, copyDocVersion, branchName,
-                           throwErrors, userSecurityPolicyManager)
+                           throwErrors, userSecurityPolicyManager, oldNewItemMap)
 
         List<Folder> folders = findAllByParentId(original.id)
         log.debug('{} copying {} sub folders inside folder', copyPassType, folders.size())
@@ -459,7 +466,7 @@ class FolderService extends ContainerService<Folder> {
                 }
             }
             copyFolderPass(copyPassType, childFolder, childCopy, childFolder.label, copier, copyPermissions, branchName, copyDocVersion,
-                           throwErrors, userSecurityPolicyManager)
+                           throwErrors, userSecurityPolicyManager, oldNewItemMap)
         }
     }
 
@@ -469,7 +476,8 @@ class FolderService extends ContainerService<Folder> {
                             boolean copyPermissions,
                             Version copyDocVersion,
                             String branchName,
-                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
+                            Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
         modelServices.each { service ->
 
             if (service.countByContainerId(originalFolder.id)) {
@@ -489,7 +497,8 @@ class FolderService extends ContainerService<Folder> {
                             Model copiedModel = service.copyModel(workingModel, workingFolder, copier, copyPermissions,
                                                                   "${workingModel.label}${labelSuffix}",
                                                                   copyDocVersion, branchName, throwErrors,
-                                                                  userSecurityPolicyManager)
+                                                                  userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
+                            oldNewItemMap[originalModel] = copiedModel
                             log.debug('Validating and saving model copy {}', copiedModel.path)
                             service.validate(copiedModel)
                             if (copiedModel.hasErrors()) {
@@ -663,5 +672,42 @@ class FolderService extends ContainerService<Folder> {
         addFacetDataToDiffCache(fDiffCache, facetData, folder.id)
         if (parentCache) parentCache.addDiffCache(folder.path, fDiffCache)
         fDiffCache
+    }
+
+    List<SemanticLink> getAllSemanticLinks(Map<CatalogueItem, CatalogueItem> oldNewItemMap, User copier) {
+        log.error('{}', oldNewItemMap)
+        Map<UUID, CatalogueItem> idMap = [:]
+        oldNewItemMap.keySet().each {
+            idMap[it.id] = it
+        }
+        List<SemanticLink> semanticLinks = []
+        Utils.executeInBatches(oldNewItemMap.keySet().id, {ids ->
+            semanticLinks.addAll(semanticLinkService.findAllByMultiFacetAwareItemIdInList(ids))
+        })
+        log.error('{}', semanticLinks.size())
+
+        List<SemanticLink> newSemanticLinks = []
+        semanticLinks.each {oldSemanticLink ->
+            UUID oldSourceItemId = oldSemanticLink.multiFacetAwareItemId
+            UUID oldTargetItemId = oldSemanticLink.targetMultiFacetAwareItemId
+
+            CatalogueItem newSourceItem = oldNewItemMap[idMap[oldSourceItemId]]
+
+            if(idMap[oldTargetItemId]) {
+                CatalogueItem newTargetItem = oldNewItemMap[idMap[oldTargetItemId]]
+                newSemanticLinks.add(semanticLinkService.createSemanticLink(copier, newSourceItem, newTargetItem, oldSemanticLink.linkType))
+            } else {
+                newSemanticLinks.add(new SemanticLink(createdBy: copier.emailAddress, linkType:  oldSemanticLink.linkType,
+                                                      targetMultiFacetAwareItemId:  oldSemanticLink.targetMultiFacetAwareItemId,
+                                                      targetMultiFacetAwareItemDomainType:  oldSemanticLink.targetMultiFacetAwareItemDomainType,
+                                                      ).with {
+                    setMultiFacetAwareItem(newSourceItem)
+                    it
+                })
+
+            }
+        }
+        SemanticLink.saveAll(newSemanticLinks)
+        newSemanticLinks
     }
 }

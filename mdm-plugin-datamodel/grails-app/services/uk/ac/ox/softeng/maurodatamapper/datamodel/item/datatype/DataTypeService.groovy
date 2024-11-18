@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
@@ -436,23 +437,24 @@ WHERE
 
     @Override
     DataType copy(Model copiedDataModel, DataType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataType(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        copyDataType(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, [:])
     }
 
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                          boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation()) {
+                          boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation(),
+                         Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
 
-        DataType copy = createNewDataTypeFromOriginal(copiedDataModel, original, userSecurityPolicyManager)
+        DataType copy = createNewDataTypeFromOriginal(copiedDataModel, original, userSecurityPolicyManager, oldNewItemMap)
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         copiedDataModel.addToDataTypes(copy)
 
         copy
     }
 
-    DataType createNewDataTypeFromOriginal(DataModel copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    DataType createNewDataTypeFromOriginal(DataModel copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager, Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
         DataType copy
 
         String domainType = original.domainType
@@ -464,8 +466,10 @@ WHERE
                 copy = new EnumerationType()
                 CopyInformation copyInformation = new CopyInformation(copyIndex: true)
                 original.enumerationValues.sort().each {ev ->
-                    copy.addToEnumerationValues(
-                        enumerationValueService.copyEnumerationValue(copiedDataModel, ev, copy, userSecurityPolicyManager.user, userSecurityPolicyManager, copyInformation))
+                    EnumerationValue newEv =
+                        enumerationValueService.copyEnumerationValue(copiedDataModel, ev, copy, userSecurityPolicyManager.user, userSecurityPolicyManager, copyInformation)
+                    copy.addToEnumerationValues(newEv)
+                    oldNewItemMap[ev] = newEv
                 }
                 break
             case DataType.REFERENCE_DOMAIN_TYPE:

@@ -265,12 +265,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
                                                   UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
-                                                  CopyInformation copyInformation = null) {
+                                                  CopyInformation copyInformation = null, boolean addRefinementLinks = true) {
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
                                                              maxMultiplicity: original.maxMultiplicity)
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier, addRefinementLinks)
 
         ReferenceDataType referenceDataType = copiedReferenceDataModel.findReferenceDataTypeByLabel(original.referenceDataType.label)
 
