@@ -590,7 +590,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T copy = modelService.copyModel(
             original, targetFolder, currentUser, copyPermissions, label,
             original.documentationVersion, original.branchName, true,
-            currentUserSecurityPolicyManager) as T
+            currentUserSecurityPolicyManager, [:]) as T
 
         if (!validateResource(copy, 'create')) {
             return
