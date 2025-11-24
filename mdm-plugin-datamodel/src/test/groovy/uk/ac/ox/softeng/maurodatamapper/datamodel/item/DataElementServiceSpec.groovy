@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -195,8 +196,9 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         and:
         copy.dataType.label == original.dataType.label
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying DataElement with metadata and classifiers'() {
@@ -234,8 +236,9 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         !copy.classifiers
         !original.classifiers
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
 
     }
 
@@ -274,7 +277,8 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         and:
         copy.dataType.label == original.dataType.label
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 }

@@ -184,8 +184,9 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         and:
         copy.referenceDataType.label == original.referenceDataType.label
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying ReferenceDataElement with metadata and classifiers'() {
@@ -222,8 +223,9 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         !copy.classifiers
         !original.classifiers
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
 
     }
 }
