@@ -350,7 +350,7 @@ semanticLinks.each {link ->
         // default no-op
     }
 
-    void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser, boolean addRefinementLinks = true) {
+    void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser, boolean addRefinementLinks = false) {
         // Temporarily disable this
         if(addRefinementLinks) {
             source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)

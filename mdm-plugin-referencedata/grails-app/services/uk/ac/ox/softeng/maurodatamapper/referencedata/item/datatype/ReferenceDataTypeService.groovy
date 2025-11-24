@@ -214,7 +214,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
 
     ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
                                             UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false, CopyInformation copyInformation = null,
-                                            boolean addRefinementLinks = true) {
+                                            boolean addRefinementLinks = false) {
         ReferenceDataType copy
 
         String domainType = original.domainType

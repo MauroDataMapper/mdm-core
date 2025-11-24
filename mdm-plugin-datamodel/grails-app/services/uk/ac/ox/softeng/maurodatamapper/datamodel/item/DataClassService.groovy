@@ -848,7 +848,7 @@ WHERE
                             boolean copySummaryMetadata,
                             CopyInformation copyInformation,
                             Map<CatalogueItem, CatalogueItem> oldNewItemMap,
-                            boolean addRefinementLinks = true) {
+                            boolean addRefinementLinks = false) {
 
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 

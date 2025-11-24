@@ -182,7 +182,7 @@ abstract class ModelService<K extends Model>
                          boolean throwErrors,
                          UserSecurityPolicyManager userSecurityPolicyManager,
                          Map<CatalogueItem, CatalogueItem> oldNewItemMap,
-                         boolean addRefinementLinks = true)
+                         boolean addRefinementLinks = false)
 
     abstract Set<ExporterProviderService> getExporterProviderServices()
 
@@ -379,19 +379,19 @@ abstract class ModelService<K extends Model>
 
     K copyModelAsNewBranchModel(K original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
                                 UserSecurityPolicyManager userSecurityPolicyManager,
-                                Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                                Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         copyModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
     K copyModelAsNewForkModel(K original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                               UserSecurityPolicyManager userSecurityPolicyManager,
-                              Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                              Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
     K copyModelAsNewDocumentationModel(K original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
                                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
-                                       Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                                       Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
 
@@ -404,7 +404,7 @@ abstract class ModelService<K extends Model>
                 boolean throwErrors,
                 UserSecurityPolicyManager userSecurityPolicyManager,
                 Map<CatalogueItem, CatalogueItem> oldNewItemMap,
-                boolean addRefinementLinks = true) {
+                boolean addRefinementLinks = false) {
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, oldNewItemMap, addRefinementLinks)
     }
@@ -426,6 +426,8 @@ abstract class ModelService<K extends Model>
                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:],
                                     Map<CatalogueItem, CatalogueItem> oldNewItemMap) {
         if (!newVersionCreationIsAllowed(model)) return model
+        ApiProperty createRefinementLinksProperty = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS)
+        boolean createRefinementLinks = createRefinementLinksProperty?.value?.toBoolean()
 
         K newDocVersion = copyModelAsNewDocumentationModel(model,
                                                            user,
@@ -434,7 +436,7 @@ abstract class ModelService<K extends Model>
                                                            Version.nextMajorVersion(model.documentationVersion),
                                                            model.branchName,
                                                            additionalArguments.throwErrors as boolean,
-                                                           userSecurityPolicyManager, oldNewItemMap)
+                                                           userSecurityPolicyManager, oldNewItemMap, createRefinementLinks)
         setModelIsNewDocumentationVersionOfModel(newDocVersion, model, user)
         if (additionalArguments.moveDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
@@ -556,6 +558,8 @@ abstract class ModelService<K extends Model>
                                                           (newMainBranchModelVersion as GormValidateable).errors, messageSource)
             }
         }
+        ApiProperty createRefinementLinksProperty = apiPropertyService.findByApiPropertyEnum(ApiPropertyEnum.FEATURE_CREATE_REFINEMENT_LINKS_BETWEEN_VERSIONS)
+        boolean createRefinementLinks = createRefinementLinksProperty?.value?.toBoolean()
 
         K newBranchModelVersion = copyModelAsNewBranchModel(model,
                                                             user,
@@ -563,7 +567,7 @@ abstract class ModelService<K extends Model>
                                                             model.label,
                                                             branchName,
                                                             additionalArguments.throwErrors as boolean,
-                                                            userSecurityPolicyManager, [:])
+                                                            userSecurityPolicyManager, [:], createRefinementLinks)
 
         setModelIsNewBranchModelVersionOfModel(newBranchModelVersion, model, user)
 

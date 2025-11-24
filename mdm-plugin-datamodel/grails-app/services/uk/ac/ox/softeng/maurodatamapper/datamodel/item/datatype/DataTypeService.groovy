@@ -442,7 +442,7 @@ WHERE
 
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                           boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation(),
-                         Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                         Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
 
         DataType copy = createNewDataTypeFromOriginal(copiedDataModel, original, userSecurityPolicyManager, oldNewItemMap)
 

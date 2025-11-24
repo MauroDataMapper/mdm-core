@@ -223,7 +223,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                       String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
-                      Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                      Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         CodeSet copy = new CodeSet(author: original.author,

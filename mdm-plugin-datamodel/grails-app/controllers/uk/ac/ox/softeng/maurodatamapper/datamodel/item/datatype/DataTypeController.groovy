@@ -47,7 +47,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = max?:100
         respond dataTypeList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager,
                 owningDataModelId: params.dataModelId
     }

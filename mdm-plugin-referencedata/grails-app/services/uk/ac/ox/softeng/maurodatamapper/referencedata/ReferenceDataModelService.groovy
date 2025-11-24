@@ -447,7 +447,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     ReferenceDataModel copyModelAsNewForkModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                                UserSecurityPolicyManager userSecurityPolicyManager,
-                                               Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                                               Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         copyModel(original, folder, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
                   userSecurityPolicyManager,
@@ -457,14 +457,14 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     ReferenceDataModel copyModel(ReferenceDataModel original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label,
                                  Version copyDocVersion, String branchName, boolean throwErrors,
                                  UserSecurityPolicyManager userSecurityPolicyManager,
-                                 Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                                 Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         copyModel(original, folderToCopyTo, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true, oldNewItemMap, addRefinementLinks)
     }
 
     ReferenceDataModel copyModel(ReferenceDataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label,
                                  Version copyDocVersion, String branchName,
                                  boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata,
-                                 Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                                 Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
 
         ReferenceDataModel copy = new ReferenceDataModel(author: original.author, organisation: original.organisation, modelType: original.modelType,
                                                          finalised: false,

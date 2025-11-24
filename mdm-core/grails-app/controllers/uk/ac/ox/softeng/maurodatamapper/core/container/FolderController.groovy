@@ -61,7 +61,7 @@ class FolderController extends EditLoggingController<Folder> {
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = max?:100
         respond folderList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
     }
 

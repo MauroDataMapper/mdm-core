@@ -184,7 +184,7 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
 
     EnumerationValue copyEnumerationValue(DataModel copiedDataModel, EnumerationValue original, EnumerationType enumerationTypeToCopyInto,
                                           User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null,
-                                          boolean addRefinementLinks = true) {
+                                          boolean addRefinementLinks = false) {
         EnumerationValue copy = new EnumerationValue(key: original.key, value: original.value, category: original.category)
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)

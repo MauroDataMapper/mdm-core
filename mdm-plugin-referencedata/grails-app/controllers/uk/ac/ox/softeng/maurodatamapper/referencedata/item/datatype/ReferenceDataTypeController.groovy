@@ -45,7 +45,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = params.max = max?:100
         respond referenceDataTypeList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
     }
 
