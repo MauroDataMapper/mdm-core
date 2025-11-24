@@ -493,8 +493,9 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.dataElements
         !copy.referenceTypes
 
-        and:
-        SemanticLink.findByTargetMultiFacetAwareItemIdAndMultiFacetAwareItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
+        // The default is that these links are not copied any more
+        // and:
+        // SemanticLink.findByTargetMultiFacetAwareItemIdAndMultiFacetAwareItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
 
         when:
         DataClass copiedParent = copy.dataClasses.first()
