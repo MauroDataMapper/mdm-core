@@ -37,7 +37,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
 
     @Override
     def index(Integer max) {
-        params.max = max?:100
+        params.max = max?:10
         def res = listAllResources(params)
         if (response.isCommitted()) return
         if (params.asRows) {
