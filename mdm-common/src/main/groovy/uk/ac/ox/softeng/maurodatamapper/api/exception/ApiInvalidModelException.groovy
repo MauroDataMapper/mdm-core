@@ -58,7 +58,6 @@ class ApiInvalidModelException extends ApiException {
     @SuppressWarnings('SystemErrPrint')
     void outputErrors(MessageSource messageSource) {
         logger.error('Errors validating domain: {}', errors.objectName)
-        System.err.println("Errors validating domain: ${errors.objectName}")
 
         errors.getAllErrors().each {error ->
             String msg = messageSource != null ? messageSource.getMessage(error, Locale.getDefault()) :
@@ -67,7 +66,6 @@ class ApiInvalidModelException extends ApiException {
             if (error instanceof FieldError) msg += " :: [${((FieldError) error).getField()}]"
 
             logger.error(msg)
-            System.err.println(msg)
         }
     }
 

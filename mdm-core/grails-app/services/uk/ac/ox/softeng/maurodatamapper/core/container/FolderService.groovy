@@ -477,7 +477,7 @@ class FolderService extends ContainerService<Folder> {
                             Version copyDocVersion,
                             String branchName,
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
-                            Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                            Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         modelServices.each { service ->
 
             if (service.countByContainerId(originalFolder.id)) {

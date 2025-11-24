@@ -53,7 +53,7 @@ class CodeSetController extends ModelController<CodeSet> {
 
     @Override
     def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = max?:10
 
         if (params.termId) {
             if (!terminologyService.get(params.terminologyId)) {

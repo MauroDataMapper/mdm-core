@@ -415,7 +415,7 @@ WHERE (de.dataClass.dataModel.id = :dataModelId)''', 'de', filters)
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
                                 UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
                                 CopyInformation copyInformation = new CopyInformation(),
-                                boolean addRefinementLinks = true) {
+                                boolean addRefinementLinks = false) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 

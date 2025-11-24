@@ -438,7 +438,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     Terminology copyModel(Terminology original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyVersion,
                           String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
-                          Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                          Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         Terminology copy = new Terminology(author: original.author,

@@ -360,8 +360,10 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.dataElements
         !copy.referenceTypes
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+
     }
 
     @Tag('non-parallel')
@@ -414,8 +416,9 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataElements.size() == 1
         copy.dataElements.size() == original.dataElements.size()
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     @Tag('non-parallel')
@@ -490,8 +493,9 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.dataElements
         !copy.referenceTypes
 
-        and:
-        SemanticLink.findByTargetMultiFacetAwareItemIdAndMultiFacetAwareItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
+        // The default is that these links are not copied any more
+        // and:
+        // SemanticLink.findByTargetMultiFacetAwareItemIdAndMultiFacetAwareItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
 
         when:
         DataClass copiedParent = copy.dataClasses.first()

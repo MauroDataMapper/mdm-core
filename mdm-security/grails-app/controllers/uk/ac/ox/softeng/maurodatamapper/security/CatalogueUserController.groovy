@@ -338,7 +338,7 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
     }
 
     def exportUsers(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
+        params.max = max?:10
         List<CatalogueUser> users = listAllResources(params)
 
         //log.info("Exporting all Users using ${exporter.displayName}")

@@ -672,7 +672,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     DataModel copyModelAsNewForkModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                       UserSecurityPolicyManager userSecurityPolicyManager,
-                                      Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                                      Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         copyModel(original, folder, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
                   userSecurityPolicyManager, false, oldNewItemMap, addRefinementLinks)
@@ -681,14 +681,14 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager,
-                        Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                        Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors,
                   userSecurityPolicyManager, true, oldNewItemMap, addRefinementLinks)
     }
 
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata,
-                        Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = true) {
+                        Map<CatalogueItem, CatalogueItem> oldNewItemMap, boolean addRefinementLinks = false) {
         long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,

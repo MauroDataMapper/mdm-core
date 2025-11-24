@@ -265,7 +265,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
                                                   UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
-                                                  CopyInformation copyInformation = null, boolean addRefinementLinks = true) {
+                                                  CopyInformation copyInformation = null, boolean addRefinementLinks = false) {
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
                                                              maxMultiplicity: original.maxMultiplicity)
 

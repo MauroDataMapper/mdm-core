@@ -172,8 +172,9 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         copy.metadata?.size() == original.metadata?.size()
         copy.classifiers == original.classifiers
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying enumeration datatype'() {
@@ -207,7 +208,8 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         copy.metadata?.size() == original.metadata?.size()
         copy.classifiers == original.classifiers
 
-        and:
-        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        // The default is that these links are not copied any more
+        // and:
+        // copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 }
