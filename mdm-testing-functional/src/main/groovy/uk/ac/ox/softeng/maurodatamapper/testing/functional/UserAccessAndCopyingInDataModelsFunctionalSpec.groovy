@@ -196,17 +196,18 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         verifyResponse OK, response
         responseBody().id == id
 
-        when:
-        GET("${getCatalogueItemDomainType()}/${id}/semanticLinks", MAP_ARG, true)
+        // The default is that these links are not copied any more
+        // when:
+        // GET("${getCatalogueItemDomainType()}/${id}/semanticLinks", MAP_ARG, true)
 
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'SemanticLink'
-        response.body().items.first().linkType == 'Refines'
-        response.body().items.first().sourceMultiFacetAwareItem.id == id
-        response.body().items.first().targetMultiFacetAwareItem.id == getExpectedTargetId()
-        response.body().items.first().sourceMultiFacetAwareItem.domainType == response.body().items.first().targetMultiFacetAwareItem.domainType
+        // then:
+        // verifyResponse OK, response
+        // response.body().count == 1
+        // response.body().items.first().domainType == 'SemanticLink'
+        // response.body().items.first().linkType == 'Refines'
+        // response.body().items.first().sourceMultiFacetAwareItem.id == id
+        // response.body().items.first().targetMultiFacetAwareItem.id == getExpectedTargetId()
+        // response.body().items.first().sourceMultiFacetAwareItem.domainType == response.body().items.first().targetMultiFacetAwareItem.domainType
 
         cleanup:
         cleanupCopiedItem(id)
