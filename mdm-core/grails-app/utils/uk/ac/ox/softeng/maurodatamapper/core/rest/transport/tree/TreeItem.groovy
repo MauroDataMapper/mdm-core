@@ -97,6 +97,7 @@ class TreeItem implements Comparable<TreeItem> {
     int compareTo(TreeItem that) {
         def res = this.domainTypeIndex <=> that.domainTypeIndex
         if (res == 0) res = this.label?.toLowerCase() <=> that.label?.toLowerCase()
+        if (res == 0) res = this.label <=> that.label
         res
     }
 

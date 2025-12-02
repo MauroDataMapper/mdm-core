@@ -44,6 +44,7 @@ class ModelItemTreeItem extends TreeItem implements Comparable<TreeItem> {
         ModelItemTreeItem other = that as ModelItemTreeItem
         res = this.hasChildren() <=> other.hasChildren()
         if (res == 0) res = this.order <=> other.order
+        if (res == 0) res = this.label?.toLowerCase() <=> other.label?.toLowerCase()
         if (res == 0) res = this.label <=> other.label
         res
     }
