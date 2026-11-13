@@ -1,4 +1,16 @@
-# Mauro Data Mapper Core Backend Application
+# Mauro Data Mapper Core Backend Application - ARCHIVE
+
+> [!Caution]
+>
+> This repository is archived and no longer maintained.
+>
+> This code may contain known security vulnerabilities. It no longer receives security patches, dependency updates or technical support.
+> 
+> Do not use this repository for new development or production deployments.
+>
+> Historical reference : This repository remains available for historical reference and migration purposes only. Issues and pull requests are closed, and no further releases 
+> are planned.
+
 
 Core API for Mauro Data Mapper
 
